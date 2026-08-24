@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "光遇辨識學習 Wiki",
-  description: "可搜尋、比較與練習的 Sky 光遇物品視覺圖鑑。",
+  description: "依遊戲內五座衣櫃順序整理，可搜尋季節、活動與估號分類的 Sky 光遇物品圖鑑。",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
