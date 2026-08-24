@@ -77,9 +77,9 @@ export const renderShowcaseImage = async ({
   const limited = items.filter((item) => !isUltimate(item) && isLimited(item));
   const featured = new Set([...ultimates, ...limited].map((item) => item.guid));
   const groups = [
-    { name: "畢業禮", items: ultimates },
-    { name: "禮包／限定", items: limited },
-    { name: "其他物品", items: items.filter((item) => !featured.has(item.guid)) },
+    { name: "畢業禮", items: ultimates, hideClusterTitles: true },
+    { name: "禮包／限定", items: limited, hideClusterTitles: false },
+    { name: "其他物品", items: items.filter((item) => !featured.has(item.guid)), hideClusterTitles: false },
   ].filter((group) => group.items.length);
 
   const clusterItems = (clusterSource: WikiItem[]) => {
@@ -105,7 +105,7 @@ export const renderShowcaseImage = async ({
   const maxClusterColumns = 6;
   const contentWidth = width - pad * 2 - panelPad * 2;
 
-  const layoutClusters = (clusterSource: WikiItem[]) => {
+  const layoutClusters = (clusterSource: WikiItem[], hideClusterTitles = false) => {
     let cursorX = 0;
     let cursorY = 0;
     let shelfHeight = 0;
@@ -113,13 +113,14 @@ export const renderShowcaseImage = async ({
       const columns = Math.min(maxClusterColumns, Math.max(1, cluster.items.length));
       const rows = Math.ceil(cluster.items.length / columns);
       const w = clusterPad * 2 + columns * cell + (columns - 1) * iconGap;
-      const h = clusterPad * 2 + clusterTitle + rows * cell + (rows - 1) * iconGap;
+      const titleSpace = hideClusterTitles ? 0 : clusterTitle;
+      const h = clusterPad * 2 + titleSpace + rows * cell + (rows - 1) * iconGap;
       if (cursorX && cursorX + w > contentWidth) {
         cursorX = 0;
         cursorY += shelfHeight + clusterGap;
         shelfHeight = 0;
       }
-      const placement = { cluster, x: cursorX, y: cursorY, w, h, columns };
+      const placement = { cluster, x: cursorX, y: cursorY, w, h, columns, titleSpace };
       cursorX += w + clusterGap;
       shelfHeight = Math.max(shelfHeight, h);
       return placement;
@@ -130,8 +131,8 @@ export const renderShowcaseImage = async ({
   const headerHeight = 214;
   const footerHeight = 88;
   const sectionGap = 28;
-  const visibleGroups = groups.length ? groups : [{ name: "衣櫃清單", items: [] as WikiItem[] }];
-  const renderGroups = visibleGroups.map((group) => ({ ...group, layout: layoutClusters(group.items) }));
+  const visibleGroups = groups.length ? groups : [{ name: "衣櫃清單", items: [] as WikiItem[], hideClusterTitles: false }];
+  const renderGroups = visibleGroups.map((group) => ({ ...group, layout: layoutClusters(group.items, group.hideClusterTitles) }));
   const panelHeight = (layoutHeight: number) => titleHeight + Math.max(cell + 26, layoutHeight) + panelPad;
   const height = pad + headerHeight + renderGroups.reduce((sum, group) => sum + panelHeight(group.layout.height) + sectionGap, 0) + footerHeight;
 
@@ -195,20 +196,22 @@ export const renderShowcaseImage = async ({
       ctx.fillText("尚未選取任何衣櫃物品", width / 2, y + titleHeight + cell / 2 + 8);
     }
 
-    group.layout.placements.forEach(({ cluster, x: clusterX, y: clusterY, w, h, columns }) => {
+    group.layout.placements.forEach(({ cluster, x: clusterX, y: clusterY, w, h, columns, titleSpace }) => {
       const x = pad + panelPad + clusterX;
       const clusterTop = y + titleHeight + clusterY;
       roundRect(x, clusterTop, w, h, 16, "rgba(132,177,187,.08)", "rgba(184,225,232,.16)");
-      ctx.textAlign = "left";
-      ctx.fillStyle = "#a9cbd2";
-      ctx.font = "700 14px system-ui";
-      ctx.fillText(`${cluster.name}　${cluster.items.length}`, x + clusterPad, clusterTop + 21, w - clusterPad * 2);
+      if (!group.hideClusterTitles) {
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#a9cbd2";
+        ctx.font = "700 14px system-ui";
+        ctx.fillText(`${cluster.name}　${cluster.items.length}`, x + clusterPad, clusterTop + 21, w - clusterPad * 2);
+      }
 
       cluster.items.forEach((item, index) => {
         const col = index % columns;
         const row = Math.floor(index / columns);
         const cellX = x + clusterPad + col * (cell + iconGap);
-        const cellY = clusterTop + clusterPad + clusterTitle + row * (cell + iconGap);
+        const cellY = clusterTop + clusterPad + titleSpace + row * (cell + iconGap);
         roundRect(cellX, cellY, cell, cell, 13, "rgba(255,255,255,.045)", "rgba(255,255,255,.06)");
         const image = icons.get(item.guid);
         if (image) {
