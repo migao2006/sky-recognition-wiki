@@ -26,6 +26,7 @@
 
 /* 統一不同比例圖片的視覺尺寸，避免長型物品貼邊 */
 .preview-modal{width:min(560px,calc(100vw - 40px))}.preview-pair figure{height:auto;aspect-ratio:1;padding:0}.preview-pair img{width:78%;height:78%;object-fit:contain;object-position:center}.preview-pair figure:first-child img{width:72%;height:72%}.preview-pair figure:last-child img{width:80%;height:80%}
+.preview-source-kind{padding:3px 7px;border:1px solid #b0e5ff4d;border-radius:5px;background:#b0e5ff0d;color:var(--blue);font-size:9px;font-weight:800}.preview-source{display:grid!important;grid-template-columns:auto 1fr;gap:10px!important;align-items:center;margin-top:11px;padding:9px 11px;border:1px solid #ffffff15;border-radius:9px;background:#070e258f}.preview-source span{color:#7f8998;font-size:9px;font-weight:800;letter-spacing:.08em}.preview-source b{color:#b9c8dc;font-size:10px;line-height:1.4;text-align:right}
 @media(max-width:700px){.preview-modal{width:min(400px,calc(100vw - 36px))}.preview-pair figure{height:auto;aspect-ratio:1}.preview-pair figure:first-child img{width:70%;height:70%}.preview-pair figure:last-child img{width:78%;height:78%}}
 
 /* 帳號衣櫃建檔 */
