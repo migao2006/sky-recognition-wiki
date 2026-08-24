@@ -53,7 +53,6 @@ const densityOptions:{key:Density;name:string;hint:string}[]=[{key:"large",name:
 const pageSizes:Record<Density,number>={large:30,standard:50,compact:100};
 const safeFileName=(name:string)=>name.replace(/[\\/:*?"<>|]/g,"-").trim()||"未命名";
 const downloadBlob=(blob:Blob,fileName:string)=>{const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
-const loadExportIcon=(src:string)=>new Promise<HTMLImageElement|null>(resolve=>{const image=new Image();image.crossOrigin="anonymous";image.referrerPolicy="no-referrer";image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=src});
 const itemLine=(x:WikiItem,index:number)=>`${index+1}. ${zhName(x.name)} / ${x.name}｜${labels[x.type]||x.type}｜ID ${x.id}｜來源：${source(x)}${isDiscontinued(x)?"｜畢業禮／絕版":""}`;
 
 export default function Home(){
@@ -87,43 +86,22 @@ export default function Home(){
 	 const shareSummary=async()=>{const ultimates=chosen.filter(isDiscontinued),packages=chosen.filter(isPackage),collabs=chosen.filter(x=>sourceKind(x)==="聯動");const highlights=[...ultimates,...packages,...collabs].filter((x,i,a)=>a.findIndex(y=>y.guid===x.guid)===i).slice(0,12).map(x=>zhName(x.name));const summary=[`【光遇帳號摘要｜${account.name||"未命名"}】`,`${account.accountType}｜可出：${bindingGroup("transfer")}｜不出：${bindingGroup("keep")}`,`資源：${account.candles||0} 白蠟｜${account.hearts||0} 愛心｜${account.ascended||0} 昇華蠟｜${account.passes||0} 副卡`,`衣櫃已登錄 ${chosen.length} 件｜畢業禮 ${ultimates.length}｜禮包 ${packages.length}｜聯動 ${collabs.length}`,highlights.length?`重點物品：${highlights.join("、")}`:"重點物品：尚未登錄",account.bindingNote?`綁定補充：${account.bindingNote}`:"",`資料來源：SkyGame-Data、SkyGame-Planner、BWiki 中文清單`,account.notes?`備註：${account.notes}`:""].filter(Boolean).join("\n");try{if(navigator.share)await navigator.share({title:"光遇帳號摘要",text:summary});else{await navigator.clipboard.writeText(summary);setNotice("帳號摘要已複製")}}catch(err){if((err as DOMException).name!=="AbortError"){downloadText([summary],"分享摘要");setNotice("已改為下載摘要")}}};
 	 const exportShowcaseImage=async()=>{
 	  setNotice("正在產生圖片…");
-	  const ultimates=chosen.filter(isDiscontinued);
-	  const limited=chosen.filter(x=>!isDiscontinued(x)&&(isPackage(x)||["聯動","平台限定","限定"].includes(sourceKind(x))));
-	  const featured=new Set([...ultimates,...limited].map(x=>x.guid));
-	  const groups=[{name:"畢業禮",items:ultimates},{name:"禮包／限定",items:limited},{name:"其他物品",items:chosen.filter(x=>!featured.has(x.guid))}].filter(group=>group.items.length);
-	  const clusterName=(item:WikiItem)=>item.section==="seasons"?(seasonZh[item.collection]||item.collection):item.section==="events"?(eventZh[item.collection]||item.collection):item.section==="realms"?(realmZh[item.collection]||"常駐地圖"):item.section==="store"?storeSource(item):sourceKind(item);
-	  const clusterItems=(items:WikiItem[])=>{const map=new Map<string,{name:string;items:WikiItem[]}>();items.forEach(item=>{const key=`${item.section}:${item.collection}`;const current=map.get(key);if(current)current.items.push(item);else map.set(key,{name:clusterName(item),items:[item]})});return [...map.values()]};
-	  const width=1200,pad=48,panelPad=28,titleHeight=62,cell=66,iconGap=8,clusterGap=12,clusterPad=13,clusterTitle=30,maxClusterColumns=6;
-	  const contentWidth=width-pad*2-panelPad*2;
-	  const layoutClusters=(items:WikiItem[])=>{let cursorX=0,cursorY=0,shelfHeight=0;const placements=clusterItems(items).map(cluster=>{const columns=Math.min(maxClusterColumns,Math.max(1,cluster.items.length)),rows=Math.ceil(cluster.items.length/columns),w=clusterPad*2+columns*cell+(columns-1)*iconGap,h=clusterPad*2+clusterTitle+rows*cell+(rows-1)*iconGap;if(cursorX&&cursorX+w>contentWidth){cursorX=0;cursorY+=shelfHeight+clusterGap;shelfHeight=0}const placement={cluster,x:cursorX,y:cursorY,w,h,columns};cursorX+=w+clusterGap;shelfHeight=Math.max(shelfHeight,h);return placement});return{placements,height:cursorY+shelfHeight}};
-	  const headerHeight=214,footerHeight=88,sectionGap=28;
-	  const visibleGroups=groups.length?groups:[{name:"衣櫃清單",items:[]}];
-	  const renderGroups=visibleGroups.map(group=>({...group,layout:layoutClusters(group.items)}));
-	  const panelHeight=(layoutHeight:number)=>titleHeight+Math.max(cell+26,layoutHeight)+panelPad;
-	  const height=pad+headerHeight+renderGroups.reduce((sum,group)=>sum+panelHeight(group.layout.height)+sectionGap,0)+footerHeight;
-	  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
-	  const ctx=canvas.getContext("2d");if(!ctx){setNotice("無法產生圖片");return}
-	  const background=ctx.createLinearGradient(0,0,width,height);background.addColorStop(0,"#07131d");background.addColorStop(.48,"#15303d");background.addColorStop(1,"#294955");ctx.fillStyle=background;ctx.fillRect(0,0,width,height);
-	  const aura=ctx.createRadialGradient(width*.72,40,20,width*.72,40,width*.8);aura.addColorStop(0,"rgba(120,190,205,.25)");aura.addColorStop(1,"rgba(7,19,29,0)");ctx.fillStyle=aura;ctx.fillRect(0,0,width,height);
-	  const roundRect=(x:number,y:number,w:number,h:number,r:number,fill:string,stroke?:string)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}};
-	  roundRect(pad,pad,width-pad*2,headerHeight,28,"rgba(5,15,23,.62)","rgba(184,225,232,.15)");
-	  ctx.textAlign="left";ctx.fillStyle="#f3f8f7";ctx.font="800 38px system-ui";ctx.fillText(account.name||"光遇帳號衣櫃",pad+32,pad+58);
-	  ctx.fillStyle="#b9dce2";ctx.font="600 20px system-ui";ctx.fillText(`${account.accountType}　已登錄 ${chosen.length} 件`,pad+32,pad+96);
-	  ctx.fillStyle="#91aeb6";ctx.font="18px system-ui";ctx.fillText(`可出：${bindingGroup("transfer")}　｜　不出：${bindingGroup("keep")}`,pad+32,pad+132,width-pad*2-64);
-	  ctx.fillText(`資源：${account.candles||0} 白蠟・${account.hearts||0} 愛心・${account.ascended||0} 昇華蠟・${account.passes||0} 副卡`,pad+32,pad+166,width-pad*2-64);
-	  const loadedEntries=await Promise.all(chosen.map(async item=>[item.guid,await loadExportIcon(item.icon)] as const));
-	  const icons=new Map(loadedEntries);
-	  let y=pad+headerHeight+sectionGap;
-	  renderGroups.forEach(group=>{
-	   const boxHeight=panelHeight(group.layout.height);roundRect(pad,y,width-pad*2,boxHeight,28,"rgba(5,15,23,.55)","rgba(184,225,232,.13)");
-	   ctx.textAlign="center";ctx.fillStyle="#f3f8f7";ctx.font="800 24px system-ui";ctx.fillText(`${group.name}　${group.items.length} 件`,width/2,y+40);
-	   if(!group.items.length){ctx.fillStyle="#9ab1b8";ctx.font="20px system-ui";ctx.fillText("尚未選取任何衣櫃物品",width/2,y+titleHeight+cell/2+8)}
-	   group.layout.placements.forEach(({cluster,x:clusterX,y:clusterY,w,h,columns})=>{const x=pad+panelPad+clusterX,clusterTop=y+titleHeight+clusterY;roundRect(x,clusterTop,w,h,16,"rgba(132,177,187,.08)","rgba(184,225,232,.16)");ctx.textAlign="left";ctx.fillStyle="#a9cbd2";ctx.font="700 14px system-ui";ctx.fillText(`${cluster.name}　${cluster.items.length}`,x+clusterPad,clusterTop+21,w-clusterPad*2);cluster.items.forEach((item,index)=>{const col=index%columns,row=Math.floor(index/columns),cellX=x+clusterPad+col*(cell+iconGap),cellY=clusterTop+clusterPad+clusterTitle+row*(cell+iconGap);roundRect(cellX,cellY,cell,cell,13,"rgba(255,255,255,.045)","rgba(255,255,255,.06)");const image=icons.get(item.guid);if(image){const max=cell-24,scale=Math.min(max/image.naturalWidth,max/image.naturalHeight),drawW=image.naturalWidth*scale,drawH=image.naturalHeight*scale;ctx.save();ctx.shadowColor="rgba(255,224,139,.42)";ctx.shadowBlur=9;ctx.drawImage(image,cellX+(cell-drawW)/2,cellY+(cell-drawH)/2,drawW,drawH);ctx.restore()}else{ctx.textAlign="center";ctx.fillStyle="#ffe4a8";ctx.font="700 28px system-ui";ctx.fillText("✦",cellX+cell/2,cellY+cell*.64)}})});
-	   y+=boxHeight+sectionGap;
-	  });
-	  ctx.textAlign="left";ctx.fillStyle="#91aeb6";ctx.font="16px system-ui";ctx.fillText("資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單",pad,y+18);
-	  ctx.textAlign="right";ctx.fillStyle="#ead49f";ctx.font="700 18px system-ui";ctx.fillText(`全部：${chosen.length} 件`,width-pad,y+18);
-	  canvas.toBlob(blob=>{if(blob){downloadBlob(blob,`光遇帳號_${safeFileName(account.name)}_圖片衣櫃.png`);setNotice("圖片清單已下載")}else setNotice("圖片產生失敗")},"image/png");
+	  try{
+	   const {renderShowcaseImage}=await import("./export-showcase");
+	   const blob=await renderShowcaseImage({
+	    items:chosen,
+	    accountName:account.name,
+	    accountType:account.accountType,
+	    transferBindings:bindingGroup("transfer"),
+	    keptBindings:bindingGroup("keep"),
+	    resources:`資源：${account.candles||0} 白蠟・${account.hearts||0} 愛心・${account.ascended||0} 昇華蠟・${account.passes||0} 副卡`,
+	    isUltimate:isDiscontinued,
+	    isLimited:item=>isPackage(item)||["聯動","平台限定","限定"].includes(sourceKind(item)),
+	    getClusterName:item=>item.section==="seasons"?(seasonZh[item.collection]||item.collection):item.section==="events"?(eventZh[item.collection]||item.collection):item.section==="realms"?(realmZh[item.collection]||"常駐地圖"):item.section==="store"?storeSource(item):sourceKind(item),
+	   });
+	   downloadBlob(blob,`光遇帳號_${safeFileName(account.name)}_圖片衣櫃.png`);
+	   setNotice("圖片清單已下載");
+	  }catch{setNotice("圖片產生失敗")}
 	 };
 	 return <main className="app-shell">
   <header className="topbar"><button className="brand" onClick={()=>setMode("catalog")}><span className="brand-star">✦</span><b>光遇辨識 Wiki</b></button><nav><button className={mode==="catalog"?"active":""} onClick={()=>setMode("catalog")}>圖鑑</button><button className={mode==="account"?"active":""} onClick={()=>setMode("account")}>帳號整理</button></nav><div className="header-mode"><span>{mode==="account"?`已選 ${owned.size} 件`:"估號辨識"}</span><small>{mode==="account"?"衣櫃建檔":"分類訓練"}</small></div></header>
