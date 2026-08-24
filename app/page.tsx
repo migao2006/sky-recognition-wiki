@@ -16,6 +16,7 @@ const seasonZh:Record<string,string>={gratitude:"感恩季",lightseekers:"追光
 const eventZh:Record<string,string>={"days-of-bloom":"花憩日","days-of-feast":"宴會節","days-of-fortune":"福瑞日","days-of-healing":"療癒日","days-of-love":"愛之日","days-of-mischief":"惡作劇之日","days-of-moonlight":"月光日","days-of-music":"音樂節","days-of-nature":"自然日","days-of-rainbow":"彩虹日／繽紛飛行日","days-of-style":"時尚日","days-of-summer":"夏日／慵懶日","days-of-sunlight":"陽光日","days-of-treasure":"寶藏日","event-aviary-firework-festival":"雲巢煙火節","event-cinnamoroll":"大耳狗聯動","event-kizuna-ai":"絆愛聯動","event-sky-anniversary":"光遇週年慶","event-sky-creator-awards":"Sky 創作者獎","event-tournament":"錦標賽","personality-quiz-event":"性格測驗活動","workshop-show-and-tell":"工坊展示活動"};
 const realmZh:Record<string,string>={"isle-of-dawn":"晨島","daylight-prairie":"雲野","hidden-forest":"雨林","valley-of-triumph":"霞谷","golden-wasteland":"暮土","vault-of-knowledge":"禁閣","eye-of-eden":"伊甸之眼"};
 const seasons=Object.entries(seasonZh);
+const seasonOrder=new Map(seasons.map(([slug],index)=>[slug,index]));
 const storeSource=(x:WikiItem)=>{const url=x.wiki;return /Secret_Area|Founder/.test(url)?"辦公室／秘密區域":/PlayStation/.test(url)?"PlayStation 專屬":/Nintendo/.test(url)?"Nintendo Switch 專屬":/Steam/.test(url)?"Steam 專屬":/Nesting_Workshop/.test(url)?"築巢工坊":/Days_of_Music/.test(url)?"音樂節商店":/Aviary/.test(url)?"雲巢商店／活動":/Beta_Cape/.test(url)?"Beta 限定":"常駐商店"};
 const sourceKind=(x:WikiItem)=>x.section==="seasons"?"季節":x.section==="events"?(["event-cinnamoroll","event-kizuna-ai"].includes(x.collection)?"聯動":x.collection==="personality-quiz-event"||x.collection==="workshop-show-and-tell"||x.collection==="event-sky-creator-awards"?"特殊活動":"年度活動"):x.section==="realms"?"常駐地圖":x.section==="store"?(storeSource(x).includes("專屬")?"平台限定":storeSource(x).includes("限定")?"限定":"商店"):x.section==="base"?"基礎":"國服限定";
 const source=(x:WikiItem)=>x.section==="seasons"?`季節 · ${seasonZh[x.collection]||x.collection}`:x.section==="events"?`${sourceKind(x)} · ${eventZh[x.collection]||x.collection}`:x.section==="realms"?`常駐地圖 · ${realmZh[x.collection]||x.collection}`:x.section==="store"?`${sourceKind(x)} · ${storeSource(x)}`:x.section==="base"?"基礎 · 初始裝扮與動作":`${sourceKind(x)} · ${x.collection}`;
@@ -98,6 +99,7 @@ export default function Home(){
 	    isUltimate:isDiscontinued,
 	    isLimited:item=>isPackage(item)||["聯動","平台限定","限定"].includes(sourceKind(item)),
 	    getClusterName:item=>item.section==="seasons"?(seasonZh[item.collection]||item.collection):item.section==="events"?(eventZh[item.collection]||item.collection):item.section==="realms"?(realmZh[item.collection]||"常駐地圖"):item.section==="store"?storeSource(item):sourceKind(item),
+	    getClusterOrder:item=>item.section==="seasons"?(seasonOrder.get(item.collection)??999):1000,
 	   });
 	   downloadBlob(blob,`光遇帳號_${safeFileName(account.name)}_圖片衣櫃.png`);
 	   setNotice("圖片清單已下載");

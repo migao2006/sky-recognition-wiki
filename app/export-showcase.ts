@@ -10,6 +10,7 @@ type ExportShowcaseOptions = {
   isUltimate: (item: WikiItem) => boolean;
   isLimited: (item: WikiItem) => boolean;
   getClusterName: (item: WikiItem) => string;
+  getClusterOrder: (item: WikiItem) => number;
 };
 
 const iconCache = new Map<string, Promise<HTMLImageElement | null>>();
@@ -70,6 +71,7 @@ export const renderShowcaseImage = async ({
   isUltimate,
   isLimited,
   getClusterName,
+  getClusterOrder,
 }: ExportShowcaseOptions) => {
   const ultimates = items.filter(isUltimate);
   const limited = items.filter((item) => !isUltimate(item) && isLimited(item));
@@ -81,14 +83,14 @@ export const renderShowcaseImage = async ({
   ].filter((group) => group.items.length);
 
   const clusterItems = (clusterSource: WikiItem[]) => {
-    const map = new Map<string, { name: string; items: WikiItem[] }>();
+    const map = new Map<string, { name: string; items: WikiItem[]; order: number }>();
     clusterSource.forEach((item) => {
       const key = `${item.section}:${item.collection}`;
       const current = map.get(key);
       if (current) current.items.push(item);
-      else map.set(key, { name: getClusterName(item), items: [item] });
+      else map.set(key, { name: getClusterName(item), items: [item], order: getClusterOrder(item) });
     });
-    return [...map.values()];
+    return [...map.values()].sort((a, b) => a.order - b.order);
   };
 
   const width = 1200;
@@ -98,8 +100,8 @@ export const renderShowcaseImage = async ({
   const cell = 66;
   const iconGap = 8;
   const clusterGap = 12;
-  const clusterPad = 13;
-  const clusterTitle = 30;
+  const clusterPad = 11;
+  const clusterTitle = 24;
   const maxClusterColumns = 6;
   const contentWidth = width - pad * 2 - panelPad * 2;
 
@@ -210,7 +212,7 @@ export const renderShowcaseImage = async ({
         roundRect(cellX, cellY, cell, cell, 13, "rgba(255,255,255,.045)", "rgba(255,255,255,.06)");
         const image = icons.get(item.guid);
         if (image) {
-          const max = cell - 24;
+          const max = cell - 16;
           const scale = Math.min(max / image.naturalWidth, max / image.naturalHeight);
           const drawW = image.naturalWidth * scale;
           const drawH = image.naturalHeight * scale;
