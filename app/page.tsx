@@ -91,11 +91,16 @@ export default function Home(){
 	  const limited=chosen.filter(x=>!isDiscontinued(x)&&(isPackage(x)||["聯動","平台限定","限定"].includes(sourceKind(x))));
 	  const featured=new Set([...ultimates,...limited].map(x=>x.guid));
 	  const groups=[{name:"畢業禮",items:ultimates},{name:"禮包／限定",items:limited},{name:"其他物品",items:chosen.filter(x=>!featured.has(x.guid))}].filter(group=>group.items.length);
-	  const columns=11,width=1200,pad=48,gap=12,cell=(width-pad*2-gap*(columns-1))/columns,panelPad=28,titleHeight=62,rowHeight=cell+gap;
-	  const panelHeight=(count:number)=>titleHeight+Math.max(1,Math.ceil(count/columns))*rowHeight+panelPad;
+	  const clusterName=(item:WikiItem)=>item.section==="seasons"?(seasonZh[item.collection]||item.collection):item.section==="events"?(eventZh[item.collection]||item.collection):item.section==="realms"?(realmZh[item.collection]||"常駐地圖"):item.section==="store"?storeSource(item):sourceKind(item);
+	  const clusterItems=(items:WikiItem[])=>{const map=new Map<string,{name:string;items:WikiItem[]}>();items.forEach(item=>{const key=`${item.section}:${item.collection}`;const current=map.get(key);if(current)current.items.push(item);else map.set(key,{name:clusterName(item),items:[item]})});return [...map.values()]};
+	  const width=1200,pad=48,panelPad=28,titleHeight=62,cell=66,iconGap=8,clusterGap=12,clusterPad=13,clusterTitle=30,maxClusterColumns=6;
+	  const contentWidth=width-pad*2-panelPad*2;
+	  const layoutClusters=(items:WikiItem[])=>{let cursorX=0,cursorY=0,shelfHeight=0;const placements=clusterItems(items).map(cluster=>{const columns=Math.min(maxClusterColumns,Math.max(1,cluster.items.length)),rows=Math.ceil(cluster.items.length/columns),w=clusterPad*2+columns*cell+(columns-1)*iconGap,h=clusterPad*2+clusterTitle+rows*cell+(rows-1)*iconGap;if(cursorX&&cursorX+w>contentWidth){cursorX=0;cursorY+=shelfHeight+clusterGap;shelfHeight=0}const placement={cluster,x:cursorX,y:cursorY,w,h,columns};cursorX+=w+clusterGap;shelfHeight=Math.max(shelfHeight,h);return placement});return{placements,height:cursorY+shelfHeight}};
 	  const headerHeight=214,footerHeight=88,sectionGap=28;
 	  const visibleGroups=groups.length?groups:[{name:"衣櫃清單",items:[]}];
-	  const height=pad+headerHeight+visibleGroups.reduce((sum,group)=>sum+panelHeight(group.items.length)+sectionGap,0)+footerHeight;
+	  const renderGroups=visibleGroups.map(group=>({...group,layout:layoutClusters(group.items)}));
+	  const panelHeight=(layoutHeight:number)=>titleHeight+Math.max(cell+26,layoutHeight)+panelPad;
+	  const height=pad+headerHeight+renderGroups.reduce((sum,group)=>sum+panelHeight(group.layout.height)+sectionGap,0)+footerHeight;
 	  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
 	  const ctx=canvas.getContext("2d");if(!ctx){setNotice("無法產生圖片");return}
 	  const background=ctx.createLinearGradient(0,0,width,height);background.addColorStop(0,"#07131d");background.addColorStop(.48,"#15303d");background.addColorStop(1,"#294955");ctx.fillStyle=background;ctx.fillRect(0,0,width,height);
@@ -109,11 +114,11 @@ export default function Home(){
 	  const loadedEntries=await Promise.all(chosen.map(async item=>[item.guid,await loadExportIcon(item.icon)] as const));
 	  const icons=new Map(loadedEntries);
 	  let y=pad+headerHeight+sectionGap;
-	  visibleGroups.forEach(group=>{
-	   const boxHeight=panelHeight(group.items.length);roundRect(pad,y,width-pad*2,boxHeight,28,"rgba(5,15,23,.55)","rgba(184,225,232,.13)");
+	  renderGroups.forEach(group=>{
+	   const boxHeight=panelHeight(group.layout.height);roundRect(pad,y,width-pad*2,boxHeight,28,"rgba(5,15,23,.55)","rgba(184,225,232,.13)");
 	   ctx.textAlign="center";ctx.fillStyle="#f3f8f7";ctx.font="800 24px system-ui";ctx.fillText(`${group.name}　${group.items.length} 件`,width/2,y+40);
 	   if(!group.items.length){ctx.fillStyle="#9ab1b8";ctx.font="20px system-ui";ctx.fillText("尚未選取任何衣櫃物品",width/2,y+titleHeight+cell/2+8)}
-	   group.items.forEach((item,index)=>{const col=index%columns,row=Math.floor(index/columns),x=pad+panelPad+col*(cell+gap),cellY=y+titleHeight+row*rowHeight;roundRect(x,cellY,cell,cell,15,"rgba(255,255,255,.055)","rgba(255,255,255,.065)");const image=icons.get(item.guid);if(image){const max=cell-18,scale=Math.min(max/image.naturalWidth,max/image.naturalHeight),drawW=image.naturalWidth*scale,drawH=image.naturalHeight*scale;ctx.save();ctx.shadowColor="rgba(255,224,139,.58)";ctx.shadowBlur=13;ctx.drawImage(image,x+(cell-drawW)/2,cellY+(cell-drawH)/2,drawW,drawH);ctx.restore()}else{ctx.fillStyle="#ffe4a8";ctx.font="700 38px system-ui";ctx.fillText("✦",x+cell/2,cellY+cell*.64)}});
+	   group.layout.placements.forEach(({cluster,x:clusterX,y:clusterY,w,h,columns})=>{const x=pad+panelPad+clusterX,clusterTop=y+titleHeight+clusterY;roundRect(x,clusterTop,w,h,16,"rgba(132,177,187,.08)","rgba(184,225,232,.16)");ctx.textAlign="left";ctx.fillStyle="#a9cbd2";ctx.font="700 14px system-ui";ctx.fillText(`${cluster.name}　${cluster.items.length}`,x+clusterPad,clusterTop+21,w-clusterPad*2);cluster.items.forEach((item,index)=>{const col=index%columns,row=Math.floor(index/columns),cellX=x+clusterPad+col*(cell+iconGap),cellY=clusterTop+clusterPad+clusterTitle+row*(cell+iconGap);roundRect(cellX,cellY,cell,cell,13,"rgba(255,255,255,.045)","rgba(255,255,255,.06)");const image=icons.get(item.guid);if(image){const max=cell-24,scale=Math.min(max/image.naturalWidth,max/image.naturalHeight),drawW=image.naturalWidth*scale,drawH=image.naturalHeight*scale;ctx.save();ctx.shadowColor="rgba(255,224,139,.42)";ctx.shadowBlur=9;ctx.drawImage(image,cellX+(cell-drawW)/2,cellY+(cell-drawH)/2,drawW,drawH);ctx.restore()}else{ctx.textAlign="center";ctx.fillStyle="#ffe4a8";ctx.font="700 28px system-ui";ctx.fillText("✦",cellX+cell/2,cellY+cell*.64)}})});
 	   y+=boxHeight+sectionGap;
 	  });
 	  ctx.textAlign="left";ctx.fillStyle="#91aeb6";ctx.font="16px system-ui";ctx.fillText("資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單",pad,y+18);
