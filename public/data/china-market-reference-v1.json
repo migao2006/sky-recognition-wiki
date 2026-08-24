@@ -1,17 +1,25 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "collected_at": "2026-08-25",
   "market": "中國《光遇》帳號公開刊價",
   "currency_source": "https://rate.bot.com.tw/xrt?Lang=zh-TW",
   "cny_twd_rate": 4.74,
   "rate_method": "臺灣銀行 2026-08-25 非營業時間人民幣即期買入 4.71、賣出 4.77 之中間值，四捨五入至 4.74",
-  "model_use": "僅作高價尾端校正；不與台灣國際服樣本直接合併訓練",
+  "model_use": "中國刊價與台灣高價稀有帳只作早季非線性尾端校正；不與一般台灣國際服樣本直接合併訓練",
   "limitations": [
     "均為賣方公開刊價，不代表實際成交價",
     "中國國服、渠道服與台灣常見國際服的綁定、供需及取得條件不同",
     "異常高價與缺少完整衣櫃資訊的刊登只用於確認可能價格範圍"
   ],
   "samples": [
+    {"twd": 165000, "summary": "追光無斷、白鳥、大傘、篝火與多禮；台灣公開刊價", "url": "https://m.8591.com.tw/v3/mall/detail/2416818248", "price_type": "asking"},
+    {"cny_range": [15148.67, 16831.86], "twd_range": [71805, 79783], "summary": "中國 iOS 官服多季畢業、多禮估值報告", "url": "https://m.kejinshou.com/report/normal/d_28661320", "price_type": "third_party_estimate"},
+    {"cny_range": [17600.19, 19555.77], "twd_range": [83425, 92694], "summary": "中國 iOS 官服全圖鑑估值報告", "url": "https://www.kejinshou.com/report/normal/d_28585587", "price_type": "third_party_estimate"},
+    {"twd": 70000, "summary": "歸屬早季、多禮與多項絕版；不含徽章即付刊價", "source": "user_corpus_1022", "listing_id": "listing_0319", "price_type": "asking"},
+    {"twd": 85000, "summary": "音韻小斷、綁定全出、白鳥耳墜阿努與多聯動", "source": "user_corpus_1022", "listing_id": "listing_0504", "price_type": "asking"},
+    {"twd": 115000, "summary": "追光至深淵多季畢業的高價刊登", "source": "user_corpus_1022", "listing_id": "listing_0498", "price_type": "asking"},
+    {"twd": 125000, "summary": "音韻無斷、耳墜與多項早季收藏；多幣別刊登", "source": "user_corpus_1022", "listing_id": "listing_0925", "price_type": "multi_currency"},
+    {"twd": 170000, "summary": "感恩早季、近全禮與高收藏帳刊價", "source": "user_corpus_1022", "listing_id": "listing_0932", "price_type": "asking"},
     {"cny": 750, "twd": 3555, "summary": "低價阿努比斯", "url": "https://www.jiaoyimao.com/jg1010025/1787395926556809.html"},
     {"cny": 890, "twd": 4219, "summary": "阿努比斯裸號", "url": "https://www.jiaoyimao.com/jg1010025/1767009353621570.html"},
     {"cny": 1100, "twd": 5214, "summary": "15 季畢業阿努比斯", "url": "https://www.jiaoyimao.com/jg1010025/1787232837044691.html"},
