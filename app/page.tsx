@@ -98,26 +98,26 @@ export default function Home(){
 	  const height=pad+headerHeight+visibleGroups.reduce((sum,group)=>sum+panelHeight(group.items.length)+sectionGap,0)+footerHeight;
 	  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
 	  const ctx=canvas.getContext("2d");if(!ctx){setNotice("無法產生圖片");return}
-	  const background=ctx.createLinearGradient(0,0,width,height);background.addColorStop(0,"#170d32");background.addColorStop(.45,"#4c2590");background.addColorStop(1,"#7138be");ctx.fillStyle=background;ctx.fillRect(0,0,width,height);
-	  const aura=ctx.createRadialGradient(width*.72,40,20,width*.72,40,width*.8);aura.addColorStop(0,"rgba(139,79,255,.52)");aura.addColorStop(1,"rgba(27,10,58,0)");ctx.fillStyle=aura;ctx.fillRect(0,0,width,height);
+	  const background=ctx.createLinearGradient(0,0,width,height);background.addColorStop(0,"#07131d");background.addColorStop(.48,"#15303d");background.addColorStop(1,"#294955");ctx.fillStyle=background;ctx.fillRect(0,0,width,height);
+	  const aura=ctx.createRadialGradient(width*.72,40,20,width*.72,40,width*.8);aura.addColorStop(0,"rgba(120,190,205,.25)");aura.addColorStop(1,"rgba(7,19,29,0)");ctx.fillStyle=aura;ctx.fillRect(0,0,width,height);
 	  const roundRect=(x:number,y:number,w:number,h:number,r:number,fill:string,stroke?:string)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}};
-	  roundRect(pad,pad,width-pad*2,headerHeight,28,"rgba(19,10,47,.48)","rgba(255,255,255,.10)");
-	  ctx.textAlign="left";ctx.fillStyle="#fff8ed";ctx.font="800 38px system-ui";ctx.fillText(account.name||"光遇帳號衣櫃",pad+32,pad+58);
-	  ctx.fillStyle="#d9c8f6";ctx.font="600 20px system-ui";ctx.fillText(`${account.accountType}　已登錄 ${chosen.length} 件`,pad+32,pad+96);
-	  ctx.fillStyle="#baa9dd";ctx.font="18px system-ui";ctx.fillText(`可出：${bindingGroup("transfer")}　｜　不出：${bindingGroup("keep")}`,pad+32,pad+132,width-pad*2-64);
+	  roundRect(pad,pad,width-pad*2,headerHeight,28,"rgba(5,15,23,.62)","rgba(184,225,232,.15)");
+	  ctx.textAlign="left";ctx.fillStyle="#f3f8f7";ctx.font="800 38px system-ui";ctx.fillText(account.name||"光遇帳號衣櫃",pad+32,pad+58);
+	  ctx.fillStyle="#b9dce2";ctx.font="600 20px system-ui";ctx.fillText(`${account.accountType}　已登錄 ${chosen.length} 件`,pad+32,pad+96);
+	  ctx.fillStyle="#91aeb6";ctx.font="18px system-ui";ctx.fillText(`可出：${bindingGroup("transfer")}　｜　不出：${bindingGroup("keep")}`,pad+32,pad+132,width-pad*2-64);
 	  ctx.fillText(`資源：${account.candles||0} 白蠟・${account.hearts||0} 愛心・${account.ascended||0} 昇華蠟・${account.passes||0} 副卡`,pad+32,pad+166,width-pad*2-64);
 	  const loadedEntries=await Promise.all(chosen.map(async item=>[item.guid,await loadExportIcon(item.icon)] as const));
 	  const icons=new Map(loadedEntries);
 	  let y=pad+headerHeight+sectionGap;
 	  visibleGroups.forEach(group=>{
-	   const boxHeight=panelHeight(group.items.length);roundRect(pad,y,width-pad*2,boxHeight,28,"rgba(21,11,53,.50)","rgba(255,255,255,.09)");
-	   ctx.textAlign="center";ctx.fillStyle="#fff8ee";ctx.font="800 24px system-ui";ctx.fillText(`${group.name}　${group.items.length} 件`,width/2,y+40);
-	   if(!group.items.length){ctx.fillStyle="#c8b6e8";ctx.font="20px system-ui";ctx.fillText("尚未選取任何衣櫃物品",width/2,y+titleHeight+cell/2+8)}
+	   const boxHeight=panelHeight(group.items.length);roundRect(pad,y,width-pad*2,boxHeight,28,"rgba(5,15,23,.55)","rgba(184,225,232,.13)");
+	   ctx.textAlign="center";ctx.fillStyle="#f3f8f7";ctx.font="800 24px system-ui";ctx.fillText(`${group.name}　${group.items.length} 件`,width/2,y+40);
+	   if(!group.items.length){ctx.fillStyle="#9ab1b8";ctx.font="20px system-ui";ctx.fillText("尚未選取任何衣櫃物品",width/2,y+titleHeight+cell/2+8)}
 	   group.items.forEach((item,index)=>{const col=index%columns,row=Math.floor(index/columns),x=pad+panelPad+col*(cell+gap),cellY=y+titleHeight+row*rowHeight;roundRect(x,cellY,cell,cell,15,"rgba(255,255,255,.055)","rgba(255,255,255,.065)");const image=icons.get(item.guid);if(image){const max=cell-18,scale=Math.min(max/image.naturalWidth,max/image.naturalHeight),drawW=image.naturalWidth*scale,drawH=image.naturalHeight*scale;ctx.save();ctx.shadowColor="rgba(255,224,139,.58)";ctx.shadowBlur=13;ctx.drawImage(image,x+(cell-drawW)/2,cellY+(cell-drawH)/2,drawW,drawH);ctx.restore()}else{ctx.fillStyle="#ffe4a8";ctx.font="700 38px system-ui";ctx.fillText("✦",x+cell/2,cellY+cell*.64)}});
 	   y+=boxHeight+sectionGap;
 	  });
-	  ctx.textAlign="left";ctx.fillStyle="#c8b6e8";ctx.font="16px system-ui";ctx.fillText("資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單",pad,y+18);
-	  ctx.textAlign="right";ctx.fillStyle="#fff2ce";ctx.font="700 18px system-ui";ctx.fillText(`全部：${chosen.length} 件`,width-pad,y+18);
+	  ctx.textAlign="left";ctx.fillStyle="#91aeb6";ctx.font="16px system-ui";ctx.fillText("資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單",pad,y+18);
+	  ctx.textAlign="right";ctx.fillStyle="#ead49f";ctx.font="700 18px system-ui";ctx.fillText(`全部：${chosen.length} 件`,width-pad,y+18);
 	  canvas.toBlob(blob=>{if(blob){downloadBlob(blob,`光遇帳號_${safeFileName(account.name)}_圖片衣櫃.png`);setNotice("圖片清單已下載")}else setNotice("圖片產生失敗")},"image/png");
 	 };
 	 return <main className="app-shell">
