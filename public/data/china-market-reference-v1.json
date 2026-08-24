@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "collected_at": "2026-08-25",
+  "market": "中國《光遇》帳號公開刊價",
+  "currency_source": "https://rate.bot.com.tw/xrt?Lang=zh-TW",
+  "cny_twd_rate": 4.74,
+  "rate_method": "臺灣銀行 2026-08-25 非營業時間人民幣即期買入 4.71、賣出 4.77 之中間值，四捨五入至 4.74",
+  "model_use": "僅作高價尾端校正；不與台灣國際服樣本直接合併訓練",
+  "limitations": [
+    "均為賣方公開刊價，不代表實際成交價",
+    "中國國服、渠道服與台灣常見國際服的綁定、供需及取得條件不同",
+    "異常高價與缺少完整衣櫃資訊的刊登只用於確認可能價格範圍"
+  ],
+  "samples": [
+    {"cny": 750, "twd": 3555, "summary": "低價阿努比斯", "url": "https://www.jiaoyimao.com/jg1010025/1787395926556809.html"},
+    {"cny": 890, "twd": 4219, "summary": "阿努比斯裸號", "url": "https://www.jiaoyimao.com/jg1010025/1767009353621570.html"},
+    {"cny": 1100, "twd": 5214, "summary": "15 季畢業阿努比斯", "url": "https://www.jiaoyimao.com/jg1010025/1787232837044691.html"},
+    {"cny": 10000, "twd": 47400, "summary": "耳墜、狗頭、多季畢業、多禮包", "url": "https://www.jiaoyimao.com/jg1010025/1785483943279470.html"},
+    {"cny": 12111, "twd": 57406, "summary": "白鳥搜尋頁高價刊登", "url": "https://www.jiaoyimao.com/jg1010025/?keyword=%E7%99%BD%E9%B8%9F"},
+    {"cny": 13727, "twd": 65066, "summary": "白鳥、耳墜、阿努比斯", "url": "https://www.jiaoyimao.com/jg1010025/1783221146598363.html"},
+    {"cny": 17299, "twd": 81997, "summary": "全禮包、多徽章搜尋頁刊登", "url": "https://www.jiaoyimao.com/jg1010025/?keyword=%E7%99%BD%E9%B8%9F"},
+    {"cny": 19999, "twd": 94795, "summary": "白鳥搜尋頁高價刊登", "url": "https://www.jiaoyimao.com/jg1010025/?keyword=%E7%99%BD%E9%B8%9F"},
+    {"cny": 130000, "twd": 616200, "summary": "感恩無斷、全禮包、多徽章極端刊價", "url": "https://www.jiaoyimao.com/jg1010025/?keyword=%E7%99%BD%E9%B8%9F", "outlier": true}
+  ]
+}
