@@ -239,7 +239,7 @@ export const renderShowcaseImage = async ({
   ctx.fillText(accountName || "光遇帳號衣櫃", pad + 32, pad + 58);
   ctx.fillStyle = "#b9dce2";
   ctx.font = "600 20px system-ui";
-  ctx.fillText(`${accountType}　已登錄 ${items.length} 件`, pad + 32, pad + 96);
+  ctx.fillText(`${accountType}　已選取 ${items.length} 件`, pad + 32, pad + 96);
   ctx.fillStyle = "#91aeb6";
   ctx.font = "18px system-ui";
   ctx.fillText(
@@ -272,7 +272,7 @@ export const renderShowcaseImage = async ({
       ctx.fillStyle = "#9ab1b8";
       ctx.font = "20px system-ui";
       ctx.fillText(
-        "尚未選取任何衣櫃物品",
+        "尚未選取物品",
         width / 2,
         y + titleHeight + cell / 2 + 8,
       );
@@ -361,7 +361,7 @@ export const renderShowcaseImage = async ({
   ctx.textAlign = "right";
   ctx.fillStyle = "#ead49f";
   ctx.font = "700 18px system-ui";
-  ctx.fillText(`全部：${items.length} 件`, width - pad, y + 18);
+  ctx.fillText(`共 ${items.length} 件`, width - pad, y + 18);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(

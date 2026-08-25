@@ -8,7 +8,7 @@ test("renders the account organizer", async () => {
     "utf8",
   );
   assert.match(html, /<title>光遇帳號整理<\/title>/i);
-  assert.match(html, /整理帳號資料/);
+  assert.match(html, /帳號資料/);
   assert.match(html, /帳號整理步驟/);
   assert.match(html, /選擇物品/);
   assert.match(html, /估價與匯出/);

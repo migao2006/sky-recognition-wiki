@@ -1,5 +1,7 @@
 "use client";
 import {
+  memo,
+  useCallback,
   useDeferredValue,
   useEffect,
   useMemo,
@@ -94,6 +96,50 @@ const valuationDomain: ValuationDomain = {
   seasonGraduationItems,
   sortSeasonSlugs,
 };
+
+const CatalogItemCard = memo(function CatalogItemCard({
+  item,
+  selected,
+  onToggle,
+}: {
+  item: WikiItem;
+  selected: boolean;
+  onToggle: (guid: string) => void;
+}) {
+  return (
+    <button
+      className={`item-card selectable ${selected ? "owned" : ""}`}
+      onClick={() => onToggle(item.guid)}
+      aria-pressed={selected}
+    >
+      <div className="image-wrap">
+        <span className="owned-check">{selected ? "✓" : "＋"}</span>
+        {isSeasonUltimate(item) && (
+          <span className="discontinued-badge">
+            {isSeasonPendant(item) ? "季卡" : "畢業"}
+          </span>
+        )}
+        <span className="source-badge">{sourceKind(item)}</span>
+        {/* External catalog icons must keep their source URL and referrer policy. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.icon}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      </div>
+      <div className="card-body">
+        <div>
+          <span className={`type type-${item.type}`}>
+            {labels[item.type] || item.type}
+          </span>
+        </div>
+        <h2>{zhName(item.name)}</h2>
+      </div>
+    </button>
+  );
+});
 
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
@@ -221,13 +267,13 @@ export default function AccountOrganizer() {
     setSub("all");
     resetVisibleItems();
   };
-  const toggleOwned = (x: WikiItem) =>
+  const toggleOwned = useCallback((guid: string) =>
     setOwned((prev) => {
       const next = new Set(prev);
-      if (next.has(x.guid)) next.delete(x.guid);
-      else next.add(x.guid);
+      if (next.has(guid)) next.delete(guid);
+      else next.add(guid);
       return next;
-    });
+    }), []);
   const bundleItems = (preset: (typeof bundlePresets)[number]) =>
     wikiItems.filter(
       (x) =>
@@ -382,10 +428,10 @@ export default function AccountOrganizer() {
   const exportValuable = () => {
     const items = chosen.filter((x) => isPaidItem(x) || isGraduationGift(x));
     const lines = accountHeader(items.length);
-    lines.push("【只列禮包與畢業禮】");
+    lines.push("【只列付費物品與畢業禮】");
     items.forEach((x, i) => lines.push(itemLine(x, i)));
-    if (!items.length) lines.push("尚未選取禮包或畢業禮。");
-    downloadText(lines, "禮包與畢業禮");
+    if (!items.length) lines.push("尚未選取付費物品或畢業禮。");
+    downloadText(lines, "付費物品與畢業禮");
   };
   const exportBySeason = () => {
     const lines = accountHeader();
@@ -404,7 +450,7 @@ export default function AccountOrganizer() {
         items.forEach((x, i) => lines.push(itemLine(x, i)));
         lines.push("");
       });
-    if (!chosen.length) lines.push("尚未選取任何衣櫃物品。");
+    if (!chosen.length) lines.push("尚未選取物品。");
     downloadText(lines, "依季節整理");
   };
   const shareSummary = async () => {
@@ -416,10 +462,10 @@ export default function AccountOrganizer() {
       `【光遇帳號摘要｜${account.name || "未命名"}】`,
       `${account.accountType}｜可出：${bindingGroup("transfer")}｜不出：${bindingGroup("keep")}`,
       `資源：${account.candles || 0} 白蠟｜${account.hearts || 0} 愛心｜${account.ascended || 0} 昇華蠟｜${account.passes || 0} 副卡`,
-      `衣櫃已登錄 ${chosen.length} 件｜畢業禮 ${ultimates.length}｜禮包 ${packages.length}｜聯動 ${collabs.length}`,
+      `衣櫃已選取 ${chosen.length} 件｜畢業禮 ${ultimates.length}｜付費物品 ${packages.length}｜聯動 ${collabs.length}`,
       highlights.length
         ? `重點物品：${highlights.join("、")}`
-        : "重點物品：尚未登錄",
+        : "重點物品：尚未選取",
       account.bindingNote ? `綁定補充：${account.bindingNote}` : "",
       `資料來源：SkyGame-Data、SkyGame-Planner、BWiki 中文清單`,
       account.notes ? `備註：${account.notes}` : "",
@@ -498,12 +544,8 @@ export default function AccountOrganizer() {
         <div className="account-intro" hidden={activeStep !== 1}>
           <div>
             <span className="step-kicker">步驟 1／3</span>
-            <h1>整理帳號資料</h1>
-            <p>先填基本資料；不確定的欄位可以留白，稍後再補。</p>
-          </div>
-          <div className="account-progress">
-            <b>{owned.size}</b>
-            <span>已選物品</span>
+            <h1>帳號資料</h1>
+            <p>先填基本資料；其餘欄位可稍後補上。</p>
           </div>
         </div>
         <div className="account-form" hidden={activeStep !== 1}>
@@ -667,7 +709,7 @@ export default function AccountOrganizer() {
                             aria-label={`${seasonZh[slug]}　${name}`}
                             title={`${seasonZh[slug]} · ${zhName(item.name)}`}
                             key={item.guid}
-                            onClick={() => toggleOwned(item)}
+                            onClick={() => toggleOwned(item.guid)}
                           >
                             <span className="season-ultimate-icon">
                               {/* External catalog icons must keep their source URL and referrer policy. */}
@@ -732,7 +774,7 @@ export default function AccountOrganizer() {
           </div>
         </details>
         <div className="step-actions" hidden={activeStep !== 1}>
-          <span>基本資料會保留在這次整理流程中。</span>
+          <span>資料只會保留在本次操作中。</span>
           <button type="button" onClick={() => goToStep(2)}>
             下一步：選擇物品
           </button>
@@ -741,7 +783,7 @@ export default function AccountOrganizer() {
           <div>
             <span className="step-kicker">步驟 3／3</span>
             <h1>估價與匯出</h1>
-            <p>確認估價依據，並輸出適合備份、分享或刊登的格式。</p>
+            <p>確認估價依據，再匯出備份、分享或刊登用資料。</p>
           </div>
           <button type="button" onClick={() => goToStep(2)}>
             返回衣櫃
@@ -777,16 +819,16 @@ export default function AccountOrganizer() {
               <p>
                 {valuationAnalysis.valuationItems.length
                   ? modelEstimate !== null
-                    ? "依起季完整度、畢業禮、付費禮包、限定物品與綁定狀態計算。"
+                    ? "依起始季證據、畢業禮、付費物品、限定物品與綁定狀態估算。"
                     : "模型載入中，請稍候。"
                   : chosen.length
-                    ? "目前選取的是一般物品，不列入估價。"
-                    : "選取估價物品後，這裡會直接顯示台幣估價。"}
+                    ? "目前選取的物品不在估價範圍內。"
+                    : "選取估價重點後，即會顯示預估金額。"}
               </p>
               <button type="button" onClick={() => goToStep(2)}>
                 {valuationAnalysis.valuationItems.length
                   ? "繼續核對衣櫃"
-                  : "前往選取估價物品"}
+                  : "前往選取估價重點"}
               </button>
             </article>
             <div className="valuation-metrics">
@@ -809,7 +851,7 @@ export default function AccountOrganizer() {
             </div>
           </div>
           <p className="valuation-method">
-            估價只列：起季與斷季、畢業禮、付費物品、絕版／聯動、熱門復刻與綁定狀態；季卡項鍊只證明有卡，不代表畢業。一般家具、常駐物品、魔法與普通資源不列入重點。
+            估價僅納入：起季與斷季、畢業禮、付費物品、絕版／聯動、熱門復刻與綁定狀態；季卡項鍊僅代表持有季卡，不代表畢業。一般家具、常駐物品、魔法與普通資源不列入重點。
             <br />
             核對資料：1,022 筆帳號樣本、
             <a
@@ -835,7 +877,7 @@ export default function AccountOrganizer() {
             >
               SKY 估價平台
             </a>
-            。刊價不等同成交價，結果僅供議價參考。
+            。刊登價格不等於成交價；結果僅供參考。
           </p>
         </section>
         <div className="account-actions" hidden={activeStep !== 3}>
@@ -845,18 +887,18 @@ export default function AccountOrganizer() {
               disabled={!owned.size}
               onClick={() => setOwned(new Set())}
             >
-              清除已選
+              清除已選物品
             </button>
           </div>
           <div className="export-tools" aria-label="帳號匯入與匯出">
-            <button onClick={exportAccount}>文字檔</button>
-            <button onClick={exportJson}>JSON 備份</button>
+            <button onClick={exportAccount}>匯出文字</button>
+            <button onClick={exportJson}>匯出 JSON</button>
             <button onClick={() => importRef.current?.click()}>
               匯入 JSON
             </button>
-            <button onClick={exportShowcaseImage}>圖片清單</button>
-            <button onClick={exportValuable}>禮包＋畢業禮</button>
-            <button onClick={exportBySeason}>按季節整理</button>
+            <button onClick={exportShowcaseImage}>匯出圖片清單</button>
+            <button onClick={exportValuable}>匯出付費物品與畢業禮</button>
+            <button onClick={exportBySeason}>依季節匯出</button>
             <button className="export-account" onClick={shareSummary}>
               分享摘要
             </button>
@@ -874,11 +916,11 @@ export default function AccountOrganizer() {
         <div className="catalog-intro">
           <div>
             <span className="step-kicker">步驟 2／3</span>
-            <h1>選擇帳號物品</h1>
-            <p>用搜尋最快；也可以依來源、季節與衣櫃分類逐項核對。</p>
+            <h1>選擇物品</h1>
+            <p>可用搜尋快速查找，也可依來源、季節與衣櫃分類核對。</p>
           </div>
           <button type="button" onClick={() => goToStep(3)}>
-            查看估價 · {owned.size} 件
+            查看估價結果 · {owned.size} 件
           </button>
         </div>
         <div className="discovery-tools">
@@ -960,7 +1002,7 @@ export default function AccountOrganizer() {
             }}
             aria-pressed={valuationMode}
           >
-            <b>✦ 估價物品</b>
+            <b>✦ 估價重點</b>
           </button>
         </div>
         <div className="closet-nav" aria-label="衣櫃順序">
@@ -1025,12 +1067,12 @@ export default function AccountOrganizer() {
               : season !== "全部季節"
                 ? seasonZh[season]
                 : valuationMode
-                  ? "估價物品"
+                  ? "估價重點"
                   : activeCloset.name}{" "}
             · {filtered.length.toLocaleString()} 件
           </h2>
           <div className="result-actions">
-            {searchPending && <small role="status">搜尋更新中…</small>}
+            {searchPending && <small role="status">搜尋中…</small>}
             {(query ||
               sourceFilter !== "all" ||
               season !== "全部季節" ||
@@ -1044,47 +1086,18 @@ export default function AccountOrganizer() {
         </div>
         {filtered.length ? (
           <div className="grid" aria-busy={searchPending}>
-            {visibleItems.map((x) => {
-              const has = owned.has(x.guid);
-              return (
-                <button
-                  className={`item-card selectable ${has ? "owned" : ""}`}
-                  key={x.guid}
-                  onClick={() => toggleOwned(x)}
-                  aria-pressed={has}
-                >
-                  <div className="image-wrap">
-                    <span className="owned-check">{has ? "✓" : "＋"}</span>
-                    {isSeasonUltimate(x) && (
-                      <span className="discontinued-badge">
-                        {isSeasonPendant(x) ? "季卡" : "畢業"}
-                      </span>
-                    )}
-                    <span className="source-badge">{sourceKind(x)}</span>
-                    {/* External catalog icons must keep their source URL and referrer policy. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={x.icon}
-                      alt={x.name}
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <div className="card-body">
-                    <div>
-                      <span className={`type type-${x.type}`}>
-                        {labels[x.type] || x.type}
-                      </span>
-                    </div>
-                    <h2>{zhName(x.name)}</h2>
-                  </div>
-                </button>
-              );
-            })}
+            {visibleItems.map((item) => (
+              <CatalogItemCard
+                key={item.guid}
+                item={item}
+                selected={owned.has(item.guid)}
+                onToggle={toggleOwned}
+              />
+            ))}
           </div>
         ) : (
           <div className="empty">
-            <b>找不到符合的物品</b>
+            <b>找不到符合條件的物品</b>
           </div>
         )}
         {visibleCount < filtered.length && (

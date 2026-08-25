@@ -1509,4 +1509,3 @@ export const searchIndex = new Map(
         .toLocaleLowerCase("zh-Hant"),
     ]),
 );
-

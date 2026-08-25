@@ -472,10 +472,11 @@ a:focus-visible {
   text-align: left;
   cursor: pointer;
   box-shadow: 0 7px 20px #0000004a;
+  touch-action: manipulation;
   transition:
-    transform 0.22s,
-    border-color 0.22s,
-    box-shadow 0.22s;
+    transform 0.12s,
+    border-color 0.12s,
+    box-shadow 0.12s;
 }
 .item-card:hover {
   transform: translateY(-3px);
@@ -664,20 +665,6 @@ a:focus-visible {
 }
 .account-intro > div:first-child {
   min-width: 0;
-}
-.account-progress {
-  display: grid;
-  justify-items: end;
-}
-.account-progress b {
-  color: #f3f7fc;
-  font-size: 34px;
-  line-height: 1;
-}
-.account-progress span {
-  margin-top: 6px;
-  color: #a7b2c1;
-  font-size: 11px;
 }
 .account-form {
   display: grid;
@@ -1375,12 +1362,6 @@ footer {
   }
   .account-intro h1 {
     font-size: 24px;
-  }
-  .account-progress b {
-    font-size: 27px;
-  }
-  .account-progress span {
-    font-size: 10px;
   }
   .account-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));

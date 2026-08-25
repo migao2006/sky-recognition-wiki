@@ -35,31 +35,31 @@ const seasonRows = (items: string[]) =>
           .map((item) => `［${item}］`)
           .join("┊"),
       )
-    : ["［尚未登錄季節物品］"];
+    : ["［尚未選取季節物品］"];
 
 export const buildSaleCopy = (data: SaleCopyInput) => {
-  const position = `${data.earliestSeason || "起季待填"}｜${data.accountType}｜已登錄 ${data.selectedCount} 件｜禮包物品 ${data.packageItemCount} 件`;
+  const position = `${data.earliestSeason || "起季待填"}｜${data.accountType}｜已選取 ${data.selectedCount} 件｜付費物品 ${data.packageItemCount} 件`;
   const summaryHighlights =
     data.ultimates.slice(0, 6).join("、") || "核心物品待補";
   return [
     `▍${data.accountName || "光遇帳號出售"}`,
     "",
-    "▍帳號定位",
+    "▍帳號概況",
     "",
     position,
     "",
     divider,
     "",
-    "♤ › 季節／衣櫃",
+    "♤ › 季節與衣櫃",
     "",
     `起季：${data.earliestSeason ? `${data.earliestSeason}（依已選物品推定，請確認）` : placeholder}`,
     "",
     "季節：",
     ...seasonRows(data.seasonNames),
     "",
-    `有卡：${placeholder}`,
+    `持有季卡：${placeholder}`,
     "",
-    `畢業：${inlineList(data.graduationStatus, "尚未登錄完整畢業禮")}`,
+    `畢業：${inlineList(data.graduationStatus, "尚未選取完整畢業禮")}`,
     "",
     `斷季／缺季：${placeholder}`,
     "",
@@ -79,11 +79,11 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     "各綁定狀態：",
     ...data.bindingDetails.map((line) => `* ${line}`),
     "",
-    `前任數：${placeholder}`,
+    `前任帳號數：${placeholder}`,
     `是否可聯絡前號：${placeholder}`,
-    `有無卡登紀錄：${placeholder}`,
-    `有無刷退紀錄：${placeholder}`,
-    `售後：${placeholder}`,
+    `是否有卡登入紀錄：${placeholder}`,
+    `是否有退款／刷退紀錄：${placeholder}`,
+    `售後安排：${placeholder}`,
     "",
     divider,
     "",
@@ -96,7 +96,7 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     "",
     divider,
     "",
-    "◇ › 核心吸睛點",
+    "◇ › 重點特色",
     "",
     "老季／畢業禮：",
     inlineList(data.ultimates),
@@ -116,7 +116,7 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     "",
     inlineList(data.otherPackages),
     "",
-    `已登錄禮包物品：約 ${data.packageItemCount} 件（請人工確認套組數）`,
+    `已選取付費物品：約 ${data.packageItemCount} 件（請人工確認套組數）`,
     "",
     divider,
     "",
@@ -146,7 +146,7 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     "",
     divider,
     "",
-    "⚠ › 必須提前說明",
+    "⚠ › 交易前須說明",
     "",
     data.issues === "無" && !data.notes
       ? placeholder
@@ -156,17 +156,17 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     "",
     divider,
     "",
-    "🎥 › 驗號資料",
+    "🎥 › 驗號建議",
     "",
-    "文案為輔，影片為主",
-    "影片建議：季節畢業禮 → 衣櫃 → 禮包 → 聯動 → 徽章 → 貨幣資源 → 地圖進度 → 綁定頁面 → 帳號設定",
+    "以驗號影片為準，文案僅供參考。",
+    "建議拍攝順序：季節畢業禮 → 衣櫃 → 禮包 → 聯動 → 徽章 → 貨幣資源 → 地圖進度 → 綁定頁面 → 帳號設定",
     "可提供：［完整錄屏／指定物品補拍／交易前即時驗號］",
     "",
     divider,
     "",
     "▍一句話總結",
     "",
-    `${data.earliestSeason || "起季待填"}｜${data.accountType}｜禮包物品 ${data.packageItemCount} 件｜${summaryHighlights}｜可出 ${data.transferable}｜不出 ${data.kept}`,
+    `${data.earliestSeason || "起季待填"}｜${data.accountType}｜付費物品 ${data.packageItemCount} 件｜${summaryHighlights}｜可出 ${data.transferable}｜不出 ${data.kept}`,
     "",
     "資料來源：SkyGame-Data、SkyGame-Planner、BWiki 中文清單",
   ];
