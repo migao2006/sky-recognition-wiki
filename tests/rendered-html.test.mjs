@@ -28,6 +28,7 @@ test("renders the account organizer", async () => {
   assert.match(html, /影片核對/);
   assert.match(html, /畢業禮、聯動、禮包與熱門物品/);
   assert.match(html, /只看季卡項鍊與畢業禮/);
+  assert.match(html, /匯出整理圖片/);
   assert.match(html, /資料來源：SkyGame-Data/);
   assert.match(html, /常用套組/);
   assert.match(html, /草稿會自動儲存在此裝置 30 天/);

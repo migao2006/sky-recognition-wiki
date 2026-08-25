@@ -623,8 +623,9 @@ export default function AccountOrganizer() {
         transferBindings: bindingGroup("transfer"),
         keptBindings: bindingGroup("keep"),
         resources: `資源：${account.candles || 0} 白蠟・${account.hearts || 0} 愛心・${account.ascended || 0} 昇華蠟・${account.passes || 0} 副卡`,
-        isUltimate: isGraduationGift,
+        isUltimate: isSeasonUltimate,
         isLimited: (item) => isPaidItem(item) || isLimitedItem(item),
+        getItemName: (item) => zhName(item.name),
         getClusterName: (item) =>
           item.section === "seasons"
             ? seasonZh[item.collection] || item.collection
@@ -640,8 +641,8 @@ export default function AccountOrganizer() {
             ? (seasonOrder.get(item.collection) ?? 999)
             : 1000,
       });
-      downloadBlob(blob, `光遇帳號_${safeFileName(account.name)}_圖片衣櫃.png`);
-      setNotice("圖片清單已下載");
+      downloadBlob(blob, `光遇帳號_${safeFileName(account.name)}_整理圖片.png`);
+      setNotice("整理圖片已下載");
     } catch {
       setNotice("圖片產生失敗");
     }
@@ -1033,7 +1034,7 @@ export default function AccountOrganizer() {
             <button onClick={() => importRef.current?.click()}>
               匯入 JSON
             </button>
-            <button onClick={exportShowcaseImage}>匯出圖片清單</button>
+            <button onClick={exportShowcaseImage}>匯出整理圖片</button>
             <button onClick={exportValuable}>匯出付費物品與畢業禮</button>
             <button onClick={exportBySeason}>依季節匯出</button>
             <button className="export-account" onClick={shareSummary}>
