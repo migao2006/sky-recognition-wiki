@@ -639,7 +639,7 @@ export default function AccountOrganizer() {
         getItemTypeName: (item) => labels[item.type] || item.type,
         getItemTypeOrder: (item) => typeOrder.get(item.type) ?? 999,
       });
-      downloadBlob(blob, `光遇帳號_${safeFileName(account.name)}_整理圖片.png`);
+      downloadBlob(blob, `光遇帳號_${safeFileName(account.name)}_整理圖片.jpg`);
       setNotice("整理圖片已下載");
     } catch {
       setNotice("圖片產生失敗");

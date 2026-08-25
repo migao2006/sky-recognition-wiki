@@ -16,7 +16,11 @@ const asModuleUrl = (source) =>
 const showcaseSource = (
   await readFile(new URL("../app/export-showcase.ts", import.meta.url), "utf8")
 ).replace('import type { WikiItem } from "./wiki-data";', "");
-const { buildShowcaseGroups, measureShowcaseCanvas } = await import(
+const {
+  buildShowcaseGroups,
+  measureShowcaseCanvas,
+  EXPORT_IMAGE_MAX_BYTES,
+} = await import(
   asModuleUrl(showcaseSource)
 );
 
@@ -150,6 +154,8 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
     getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
   });
   assert.equal(selected.length, 1107);
+  assert.equal(size.width, 1600);
   assert.ok(size.height <= 16384);
   assert.ok(size.width * size.height <= 16777216);
+  assert.equal(EXPORT_IMAGE_MAX_BYTES, 3 * 1024 * 1024);
 });

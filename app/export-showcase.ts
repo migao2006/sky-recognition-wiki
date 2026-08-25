@@ -135,12 +135,12 @@ const loadIcons = async (items: WikiItem[], concurrency = 8) => {
 };
 
 const showcaseMetrics = {
-  width: 1440,
+  width: 1600,
   pad: 24,
   panelPad: 18,
   titleHeight: 44,
-  cellWidth: 56,
-  cellHeight: 56,
+  cellWidth: 64,
+  cellHeight: 64,
   iconGap: 4,
   clusterGap: 6,
   clusterPad: 6,
@@ -149,6 +149,19 @@ const showcaseMetrics = {
   clusterMinWidth: 96,
   sectionGap: 12,
 } as const;
+
+export const EXPORT_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
+const exportImageQualities = [0.94, 0.9, 0.86, 0.82, 0.76, 0.68] as const;
+
+const canvasToJpeg = (canvas: HTMLCanvasElement, quality: number) =>
+  new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error("image-export-failed")),
+      "image/jpeg",
+      quality,
+    );
+  });
 
 const buildShowcaseLayout = (
   groups: ReturnType<typeof buildShowcaseGroups>,
@@ -379,11 +392,12 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     y += boxHeight + sectionGap;
   });
 
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) =>
-        blob ? resolve(blob) : reject(new Error("image-export-failed")),
-      "image/png",
-    );
-  });
+  let smallestBlob: Blob | undefined;
+  for (const quality of exportImageQualities) {
+    const blob = await canvasToJpeg(canvas, quality);
+    smallestBlob = blob;
+    if (blob.size <= EXPORT_IMAGE_MAX_BYTES) return blob;
+  }
+  if (smallestBlob) return smallestBlob;
+  throw new Error("image-export-failed");
 };
