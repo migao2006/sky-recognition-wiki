@@ -96,6 +96,18 @@ const valuationDomain: ValuationDomain = {
   seasonGraduationItems,
   sortSeasonSlugs,
 };
+const bundlePresetItems = new Map(
+  bundlePresets.map((preset) => [
+    preset.key,
+    wikiItems.filter(
+      (item) =>
+        allClosetTypeSet.has(item.type) &&
+        ("collection" in preset
+          ? item.collection === preset.collection
+          : preset.names.includes(item.name as never)),
+    ),
+  ]),
+);
 
 const CatalogItemCard = memo(function CatalogItemCard({
   item,
@@ -274,14 +286,6 @@ export default function AccountOrganizer() {
       else next.add(guid);
       return next;
     }), []);
-  const bundleItems = (preset: (typeof bundlePresets)[number]) =>
-    wikiItems.filter(
-      (x) =>
-        allClosetTypeSet.has(x.type) &&
-        ("collection" in preset
-          ? x.collection === preset.collection
-          : preset.names.includes(x.name as never)),
-    );
   const quickPresetState = (items: WikiItem[]) => {
     const selected = items.filter((x) => owned.has(x.guid)).length;
     return {
@@ -737,7 +741,7 @@ export default function AccountOrganizer() {
             <section>
               <div className="preset-grid">
                 {bundlePresets.map((preset) => {
-                  const items = bundleItems(preset),
+                  const items = bundlePresetItems.get(preset.key) || [],
                     state = quickPresetState(items);
                   return (
                     <button
