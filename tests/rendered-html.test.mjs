@@ -27,5 +27,7 @@ test("renders the account organizer", async () => {
   assert.match(html, /<title>光遇帳號整理<\/title>/i);
   assert.match(html, /整理帳號資料/);
   assert.match(html, /搜尋物品/);
-  assert.match(html, /非官方帳號整理工具/);
+  assert.match(html, /資料來源：SkyGame-Data/);
+  assert.match(html, /常用套組/);
+  assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
 });

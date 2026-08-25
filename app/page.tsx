@@ -126,7 +126,6 @@ const closetGroups = [
     key: "outfit",
     order: "01",
     name: "服裝衣櫃",
-    hint: "服裝・鞋子・連身服裝",
     types: ["Outfit", "Shoes", "OutfitShoes"],
     subs: [
       { key: "Outfit", name: "一般服裝", types: ["Outfit"] },
@@ -138,7 +137,6 @@ const closetGroups = [
     key: "face",
     order: "02",
     name: "臉部衣櫃",
-    hint: "面具・臉部・頸部配件",
     types: ["Mask", "FaceAccessory", "Necklace"],
     subs: [
       { key: "Mask", name: "面具", types: ["Mask"] },
@@ -150,7 +148,6 @@ const closetGroups = [
     key: "head",
     order: "03",
     name: "頭部衣櫃",
-    hint: "髮型・髮飾・頭部配件",
     types: ["Hair", "HairAccessory", "HeadAccessory"],
     subs: [
       { key: "Hair", name: "髮型", types: ["Hair"] },
@@ -162,7 +159,6 @@ const closetGroups = [
     key: "cape",
     order: "04",
     name: "斗篷衣櫃",
-    hint: "所有斗篷",
     types: ["Cape"],
     subs: [{ key: "Cape", name: "斗篷", types: ["Cape"] }],
   },
@@ -170,7 +166,6 @@ const closetGroups = [
     key: "props",
     order: "05",
     name: "道具衣櫃",
-    hint: "道具・大型・小型擺設",
     types: ["Prop", "Furniture", "Instrument"],
     subs: [
       { key: "held", name: "手持／背負道具", types: ["Prop", "Instrument"] },
@@ -1586,30 +1581,15 @@ const emptyBindings = () =>
     BindingKey,
     BindingStatus
   >;
-const noBreakPresets = [
-  { slug: "lightseekers", name: "追光無斷" },
-  { slug: "belonging", name: "歸屬無斷" },
-  { slug: "rhythm", name: "音韻無斷" },
-  { slug: "enchantment", name: "魔法無斷" },
-  { slug: "prophecy", name: "預言無斷" },
-  { slug: "assembly", name: "重組無斷" },
-  { slug: "the-little-prince", name: "小王子無斷" },
-  { slug: "performance", name: "表演無斷" },
-  { slug: "aurora", name: "極光無斷" },
-  { slug: "revival", name: "歸巢無斷" },
-  { slug: "moomin", name: "姆明無斷" },
-];
 const bundlePresets = [
   {
     key: "kizuna",
     name: "絆愛三件套",
-    hint: "斗篷・髮型・蝴蝶結",
     names: ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"],
   },
   {
     key: "prince",
     name: "小王子限定三件",
-    hint: "星球斗・圍巾斗・狐狸",
     names: [
       "Little Prince Asteroid Jacket",
       "Little Prince Scarf Cape",
@@ -1619,19 +1599,16 @@ const bundlePresets = [
   {
     key: "aurora",
     name: "極光限定三件",
-    hint: "金翅膀・臣服斗・致愛服裝",
     names: ["Wings of AURORA", "Giving In Cape", "To The Love Outfit"],
   },
   {
     key: "journey",
     name: "風之旅人三件套",
-    hint: "斗篷・髮型・面具",
     names: ["Journey Cape", "Journey Hair", "Journey Mask"],
   },
   {
     key: "nintendo",
     name: "Nintendo 三件套",
-    hint: "精靈髮・紅斗・藍斗",
     names: [
       "Nintendo Elf Hair",
       "Nintendo Red Switch Cape",
@@ -1641,7 +1618,6 @@ const bundlePresets = [
   {
     key: "deer",
     name: "九色鹿限定三件",
-    hint: "神鹿斗・鹿角・面具",
     names: [
       "Radiance of the Nine-Colored Deer Cape",
       "Gift of the Nine-Colored Deer Antlers",
@@ -1651,7 +1627,6 @@ const bundlePresets = [
   {
     key: "cinnamoroll",
     name: "大耳狗聯動全套",
-    hint: "網站收錄的 8 件聯動物品",
     collection: "event-cinnamoroll",
   },
 ] as const;
@@ -1688,7 +1663,6 @@ export default function AccountOrganizer() {
     [sourceFilter, setSourceFilter] = useState("all"),
     [valuationMode, setValuationMode] = useState(false);
   const [owned, setOwned] = useState<Set<string>>(new Set());
-  const [activeNoBreak, setActiveNoBreak] = useState<string | null>(null);
   const [account, setAccount] = useState<AccountInfo>({
     name: "",
     accountType: "有翼",
@@ -1744,7 +1718,7 @@ export default function AccountOrganizer() {
             .map((x) => x.collection),
         ),
       ]),
-      startSeasonSlug = activeNoBreak || ultimateSeasonSlugs[0] || null,
+      startSeasonSlug = ultimateSeasonSlugs[0] || null,
       earliestGraduationIndex = startSeasonSlug
         ? graduationSeasonSlugs.indexOf(startSeasonSlug)
         : -1,
@@ -1779,9 +1753,10 @@ export default function AccountOrganizer() {
         partialSeasons: partialSeasonSlugs.length,
       }),
       packageTier = classifyPackageTier(packages.length),
-      startEvidenceConfidence = activeNoBreak
-        ? 1
-        : Math.min(1, Math.max(0, ultimateSeasonSlugs.length - 1) / 8),
+      startEvidenceConfidence = Math.min(
+        1,
+        Math.max(0, ultimateSeasonSlugs.length - 1) / 8,
+      ),
       bindingReviewed =
         bindingKeys.some((key) => bindings[key] !== "none") ||
         Boolean(account.bindingNote.trim()),
@@ -1800,17 +1775,10 @@ export default function AccountOrganizer() {
       completeness = Math.round(
         (checks.filter(Boolean).length / checks.length) * 100,
       ),
-      highlights = uniqueByGuid([...ultimates, ...collabs, ...packages]).slice(
-        0,
-        8,
-      ),
       issueCount = bindingKeys.filter(
         (key) => bindings[key] === "issue",
       ).length,
-      keepCount = bindingKeys.filter((key) => bindings[key] === "keep").length,
-      transferCount = bindingKeys.filter(
-        (key) => bindings[key] === "transfer",
-      ).length;
+      keepCount = bindingKeys.filter((key) => bindings[key] === "keep").length;
     return {
       ultimates,
       packages,
@@ -1824,13 +1792,10 @@ export default function AccountOrganizer() {
       gapTier,
       packageTier,
       completeness,
-      highlights,
       issueCount,
       keepCount,
-      transferCount,
-      bindingReviewed,
     };
-  }, [chosen, bindings, account, activeNoBreak]);
+  }, [chosen, bindings, account]);
   const modelEstimate = useMemo(() => {
     if (!valuationModel || !chosen.length) return null;
     const derived = [
@@ -1942,17 +1907,6 @@ export default function AccountOrganizer() {
       else next.add(x.guid);
       return next;
     });
-  const noBreakItems = (slug: string) => {
-    const start = seasonOrder.get(slug) ?? 0;
-    return wikiItems.filter(
-      (x) =>
-        x.section === "seasons" &&
-        !ongoingSeasonSlugs.has(x.collection) &&
-        (seasonOrder.get(x.collection) ?? -1) >= start &&
-        isDiscontinued(x) &&
-        allClosetTypeSet.has(x.type),
-    );
-  };
   const bundleItems = (preset: (typeof bundlePresets)[number]) =>
     wikiItems.filter(
       (x) =>
@@ -1981,23 +1935,6 @@ export default function AccountOrganizer() {
       complete
         ? `已取消「${label}」${ids.length} 件`
         : `已選取「${label}」${ids.length} 件`,
-    );
-  };
-  const applyNoBreakPreset = (slug: string, label: string) => {
-    const nextSlug = activeNoBreak === slug ? null : slug;
-    setOwned((prev) => {
-      const next = new Set(prev);
-      if (activeNoBreak)
-        noBreakItems(activeNoBreak).forEach((item) => next.delete(item.guid));
-      if (nextSlug)
-        noBreakItems(nextSlug).forEach((item) => next.add(item.guid));
-      return next;
-    });
-    setActiveNoBreak(nextSlug);
-    setNotice(
-      nextSlug
-        ? `已套用「${label}」${noBreakItems(slug).length} 件`
-        : `已取消「${label}」`,
     );
   };
   const bindingLines = () =>
@@ -2153,7 +2090,6 @@ export default function AccountOrganizer() {
           ),
         ),
       );
-      setActiveNoBreak(null);
       setNotice("JSON 備份已匯入");
     } catch {
       setNotice("無法匯入：檔案格式不正確");
@@ -2263,16 +2199,11 @@ export default function AccountOrganizer() {
         </div>
         <div className="header-mode">
           <span>已選 {owned.size} 件</span>
-          <small>帳號衣櫃</small>
         </div>
       </header>
       <section className="account-panel">
         <div className="account-intro">
-          <div>
-            <span>SKY ACCOUNT ORGANIZER</span>
-            <h1>整理帳號資料</h1>
-            <p>集中記錄帳號綁定、資源與衣櫃收藏，完成後可估價或匯出。</p>
-          </div>
+          <h1>整理帳號資料</h1>
           <div className="account-progress">
             <b>{owned.size}</b>
             <span>已選物品</span>
@@ -2281,7 +2212,6 @@ export default function AccountOrganizer() {
         <div className="account-form">
           <div className="form-section-title">
             <b>交易資訊</b>
-            <span>保留會影響帳號轉移與估價的資料</span>
           </div>
           <label className="account-name">
             帳號名稱
@@ -2305,7 +2235,6 @@ export default function AccountOrganizer() {
           </label>
           <div className="form-section-title">
             <b>帳號資源</b>
-            <span>依雲端帳號文案常用欄位整理</span>
           </div>
           <label>
             白蠟燭
@@ -2354,7 +2283,6 @@ export default function AccountOrganizer() {
           <div className="binding-section">
             <div className="form-section-title">
               <b>登入綁定</b>
-              <span>逐項選擇未綁、可出、不出或異常</span>
             </div>
             <div className="binding-grid">
               {bindingKeys.map((key) => (
@@ -2406,10 +2334,7 @@ export default function AccountOrganizer() {
         </div>
         <details className="season-picker">
           <summary>
-            <span>
-              <b>季節／畢業禮</b>
-              <small>依季節順序逐件選取，項鍊排在最前</small>
-            </span>
+            <b>季節／畢業禮</b>
             <i aria-hidden="true">⌄</i>
           </summary>
           <div className="season-picker-body">
@@ -2466,59 +2391,11 @@ export default function AccountOrganizer() {
         </details>
         <details className="quick-select">
           <summary>
-            <span>
-              <b>快速套用</b>
-              <small>季節無斷與常見限定套組</small>
-            </span>
+            <b>常用套組</b>
             <i aria-hidden="true">⌄</i>
           </summary>
           <div className="quick-select-body">
             <section>
-              <div className="quick-select-heading">
-                <h2>季節無斷</h2>
-                <p>一次只套用一個起季；改選會直接替換，不會反向刪除重疊季節</p>
-              </div>
-              <div className="preset-grid">
-                {noBreakPresets.map((preset) => {
-                  const items = noBreakItems(preset.slug),
-                    state = quickPresetState(items),
-                    active = activeNoBreak === preset.slug;
-                  return (
-                    <button
-                      type="button"
-                      className={
-                        active ? (state.complete ? "selected" : "partial") : ""
-                      }
-                      aria-pressed={active}
-                      key={preset.slug}
-                      onClick={() =>
-                        applyNoBreakPreset(preset.slug, preset.name)
-                      }
-                    >
-                      <i className="preset-check" aria-hidden="true">
-                        {active ? (state.complete ? "✓" : "–") : ""}
-                      </i>
-                      <span>
-                        <b>{preset.name}</b>
-                        <small>
-                          {active
-                            ? state.complete
-                              ? "已套用"
-                              : `${state.selected}/${items.length}`
-                            : `${items.length} 件`}
-                        </small>
-                      </span>
-                      <em>{seasonZh[preset.slug]}起</em>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-            <section>
-              <div className="quick-select-heading">
-                <h2>常見套組</h2>
-                <p>可同時複選多個套組，再按一次即可取消</p>
-              </div>
               <div className="preset-grid">
                 {bundlePresets.map((preset) => {
                   const items = bundleItems(preset),
@@ -2550,45 +2427,19 @@ export default function AccountOrganizer() {
                               : `${items.length} 件`}
                         </small>
                       </span>
-                      <em>
-                        {state.partial
-                          ? `已選 ${state.selected}／${items.length}`
-                          : preset.hint}
-                      </em>
                     </button>
                   );
                 })}
               </div>
             </section>
-            <p className="quick-select-note">
-              可複選多個套組；完整選取後再按一次會取消該組。名稱參考：
-              <a
-                href="https://www.facebook.com/groups/1542259739619460/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                帳號市場用語
-              </a>
-              、
-              <a
-                href="https://www.facebook.com/100064180476484/videos/574854783994302/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                音韻無斷範例
-              </a>
-            </p>
           </div>
         </details>
         <section className="valuation-report" aria-labelledby="valuation-title">
           <div className="valuation-report-head">
-            <div>
-              <span>VALUATION OVERVIEW</span>
-              <h2 id="valuation-title">估價分析</h2>
-              <p>先確認收藏結構與交易風險，再建立可信價格區間。</p>
-            </div>
+            <h2 id="valuation-title">估價分析</h2>
             <div
               className="completion-ring"
+              aria-label={`資料完整度 ${valuationAnalysis.completeness}%`}
               style={
                 {
                   "--completion": `${valuationAnalysis.completeness * 3.6}deg`,
@@ -2596,7 +2447,6 @@ export default function AccountOrganizer() {
               }
             >
               <b>{valuationAnalysis.completeness}%</b>
-              <small>資料完整度</small>
             </div>
           </div>
           <div className="valuation-summary">
@@ -2622,95 +2472,23 @@ export default function AccountOrganizer() {
               <article>
                 <span>畢業禮</span>
                 <b>{valuationAnalysis.ultimates.length}</b>
-                <small>
-                  {valuationAnalysis.ultimateSeasonSlugs.length
-                    ? valuationAnalysis.gapTier.key === "none"
-                      ? `無斷 · 涵蓋 ${valuationAnalysis.ultimateSeasonSlugs.length} 季`
-                      : `${valuationAnalysis.gapTier.label} · 缺 ${valuationAnalysis.missingSeasonSlugs.length} 季${valuationAnalysis.partialSeasonSlugs.length ? `／半畢 ${valuationAnalysis.partialSeasonSlugs.length} 季` : ""}`
-                    : "尚未登錄季節"}
-                </small>
               </article>
               <article>
                 <span>禮包／商店</span>
                 <b>{valuationAnalysis.packages.length}</b>
-                <small>
-                  {valuationAnalysis.packageTier.label} · 已選{" "}
-                  {valuationAnalysis.packages.length} 件
-                </small>
               </article>
               <article>
                 <span>聯動限定</span>
                 <b>{valuationAnalysis.collabs.length}</b>
-                <small>大耳狗、絆愛等</small>
               </article>
               <article>
                 <span>限定總量</span>
                 <b>{valuationAnalysis.limited.length}</b>
-                <small>聯動、平台與限定</small>
               </article>
             </div>
           </div>
-          <div className="valuation-details">
-            <article>
-              <div className="valuation-detail-title">
-                <h3>核心收藏</h3>
-                <span>
-                  {valuationAnalysis.highlights.length
-                    ? `優先顯示 ${valuationAnalysis.highlights.length} 件`
-                    : "尚未選取"}
-                </span>
-              </div>
-              {valuationAnalysis.highlights.length ? (
-                <div className="highlight-list">
-                  {valuationAnalysis.highlights.map((x) => (
-                    <span key={x.guid}>{zhName(x.name)}</span>
-                  ))}
-                </div>
-              ) : (
-                <p className="valuation-empty">
-                  勾選畢業禮、聯動或禮包後會顯示在這裡。
-                </p>
-              )}
-            </article>
-            <article>
-              <div className="valuation-detail-title">
-                <h3>交易風險</h3>
-                <span>綁定狀態摘要</span>
-              </div>
-              <ul className="risk-list">
-                <li className={valuationAnalysis.issueCount ? "risk" : "muted"}>
-                  <b>
-                    {valuationAnalysis.issueCount
-                      ? `${valuationAnalysis.issueCount} 項異常／遺失`
-                      : "無已標示異常"}
-                  </b>
-                  <span>
-                    {valuationAnalysis.issueCount
-                      ? "估價與交易前需要優先說明"
-                      : "目前沒有選到異常狀態"}
-                  </span>
-                </li>
-                <li
-                  className={valuationAnalysis.keepCount ? "warning" : "muted"}
-                >
-                  <b>
-                    {valuationAnalysis.keepCount
-                      ? `${valuationAnalysis.keepCount} 項綁定不出`
-                      : "無不出綁定"}
-                  </b>
-                  <span>
-                    {valuationAnalysis.transferCount
-                      ? `${valuationAnalysis.transferCount} 項可出`
-                      : valuationAnalysis.bindingReviewed
-                        ? "尚未標示可出綁定"
-                        : "尚未確認綁定資料"}
-                  </span>
-                </li>
-              </ul>
-            </article>
-          </div>
           <p className="valuation-method">
-            模型以 1,022 筆帳號資料與
+            估價資料：1,022 筆帳號樣本、
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"
@@ -2718,23 +2496,15 @@ export default function AccountOrganizer() {
             >
               雲端市場樣本
             </a>
-            校正：起季價值、缺季位置與禮包量分開計算，越早期的缺季扣值越高。斷季依完整缺季與半畢程度分為無斷、微斷、小斷、中斷、大斷；禮包依實際勾選數分為少禮、中禮、多禮與百禮。另保留
+            、
             <a
               href="https://docs.google.com/document/d/14cRTLpELyRdMyLzcAEf4a5wMEO-UA6O2LJgFTJ9ZGYk/edit"
               target="_blank"
               rel="noreferrer"
             >
-              追光近百禮 NT$185,000
+              高價案例
             </a>
-            與
-            <a
-              href="https://docs.google.com/document/d/1oscihQ8mq2L1oe_bnhffVZDdNifzc5uwBdwb2DQqO_o/edit"
-              target="_blank"
-              rel="noreferrer"
-            >
-              音韻百禮 NT$104,200
-            </a>
-            等高價案例作早季尾端校正。刊價不等同成交價，結果僅供議價參考。
+            。刊價不等同成交價，結果僅供議價參考。
           </p>
         </section>
         <div className="account-actions">
@@ -2742,10 +2512,7 @@ export default function AccountOrganizer() {
             <button
               className="clear-owned"
               disabled={!owned.size}
-              onClick={() => {
-                setOwned(new Set());
-                setActiveNoBreak(null);
-              }}
+              onClick={() => setOwned(new Set())}
             >
               清除已選
             </button>
@@ -2795,7 +2562,6 @@ export default function AccountOrganizer() {
                 </button>
               )}
             </div>
-            <small>輸入關鍵字時會跨五座衣櫃搜尋</small>
           </label>
           <label className="source-select">
             <span>來源</span>
@@ -2841,9 +2607,6 @@ export default function AccountOrganizer() {
             aria-pressed={valuationMode}
           >
             <b>✦ 估價重點</b>
-            <span>
-              {valuationMode ? "只顯示核心物品" : "畢業禮・聯動・禮包・限定"}
-            </span>
           </button>
         </div>
         <div className="closet-nav" aria-label="衣櫃順序">
@@ -2857,16 +2620,12 @@ export default function AccountOrganizer() {
               }}
             >
               {x.order && <b>{x.order}</b>}
-              <span>
-                {x.name}
-                <small>{x.hint}</small>
-              </span>
+              <span>{x.name}</span>
             </button>
           ))}
         </div>
         {activeCloset.subs.length > 0 && (
           <div className="closet-subs">
-            <span>{activeCloset.order} 分類順序</span>
             <button
               className={sub === "all" ? "selected" : ""}
               onClick={() => setSub("all")}
@@ -2896,25 +2655,16 @@ export default function AccountOrganizer() {
           </div>
         )}
         <div className="result-head">
-          <div>
-            <h1>
-              {query
-                ? `「${query.trim()}」搜尋結果`
-                : season !== "全部季節"
-                  ? seasonZh[season]
-                  : valuationMode
-                    ? "估價重點"
-                    : activeCloset.name}{" "}
-              · {filtered.length.toLocaleString()} 件
-            </h1>
-            <span>
-              {query
-                ? "跨五座衣櫃"
+          <h1>
+            {query
+              ? `「${query.trim()}」搜尋結果`
+              : season !== "全部季節"
+                ? seasonZh[season]
                 : valuationMode
-                  ? "畢業禮・聯動・禮包・平台限定・常見核心"
-                  : sourceFilters.find((x) => x.key === sourceFilter)?.name}
-            </span>
-          </div>
+                  ? "估價重點"
+                  : activeCloset.name}{" "}
+            · {filtered.length.toLocaleString()} 件
+          </h1>
           <div className="result-actions">
             {(query ||
               sourceFilter !== "all" ||
@@ -2958,11 +2708,8 @@ export default function AccountOrganizer() {
                       <span className={`type type-${x.type}`}>
                         {labels[x.type] || x.type}
                       </span>
-                      <small>ID: {x.id}</small>
                     </div>
                     <h2>{zhName(x.name)}</h2>
-                    <p className="english">{x.name}</p>
-                    <p>{source(x)}</p>
                   </div>
                 </button>
               );
@@ -2971,7 +2718,6 @@ export default function AccountOrganizer() {
         ) : (
           <div className="empty">
             <b>找不到符合的物品</b>
-            <span>試著縮短關鍵字或清除分類條件。</span>
           </div>
         )}
       </section>
@@ -2981,12 +2727,10 @@ export default function AccountOrganizer() {
         </div>
       )}
       <footer>
-        <b>光遇帳號整理</b>
         <span>
           資料來源：SkyGame-Data 1.3.8、SkyGame-Planner、Sky Wiki／BWiki（核對於
           2026-08-25）
         </span>
-        <span>非官方帳號整理工具 · 資料僅供整理與估價參考</span>
       </footer>
     </main>
   );
