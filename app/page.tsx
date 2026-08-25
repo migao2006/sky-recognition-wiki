@@ -277,28 +277,30 @@ const storeSource = (x: WikiItem) => {
                   ? "Beta 限定"
                   : "常駐商店";
 };
-const sourceKind = (x: WikiItem) =>
-  x.section === "seasons"
-    ? "季節"
-    : x.section === "events"
-      ? ["event-cinnamoroll", "event-kizuna-ai"].includes(x.collection)
-        ? "聯動"
-        : x.collection === "personality-quiz-event" ||
-            x.collection === "workshop-show-and-tell" ||
-            x.collection === "event-sky-creator-awards"
-          ? "特殊活動"
-          : "年度活動"
-      : x.section === "realms"
-        ? "常駐地圖"
-        : x.section === "store"
-          ? storeSource(x).includes("專屬")
-            ? "平台限定"
-            : storeSource(x).includes("限定")
-              ? "限定"
-              : "商店"
-          : x.section === "base"
-            ? "基礎"
-            : "國服限定";
+const sourceKind = (x: WikiItem) => {
+  if (x.section === "seasons") return "季節";
+  if (x.section === "events") {
+    if (["event-cinnamoroll", "event-kizuna-ai"].includes(x.collection))
+      return "聯動";
+    if (
+      [
+        "personality-quiz-event",
+        "workshop-show-and-tell",
+        "event-sky-creator-awards",
+      ].includes(x.collection)
+    )
+      return "特殊活動";
+    return "年度活動";
+  }
+  if (x.section === "realms") return "常駐地圖";
+  if (x.section === "store") {
+    const store = storeSource(x);
+    if (store.includes("專屬")) return "平台限定";
+    if (store.includes("限定")) return "限定";
+    return "商店";
+  }
+  return x.section === "base" ? "基礎" : "國服限定";
+};
 const source = (x: WikiItem) =>
   x.section === "seasons"
     ? `季節 · ${seasonZh[x.collection] || x.collection}`
@@ -312,8 +314,6 @@ const source = (x: WikiItem) =>
             ? "基礎 · 初始裝扮與動作"
             : `${sourceKind(x)} · ${x.collection}`;
 const exactZh: Record<string, string> = {
-  "Little Prince Ultimate Hair": "小王子畢業髮型",
-  "Little Prince Ultimate Outfit": "小王子畢業服裝",
   "Little Prince Ultimate Rose": "小王子畢業玫瑰",
   "Sword Outfit": "劍士服",
   "Anubis Mask": "阿努比斯面具",
@@ -328,7 +328,6 @@ const exactZh: Record<string, string> = {
   "Vault Elder Hair": "禁閣長老髮型",
   "Prairie Elder Hair": "雲野長老髮型",
   "Isle Elder Hair": "晨島長老髮型",
-  "Nine-Colored Deer Ultimate Hair": "九色鹿畢業髮型",
   "Grand Piano": "高音鋼琴",
   "Manta Cape": "遙鯤斗篷",
   "Chibi Mask": "矮人面具",
@@ -377,7 +376,6 @@ const words: Record<string, string> = {
   Hair: "髮型",
   Hairstyle: "髮型",
   Cape: "斗篷",
-  Cloak: "披風",
   Mask: "面具",
   Outfit: "服裝",
   Shoes: "鞋子",
@@ -391,14 +389,11 @@ const words: Record<string, string> = {
   Hairpin: "髮夾",
   Accessory: "配件",
   Necklace: "項鍊",
-  Neckpiece: "頸飾",
   Pendant: "吊墜",
   Scarf: "圍巾",
   Shawl: "披肩",
-  Bow: "蝴蝶結",
   Bowtie: "領結",
   Earrings: "耳環",
-  Ears: "耳朵",
   Glasses: "眼鏡",
   Sunglasses: "太陽眼鏡",
   Goggles: "護目鏡",
@@ -447,7 +442,6 @@ const words: Record<string, string> = {
   Light: "淺色",
   Small: "小型",
   Large: "大型",
-  Mini: "迷你",
   HairAccessory: "髮飾",
   HeadAccessory: "頭飾",
   FaceAccessory: "臉部配件",
@@ -1369,7 +1363,6 @@ const communityZh: Record<string, string> = {
   "Earth Cape": "地球斗篷",
   "Nature Turtle Cape": "自然日海龜斗篷",
   "Snowflake Cape": "雪花斗篷",
-  "Little Prince Scarf Cape": "小王子圍巾斗篷",
   "Wings of AURORA": "AURORA 之翼",
   "Giving In Cape": "臣服斗篷",
   "To The Love Outfit": "致愛服裝",
@@ -1401,20 +1394,15 @@ const zhName = (name: string) => {
 };
 const isDiscontinued = (x: WikiItem) =>
   x.section === "seasons" && x.group === "Ultimate";
-const valuationKey = (x: WikiItem) =>
-  isDiscontinued(x)
-    ? "discontinued"
-    : x.section === "seasons"
-      ? "season"
-      : sourceKind(x) === "聯動"
-        ? "collab"
-        : sourceKind(x) === "年度活動" || sourceKind(x) === "特殊活動"
-          ? "annual"
-          : sourceKind(x) === "平台限定"
-            ? "platform"
-            : sourceKind(x) === "國服限定"
-              ? "china"
-              : "permanent";
+const valuationKey = (x: WikiItem) => {
+  if (isDiscontinued(x)) return "discontinued";
+  if (x.section === "seasons") return "season";
+  const kind = sourceKind(x);
+  if (kind === "聯動") return "collab";
+  if (kind === "年度活動" || kind === "特殊活動") return "annual";
+  if (kind === "平台限定") return "platform";
+  return kind === "國服限定" ? "china" : "permanent";
+};
 const valuationClass = (x: WikiItem) =>
   ({
     discontinued: "絕版核心 · 季節畢業禮",
@@ -1440,6 +1428,18 @@ const allClosetTypeSet = new Set(allClosetTypes);
 const typeOrder = new Map(allClosetTypes.map((type, index) => [type, index]));
 const isPackage = (x: WikiItem) =>
   x.section === "store" || /Pack|IAP|Gift|Shop|Purchase/i.test(x.wiki);
+const limitedSourceKinds = new Set(["聯動", "平台限定", "限定"]);
+const isLimitedItem = (x: WikiItem) =>
+  x.group === "Limited" || limitedSourceKinds.has(sourceKind(x));
+const uniqueByGuid = (items: WikiItem[]) => {
+  const unique = new Map<string, WikiItem>();
+  items.forEach((item) => unique.set(item.guid, item));
+  return [...unique.values()];
+};
+const sortSeasonSlugs = (slugs: string[]) =>
+  [...slugs].sort(
+    (a, b) => (seasonOrder.get(a) ?? 999) - (seasonOrder.get(b) ?? 999),
+  );
 const isSeasonPendant = (x: WikiItem) =>
   isDiscontinued(x) &&
   x.type === "Necklace" &&
@@ -1455,23 +1455,21 @@ const seasonUltimateSlugs = seasons
         allClosetTypeSet.has(x.type),
     ),
   );
+const ultimateItemsForSeason = (slug: string) =>
+  wikiItems
+    .filter(
+      (x) =>
+        x.section === "seasons" &&
+        x.collection === slug &&
+        isDiscontinued(x) &&
+        allClosetTypeSet.has(x.type),
+    )
+    .sort(
+      (a, b) =>
+        Number(isSeasonPendant(b)) - Number(isSeasonPendant(a)) || a.id - b.id,
+    );
 const seasonUltimateItems = new Map(
-  seasonUltimateSlugs.map((slug) => [
-    slug,
-    wikiItems
-      .filter(
-        (x) =>
-          x.section === "seasons" &&
-          x.collection === slug &&
-          isDiscontinued(x) &&
-          allClosetTypeSet.has(x.type),
-      )
-      .sort(
-        (a, b) =>
-          Number(isSeasonPendant(b)) - Number(isSeasonPendant(a)) ||
-          a.id - b.id,
-      ),
-  ]),
+  seasonUltimateSlugs.map((slug) => [slug, ultimateItemsForSeason(slug)]),
 );
 const graduationSeasonSlugs = seasonUltimateSlugs.filter(
   (slug) => !ongoingSeasonSlugs.has(slug),
@@ -1514,12 +1512,16 @@ const featuredNames = new Set([
   "Founder's Cape",
   "Beta Cape",
 ]);
-const isValuationFocus = (x: WikiItem) =>
-  isDiscontinued(x) ||
-  sourceKind(x) === "聯動" ||
-  isPackage(x) ||
-  sourceKind(x) === "平台限定" ||
-  featuredNames.has(x.name);
+const isValuationFocus = (x: WikiItem) => {
+  const kind = sourceKind(x);
+  return (
+    isDiscontinued(x) ||
+    kind === "聯動" ||
+    isPackage(x) ||
+    kind === "平台限定" ||
+    featuredNames.has(x.name)
+  );
+};
 const searchIndex = new Map(
   wikiItems
     .filter((x) => allClosetTypeSet.has(x.type))
@@ -1577,6 +1579,8 @@ const bindingOptions: { key: BindingStatus; name: string }[] = [
 const bindingStatusName = Object.fromEntries(
   bindingOptions.map((x) => [x.key, x.name]),
 ) as Record<BindingStatus, string>;
+const shortBindingName = (key: BindingKey) =>
+  bindingNames[key].replace(/（.*?）/g, "");
 const emptyBindings = () =>
   Object.fromEntries(bindingKeys.map((key) => [key, "none"])) as Record<
     BindingKey,
@@ -1666,8 +1670,6 @@ const downloadBlob = (blob: Blob, fileName: string) => {
 const itemLine = (x: WikiItem, index: number) =>
   `${index + 1}. ${zhName(x.name)} / ${x.name}｜${labels[x.type] || x.type}｜ID ${x.id}｜來源：${source(x)}${isDiscontinued(x) ? "｜畢業禮／絕版" : ""}`;
 type ValuationModel = {
-  source_rows: number;
-  eligible_rows: number;
   feature_names: string[];
   keyword_patterns: Record<string, string>;
   scaler_mean: number[];
@@ -1734,29 +1736,14 @@ export default function AccountOrganizer() {
     const ultimates = chosen.filter(isDiscontinued),
       packages = chosen.filter(isPackage),
       collabs = chosen.filter((x) => sourceKind(x) === "聯動"),
-      limited = chosen.filter(
-        (x) =>
-          x.group === "Limited" ||
-          ["聯動", "平台限定", "限定"].includes(sourceKind(x)),
-      ),
-      seasonSlugs = [
-        ...new Set(
-          chosen
-            .filter((x) => x.section === "seasons")
-            .map((x) => x.collection),
-        ),
-      ].sort(
-        (a, b) => (seasonOrder.get(a) ?? 999) - (seasonOrder.get(b) ?? 999),
-      ),
-      ultimateSeasonSlugs = [
+      limited = chosen.filter(isLimitedItem),
+      ultimateSeasonSlugs = sortSeasonSlugs([
         ...new Set(
           ultimates
             .filter((x) => !ongoingSeasonSlugs.has(x.collection))
             .map((x) => x.collection),
         ),
-      ].sort(
-        (a, b) => (seasonOrder.get(a) ?? 999) - (seasonOrder.get(b) ?? 999),
-      ),
+      ]),
       startSeasonSlug = activeNoBreak || ultimateSeasonSlugs[0] || null,
       earliestGraduationIndex = startSeasonSlug
         ? graduationSeasonSlugs.indexOf(startSeasonSlug)
@@ -1774,13 +1761,7 @@ export default function AccountOrganizer() {
       expectedUltimateCount = new Map(
         expectedGraduationSlugs.map((slug) => [
           slug,
-          wikiItems.filter(
-            (x) =>
-              x.section === "seasons" &&
-              x.collection === slug &&
-              isDiscontinued(x) &&
-              allClosetTypeSet.has(x.type),
-          ).length,
+          seasonUltimateItems.get(slug)?.length ?? 0,
         ]),
       ),
       missingSeasonSlugs = expectedGraduationSlugs.filter(
@@ -1819,9 +1800,10 @@ export default function AccountOrganizer() {
       completeness = Math.round(
         (checks.filter(Boolean).length / checks.length) * 100,
       ),
-      highlights = [...ultimates, ...collabs, ...packages]
-        .filter((x, i, a) => a.findIndex((y) => y.guid === x.guid) === i)
-        .slice(0, 8),
+      highlights = uniqueByGuid([...ultimates, ...collabs, ...packages]).slice(
+        0,
+        8,
+      ),
       issueCount = bindingKeys.filter(
         (key) => bindings[key] === "issue",
       ).length,
@@ -1834,7 +1816,6 @@ export default function AccountOrganizer() {
       packages,
       collabs,
       limited,
-      seasonSlugs,
       ultimateSeasonSlugs,
       startSeasonSlug,
       startEvidenceConfidence,
@@ -1848,7 +1829,6 @@ export default function AccountOrganizer() {
       keepCount,
       transferCount,
       bindingReviewed,
-      resourcesReviewed,
     };
   }, [chosen, bindings, account, activeNoBreak]);
   const modelEstimate = useMemo(() => {
@@ -2024,10 +2004,13 @@ export default function AccountOrganizer() {
     bindingKeys.map(
       (key) => `${bindingNames[key]}：${bindingStatusName[bindings[key]]}`,
     );
-  const bindingGroup = (status: BindingStatus) =>
+  const bindingGroup = (status: BindingStatus, excludeNintendo = false) =>
     bindingKeys
-      .filter((key) => bindings[key] === status)
-      .map((key) => bindingNames[key].replace(/（.*?）/g, ""))
+      .filter(
+        (key) =>
+          (!excludeNintendo || key !== "nintendo") && bindings[key] === status,
+      )
+      .map(shortBindingName)
       .join("、") || "無";
   const accountHeader = (count = chosen.length) => [
     "光遇帳號衣櫃整理",
@@ -2054,20 +2037,14 @@ export default function AccountOrganizer() {
       `光遇帳號_${safeFileName(account.name)}_${suffix}.txt`,
     );
   const exportAccount = async () => {
-    const seasonSlugs = [
+    const seasonSlugs = sortSeasonSlugs([
       ...new Set(
         chosen.filter((x) => x.section === "seasons").map((x) => x.collection),
       ),
-    ].sort((a, b) => (seasonOrder.get(a) ?? 999) - (seasonOrder.get(b) ?? 999));
+    ]);
     const graduationStatus = seasonSlugs
       .map((slug) => {
-        const total = wikiItems.filter(
-            (x) =>
-              x.section === "seasons" &&
-              x.collection === slug &&
-              isDiscontinued(x) &&
-              allClosetTypeSet.has(x.type),
-          ).length,
+        const total = seasonUltimateItems.get(slug)?.length ?? 0,
           ownedCount = chosen.filter(
             (x) =>
               x.section === "seasons" &&
@@ -2078,21 +2055,10 @@ export default function AccountOrganizer() {
         return `${seasonZh[slug] || slug}${total && ownedCount === total ? "（全畢）" : `（畢業禮 ${ownedCount}/${total || "?"}）`}`;
       })
       .filter(Boolean);
-    const uniqueItems = chosen.filter((x) =>
-        ["聯動", "平台限定", "限定"].includes(sourceKind(x)),
-      ),
+    const uniqueItems = chosen.filter(isLimitedItem),
       uniqueIds = new Set(uniqueItems.map((x) => x.guid)),
       packages = chosen.filter(isPackage),
       otherPackages = packages.filter((x) => !uniqueIds.has(x.guid));
-    const statusShort = (status: BindingStatus, excludeNintendo = false) =>
-      bindingKeys
-        .filter(
-          (key) =>
-            (!excludeNintendo || key !== "nintendo") &&
-            bindings[key] === status,
-        )
-        .map((key) => bindingNames[key].replace(/（.*?）/g, ""))
-        .join("、") || "無";
     const { buildSaleCopy } = await import("./sale-copy");
     const lines = buildSaleCopy({
       accountName: account.name,
@@ -2104,10 +2070,10 @@ export default function AccountOrganizer() {
       seasonNames: seasonSlugs.map((slug) => seasonZh[slug] || slug),
       graduationStatus,
       bindingDetails: bindingLines(),
-      transferable: statusShort("transfer", true),
+      transferable: bindingGroup("transfer", true),
       swappable: bindings.nintendo === "transfer" ? "Nintendo（NS）" : "無",
-      kept: statusShort("keep"),
-      issues: statusShort("issue"),
+      kept: bindingGroup("keep"),
+      issues: bindingGroup("issue"),
       resources: {
         candles: account.candles,
         hearts: account.hearts,
@@ -2222,11 +2188,8 @@ export default function AccountOrganizer() {
     downloadText(lines, "依季節整理");
   };
   const shareSummary = async () => {
-    const ultimates = chosen.filter(isDiscontinued),
-      packages = chosen.filter(isPackage),
-      collabs = chosen.filter((x) => sourceKind(x) === "聯動");
-    const highlights = [...ultimates, ...packages, ...collabs]
-      .filter((x, i, a) => a.findIndex((y) => y.guid === x.guid) === i)
+    const { ultimates, packages, collabs } = valuationAnalysis;
+    const highlights = uniqueByGuid([...ultimates, ...packages, ...collabs])
       .slice(0, 12)
       .map((x) => zhName(x.name));
     const summary = [
@@ -2269,9 +2232,7 @@ export default function AccountOrganizer() {
         keptBindings: bindingGroup("keep"),
         resources: `資源：${account.candles || 0} 白蠟・${account.hearts || 0} 愛心・${account.ascended || 0} 昇華蠟・${account.passes || 0} 副卡`,
         isUltimate: isDiscontinued,
-        isLimited: (item) =>
-          isPackage(item) ||
-          ["聯動", "平台限定", "限定"].includes(sourceKind(item)),
+        isLimited: (item) => isPackage(item) || isLimitedItem(item),
         getClusterName: (item) =>
           item.section === "seasons"
             ? seasonZh[item.collection] || item.collection
@@ -2487,6 +2448,8 @@ export default function AccountOrganizer() {
                             onClick={() => toggleOwned(item)}
                           >
                             <span className="season-ultimate-icon">
+                              {/* External catalog icons must keep their source URL and referrer policy. */}
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={item.icon} alt="" loading="lazy" />
                               <i aria-hidden="true">{selected ? "✓" : ""}</i>
                             </span>
@@ -2981,6 +2944,8 @@ export default function AccountOrganizer() {
                       <span className="discontinued-badge">絕版</span>
                     )}
                     <span className="source-badge">{sourceKind(x)}</span>
+                    {/* External catalog icons must keep their source URL and referrer policy. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={x.icon}
                       alt={x.name}

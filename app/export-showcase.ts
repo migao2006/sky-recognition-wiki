@@ -57,7 +57,9 @@ const loadIcons = async (items: WikiItem[], concurrency = 8) => {
       icons.set(item.guid, await loadIcon(item.icon));
     }
   };
-  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, worker),
+  );
   return icons;
 };
 
@@ -79,16 +81,28 @@ export const renderShowcaseImage = async ({
   const groups = [
     { name: "畢業禮", items: ultimates, hideClusterTitles: true },
     { name: "禮包／限定", items: limited, hideClusterTitles: false },
-    { name: "其他物品", items: items.filter((item) => !featured.has(item.guid)), hideClusterTitles: false },
+    {
+      name: "其他物品",
+      items: items.filter((item) => !featured.has(item.guid)),
+      hideClusterTitles: false,
+    },
   ].filter((group) => group.items.length);
 
   const clusterItems = (clusterSource: WikiItem[]) => {
-    const map = new Map<string, { name: string; items: WikiItem[]; order: number }>();
+    const map = new Map<
+      string,
+      { name: string; items: WikiItem[]; order: number }
+    >();
     clusterSource.forEach((item) => {
       const key = `${item.section}:${item.collection}`;
       const current = map.get(key);
       if (current) current.items.push(item);
-      else map.set(key, { name: getClusterName(item), items: [item], order: getClusterOrder(item) });
+      else
+        map.set(key, {
+          name: getClusterName(item),
+          items: [item],
+          order: getClusterOrder(item),
+        });
     });
     return [...map.values()].sort((a, b) => a.order - b.order);
   };
@@ -105,22 +119,37 @@ export const renderShowcaseImage = async ({
   const maxClusterColumns = 6;
   const contentWidth = width - pad * 2 - panelPad * 2;
 
-  const layoutClusters = (clusterSource: WikiItem[], hideClusterTitles = false) => {
+  const layoutClusters = (
+    clusterSource: WikiItem[],
+    hideClusterTitles = false,
+  ) => {
     let cursorX = 0;
     let cursorY = 0;
     let shelfHeight = 0;
     const placements = clusterItems(clusterSource).map((cluster) => {
-      const columns = Math.min(maxClusterColumns, Math.max(1, cluster.items.length));
+      const columns = Math.min(
+        maxClusterColumns,
+        Math.max(1, cluster.items.length),
+      );
       const rows = Math.ceil(cluster.items.length / columns);
       const w = clusterPad * 2 + columns * cell + (columns - 1) * iconGap;
       const titleSpace = hideClusterTitles ? 0 : clusterTitle;
-      const h = clusterPad * 2 + titleSpace + rows * cell + (rows - 1) * iconGap;
+      const h =
+        clusterPad * 2 + titleSpace + rows * cell + (rows - 1) * iconGap;
       if (cursorX && cursorX + w > contentWidth) {
         cursorX = 0;
         cursorY += shelfHeight + clusterGap;
         shelfHeight = 0;
       }
-      const placement = { cluster, x: cursorX, y: cursorY, w, h, columns, titleSpace };
+      const placement = {
+        cluster,
+        x: cursorX,
+        y: cursorY,
+        w,
+        h,
+        columns,
+        titleSpace,
+      };
       cursorX += w + clusterGap;
       shelfHeight = Math.max(shelfHeight, h);
       return placement;
@@ -131,10 +160,23 @@ export const renderShowcaseImage = async ({
   const headerHeight = 214;
   const footerHeight = 88;
   const sectionGap = 28;
-  const visibleGroups = groups.length ? groups : [{ name: "衣櫃清單", items: [] as WikiItem[], hideClusterTitles: false }];
-  const renderGroups = visibleGroups.map((group) => ({ ...group, layout: layoutClusters(group.items, group.hideClusterTitles) }));
-  const panelHeight = (layoutHeight: number) => titleHeight + Math.max(cell + 26, layoutHeight) + panelPad;
-  const height = pad + headerHeight + renderGroups.reduce((sum, group) => sum + panelHeight(group.layout.height) + sectionGap, 0) + footerHeight;
+  const visibleGroups = groups.length
+    ? groups
+    : [{ name: "衣櫃清單", items: [] as WikiItem[], hideClusterTitles: false }];
+  const renderGroups = visibleGroups.map((group) => ({
+    ...group,
+    layout: layoutClusters(group.items, group.hideClusterTitles),
+  }));
+  const panelHeight = (layoutHeight: number) =>
+    titleHeight + Math.max(cell + 26, layoutHeight) + panelPad;
+  const height =
+    pad +
+    headerHeight +
+    renderGroups.reduce(
+      (sum, group) => sum + panelHeight(group.layout.height) + sectionGap,
+      0,
+    ) +
+    footerHeight;
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -149,13 +191,28 @@ export const renderShowcaseImage = async ({
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, width, height);
 
-  const aura = ctx.createRadialGradient(width * 0.72, 40, 20, width * 0.72, 40, width * 0.8);
+  const aura = ctx.createRadialGradient(
+    width * 0.72,
+    40,
+    20,
+    width * 0.72,
+    40,
+    width * 0.8,
+  );
   aura.addColorStop(0, "rgba(120,190,205,.25)");
   aura.addColorStop(1, "rgba(7,19,29,0)");
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, width, height);
 
-  const roundRect = (x: number, y: number, w: number, h: number, radius: number, fill: string, stroke?: string) => {
+  const roundRect = (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    radius: number,
+    fill: string,
+    stroke?: string,
+  ) => {
     ctx.beginPath();
     ctx.roundRect(x, y, w, h, radius);
     ctx.fillStyle = fill;
@@ -167,7 +224,15 @@ export const renderShowcaseImage = async ({
     }
   };
 
-  roundRect(pad, pad, width - pad * 2, headerHeight, 28, "rgba(5,15,23,.62)", "rgba(184,225,232,.15)");
+  roundRect(
+    pad,
+    pad,
+    width - pad * 2,
+    headerHeight,
+    28,
+    "rgba(5,15,23,.62)",
+    "rgba(184,225,232,.15)",
+  );
   ctx.textAlign = "left";
   ctx.fillStyle = "#f3f8f7";
   ctx.font = "800 38px system-ui";
@@ -177,14 +242,27 @@ export const renderShowcaseImage = async ({
   ctx.fillText(`${accountType}　已登錄 ${items.length} 件`, pad + 32, pad + 96);
   ctx.fillStyle = "#91aeb6";
   ctx.font = "18px system-ui";
-  ctx.fillText(`可出：${transferBindings}　｜　不出：${keptBindings}`, pad + 32, pad + 132, width - pad * 2 - 64);
+  ctx.fillText(
+    `可出：${transferBindings}　｜　不出：${keptBindings}`,
+    pad + 32,
+    pad + 132,
+    width - pad * 2 - 64,
+  );
   ctx.fillText(resources, pad + 32, pad + 166, width - pad * 2 - 64);
 
   const icons = await loadIcons(items);
   let y = pad + headerHeight + sectionGap;
   renderGroups.forEach((group) => {
     const boxHeight = panelHeight(group.layout.height);
-    roundRect(pad, y, width - pad * 2, boxHeight, 28, "rgba(5,15,23,.55)", "rgba(184,225,232,.13)");
+    roundRect(
+      pad,
+      y,
+      width - pad * 2,
+      boxHeight,
+      28,
+      "rgba(5,15,23,.55)",
+      "rgba(184,225,232,.13)",
+    );
     ctx.textAlign = "center";
     ctx.fillStyle = "#f3f8f7";
     ctx.font = "800 24px system-ui";
@@ -193,58 +271,103 @@ export const renderShowcaseImage = async ({
     if (!group.items.length) {
       ctx.fillStyle = "#9ab1b8";
       ctx.font = "20px system-ui";
-      ctx.fillText("尚未選取任何衣櫃物品", width / 2, y + titleHeight + cell / 2 + 8);
+      ctx.fillText(
+        "尚未選取任何衣櫃物品",
+        width / 2,
+        y + titleHeight + cell / 2 + 8,
+      );
     }
 
-    group.layout.placements.forEach(({ cluster, x: clusterX, y: clusterY, w, h, columns, titleSpace }) => {
-      const x = pad + panelPad + clusterX;
-      const clusterTop = y + titleHeight + clusterY;
-      roundRect(x, clusterTop, w, h, 16, "rgba(132,177,187,.08)", "rgba(184,225,232,.16)");
-      if (!group.hideClusterTitles) {
-        ctx.textAlign = "left";
-        ctx.fillStyle = "#a9cbd2";
-        ctx.font = "700 14px system-ui";
-        ctx.fillText(`${cluster.name}　${cluster.items.length}`, x + clusterPad, clusterTop + 21, w - clusterPad * 2);
-      }
-
-      cluster.items.forEach((item, index) => {
-        const col = index % columns;
-        const row = Math.floor(index / columns);
-        const cellX = x + clusterPad + col * (cell + iconGap);
-        const cellY = clusterTop + clusterPad + titleSpace + row * (cell + iconGap);
-        roundRect(cellX, cellY, cell, cell, 13, "rgba(255,255,255,.045)", "rgba(255,255,255,.06)");
-        const image = icons.get(item.guid);
-        if (image) {
-          const max = cell - 16;
-          const scale = Math.min(max / image.naturalWidth, max / image.naturalHeight);
-          const drawW = image.naturalWidth * scale;
-          const drawH = image.naturalHeight * scale;
-          ctx.save();
-          ctx.shadowColor = "rgba(255,224,139,.42)";
-          ctx.shadowBlur = 9;
-          ctx.drawImage(image, cellX + (cell - drawW) / 2, cellY + (cell - drawH) / 2, drawW, drawH);
-          ctx.restore();
-        } else {
-          ctx.textAlign = "center";
-          ctx.fillStyle = "#ffe4a8";
-          ctx.font = "700 28px system-ui";
-          ctx.fillText("✦", cellX + cell / 2, cellY + cell * 0.64);
+    group.layout.placements.forEach(
+      ({ cluster, x: clusterX, y: clusterY, w, h, columns, titleSpace }) => {
+        const x = pad + panelPad + clusterX;
+        const clusterTop = y + titleHeight + clusterY;
+        roundRect(
+          x,
+          clusterTop,
+          w,
+          h,
+          16,
+          "rgba(132,177,187,.08)",
+          "rgba(184,225,232,.16)",
+        );
+        if (!group.hideClusterTitles) {
+          ctx.textAlign = "left";
+          ctx.fillStyle = "#a9cbd2";
+          ctx.font = "700 14px system-ui";
+          ctx.fillText(
+            `${cluster.name}　${cluster.items.length}`,
+            x + clusterPad,
+            clusterTop + 21,
+            w - clusterPad * 2,
+          );
         }
-      });
-    });
+
+        cluster.items.forEach((item, index) => {
+          const col = index % columns;
+          const row = Math.floor(index / columns);
+          const cellX = x + clusterPad + col * (cell + iconGap);
+          const cellY =
+            clusterTop + clusterPad + titleSpace + row * (cell + iconGap);
+          roundRect(
+            cellX,
+            cellY,
+            cell,
+            cell,
+            13,
+            "rgba(255,255,255,.045)",
+            "rgba(255,255,255,.06)",
+          );
+          const image = icons.get(item.guid);
+          if (image) {
+            const max = cell - 16;
+            const scale = Math.min(
+              max / image.naturalWidth,
+              max / image.naturalHeight,
+            );
+            const drawW = image.naturalWidth * scale;
+            const drawH = image.naturalHeight * scale;
+            ctx.save();
+            ctx.shadowColor = "rgba(255,224,139,.42)";
+            ctx.shadowBlur = 9;
+            ctx.drawImage(
+              image,
+              cellX + (cell - drawW) / 2,
+              cellY + (cell - drawH) / 2,
+              drawW,
+              drawH,
+            );
+            ctx.restore();
+          } else {
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#ffe4a8";
+            ctx.font = "700 28px system-ui";
+            ctx.fillText("✦", cellX + cell / 2, cellY + cell * 0.64);
+          }
+        });
+      },
+    );
     y += boxHeight + sectionGap;
   });
 
   ctx.textAlign = "left";
   ctx.fillStyle = "#91aeb6";
   ctx.font = "16px system-ui";
-  ctx.fillText("資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單", pad, y + 18);
+  ctx.fillText(
+    "資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單",
+    pad,
+    y + 18,
+  );
   ctx.textAlign = "right";
   ctx.fillStyle = "#ead49f";
   ctx.font = "700 18px system-ui";
   ctx.fillText(`全部：${items.length} 件`, width - pad, y + 18);
 
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("image-export-failed")), "image/png");
+    canvas.toBlob(
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error("image-export-failed")),
+      "image/png",
+    );
   });
 };

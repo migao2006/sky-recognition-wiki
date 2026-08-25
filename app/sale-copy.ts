@@ -25,14 +25,22 @@ type SaleCopyInput = {
 
 const divider = "⸻";
 const placeholder = "［請填寫］";
-const inlineList = (items: string[], empty = placeholder) => items.length ? items.join("⸝") : empty;
-const seasonRows = (items: string[]) => items.length
-  ? Array.from({ length: Math.ceil(items.length / 5) }, (_, index) => items.slice(index * 5, index * 5 + 5).map((item) => `［${item}］`).join("┊"))
-  : ["［尚未登錄季節物品］"];
+const inlineList = (items: string[], empty = placeholder) =>
+  items.length ? items.join("⸝") : empty;
+const seasonRows = (items: string[]) =>
+  items.length
+    ? Array.from({ length: Math.ceil(items.length / 5) }, (_, index) =>
+        items
+          .slice(index * 5, index * 5 + 5)
+          .map((item) => `［${item}］`)
+          .join("┊"),
+      )
+    : ["［尚未登錄季節物品］"];
 
 export const buildSaleCopy = (data: SaleCopyInput) => {
   const position = `${data.earliestSeason || "起季待填"}｜${data.accountType}｜已登錄 ${data.selectedCount} 件｜禮包物品 ${data.packageItemCount} 件`;
-  const summaryHighlights = data.ultimates.slice(0, 6).join("、") || "核心物品待補";
+  const summaryHighlights =
+    data.ultimates.slice(0, 6).join("、") || "核心物品待補";
   return [
     `▍${data.accountName || "光遇帳號出售"}`,
     "",
@@ -140,7 +148,11 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     "",
     "⚠ › 必須提前說明",
     "",
-    data.issues === "無" && !data.notes ? placeholder : [data.issues !== "無" ? `綁定異常：${data.issues}` : "", data.notes].filter(Boolean).join("\n"),
+    data.issues === "無" && !data.notes
+      ? placeholder
+      : [data.issues !== "無" ? `綁定異常：${data.issues}` : "", data.notes]
+          .filter(Boolean)
+          .join("\n"),
     "",
     divider,
     "",
