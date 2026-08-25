@@ -26,6 +26,5 @@
     "eslint-config-next": "16.2.6",
     "typescript": "5.9.3"
   },
-  "type": "module",
-  "displayName": "光遇帳號整理"
+  "type": "module"
 }

@@ -1,0 +1,141 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+import ts from "typescript";
+
+const asModuleUrl = (source) =>
+  `data:text/javascript,${encodeURIComponent(
+    ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.ESNext,
+        target: ts.ScriptTarget.ES2022,
+      },
+    }).outputText,
+  )}`;
+
+const loadAccountBackup = async () => {
+  const [configSource, backupSource] = await Promise.all(
+    ["account-config.ts", "account-backup.ts"].map((file) =>
+      readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
+    ),
+  );
+  const moduleSource = backupSource.replace(
+    /import \{([\s\S]*?)\} from "\.\/account-config";/,
+    (_, imports) =>
+      `const {${imports.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(
+        asModuleUrl(configSource),
+      )});`,
+  );
+  return import(asModuleUrl(moduleSource));
+};
+
+const { createAccountBackup, parseAccountBackup } = await loadAccountBackup();
+
+const account = {
+  name: "測試帳號",
+  accountType: "有翼",
+  candles: "12",
+  hearts: "3",
+  ascended: "1",
+  passes: "0",
+  bindingNote: "",
+  notes: "備註",
+};
+
+const item = {
+  id: 7,
+  order: 1,
+  guid: "valid-guid",
+  name: "Rainbow Cape",
+  type: "Cape",
+  group: "",
+  icon: "",
+  wiki: "https://example.com/rainbow",
+  section: "events",
+  collection: "days-of-color",
+};
+
+test("creates a stable versioned account backup", () => {
+  const backup = createAccountBackup({
+    account,
+    bindings: {
+      google: "transfer",
+      nintendo: "none",
+      gameCenter: "none",
+      facebook: "none",
+      steam: "none",
+      twitch: "keep",
+    },
+    items: [item],
+    getZhName: () => "彩虹斗篷",
+    getSource: () => "彩虹日",
+    exportedAt: new Date("2026-08-25T00:00:00.000Z"),
+  });
+
+  assert.equal(backup.format, "sky-recognition-wiki");
+  assert.equal(backup.version, 2);
+  assert.equal(backup.exportedAt, "2026-08-25T00:00:00.000Z");
+  assert.deepEqual(backup.owned, ["valid-guid"]);
+  assert.deepEqual(backup.items[0], {
+    guid: "valid-guid",
+    id: 7,
+    name: "Rainbow Cape",
+    zhName: "彩虹斗篷",
+    type: "Cape",
+    source: "彩虹日",
+    sourceUrl: "https://example.com/rainbow",
+  });
+
+  const restored = parseAccountBackup(backup, new Set(["valid-guid"]));
+  assert.deepEqual(restored.account, account);
+  assert.deepEqual(restored.bindings, backup.bindings);
+  assert.deepEqual(restored.owned, ["valid-guid"]);
+});
+
+test("normalizes imports and keeps only known item ids", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      account: { ...account, accountType: "無翼帳號", candles: 0 },
+      bindings: { google: "transfer", twitter: "keep", steam: "unknown" },
+      owned: ["valid-guid", "missing-guid", 7],
+    },
+    new Set(["valid-guid"]),
+  );
+
+  assert.equal(imported.account.accountType, "無翼");
+  assert.equal(imported.account.candles, "");
+  assert.equal(imported.bindings.google, "transfer");
+  assert.equal(imported.bindings.twitch, "keep");
+  assert.equal(imported.bindings.steam, "none");
+  assert.deepEqual(imported.owned, ["valid-guid"]);
+});
+
+test("rejects unrelated JSON files", () => {
+  assert.throws(
+    () => parseAccountBackup({ format: "other", account, owned: [] }, new Set()),
+    /Invalid account backup/,
+  );
+  assert.throws(
+    () =>
+      parseAccountBackup(
+        { format: "sky-recognition-wiki", account: "invalid", owned: [] },
+        new Set(),
+      ),
+    /Invalid account backup/,
+  );
+});
+
+test("preserves the legacy version-agnostic import policy", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 999,
+      account,
+      owned: [],
+    },
+    new Set(),
+  );
+
+  assert.equal(imported.account.name, "測試帳號");
+});
