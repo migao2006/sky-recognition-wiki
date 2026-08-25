@@ -1,14 +1,14 @@
 :root {
-  color-scheme: light;
-  --bg: #f8f1e8;
-  --bg-2: #f2e5d8;
-  --text: #3d2d25;
-  --line: #8f65422e;
-  --sky: #8a542f;
-  --gold: #986033;
-  --orange: #98502d;
-  --shadow: 0 18px 46px #76543a1c;
-  --soft-shadow: 0 8px 22px #76543a17;
+  color-scheme: dark;
+  --bg: #04060c;
+  --bg-2: #0a1020;
+  --text: #f7f4ed;
+  --line: #b8c9e32b;
+  --sky: #a9ceff;
+  --gold: #f0ca83;
+  --orange: #d99b70;
+  --shadow: 0 18px 46px #00000066;
+  --soft-shadow: 0 8px 22px #00000052;
 }
 * {
   box-sizing: border-box;
@@ -20,9 +20,9 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 10% -8%, #f5d8bd 0, transparent 32%),
-    radial-gradient(circle at 95% 35%, #eed6c480 0, transparent 30%),
-    linear-gradient(155deg, var(--bg), var(--bg-2) 55%, #fbf6ef);
+    radial-gradient(circle at 12% -8%, #233969 0, transparent 34%),
+    radial-gradient(circle at 92% 30%, #38295080 0, transparent 30%),
+    linear-gradient(155deg, var(--bg), var(--bg-2) 55%, #050811);
   color: var(--text);
   font-family:
     ui-rounded, "SF Pro Rounded", "Noto Sans TC", "PingFang TC", system-ui,
@@ -34,24 +34,27 @@ body:after {
   content: "";
   position: fixed;
   z-index: -1;
-  border-radius: 50%;
-  filter: blur(110px);
   pointer-events: none;
-  opacity: 0.14;
 }
 body:before {
-  width: 320px;
-  height: 320px;
-  left: -110px;
-  top: 25%;
-  background: #efc9a4;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, #ffffffd9 0 0.7px, transparent 1px),
+    radial-gradient(circle, #a9ceffb8 0 0.8px, transparent 1.15px),
+    radial-gradient(circle, #f0ca8399 0 0.65px, transparent 1px);
+  background-position: 0 0, 37px 53px, 19px 31px;
+  background-size: 83px 83px, 127px 127px, 173px 173px;
+  opacity: 0.42;
 }
 body:after {
-  width: 340px;
-  height: 340px;
-  right: -150px;
-  bottom: -100px;
-  background: #e9bfae;
+  width: 520px;
+  height: 520px;
+  right: -230px;
+  bottom: -210px;
+  border-radius: 50%;
+  background: #243d7a;
+  filter: blur(140px);
+  opacity: 0.28;
 }
 button,
 input,
@@ -72,51 +75,13 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 a:focus-visible {
-  outline: 2px solid #9a642f !important;
+  outline: 2px solid #b7d6ff !important;
   outline-offset: 3px !important;
 }
 
-/* 浮動應用列 */
-.topbar {
-  width: min(1160px, calc(100% - 32px));
-  height: 66px;
-  margin: 14px auto 0;
-  padding: 7px 9px 7px 14px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  position: sticky;
-  top: 12px;
-  z-index: 30;
-  border: 1px solid #f2d8b529;
-  border-radius: 22px;
-  background: #201711f2;
-  backdrop-filter: blur(24px) saturate(1.15);
-  box-shadow: 0 10px 30px #100a0755;
-}
-.brand {
-  justify-self: start;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  font-size: 17px;
-  letter-spacing: -0.02em;
-}
-.brand-star {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #fff0d7;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #fff2dc, #d79a69);
-  box-shadow: 0 7px 18px #e0ad6f33;
-  color: #59361f;
-  font-size: 17px;
-}
 .workflow-steps {
   width: min(720px, calc(100% - 32px));
-  margin: 18px auto 0;
+  margin: 14px auto 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
@@ -129,7 +94,7 @@ a:focus-visible {
   gap: 9px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #241913cc;
+  background: #0c111dcc;
   color: #bba997;
   font-size: 13px;
   font-weight: 800;
@@ -137,7 +102,7 @@ a:focus-visible {
 }
 .workflow-steps button.active {
   border-color: #e6bd7a7a;
-  background: #493326;
+  background: #18233a;
   color: #fff8ec;
   box-shadow: inset 0 -2px #d49a66;
 }
@@ -169,8 +134,8 @@ a:focus-visible {
   padding: 19px 22px;
   border: 1px solid #f2d8b529;
   border-radius: 22px;
-  background: #34231ae8;
-  box-shadow: 0 12px 28px #100a0738;
+  background: #0d1421e8;
+  box-shadow: 0 12px 28px #00000052;
 }
 .catalog-intro h1,
 .summary-intro h1 {
@@ -212,9 +177,9 @@ a:focus-visible {
   padding: 12px;
   border: 1px solid #f2d8b523;
   border-radius: 25px;
-  background: #2a1e17e8;
+  background: #0b111ce8;
   backdrop-filter: blur(20px);
-  box-shadow: 0 14px 34px #100a0742;
+  box-shadow: 0 14px 34px #00000066;
 }
 .discovery-tools:has(.season-select) {
   grid-template-columns: minmax(280px, 1fr) 170px 170px 210px;
@@ -228,7 +193,7 @@ a:focus-visible {
   padding: 9px 13px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #201812;
+  background: #080d16;
   box-shadow: inset 0 1px #ffffff08;
 }
 .catalog-search > span,
@@ -323,7 +288,7 @@ a:focus-visible {
   padding: 11px 13px;
   border: 1px solid #f2d8b51f;
   border-radius: 19px;
-  background: #2a1e17;
+  background: #0b111c;
   color: #cdbba9;
   text-align: left;
   cursor: pointer;
@@ -333,11 +298,11 @@ a:focus-visible {
 .closet-nav button:hover {
   transform: translateY(-1px);
   border-color: #e6bd7a52;
-  background: #3a2a20;
+  background: #151d2c;
 }
 .closet-nav button.selected {
   border-color: #e6bd7a7d;
-  background: #4a3428;
+  background: #1a273f;
   color: #fff8ec;
   box-shadow: inset 3px 0 #d49a66;
 }
@@ -349,7 +314,7 @@ a:focus-visible {
   place-items: center;
   border: 1px solid #ffffff0f;
   border-radius: 12px;
-  background: #1d140f;
+  background: #070b13;
   color: var(--sky);
   font-size: 9px;
   letter-spacing: 0.08em;
@@ -374,7 +339,7 @@ a:focus-visible {
   padding: 7px 9px;
   border: 1px solid var(--line);
   border-radius: 17px;
-  background: #211711;
+  background: #080c14;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -456,7 +421,7 @@ a:focus-visible {
   padding: 16px 20px;
   border: 1px solid var(--line);
   border-radius: 0 0 25px 25px;
-  background: #211711;
+  background: #080c14;
   color: #bba997;
   font-size: 12px;
 }
@@ -503,10 +468,10 @@ a:focus-visible {
   border: 1px solid #f0d3ad21;
   border-radius: 21px;
   overflow: hidden;
-  background: #2a1d16;
+  background: #0b111b;
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 7px 20px #100a072e;
+  box-shadow: 0 7px 20px #0000004a;
   transition:
     transform 0.22s,
     border-color 0.22s,
@@ -526,8 +491,8 @@ a:focus-visible {
   background: radial-gradient(
     circle at 50% 42%,
     #594234 0,
-    #312219 60%,
-    #1d1510 100%
+    #172033 60%,
+    #090e18 100%
   );
 }
 .image-wrap:after {
@@ -558,7 +523,7 @@ a:focus-visible {
   padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: #201812e8;
+  background: #080d16e8;
   color: #ead2b1;
   backdrop-filter: blur(9px);
   font-size: 9px;
@@ -580,7 +545,7 @@ a:focus-visible {
   min-height: 132px;
   padding: 12px 13px 14px;
   border-top: 1px solid var(--line);
-  background: #241913;
+  background: #0d1320;
 }
 .card-body > div {
   display: flex;
@@ -690,8 +655,8 @@ a:focus-visible {
   padding: 22px 24px;
   border: 1px solid #f2d8b529;
   border-radius: 25px 25px 0 0;
-  background: #34231a;
-  box-shadow: 0 14px 34px #100a0745;
+  background: #101725;
+  box-shadow: 0 14px 34px #00000068;
 }
 .account-intro h1 {
   margin: 0;
@@ -720,7 +685,7 @@ a:focus-visible {
   gap: 12px;
   padding: 22px;
   border-inline: 1px solid var(--line);
-  background: #261a14;
+  background: #0a101a;
 }
 .account-form label {
   display: grid;
@@ -736,7 +701,7 @@ a:focus-visible {
   padding: 0 13px;
   border: 1px solid #f0d3ad28;
   border-radius: 13px;
-  background: #1b1511;
+  background: #070c14;
   color: var(--text);
   font-size: 14px;
   outline: none;
@@ -787,7 +752,7 @@ a:focus-visible {
   padding: 11px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: #1b130f8c;
+  background: #070b138c;
 }
 .binding-card > span {
   color: #cfbfae;
@@ -812,7 +777,7 @@ a:focus-visible {
 }
 .quick-select {
   border-inline: 1px solid var(--line);
-  background: #261a14;
+  background: #0a101a;
 }
 .quick-select summary {
   min-height: 64px;
@@ -840,7 +805,7 @@ a:focus-visible {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #1b130f;
+  background: #060a11;
   color: #dfb97d;
   font-size: 17px;
   font-style: normal;
@@ -857,7 +822,7 @@ a:focus-visible {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: #201711;
+  background: #080c14;
 }
 .preset-grid {
   display: grid;
@@ -873,7 +838,7 @@ a:focus-visible {
   padding: 10px 11px 10px 39px;
   border: 1px solid #f0d3ad25;
   border-radius: 13px;
-  background: #2f2119;
+  background: #101724;
   color: #f1e0cc;
   text-align: left;
   cursor: pointer;
@@ -882,7 +847,7 @@ a:focus-visible {
 .preset-grid button:hover {
   transform: translateY(-1px);
   border-color: #e6bd7a5e;
-  background: #443024;
+  background: #172238;
 }
 .preset-grid button:active {
   transform: scale(0.98);
@@ -915,7 +880,7 @@ a:focus-visible {
   transform: translateY(-50%);
   border: 1px solid #9d81604d;
   border-radius: 7px;
-  background: #1b130f;
+  background: #060a11;
   color: transparent;
   font-size: 12px;
   font-style: normal;
@@ -955,7 +920,7 @@ a:focus-visible {
   padding: 22px;
   border-inline: 1px solid var(--line);
   border-top: 1px solid var(--line);
-  background: #221711;
+  background: #080d16;
 }
 .valuation-report-head {
   display: flex;
@@ -979,7 +944,7 @@ a:focus-visible {
   place-content: center;
   border-radius: 50%;
   background:
-    radial-gradient(circle, #241913 57%, transparent 59%),
+    radial-gradient(circle, #0d1320 57%, transparent 59%),
     conic-gradient(#f0c985 var(--completion), #ffffff12 0);
   text-align: center;
 }
@@ -994,14 +959,14 @@ a:focus-visible {
 .valuation-verdict,
 .valuation-metrics article {
   border: 1px solid #f0d3ad25;
-  background: #201812;
+  background: #080d16;
 }
 .valuation-verdict {
   min-height: 166px;
   padding: 18px;
   border-color: #f1c77c52;
   border-radius: 18px;
-  background: linear-gradient(145deg, #35261e, #211711);
+  background: linear-gradient(145deg, #141d2e, #080c14);
 }
 .valuation-verdict > span {
   color: #d6b57d;
@@ -1086,7 +1051,7 @@ a:focus-visible {
   border: 1px solid var(--line);
   border-top: 0;
   border-radius: 0 0 25px 25px;
-  background: #261a14;
+  background: #0a101a;
 }
 .account-actions button {
   min-height: 44px;
@@ -1104,7 +1069,7 @@ a:focus-visible {
 }
 .export-tools button {
   border: 1px solid #f0d3ad29;
-  background: #2f2119;
+  background: #101724;
   color: #e1d1be;
 }
 .export-tools button:hover {
@@ -1139,8 +1104,8 @@ a:focus-visible {
   background: radial-gradient(
     circle at 50% 40%,
     #6d5740 0,
-    #2d241c 64%,
-    #1d1712 100%
+    #101827 64%,
+    #070c14 100%
   );
 }
 .owned-check {
@@ -1154,7 +1119,7 @@ a:focus-visible {
   place-items: center;
   border: 1px solid #f2d6aa77;
   border-radius: 10px;
-  background: #1a110ddb;
+  background: #050910db;
   color: #f2d6aa;
   font-size: 15px;
   font-weight: 900;
@@ -1189,7 +1154,7 @@ footer {
   padding: 11px 16px;
   border: 1px solid #f2d6aa4f;
   border-radius: 14px;
-  background: #251812e8;
+  background: #09101be8;
   color: #f6d9ad;
   backdrop-filter: blur(20px);
   box-shadow: var(--shadow);
@@ -1233,31 +1198,13 @@ footer {
 @media (max-width: 700px) {
   body {
     background:
-      radial-gradient(circle at 8% 0, #754936 0, transparent 30%),
-      linear-gradient(160deg, #19130f, #291c15 62%, #1d1510);
-  }
-  .topbar {
-    width: calc(100% - 20px);
-    height: 62px;
-    margin-top: 9px;
-    padding: 7px 9px 7px 11px;
-    top: 8px;
-    grid-template-columns: 1fr auto;
-    border-radius: 19px;
-    background: #201711f5;
-  }
-  .brand {
-    gap: 9px;
-    font-size: 16px;
-  }
-  .brand-star {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
+      radial-gradient(circle at 8% 0, #233969 0, transparent 31%),
+      radial-gradient(circle at 100% 42%, #31244780 0, transparent 29%),
+      linear-gradient(160deg, #04060c, #0a1020 62%, #050811);
   }
   .workflow-steps {
     width: calc(100% - 20px);
-    margin-top: 12px;
+    margin-top: 9px;
     gap: 6px;
   }
   .workflow-steps button {
@@ -1605,7 +1552,7 @@ footer {
 /* 季節項鍊與畢業禮逐件選擇 */
 .season-picker {
   border-inline: 1px solid var(--line);
-  background: #261a14;
+  background: #0a101a;
 }
 .season-picker summary {
   min-height: 64px;
@@ -1633,7 +1580,7 @@ footer {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #1b130f;
+  background: #060a11;
   color: #dfb97d;
   font-size: 17px;
   font-style: normal;
@@ -1655,14 +1602,14 @@ footer {
   padding: 11px;
   border: 1px solid #f0d3ad24;
   border-radius: 14px;
-  background: #211711;
+  background: #080c14;
   transition:
     border-color 0.18s,
     background-color 0.18s;
 }
 .season-ultimate-card.has-selected {
   border-color: #b99d6862;
-  background: #2e251b;
+  background: #111927;
 }
 .season-ultimate-card header {
   display: flex;
@@ -1709,7 +1656,7 @@ footer {
   place-items: center;
   border: 1px solid #f0d3ad25;
   border-radius: 11px;
-  background: radial-gradient(circle at 50% 40%, #5c4634, #2e221a 68%);
+  background: radial-gradient(circle at 50% 40%, #263957, #111927 68%);
   overflow: hidden;
 }
 .season-ultimate-icon img {
@@ -1748,14 +1695,14 @@ footer {
 }
 .season-ultimate-item.pendant .season-ultimate-icon {
   border-color: #f1c77c52;
-  background: radial-gradient(circle at 50% 40%, #59462c, #33261c 70%);
+  background: radial-gradient(circle at 50% 40%, #263a55, #121b2a 70%);
 }
 .season-ultimate-item.pendant small {
   color: #dbc08f;
 }
 .season-ultimate-item.selected .season-ultimate-icon {
   border-color: #c4aa73;
-  background: radial-gradient(circle at 50% 40%, #6b543b, #30251c 70%);
+  background: radial-gradient(circle at 50% 40%, #304566, #111a29 70%);
   box-shadow: inset 0 0 0 1px #c4aa732e;
 }
 .season-ultimate-item.selected .season-ultimate-icon i {
@@ -1818,425 +1765,5 @@ footer {
   }
   .season-ultimate-items {
     gap: 5px;
-  }
-}
-
-/* 暖米白淺色主題 */
-.topbar {
-  border-color: #9b6a4030;
-  background: #fffaf3f2;
-  box-shadow: 0 10px 30px #76543a1c;
-}
-.brand-star {
-  border-color: #c68f6070;
-  background: linear-gradient(145deg, #fffdf9, #efc49e);
-  box-shadow: 0 7px 18px #bd85542b;
-  color: #6f4329;
-}
-.workflow-steps button {
-  border-color: var(--line);
-  background: #fffaf4d9;
-  color: #6f5e53;
-}
-.workflow-steps button.active {
-  border-color: #ae704f70;
-  background: #eed8c4;
-  color: #432c21;
-  box-shadow: inset 0 -2px #bd7650;
-}
-.workflow-steps i {
-  background: #a96b3d12;
-  color: #754329;
-}
-.catalog-intro,
-.summary-intro,
-.account-intro {
-  border-color: #9b6a4030;
-  background: #fffaf3ed;
-  box-shadow: 0 12px 28px #76543a16;
-}
-.catalog-intro p,
-.summary-intro p,
-.account-intro p,
-.account-progress span,
-.load-more,
-.valuation-method,
-.empty {
-  color: #75645a;
-}
-.catalog-intro > button,
-.summary-intro > button,
-.step-actions button,
-.load-more button,
-.export-tools .export-account {
-  border-color: #ae704f55;
-  background: #a9683d12;
-  color: #68402a;
-}
-.discovery-tools {
-  border-color: #9b6a4029;
-  background: #fffaf5e8;
-  box-shadow: 0 14px 34px #76543a17;
-}
-.catalog-search,
-.source-select {
-  border-color: var(--line);
-  background: #fffdfa;
-  box-shadow: inset 0 1px #ffffff;
-}
-.catalog-search > span,
-.source-select > span,
-.binding-card > span {
-  color: #6c5b51;
-}
-.catalog-search input::placeholder,
-.account-form input::placeholder {
-  color: #79675c;
-}
-.catalog-search button,
-.reset-filters,
-.closet-subs button {
-  background: #9d6b4310;
-  color: #624f45;
-}
-.valuation-toggle {
-  border-color: #a96b3d52;
-  background: #b9794810;
-  color: #754329;
-}
-.valuation-toggle.active {
-  border-color: #a568437d;
-  background: #eacfb7;
-  color: #52301f;
-  box-shadow: inset 0 0 0 1px #fff8ef;
-}
-.closet-nav button {
-  border-color: #9b6a4026;
-  background: #fffaf4;
-  color: #65544a;
-}
-.closet-nav button:hover {
-  border-color: #a96b3d55;
-  background: #f7e9dc;
-}
-.closet-nav button.selected {
-  border-color: #a96b3d70;
-  background: #ead2be;
-  color: #41291e;
-  box-shadow: inset 3px 0 #b96f48;
-}
-.closet-nav b,
-.quick-select summary i,
-.season-picker summary i,
-.preset-check {
-  border-color: var(--line);
-  background: #f8ece1;
-  color: #754329;
-}
-.closet-nav button.selected b {
-  border-color: #a96b3d50;
-  background: #fff8ef;
-  color: #633a25;
-}
-.closet-subs,
-.step-actions {
-  border-color: var(--line);
-  background: #fffaf4;
-  color: #6c5b51;
-}
-.closet-subs button.selected {
-  border-color: #a96b3d66;
-  background: #ead2bd;
-  color: #4c3023;
-}
-.closet-subs i {
-  background: #9d6b4312;
-  color: #754329;
-}
-.closet-subs button.selected i {
-  background: #fff8ef;
-  color: #633a25;
-}
-.discontinued-filter {
-  border-color: #b95c6c4d !important;
-  color: #9b4454 !important;
-}
-.closet-subs .discontinued-filter.selected {
-  border-color: #b95c6c70 !important;
-  background: #f4dce0 !important;
-  color: #873747 !important;
-}
-.step-actions button.secondary {
-  color: #65544a;
-}
-.reset-filters:hover {
-  border-color: #a96b3d52;
-  color: #754329;
-}
-.item-card {
-  border-color: #9b6a4029;
-  background: #fffdf9;
-  box-shadow: 0 7px 20px #76543a17;
-}
-.item-card:hover {
-  border-color: #a96b3d52;
-  box-shadow: 0 13px 28px #76543a20;
-}
-.image-wrap {
-  background: radial-gradient(
-    circle at 50% 42%,
-    #fffdf9 0,
-    #f4e5d8 62%,
-    #ead7c6 100%
-  );
-}
-.image-wrap:after {
-  background: #bd7b3f1c;
-}
-.image-wrap img,
-.season-ultimate-icon img {
-  filter: drop-shadow(0 9px 10px #6f4c3238);
-}
-.source-badge,
-.discontinued-badge {
-  border-color: #9b6a4038;
-  background: #fffaf1e8;
-  color: #5c4233;
-}
-.discontinued-badge {
-  border-color: #b95c6c55;
-  color: #963e50;
-}
-.card-body {
-  border-color: var(--line);
-  background: #fffdf9;
-}
-.type {
-  border-color: #a95f3745;
-  background: #a95f370d;
-  color: #85472b;
-}
-.type-Hair,
-.type-HairAccessory,
-.type-HeadAccessory,
-.type-Mask,
-.type-FaceAccessory,
-.type-Outfit,
-.type-OutfitShoes,
-.type-Shoes {
-  color: #684731;
-}
-.card-body h2,
-.form-section-title b,
-.quick-select summary b,
-.season-picker summary b,
-.valuation-report-head h2,
-.valuation-verdict h3,
-.valuation-metrics b,
-.account-progress b {
-  color: #33251e;
-}
-.account-form,
-.quick-select,
-.season-picker,
-.account-actions {
-  background: #fffaf4;
-}
-.account-form label {
-  color: #5d4c43;
-}
-.account-form input,
-.account-form select {
-  border-color: #9b6a4030;
-  background: #fffdf9;
-  color: #33251e;
-}
-.account-form input:focus,
-.account-form select:focus {
-  border-color: #a96b3d70;
-  box-shadow: 0 0 0 3px #a96b3d14;
-}
-.account-form .binding-card {
-  border-color: var(--line);
-  background: #fffdf985;
-}
-.binding-card.status-transfer {
-  border-color: #9a744e55 !important;
-  background: #efe2d20f !important;
-}
-.binding-card.status-keep {
-  border-color: #b18a4e55 !important;
-  background: #f8eddc !important;
-}
-.binding-card.status-issue {
-  border-color: #b95c6c55 !important;
-  background: #fae9ec !important;
-}
-.quick-select-body > section {
-  border-color: var(--line);
-  background: #fffdf9;
-}
-.preset-grid button {
-  border-color: #9b6a402d;
-  background: #fff9f2;
-  color: #423129;
-}
-.preset-grid button small {
-  background: #9d6b4314;
-  color: #684b3a;
-}
-.preset-grid button:hover {
-  border-color: #a96b3d55;
-  background: #f5e4d5;
-}
-.preset-grid button.partial {
-  border-color: #b18a4e66;
-  background: #fbf1d8;
-}
-.preset-grid button.partial .preset-check,
-.preset-grid button.partial small {
-  color: #775327;
-}
-.preset-grid button.selected {
-  border-color: #a96b3d70;
-  background: #ead0b8;
-  color: #41291e;
-  box-shadow: inset 3px 0 #ad6842;
-}
-.preset-grid button.selected .preset-check {
-  border-color: #a96b3d7a;
-  background: #a96b3d;
-  color: #fffaf3;
-}
-.preset-grid button.selected small {
-  color: #68402a;
-}
-.valuation-report {
-  border-color: var(--line);
-  background: #fffaf4;
-}
-.completion-ring {
-  background:
-    radial-gradient(circle, #fffaf4 57%, transparent 59%),
-    conic-gradient(#ad7148 var(--completion), #9b6a401a 0);
-}
-.valuation-verdict,
-.valuation-metrics article {
-  border-color: #9b6a402d;
-  background: #fffdf9;
-}
-.valuation-verdict {
-  border-color: #a96b3d45;
-  background: linear-gradient(145deg, #f8e8d8, #fffaf4);
-}
-.valuation-verdict > span,
-.valuation-method a,
-.valuation-verdict .model-price {
-  color: #754329;
-}
-.valuation-verdict p,
-.valuation-metrics span {
-  color: #68574d;
-}
-.valuation-verdict a,
-.valuation-verdict button {
-  border-color: #a96b3d55;
-  background: #a96b3d10;
-  color: #633a25;
-}
-.export-tools button {
-  border-color: #9b6a4030;
-  background: #fffdf9;
-  color: #514037;
-}
-.export-tools button:hover {
-  border-color: #a96b3d55;
-  color: #754329;
-}
-.clear-owned {
-  color: #68574d;
-}
-.item-card.selectable.owned {
-  border-color: #a56a4399;
-  box-shadow: inset 0 0 0 1px #a56a4333;
-}
-.item-card.selectable.owned .image-wrap {
-  background: radial-gradient(
-    circle at 50% 40%,
-    #fff9ef 0,
-    #ecd4bd 64%,
-    #dfc2a7 100%
-  );
-}
-.owned-check {
-  border-color: #9c633e70;
-  background: #fffaf0e8;
-  color: #754329;
-}
-.item-card.owned .owned-check {
-  border-color: #8b5433;
-  background: #8b5433;
-  color: #fffaf3;
-}
-footer {
-  border-color: #9b6a4024;
-  color: #75645a;
-}
-.notice {
-  border-color: #9b6a4045;
-  background: #fffaf3f2;
-  color: #4a352b;
-  box-shadow: 0 12px 30px #76543a24;
-}
-.season-ultimate-card {
-  border-color: #9b6a402b;
-  background: #fffdf9;
-}
-.season-ultimate-card.has-selected {
-  border-color: #a96b3d60;
-  background: #f4e3d3;
-}
-.season-ultimate-card header b {
-  color: #423129;
-}
-.season-ultimate-card header span {
-  background: #a96b3d10;
-  color: #70442a;
-}
-.season-ultimate-item {
-  color: #6c5b51;
-}
-.season-ultimate-icon {
-  border-color: #9b6a402d;
-  background: radial-gradient(circle at 50% 40%, #fffdf9, #ead8c7 70%);
-}
-.season-ultimate-item small {
-  color: #6c5b51;
-}
-.season-ultimate-item.pendant .season-ultimate-icon {
-  border-color: #a96b3d50;
-  background: radial-gradient(circle at 50% 40%, #fff7e9, #e8cfad 72%);
-}
-.season-ultimate-item.pendant small,
-.season-ultimate-item.selected small {
-  color: #633a25;
-}
-.season-ultimate-item.selected .season-ultimate-icon {
-  border-color: #8b5433;
-  background: radial-gradient(circle at 50% 40%, #fff8ed, #e1c3a6 72%);
-  box-shadow: inset 0 0 0 1px #8b543324;
-}
-
-@media (max-width: 700px) {
-  body {
-    background:
-      radial-gradient(circle at 8% 0, #f3d9c3 0, transparent 30%),
-      linear-gradient(160deg, #faf4ec, #f1e3d6 62%, #fbf6ef);
-  }
-  .topbar {
-    background: #fffaf3f5;
-  }
-  .discovery-tools {
-    box-shadow: 0 10px 24px #76543a18;
   }
 }

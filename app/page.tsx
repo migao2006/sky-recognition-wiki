@@ -2121,12 +2121,6 @@ export default function AccountOrganizer() {
   };
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-star">✦</span>
-          <b>光遇帳號整理</b>
-        </div>
-      </header>
       <nav className="workflow-steps" aria-label="帳號整理步驟">
         {[
           [1, "帳號資料"],
