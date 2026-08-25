@@ -1567,7 +1567,6 @@ type ValuationModel = {
 
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
-  const [selectedPanelOpen, setSelectedPanelOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(80);
   const [closet, setCloset] = useState("outfit"),
     [sub, setSub] = useState("all"),
@@ -1596,53 +1595,11 @@ export default function AccountOrganizer() {
     null,
   );
   const importRef = useRef<HTMLInputElement>(null);
-  const selectedTriggerRef = useRef<HTMLButtonElement>(null);
-  const selectedDrawerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 2600);
     return () => clearTimeout(timer);
   }, [notice]);
-  useEffect(() => {
-    if (!selectedPanelOpen) return;
-    const drawer = selectedDrawerRef.current;
-    const trigger = selectedTriggerRef.current;
-    const background = [...document.querySelectorAll<HTMLElement>(".app-shell > :not(.selected-overlay)")];
-    background.forEach((element) => element.setAttribute("inert", ""));
-    const focusable = () =>
-      drawer
-        ? [...drawer.querySelectorAll<HTMLElement>(
-            'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])',
-          )]
-        : [];
-    requestAnimationFrame(() => focusable()[0]?.focus());
-    const handleDialogKeys = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelectedPanelOpen(false);
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const controls = focusable();
-      if (!controls.length) return;
-      const first = controls[0];
-      const last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", handleDialogKeys);
-    document.body.classList.add("drawer-open");
-    return () => {
-      document.removeEventListener("keydown", handleDialogKeys);
-      document.body.classList.remove("drawer-open");
-      background.forEach((element) => element.removeAttribute("inert"));
-      trigger?.focus();
-    };
-  }, [selectedPanelOpen]);
   useEffect(() => {
     let active = true;
     fetch("/data/valuation-model-v1.json")
@@ -1855,12 +1812,8 @@ export default function AccountOrganizer() {
   const visibleItems = filtered.slice(0, visibleCount);
   const resetVisibleItems = () => setVisibleCount(80);
   const goToStep = (step: 1 | 2 | 3) => {
-    if (step === activeStep) {
-      setSelectedPanelOpen(false);
-      return;
-    }
+    if (step === activeStep) return;
     setActiveStep(step);
-    setSelectedPanelOpen(false);
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? "auto"
       : "smooth";
@@ -1882,16 +1835,6 @@ export default function AccountOrganizer() {
       else next.add(x.guid);
       return next;
     });
-  const removeSelectedItem = (item: WikiItem, index: number) => {
-    toggleOwned(item);
-    requestAnimationFrame(() => {
-      const buttons = selectedDrawerRef.current?.querySelectorAll<HTMLButtonElement>(
-        ".selected-list button",
-      );
-      if (buttons?.length) buttons[Math.min(index, buttons.length - 1)]?.focus();
-      else selectedDrawerRef.current?.querySelector<HTMLButtonElement>(".drawer-close")?.focus();
-    });
-  };
   const bundleItems = (preset: (typeof bundlePresets)[number]) =>
     wikiItems.filter(
       (x) =>
@@ -2183,17 +2126,6 @@ export default function AccountOrganizer() {
           <span className="brand-star">✦</span>
           <b>光遇帳號整理</b>
         </div>
-        <button
-          ref={selectedTriggerRef}
-          type="button"
-          className="header-mode"
-          onClick={() => setSelectedPanelOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={selectedPanelOpen}
-        >
-          <span>已選 {owned.size} 件</span>
-          <small>{owned.size ? "查看清單" : "尚未選取"}</small>
-        </button>
       </header>
       <nav className="workflow-steps" aria-label="帳號整理步驟">
         {[
@@ -2829,75 +2761,6 @@ export default function AccountOrganizer() {
           </button>
         </div>
       </section>
-      {selectedPanelOpen && (
-        <div
-          className="selected-overlay"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setSelectedPanelOpen(false);
-          }}
-        >
-          <aside
-            ref={selectedDrawerRef}
-            className="selected-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="selected-title"
-          >
-            <header>
-              <div>
-                <span>目前整理進度</span>
-                <h2 id="selected-title">已選 {chosen.length} 件</h2>
-              </div>
-              <button
-                type="button"
-                className="drawer-close"
-                onClick={() => setSelectedPanelOpen(false)}
-                aria-label="關閉已選清單"
-              >
-                ×
-              </button>
-            </header>
-            {chosen.length ? (
-              <div className="selected-list">
-                {chosen.map((item, index) => (
-                  <div key={item.guid}>
-                    <span>
-                      <b>{zhName(item.name)}</b>
-                      <small>{source(item)}</small>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeSelectedItem(item, index)}
-                      aria-label={`移除 ${zhName(item.name)}`}
-                    >
-                      移除
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="selected-empty">
-                <b>還沒有選取物品</b>
-                <span>前往衣櫃搜尋或依分類逐項選取。</span>
-              </div>
-            )}
-            <footer>
-              <button type="button" onClick={() => goToStep(2)}>
-                繼續選物品
-              </button>
-              <button
-                type="button"
-                className="primary"
-                onClick={() => goToStep(3)}
-                disabled={!chosen.length}
-              >
-                查看估價與匯出
-              </button>
-            </footer>
-          </aside>
-        </div>
-      )}
       {notice && (
         <div className="notice" role="status">
           {notice}
