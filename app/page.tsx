@@ -1371,6 +1371,8 @@ const communityZh: Record<string, string> = {
   "Tiara We Can Touch": "觸碰之冠",
   "SCA Cap": "Sky 創作者獎帽子",
   "FlOw Cape": "風之旅人斗篷",
+  "Wonderland Primrose Pinafore Dress": "仙境報春花圍裙洋裝",
+  "Ocean Sea Foam Boots": "海洋泡沫靴",
 };
 const zhName = (name: string) => {
   if (verifiedUltimateZh[name]) return verifiedUltimateZh[name];
@@ -1649,6 +1651,9 @@ type ValuationModel = {
 };
 
 export default function AccountOrganizer() {
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [selectedPanelOpen, setSelectedPanelOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(80);
   const [closet, setCloset] = useState("outfit"),
     [sub, setSub] = useState("all"),
     [season, setSeason] = useState("全部季節"),
@@ -1674,11 +1679,53 @@ export default function AccountOrganizer() {
     null,
   );
   const importRef = useRef<HTMLInputElement>(null);
+  const selectedTriggerRef = useRef<HTMLButtonElement>(null);
+  const selectedDrawerRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 2600);
     return () => clearTimeout(timer);
   }, [notice]);
+  useEffect(() => {
+    if (!selectedPanelOpen) return;
+    const drawer = selectedDrawerRef.current;
+    const trigger = selectedTriggerRef.current;
+    const background = [...document.querySelectorAll<HTMLElement>(".app-shell > :not(.selected-overlay)")];
+    background.forEach((element) => element.setAttribute("inert", ""));
+    const focusable = () =>
+      drawer
+        ? [...drawer.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])',
+          )]
+        : [];
+    requestAnimationFrame(() => focusable()[0]?.focus());
+    const handleDialogKeys = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedPanelOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const controls = focusable();
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleDialogKeys);
+    document.body.classList.add("drawer-open");
+    return () => {
+      document.removeEventListener("keydown", handleDialogKeys);
+      document.body.classList.remove("drawer-open");
+      background.forEach((element) => element.removeAttribute("inert"));
+      trigger?.focus();
+    };
+  }, [selectedPanelOpen]);
   useEffect(() => {
     let active = true;
     fetch("/data/valuation-model-v1.json")
@@ -1888,6 +1935,20 @@ export default function AccountOrganizer() {
     sourceFilter,
     valuationMode,
   ]);
+  const visibleItems = filtered.slice(0, visibleCount);
+  const resetVisibleItems = () => setVisibleCount(80);
+  const goToStep = (step: 1 | 2 | 3) => {
+    if (step === activeStep) {
+      setSelectedPanelOpen(false);
+      return;
+    }
+    setActiveStep(step);
+    setSelectedPanelOpen(false);
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth";
+    window.scrollTo({ top: 0, behavior });
+  };
   const resetFilters = () => {
     setQuery("");
     setSourceFilter("all");
@@ -1895,6 +1956,7 @@ export default function AccountOrganizer() {
     setOnlyDiscontinued(false);
     setValuationMode(false);
     setSub("all");
+    resetVisibleItems();
   };
   const toggleOwned = (x: WikiItem) =>
     setOwned((prev) => {
@@ -1903,6 +1965,16 @@ export default function AccountOrganizer() {
       else next.add(x.guid);
       return next;
     });
+  const removeSelectedItem = (item: WikiItem, index: number) => {
+    toggleOwned(item);
+    requestAnimationFrame(() => {
+      const buttons = selectedDrawerRef.current?.querySelectorAll<HTMLButtonElement>(
+        ".selected-list button",
+      );
+      if (buttons?.length) buttons[Math.min(index, buttons.length - 1)]?.focus();
+      else selectedDrawerRef.current?.querySelector<HTMLButtonElement>(".drawer-close")?.focus();
+    });
+  };
   const bundleItems = (preset: (typeof bundlePresets)[number]) =>
     wikiItems.filter(
       (x) =>
@@ -2194,19 +2266,49 @@ export default function AccountOrganizer() {
           <span className="brand-star">✦</span>
           <b>光遇帳號整理</b>
         </div>
-        <div className="header-mode">
+        <button
+          ref={selectedTriggerRef}
+          type="button"
+          className="header-mode"
+          onClick={() => setSelectedPanelOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={selectedPanelOpen}
+        >
           <span>已選 {owned.size} 件</span>
-        </div>
+          <small>{owned.size ? "查看清單" : "尚未選取"}</small>
+        </button>
       </header>
-      <section className="account-panel">
-        <div className="account-intro">
-          <h1>整理帳號資料</h1>
+      <nav className="workflow-steps" aria-label="帳號整理步驟">
+        {[
+          [1, "帳號資料"],
+          [2, "選擇物品"],
+          [3, "估價與匯出"],
+        ].map(([step, label]) => (
+          <button
+            type="button"
+            className={activeStep === step ? "active" : ""}
+            aria-current={activeStep === step ? "step" : undefined}
+            key={step}
+            onClick={() => goToStep(step as 1 | 2 | 3)}
+          >
+            <i>{step}</i>
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+      <section className="account-panel" hidden={activeStep === 2}>
+        <div className="account-intro" hidden={activeStep !== 1}>
+          <div>
+            <span className="step-kicker">步驟 1／3</span>
+            <h1>整理帳號資料</h1>
+            <p>先填基本資料；不確定的欄位可以留白，稍後再補。</p>
+          </div>
           <div className="account-progress">
             <b>{owned.size}</b>
             <span>已選物品</span>
           </div>
         </div>
-        <div className="account-form">
+        <div className="account-form" hidden={activeStep !== 1}>
           <div className="form-section-title">
             <b>交易資訊</b>
           </div>
@@ -2329,7 +2431,7 @@ export default function AccountOrganizer() {
             />
           </label>
         </div>
-        <details className="season-picker">
+        <details className="season-picker" hidden={activeStep !== 1}>
           <summary>
             <b>季節／畢業禮</b>
             <i aria-hidden="true">⌄</i>
@@ -2386,7 +2488,7 @@ export default function AccountOrganizer() {
             </div>
           </div>
         </details>
-        <details className="quick-select">
+        <details className="quick-select" hidden={activeStep !== 1}>
           <summary>
             <b>常用套組</b>
             <i aria-hidden="true">⌄</i>
@@ -2431,7 +2533,27 @@ export default function AccountOrganizer() {
             </section>
           </div>
         </details>
-        <section className="valuation-report" aria-labelledby="valuation-title">
+        <div className="step-actions" hidden={activeStep !== 1}>
+          <span>基本資料會保留在這次整理流程中。</span>
+          <button type="button" onClick={() => goToStep(2)}>
+            下一步：選擇物品
+          </button>
+        </div>
+        <div className="summary-intro" hidden={activeStep !== 3}>
+          <div>
+            <span className="step-kicker">步驟 3／3</span>
+            <h1>估價與匯出</h1>
+            <p>確認估價依據，並輸出適合備份、分享或刊登的格式。</p>
+          </div>
+          <button type="button" onClick={() => goToStep(2)}>
+            返回衣櫃
+          </button>
+        </div>
+        <section
+          className="valuation-report"
+          aria-labelledby="valuation-title"
+          hidden={activeStep !== 3}
+        >
           <div className="valuation-report-head">
             <h2 id="valuation-title">估價分析</h2>
             <div
@@ -2463,11 +2585,11 @@ export default function AccountOrganizer() {
                     ? "目前選取的是一般物品，不列入估價。"
                     : "選取估價物品後，這裡會直接顯示台幣估價。"}
               </p>
-              <a href="#top">
+              <button type="button" onClick={() => goToStep(2)}>
                 {valuationAnalysis.valuationItems.length
                   ? "繼續核對衣櫃"
                   : "前往選取估價物品"}
-              </a>
+              </button>
             </article>
             <div className="valuation-metrics">
               <article>
@@ -2518,7 +2640,7 @@ export default function AccountOrganizer() {
             。刊價不等同成交價，結果僅供議價參考。
           </p>
         </section>
-        <div className="account-actions">
+        <div className="account-actions" hidden={activeStep !== 3}>
           <div className="account-danger">
             <button
               className="clear-owned"
@@ -2550,7 +2672,17 @@ export default function AccountOrganizer() {
           />
         </div>
       </section>
-      <section className="catalog" id="top">
+      <section className="catalog" id="top" hidden={activeStep !== 2}>
+        <div className="catalog-intro">
+          <div>
+            <span className="step-kicker">步驟 2／3</span>
+            <h1>選擇帳號物品</h1>
+            <p>用搜尋最快；也可以依來源、季節與衣櫃分類逐項核對。</p>
+          </div>
+          <button type="button" onClick={() => goToStep(3)}>
+            查看估價 · {owned.size} 件
+          </button>
+        </div>
         <div className="discovery-tools">
           <label className="catalog-search">
             <span>搜尋物品</span>
@@ -2559,14 +2691,20 @@ export default function AccountOrganizer() {
               <input
                 type="search"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  resetVisibleItems();
+                }}
                 placeholder="中文名、英文名、簡稱、季節、ID…"
                 aria-label="搜尋全部衣櫃物品"
               />
               {query && (
                 <button
                   type="button"
-                  onClick={() => setQuery("")}
+                  onClick={() => {
+                    setQuery("");
+                    resetVisibleItems();
+                  }}
                   aria-label="清除搜尋"
                 >
                   ×
@@ -2582,6 +2720,7 @@ export default function AccountOrganizer() {
                 const next = e.target.value;
                 setSourceFilter(next);
                 if (next !== "seasons") setSeason("全部季節");
+                resetVisibleItems();
               }}
               aria-label="來源篩選"
             >
@@ -2598,7 +2737,10 @@ export default function AccountOrganizer() {
               <select
                 aria-label="季節篩選"
                 value={season}
-                onChange={(e) => setSeason(e.target.value)}
+                onChange={(e) => {
+                  setSeason(e.target.value);
+                  resetVisibleItems();
+                }}
               >
                 <option value="全部季節">全部季節</option>
                 {seasons.map(([slug, name]) => (
@@ -2614,7 +2756,10 @@ export default function AccountOrganizer() {
             className={
               valuationMode ? "valuation-toggle active" : "valuation-toggle"
             }
-            onClick={() => setValuationMode((x) => !x)}
+            onClick={() => {
+              setValuationMode((x) => !x);
+              resetVisibleItems();
+            }}
             aria-pressed={valuationMode}
           >
             <b>✦ 估價物品</b>
@@ -2628,6 +2773,7 @@ export default function AccountOrganizer() {
               onClick={() => {
                 setCloset(x.key);
                 setSub("all");
+                resetVisibleItems();
               }}
             >
               {x.order && <b>{x.order}</b>}
@@ -2639,7 +2785,10 @@ export default function AccountOrganizer() {
           <div className="closet-subs">
             <button
               className={sub === "all" ? "selected" : ""}
-              onClick={() => setSub("all")}
+              onClick={() => {
+                setSub("all");
+                resetVisibleItems();
+              }}
             >
               全部
             </button>
@@ -2647,7 +2796,10 @@ export default function AccountOrganizer() {
               <button
                 key={x.key}
                 className={sub === x.key ? "selected" : ""}
-                onClick={() => setSub(x.key)}
+                onClick={() => {
+                  setSub(x.key);
+                  resetVisibleItems();
+                }}
               >
                 <i>{i + 1}</i>
                 {x.name}
@@ -2659,14 +2811,17 @@ export default function AccountOrganizer() {
                   ? "selected discontinued-filter"
                   : "discontinued-filter"
               }
-              onClick={() => setOnlyDiscontinued((x) => !x)}
+              onClick={() => {
+                setOnlyDiscontinued((x) => !x);
+                resetVisibleItems();
+              }}
             >
               絕版
             </button>
           </div>
         )}
         <div className="result-head">
-          <h1>
+          <h2>
             {query
               ? `「${query.trim()}」搜尋結果`
               : season !== "全部季節"
@@ -2675,7 +2830,7 @@ export default function AccountOrganizer() {
                   ? "估價物品"
                   : activeCloset.name}{" "}
             · {filtered.length.toLocaleString()} 件
-          </h1>
+          </h2>
           <div className="result-actions">
             {(query ||
               sourceFilter !== "all" ||
@@ -2690,7 +2845,7 @@ export default function AccountOrganizer() {
         </div>
         {filtered.length ? (
           <div className="grid">
-            {filtered.map((x) => {
+            {visibleItems.map((x) => {
               const has = owned.has(x.guid);
               return (
                 <button
@@ -2733,7 +2888,98 @@ export default function AccountOrganizer() {
             <b>找不到符合的物品</b>
           </div>
         )}
+        {visibleCount < filtered.length && (
+          <div className="load-more">
+            <span>
+              已顯示 {visibleItems.length.toLocaleString()}／
+              {filtered.length.toLocaleString()} 件
+            </span>
+            <button
+              type="button"
+              onClick={() => setVisibleCount((count) => count + 80)}
+            >
+              顯示更多
+            </button>
+          </div>
+        )}
+        <div className="step-actions catalog-next">
+          <button type="button" className="secondary" onClick={() => goToStep(1)}>
+            返回帳號資料
+          </button>
+          <button type="button" onClick={() => goToStep(3)}>
+            下一步：估價與匯出
+          </button>
+        </div>
       </section>
+      {selectedPanelOpen && (
+        <div
+          className="selected-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedPanelOpen(false);
+          }}
+        >
+          <aside
+            ref={selectedDrawerRef}
+            className="selected-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="selected-title"
+          >
+            <header>
+              <div>
+                <span>目前整理進度</span>
+                <h2 id="selected-title">已選 {chosen.length} 件</h2>
+              </div>
+              <button
+                type="button"
+                className="drawer-close"
+                onClick={() => setSelectedPanelOpen(false)}
+                aria-label="關閉已選清單"
+              >
+                ×
+              </button>
+            </header>
+            {chosen.length ? (
+              <div className="selected-list">
+                {chosen.map((item, index) => (
+                  <div key={item.guid}>
+                    <span>
+                      <b>{zhName(item.name)}</b>
+                      <small>{source(item)}</small>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedItem(item, index)}
+                      aria-label={`移除 ${zhName(item.name)}`}
+                    >
+                      移除
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="selected-empty">
+                <b>還沒有選取物品</b>
+                <span>前往衣櫃搜尋或依分類逐項選取。</span>
+              </div>
+            )}
+            <footer>
+              <button type="button" onClick={() => goToStep(2)}>
+                繼續選物品
+              </button>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => goToStep(3)}
+                disabled={!chosen.length}
+              >
+                查看估價與匯出
+              </button>
+            </footer>
+          </aside>
+        </div>
+      )}
       {notice && (
         <div className="notice" role="status">
           {notice}

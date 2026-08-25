@@ -26,6 +26,10 @@ test("renders the account organizer", async () => {
   const html = await response.text();
   assert.match(html, /<title>光遇帳號整理<\/title>/i);
   assert.match(html, /整理帳號資料/);
+  assert.match(html, /帳號整理步驟/);
+  assert.match(html, /選擇物品/);
+  assert.match(html, /估價與匯出/);
+  assert.match(html, /下一步：選擇物品/);
   assert.match(html, /搜尋物品/);
   assert.match(html, /資料來源：SkyGame-Data/);
   assert.match(html, /常用套組/);

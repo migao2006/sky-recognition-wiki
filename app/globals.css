@@ -119,12 +119,59 @@ a:focus-visible {
   display: grid;
   justify-items: end;
   padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
   line-height: 1.1;
+  cursor: pointer;
 }
 .header-mode span {
   color: var(--sky);
   font-size: 13px;
   font-weight: 850;
+}
+.header-mode small {
+  margin-top: 5px;
+  color: #bba792;
+  font-size: 10px;
+}
+.workflow-steps {
+  width: min(720px, calc(100% - 32px));
+  margin: 18px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.workflow-steps button {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #241913cc;
+  color: #bba997;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.workflow-steps button.active {
+  border-color: #e6bd7a7a;
+  background: #493326;
+  color: #fff8ec;
+  box-shadow: inset 0 -2px #d49a66;
+}
+.workflow-steps i {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #ffffff0b;
+  color: var(--sky);
+  font-size: 10px;
+  font-style: normal;
 }
 
 /* 主要工作區 */
@@ -132,6 +179,51 @@ a:focus-visible {
   width: min(1240px, 100%);
   margin: auto;
   padding: 30px 24px 80px;
+}
+.catalog-intro,
+.summary-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 15px;
+  padding: 19px 22px;
+  border: 1px solid #f2d8b529;
+  border-radius: 22px;
+  background: #34231ae8;
+  box-shadow: 0 12px 28px #100a0738;
+}
+.catalog-intro h1,
+.summary-intro h1 {
+  margin: 2px 0 4px;
+  font-size: 25px;
+}
+.catalog-intro p,
+.summary-intro p,
+.account-intro p {
+  margin: 0;
+  color: #c2ae9b;
+  font-size: 13px;
+}
+.step-kicker {
+  color: var(--sky);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+}
+.catalog-intro > button,
+.summary-intro > button,
+.step-actions button,
+.load-more button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #e6bd7a70;
+  border-radius: 13px;
+  background: #e6bd7a1c;
+  color: #fff4df;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
 }
 .discovery-tools {
   display: grid;
@@ -364,10 +456,39 @@ a:focus-visible {
   margin-bottom: 14px;
   padding: 0 2px;
 }
-.result-head h1 {
+.result-head h2 {
   margin: 0;
   font-size: 24px;
   letter-spacing: -0.025em;
+}
+.load-more {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin: 28px 0;
+  color: #baa793;
+  font-size: 12px;
+}
+.step-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 0 0 25px 25px;
+  background: #211711;
+  color: #bba997;
+  font-size: 12px;
+}
+.step-actions button.secondary {
+  border-color: var(--line);
+  background: transparent;
+  color: #cbb9a7;
+}
+.catalog-next {
+  margin-top: 28px;
+  border-radius: 20px;
 }
 .result-actions {
   min-width: max-content;
@@ -596,6 +717,9 @@ a:focus-visible {
 .account-intro h1 {
   margin: 0;
   font-size: 28px;
+}
+.account-intro > div:first-child {
+  min-width: 0;
 }
 .account-progress {
   display: grid;
@@ -917,7 +1041,8 @@ a:focus-visible {
   font-size: 12px;
   line-height: 1.65;
 }
-.valuation-verdict a {
+.valuation-verdict a,
+.valuation-verdict button {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
@@ -929,6 +1054,7 @@ a:focus-visible {
   font-size: 11px;
   font-weight: 800;
   text-decoration: none;
+  cursor: pointer;
 }
 .valuation-metrics {
   display: grid;
@@ -1063,6 +1189,143 @@ a:focus-visible {
   transform: scale(0.98);
 }
 
+/* 已選物品抽屜 */
+body.drawer-open {
+  overflow: hidden;
+}
+.selected-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+  background: #080504a8;
+  backdrop-filter: blur(5px);
+}
+.selected-drawer {
+  width: min(430px, 100%);
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-left: 1px solid #f2d8b52e;
+  background: #211711;
+  box-shadow: -18px 0 50px #08040385;
+}
+.selected-drawer > header {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.selected-drawer > header span {
+  color: var(--sky);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+.selected-drawer h2 {
+  margin: 3px 0 0;
+  font-size: 23px;
+}
+.drawer-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #ffffff09;
+  color: #dbc8b5;
+  font-size: 23px;
+  cursor: pointer;
+}
+.selected-list {
+  overflow-y: auto;
+  padding: 10px 14px;
+}
+.selected-list > div {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 8px 10px 12px;
+  border-bottom: 1px solid #ffffff0c;
+}
+.selected-list span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.selected-list b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.selected-list small {
+  color: #a99582;
+  font-size: 11px;
+}
+.selected-list button {
+  flex: none;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid #e29b9b38;
+  border-radius: 11px;
+  background: #e29b9b0c;
+  color: #e8b2ad;
+  font-size: 11px;
+  cursor: pointer;
+}
+.selected-empty {
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 30px;
+  color: #b7a38f;
+  text-align: center;
+}
+.selected-empty b {
+  color: #eee0ce;
+  font-size: 16px;
+}
+.selected-empty span {
+  font-size: 12px;
+}
+.selected-drawer > footer {
+  width: auto;
+  margin: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  color: inherit;
+  font-size: inherit;
+}
+.selected-drawer > footer button {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #ffffff08;
+  color: #d8c6b4;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.selected-drawer > footer .primary {
+  border-color: #e6bd7a70;
+  background: #e6bd7a1c;
+  color: #fff4df;
+}
+.selected-drawer > footer button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
 /* 頁尾 */
 footer {
   width: min(1200px, 100%);
@@ -1073,7 +1336,7 @@ footer {
   gap: 15px;
   border-top: 1px solid #ffffff10;
   color: #a99886;
-  font-size: 10px;
+  font-size: 12px;
 }
 .notice {
   position: fixed;
@@ -1156,8 +1419,44 @@ footer {
   .header-mode span {
     font-size: 11px;
   }
+  .header-mode small {
+    font-size: 9px;
+  }
+  .workflow-steps {
+    width: calc(100% - 20px);
+    margin-top: 12px;
+    gap: 6px;
+  }
+  .workflow-steps button {
+    min-height: 48px;
+    gap: 6px;
+    padding: 0 7px;
+    border-radius: 14px;
+    font-size: 11px;
+  }
+  .workflow-steps i {
+    width: 22px;
+    height: 22px;
+  }
   .catalog {
     padding: 20px 12px 40px;
+  }
+  .catalog-intro,
+  .summary-intro {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 19px;
+  }
+  .catalog-intro h1,
+  .summary-intro h1 {
+    font-size: 22px;
+  }
+  .catalog-intro p,
+  .summary-intro p,
+  .account-intro p {
+    font-size: 12px;
   }
   .discovery-tools,
   .discovery-tools:has(.season-select) {
@@ -1166,6 +1465,10 @@ footer {
     margin-bottom: 12px;
     padding: 10px;
     border-radius: 20px;
+    position: sticky;
+    top: 78px;
+    z-index: 25;
+    box-shadow: 0 16px 34px #100a0780;
   }
   .catalog-search {
     grid-column: 1/-1;
@@ -1205,6 +1508,7 @@ footer {
     padding: 0 12px;
     overflow-x: auto;
     scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 34px), transparent 100%);
   }
   .closet-nav button {
     flex: 0 0 154px;
@@ -1236,7 +1540,7 @@ footer {
     gap: 11px;
     margin-bottom: 14px;
   }
-  .result-head h1 {
+  .result-head h2 {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1253,8 +1557,8 @@ footer {
     padding: 0 10px;
   }
   .grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 5px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
   }
   .grid .item-card {
     border-radius: 10px;
@@ -1280,8 +1584,8 @@ footer {
     padding: 5px;
   }
   .grid .card-body h2 {
-    min-height: 24px;
-    font-size: 9px;
+    min-height: 30px;
+    font-size: 11px;
   }
   .account-panel {
     padding: 20px 12px 0;
@@ -1306,7 +1610,7 @@ footer {
     padding: 14px;
   }
   .account-form label {
-    font-size: 12px;
+    font-size: 13px;
   }
   .account-form input,
   .account-form select {
@@ -1406,7 +1710,8 @@ footer {
     font-size: 21px;
   }
   .valuation-method {
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 1.7;
   }
   .account-actions {
     padding: 12px;
@@ -1441,6 +1746,28 @@ footer {
   }
   .item-card.selectable:hover {
     transform: none;
+  }
+  .step-actions {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px;
+  }
+  .catalog-next {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+  }
+  .catalog-next button {
+    padding: 0 9px;
+  }
+  .selected-drawer {
+    width: 100%;
+  }
+  .selected-drawer > header {
+    min-height: 80px;
+    padding: 14px 16px;
+  }
+  .selected-drawer > footer {
+    padding: 12px;
   }
   footer {
     display: none;
