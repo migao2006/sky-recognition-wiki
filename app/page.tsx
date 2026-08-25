@@ -1,5 +1,24 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
+import {
+  bindingKeys,
+  bindingNames,
+  bindingOptions,
+  bindingStatusName,
+  bundlePresets,
+  emptyBindings,
+  shortBindingName,
+  type AccountInfo,
+  type BindingKey,
+  type BindingStatus,
+} from "./account-config";
 import { wikiItems as baseWikiItems, type WikiItem } from "./wiki-data";
 import {
   calibrateHighValueEstimate,
@@ -23,8 +42,6 @@ const verifiedUltimateItems: WikiItem[] = [
     type: "Prop",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/7f/Icon_prop_lightseekers_large_umbrella.png",
-    previewUrl:
-      "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ee/Lightseekers_ultimate_umbrella_v2.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Lightseekers_Guide#Ultimate_Gifts",
     section: "seasons",
     collection: "lightseekers",
@@ -37,8 +54,6 @@ const verifiedUltimateItems: WikiItem[] = [
     type: "Prop",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e4/Icon_instrument_sanctuary_hand_pan.png",
-    previewUrl:
-      "https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c2/Sanctuary-Handpan-ultimate.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sanctuary_Guide#Ultimate_Gifts",
     section: "seasons",
     collection: "sanctuary",
@@ -51,8 +66,6 @@ const verifiedUltimateItems: WikiItem[] = [
     type: "Prop",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/1c/Icon_instrument_prophecy_drum.png",
-    previewUrl:
-      "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/48/Prophecy-ultimate-_drum.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Prophecy_Guide#Ultimate_Gifts",
     section: "seasons",
     collection: "prophecy",
@@ -65,8 +78,6 @@ const verifiedUltimateItems: WikiItem[] = [
     type: "Prop",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/83/Icon_instrument_assembly_bugle.png",
-    previewUrl:
-      "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/88/Assembly-ultimate-Buggle.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Assembly_Guide#Ultimate_Gifts",
     section: "seasons",
     collection: "assembly",
@@ -79,8 +90,6 @@ const verifiedUltimateItems: WikiItem[] = [
     type: "Prop",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4f/Moments-Guide-Prop-Ultimate-Camera-icon-Credit-Morybel.png",
-    previewUrl:
-      "https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/a6/Moments-Guide-Prop-Ultimate-Camera.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Moments_Guide#Ultimate_Gifts",
     section: "seasons",
     collection: "moments",
@@ -93,8 +102,6 @@ const verifiedUltimateItems: WikiItem[] = [
     type: "Prop",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/dc/Moomin-Ultimate-Umbrella-Prop-icon.png",
-    previewUrl:
-      "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/43/Moomin-Ultimate-Umbrella-Prop-held.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/The_Moomin_Storybook#Moomin_Ultimate_Umbrella",
     section: "seasons",
     collection: "moomin",
@@ -1528,98 +1535,6 @@ const searchIndex = new Map(
         .toLocaleLowerCase("zh-Hant"),
     ]),
 );
-type BindingKey =
-  | "google"
-  | "nintendo"
-  | "gameCenter"
-  | "facebook"
-  | "steam"
-  | "twitch";
-type BindingStatus = "none" | "transfer" | "keep" | "issue";
-type AccountInfo = {
-  name: string;
-  accountType: string;
-  candles: string;
-  hearts: string;
-  ascended: string;
-  passes: string;
-  bindingNote: string;
-  notes: string;
-};
-const bindingNames: Record<BindingKey, string> = {
-  google: "Google（GG）",
-  nintendo: "Nintendo（NS）",
-  gameCenter: "Game Center（GC）",
-  facebook: "Facebook（FB）",
-  steam: "Steam",
-  twitch: "Twitch（TWI）",
-};
-const bindingKeys = Object.keys(bindingNames) as BindingKey[];
-const bindingOptions: { key: BindingStatus; name: string }[] = [
-  { key: "none", name: "未綁定" },
-  { key: "transfer", name: "可出" },
-  { key: "keep", name: "不出" },
-  { key: "issue", name: "遺失／異常" },
-];
-const bindingStatusName = Object.fromEntries(
-  bindingOptions.map((x) => [x.key, x.name]),
-) as Record<BindingStatus, string>;
-const shortBindingName = (key: BindingKey) =>
-  bindingNames[key].replace(/（.*?）/g, "");
-const emptyBindings = () =>
-  Object.fromEntries(bindingKeys.map((key) => [key, "none"])) as Record<
-    BindingKey,
-    BindingStatus
-  >;
-const bundlePresets = [
-  {
-    key: "kizuna",
-    name: "絆愛三件套",
-    names: ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"],
-  },
-  {
-    key: "prince",
-    name: "小王子限定三件",
-    names: [
-      "Little Prince Asteroid Jacket",
-      "Little Prince Scarf Cape",
-      "Little Prince Fox",
-    ],
-  },
-  {
-    key: "aurora",
-    name: "極光限定三件",
-    names: ["Wings of AURORA", "Giving In Cape", "To The Love Outfit"],
-  },
-  {
-    key: "journey",
-    name: "風之旅人三件套",
-    names: ["Journey Cape", "Journey Hair", "Journey Mask"],
-  },
-  {
-    key: "nintendo",
-    name: "Nintendo 三件套",
-    names: [
-      "Nintendo Elf Hair",
-      "Nintendo Red Switch Cape",
-      "Nintendo Blue Switch Cape",
-    ],
-  },
-  {
-    key: "deer",
-    name: "九色鹿限定三件",
-    names: [
-      "Radiance of the Nine-Colored Deer Cape",
-      "Gift of the Nine-Colored Deer Antlers",
-      "Gift of the Nine-Colored Deer Mask",
-    ],
-  },
-  {
-    key: "cinnamoroll",
-    name: "大耳狗聯動全套",
-    collection: "event-cinnamoroll",
-  },
-] as const;
 const safeFileName = (name: string) =>
   name.replace(/[\\/:*?"<>|]/g, "-").trim() || "未命名";
 const downloadBlob = (blob: Blob, fileName: string) => {
@@ -1661,6 +1576,8 @@ export default function AccountOrganizer() {
   const [query, setQuery] = useState(""),
     [sourceFilter, setSourceFilter] = useState("all"),
     [valuationMode, setValuationMode] = useState(false);
+  const deferredQuery = useDeferredValue(query);
+  const searchPending = query !== deferredQuery;
   const [owned, setOwned] = useState<Set<string>>(new Set());
   const [account, setAccount] = useState<AccountInfo>({
     name: "",
@@ -1905,7 +1822,7 @@ export default function AccountOrganizer() {
     valuationAnalysis,
   ]);
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase("zh-Hant");
+    const q = deferredQuery.trim().toLocaleLowerCase("zh-Hant");
     return wikiItems
       .filter(
         (x) =>
@@ -1931,7 +1848,7 @@ export default function AccountOrganizer() {
     season,
     onlyDiscontinued,
     activeCloset,
-    query,
+    deferredQuery,
     sourceFilter,
     valuationMode,
   ]);
@@ -2822,8 +2739,8 @@ export default function AccountOrganizer() {
         )}
         <div className="result-head">
           <h2>
-            {query
-              ? `「${query.trim()}」搜尋結果`
+            {deferredQuery
+              ? `「${deferredQuery.trim()}」搜尋結果`
               : season !== "全部季節"
                 ? seasonZh[season]
                 : valuationMode
@@ -2832,6 +2749,7 @@ export default function AccountOrganizer() {
             · {filtered.length.toLocaleString()} 件
           </h2>
           <div className="result-actions">
+            {searchPending && <small role="status">搜尋更新中…</small>}
             {(query ||
               sourceFilter !== "all" ||
               season !== "全部季節" ||
@@ -2844,7 +2762,7 @@ export default function AccountOrganizer() {
           </div>
         </div>
         {filtered.length ? (
-          <div className="grid">
+          <div className="grid" aria-busy={searchPending}>
             {visibleItems.map((x) => {
               const has = owned.has(x.guid);
               return (

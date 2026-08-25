@@ -7,6 +7,7 @@
 ## 專案結構
 
 - `app/page.tsx`：帳號資料、衣櫃選取、估價與匯出流程
+- `app/account-config.ts`：登入綁定、帳號型別與常用套組設定
 - `app/wiki-data.ts`：物品資料庫
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出
