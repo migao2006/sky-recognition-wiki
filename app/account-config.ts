@@ -77,7 +77,7 @@ export const bundlePresets = [
   },
   {
     key: "nintendo",
-    name: "Nintendo 三件套",
+    name: "Nintendo 林克三件套",
     names: [
       "Nintendo Elf Hair",
       "Nintendo Red Switch Cape",
@@ -107,5 +107,30 @@ export const bundlePresets = [
     key: "cat",
     name: "貓咪三件套",
     names: ["Feline Familiar", "Cat Cape", "Cat Mask"],
+  },
+  {
+    key: "feline-ears-tail",
+    name: "貓咪耳尾兩件套",
+    names: ["Mischief Feline Ears", "Mischief Feline Tail"],
+  },
+  {
+    key: "manatee-ears-tail",
+    name: "海牛耳尾兩件套",
+    names: ["Spirited Manatee Ears", "Spirited Manatee Tail"],
+  },
+  {
+    key: "dark-dragon-horns-tail",
+    name: "冥龍角尾兩件套",
+    names: ["Vestige of Dark Dragon Horns", "Vestige of Dark Dragon Tail"],
+  },
+  {
+    key: "moth",
+    name: "飛蛾兩件套",
+    names: ["Moth Cape", "Moth Antennae"],
+  },
+  {
+    key: "sparrow",
+    name: "麻雀兩件套",
+    names: ["Sparrow Cape", "Sparrow Mask"],
   },
 ] as const;

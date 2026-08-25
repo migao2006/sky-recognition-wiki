@@ -14,6 +14,11 @@ test("renders the account organizer", async () => {
   assert.match(html, /估價與匯出/);
   assert.match(html, /姆明耳尾兩件套/);
   assert.match(html, /貓咪三件套/);
+  assert.match(html, /貓咪耳尾兩件套/);
+  assert.match(html, /海牛耳尾兩件套/);
+  assert.match(html, /冥龍角尾兩件套/);
+  assert.match(html, /飛蛾兩件套/);
+  assert.match(html, /麻雀兩件套/);
   assert.match(html, /下一步：選擇物品/);
   assert.match(html, /搜尋物品/);
   assert.match(html, /資料來源：SkyGame-Data/);
