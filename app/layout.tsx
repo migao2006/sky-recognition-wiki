@@ -2,10 +2,28 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "光遇辨識學習 Wiki",
-  description: "依遊戲內五座衣櫃順序整理，可搜尋季節、活動與估號分類的 Sky 光遇物品圖鑑。",
+  title: "光遇帳號整理",
+  description:
+    "集中整理 Sky 光遇帳號的季節、衣櫃、綁定與資源資料，並提供估價與匯出工具。",
+  openGraph: {
+    title: "光遇帳號整理",
+    description: "季節、衣櫃、綁定、估價與匯出集中在同一頁完成。",
+    images: ["https://sky-recognition-wiki.a0912647176.chatgpt.site/og.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "光遇帳號整理",
+    description: "季節、衣櫃、綁定、估價與匯出集中在同一頁完成。",
+    images: ["https://sky-recognition-wiki.a0912647176.chatgpt.site/og.png"],
+  },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-Hant"><body>{children}</body></html>;
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="zh-Hant">
+      <body>{children}</body>
+    </html>
+  );
 }
