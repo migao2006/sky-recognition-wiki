@@ -1,14 +1,14 @@
 :root {
-  color-scheme: dark;
-  --bg: #19130f;
-  --bg-2: #271b14;
-  --text: #fff8ec;
-  --line: #f2d8b52e;
-  --sky: #f0c985;
-  --gold: #f1c77c;
-  --orange: #dfa16e;
-  --shadow: 0 18px 46px #100a0758;
-  --soft-shadow: 0 8px 22px #100a073d;
+  color-scheme: light;
+  --bg: #f8f1e8;
+  --bg-2: #f2e5d8;
+  --text: #3d2d25;
+  --line: #8f65422e;
+  --sky: #8a542f;
+  --gold: #986033;
+  --orange: #98502d;
+  --shadow: 0 18px 46px #76543a1c;
+  --soft-shadow: 0 8px 22px #76543a17;
 }
 * {
   box-sizing: border-box;
@@ -20,9 +20,9 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 10% -8%, #6b4130 0, transparent 32%),
-    radial-gradient(circle at 95% 35%, #5d392d80 0, transparent 30%),
-    linear-gradient(155deg, var(--bg), var(--bg-2) 55%, #1d1511);
+    radial-gradient(circle at 10% -8%, #f5d8bd 0, transparent 32%),
+    radial-gradient(circle at 95% 35%, #eed6c480 0, transparent 30%),
+    linear-gradient(155deg, var(--bg), var(--bg-2) 55%, #fbf6ef);
   color: var(--text);
   font-family:
     ui-rounded, "SF Pro Rounded", "Noto Sans TC", "PingFang TC", system-ui,
@@ -37,21 +37,21 @@ body:after {
   border-radius: 50%;
   filter: blur(110px);
   pointer-events: none;
-  opacity: 0.28;
+  opacity: 0.14;
 }
 body:before {
   width: 320px;
   height: 320px;
   left: -110px;
   top: 25%;
-  background: #e0ad6f;
+  background: #efc9a4;
 }
 body:after {
   width: 340px;
   height: 340px;
   right: -150px;
   bottom: -100px;
-  background: #b66f55;
+  background: #e9bfae;
 }
 button,
 input,
@@ -72,7 +72,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 a:focus-visible {
-  outline: 2px solid #f6d9a7 !important;
+  outline: 2px solid #9a642f !important;
   outline-offset: 3px !important;
 }
 
@@ -1818,5 +1818,425 @@ footer {
   }
   .season-ultimate-items {
     gap: 5px;
+  }
+}
+
+/* 暖米白淺色主題 */
+.topbar {
+  border-color: #9b6a4030;
+  background: #fffaf3f2;
+  box-shadow: 0 10px 30px #76543a1c;
+}
+.brand-star {
+  border-color: #c68f6070;
+  background: linear-gradient(145deg, #fffdf9, #efc49e);
+  box-shadow: 0 7px 18px #bd85542b;
+  color: #6f4329;
+}
+.workflow-steps button {
+  border-color: var(--line);
+  background: #fffaf4d9;
+  color: #6f5e53;
+}
+.workflow-steps button.active {
+  border-color: #ae704f70;
+  background: #eed8c4;
+  color: #432c21;
+  box-shadow: inset 0 -2px #bd7650;
+}
+.workflow-steps i {
+  background: #a96b3d12;
+  color: #754329;
+}
+.catalog-intro,
+.summary-intro,
+.account-intro {
+  border-color: #9b6a4030;
+  background: #fffaf3ed;
+  box-shadow: 0 12px 28px #76543a16;
+}
+.catalog-intro p,
+.summary-intro p,
+.account-intro p,
+.account-progress span,
+.load-more,
+.valuation-method,
+.empty {
+  color: #75645a;
+}
+.catalog-intro > button,
+.summary-intro > button,
+.step-actions button,
+.load-more button,
+.export-tools .export-account {
+  border-color: #ae704f55;
+  background: #a9683d12;
+  color: #68402a;
+}
+.discovery-tools {
+  border-color: #9b6a4029;
+  background: #fffaf5e8;
+  box-shadow: 0 14px 34px #76543a17;
+}
+.catalog-search,
+.source-select {
+  border-color: var(--line);
+  background: #fffdfa;
+  box-shadow: inset 0 1px #ffffff;
+}
+.catalog-search > span,
+.source-select > span,
+.binding-card > span {
+  color: #6c5b51;
+}
+.catalog-search input::placeholder,
+.account-form input::placeholder {
+  color: #79675c;
+}
+.catalog-search button,
+.reset-filters,
+.closet-subs button {
+  background: #9d6b4310;
+  color: #624f45;
+}
+.valuation-toggle {
+  border-color: #a96b3d52;
+  background: #b9794810;
+  color: #754329;
+}
+.valuation-toggle.active {
+  border-color: #a568437d;
+  background: #eacfb7;
+  color: #52301f;
+  box-shadow: inset 0 0 0 1px #fff8ef;
+}
+.closet-nav button {
+  border-color: #9b6a4026;
+  background: #fffaf4;
+  color: #65544a;
+}
+.closet-nav button:hover {
+  border-color: #a96b3d55;
+  background: #f7e9dc;
+}
+.closet-nav button.selected {
+  border-color: #a96b3d70;
+  background: #ead2be;
+  color: #41291e;
+  box-shadow: inset 3px 0 #b96f48;
+}
+.closet-nav b,
+.quick-select summary i,
+.season-picker summary i,
+.preset-check {
+  border-color: var(--line);
+  background: #f8ece1;
+  color: #754329;
+}
+.closet-nav button.selected b {
+  border-color: #a96b3d50;
+  background: #fff8ef;
+  color: #633a25;
+}
+.closet-subs,
+.step-actions {
+  border-color: var(--line);
+  background: #fffaf4;
+  color: #6c5b51;
+}
+.closet-subs button.selected {
+  border-color: #a96b3d66;
+  background: #ead2bd;
+  color: #4c3023;
+}
+.closet-subs i {
+  background: #9d6b4312;
+  color: #754329;
+}
+.closet-subs button.selected i {
+  background: #fff8ef;
+  color: #633a25;
+}
+.discontinued-filter {
+  border-color: #b95c6c4d !important;
+  color: #9b4454 !important;
+}
+.closet-subs .discontinued-filter.selected {
+  border-color: #b95c6c70 !important;
+  background: #f4dce0 !important;
+  color: #873747 !important;
+}
+.step-actions button.secondary {
+  color: #65544a;
+}
+.reset-filters:hover {
+  border-color: #a96b3d52;
+  color: #754329;
+}
+.item-card {
+  border-color: #9b6a4029;
+  background: #fffdf9;
+  box-shadow: 0 7px 20px #76543a17;
+}
+.item-card:hover {
+  border-color: #a96b3d52;
+  box-shadow: 0 13px 28px #76543a20;
+}
+.image-wrap {
+  background: radial-gradient(
+    circle at 50% 42%,
+    #fffdf9 0,
+    #f4e5d8 62%,
+    #ead7c6 100%
+  );
+}
+.image-wrap:after {
+  background: #bd7b3f1c;
+}
+.image-wrap img,
+.season-ultimate-icon img {
+  filter: drop-shadow(0 9px 10px #6f4c3238);
+}
+.source-badge,
+.discontinued-badge {
+  border-color: #9b6a4038;
+  background: #fffaf1e8;
+  color: #5c4233;
+}
+.discontinued-badge {
+  border-color: #b95c6c55;
+  color: #963e50;
+}
+.card-body {
+  border-color: var(--line);
+  background: #fffdf9;
+}
+.type {
+  border-color: #a95f3745;
+  background: #a95f370d;
+  color: #85472b;
+}
+.type-Hair,
+.type-HairAccessory,
+.type-HeadAccessory,
+.type-Mask,
+.type-FaceAccessory,
+.type-Outfit,
+.type-OutfitShoes,
+.type-Shoes {
+  color: #684731;
+}
+.card-body h2,
+.form-section-title b,
+.quick-select summary b,
+.season-picker summary b,
+.valuation-report-head h2,
+.valuation-verdict h3,
+.valuation-metrics b,
+.account-progress b {
+  color: #33251e;
+}
+.account-form,
+.quick-select,
+.season-picker,
+.account-actions {
+  background: #fffaf4;
+}
+.account-form label {
+  color: #5d4c43;
+}
+.account-form input,
+.account-form select {
+  border-color: #9b6a4030;
+  background: #fffdf9;
+  color: #33251e;
+}
+.account-form input:focus,
+.account-form select:focus {
+  border-color: #a96b3d70;
+  box-shadow: 0 0 0 3px #a96b3d14;
+}
+.account-form .binding-card {
+  border-color: var(--line);
+  background: #fffdf985;
+}
+.binding-card.status-transfer {
+  border-color: #9a744e55 !important;
+  background: #efe2d20f !important;
+}
+.binding-card.status-keep {
+  border-color: #b18a4e55 !important;
+  background: #f8eddc !important;
+}
+.binding-card.status-issue {
+  border-color: #b95c6c55 !important;
+  background: #fae9ec !important;
+}
+.quick-select-body > section {
+  border-color: var(--line);
+  background: #fffdf9;
+}
+.preset-grid button {
+  border-color: #9b6a402d;
+  background: #fff9f2;
+  color: #423129;
+}
+.preset-grid button small {
+  background: #9d6b4314;
+  color: #684b3a;
+}
+.preset-grid button:hover {
+  border-color: #a96b3d55;
+  background: #f5e4d5;
+}
+.preset-grid button.partial {
+  border-color: #b18a4e66;
+  background: #fbf1d8;
+}
+.preset-grid button.partial .preset-check,
+.preset-grid button.partial small {
+  color: #775327;
+}
+.preset-grid button.selected {
+  border-color: #a96b3d70;
+  background: #ead0b8;
+  color: #41291e;
+  box-shadow: inset 3px 0 #ad6842;
+}
+.preset-grid button.selected .preset-check {
+  border-color: #a96b3d7a;
+  background: #a96b3d;
+  color: #fffaf3;
+}
+.preset-grid button.selected small {
+  color: #68402a;
+}
+.valuation-report {
+  border-color: var(--line);
+  background: #fffaf4;
+}
+.completion-ring {
+  background:
+    radial-gradient(circle, #fffaf4 57%, transparent 59%),
+    conic-gradient(#ad7148 var(--completion), #9b6a401a 0);
+}
+.valuation-verdict,
+.valuation-metrics article {
+  border-color: #9b6a402d;
+  background: #fffdf9;
+}
+.valuation-verdict {
+  border-color: #a96b3d45;
+  background: linear-gradient(145deg, #f8e8d8, #fffaf4);
+}
+.valuation-verdict > span,
+.valuation-method a,
+.valuation-verdict .model-price {
+  color: #754329;
+}
+.valuation-verdict p,
+.valuation-metrics span {
+  color: #68574d;
+}
+.valuation-verdict a,
+.valuation-verdict button {
+  border-color: #a96b3d55;
+  background: #a96b3d10;
+  color: #633a25;
+}
+.export-tools button {
+  border-color: #9b6a4030;
+  background: #fffdf9;
+  color: #514037;
+}
+.export-tools button:hover {
+  border-color: #a96b3d55;
+  color: #754329;
+}
+.clear-owned {
+  color: #68574d;
+}
+.item-card.selectable.owned {
+  border-color: #a56a4399;
+  box-shadow: inset 0 0 0 1px #a56a4333;
+}
+.item-card.selectable.owned .image-wrap {
+  background: radial-gradient(
+    circle at 50% 40%,
+    #fff9ef 0,
+    #ecd4bd 64%,
+    #dfc2a7 100%
+  );
+}
+.owned-check {
+  border-color: #9c633e70;
+  background: #fffaf0e8;
+  color: #754329;
+}
+.item-card.owned .owned-check {
+  border-color: #8b5433;
+  background: #8b5433;
+  color: #fffaf3;
+}
+footer {
+  border-color: #9b6a4024;
+  color: #75645a;
+}
+.notice {
+  border-color: #9b6a4045;
+  background: #fffaf3f2;
+  color: #4a352b;
+  box-shadow: 0 12px 30px #76543a24;
+}
+.season-ultimate-card {
+  border-color: #9b6a402b;
+  background: #fffdf9;
+}
+.season-ultimate-card.has-selected {
+  border-color: #a96b3d60;
+  background: #f4e3d3;
+}
+.season-ultimate-card header b {
+  color: #423129;
+}
+.season-ultimate-card header span {
+  background: #a96b3d10;
+  color: #70442a;
+}
+.season-ultimate-item {
+  color: #6c5b51;
+}
+.season-ultimate-icon {
+  border-color: #9b6a402d;
+  background: radial-gradient(circle at 50% 40%, #fffdf9, #ead8c7 70%);
+}
+.season-ultimate-item small {
+  color: #6c5b51;
+}
+.season-ultimate-item.pendant .season-ultimate-icon {
+  border-color: #a96b3d50;
+  background: radial-gradient(circle at 50% 40%, #fff7e9, #e8cfad 72%);
+}
+.season-ultimate-item.pendant small,
+.season-ultimate-item.selected small {
+  color: #633a25;
+}
+.season-ultimate-item.selected .season-ultimate-icon {
+  border-color: #8b5433;
+  background: radial-gradient(circle at 50% 40%, #fff8ed, #e1c3a6 72%);
+  box-shadow: inset 0 0 0 1px #8b543324;
+}
+
+@media (max-width: 700px) {
+  body {
+    background:
+      radial-gradient(circle at 8% 0, #f3d9c3 0, transparent 30%),
+      linear-gradient(160deg, #faf4ec, #f1e3d6 62%, #fbf6ef);
+  }
+  .topbar {
+    background: #fffaf3f5;
+  }
+  .discovery-tools {
+    box-shadow: 0 10px 24px #76543a18;
   }
 }

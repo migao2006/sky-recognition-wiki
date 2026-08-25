@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,6 +16,11 @@ export const metadata: Metadata = {
     description: "季節、衣櫃、綁定、估價與匯出集中在同一頁完成。",
     images: ["https://sky-recognition-wiki.vercel.app/og.png"],
   },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#f8f1e8",
 };
 
 export default function RootLayout({
