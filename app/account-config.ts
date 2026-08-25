@@ -100,62 +100,8 @@ export const bundlePresets = [
   },
   {
     key: "moomin",
-    name: "姆明限定七件",
-    names: [
-      "Moominmamma's Masterpiece Cape",
-      "Pointed Snufkin Hat",
-      "Roving Snufkin Scarf",
-      "Roving Snufkin Robe",
-      "Moomintroll Tail",
-      "Moomintroll Ears",
-      "Hattifattener Shoulder Buddy",
-    ],
-  },
-  {
-    key: "aurora-runaway",
-    name: "極光 Runaway 兩件套",
-    names: ["AURORA Runaway Outfit", "AURORA Runaway Hair"],
-  },
-  {
-    key: "aurora-cure",
-    name: "極光 Cure for Me 兩件套",
-    names: ["Cure for Me Mask", "Cure for Me Outfit"],
-  },
-  {
-    key: "transcendent-journey",
-    name: "超凡風之旅人三件套",
-    names: [
-      "Transcendent Journey Cape",
-      "Transcendent Journey Hair",
-      "Transcendent Journey Mask",
-    ],
-  },
-  {
-    key: "wonderland-pinafore",
-    name: "仙境報春花兩件套",
-    names: [
-      "Wonderland Primrose Pinafore Bow",
-      "Wonderland Primrose Pinafore Dress",
-    ],
-  },
-  {
-    key: "fortune-snake",
-    name: "福瑞蛇四件套",
-    names: [
-      "Fortune Snake Mask",
-      "Fortune Snake Outfit",
-      "Fortune Snake Cloak",
-      "Fortune Snake Hair",
-    ],
-  },
-  {
-    key: "mischief-goth",
-    name: "惡作劇哥德三件套",
-    names: [
-      "Mischief Goth Cape",
-      "Mischief Goth Boots",
-      "Mischief Goth Garment",
-    ],
+    name: "姆明耳尾兩件套",
+    names: ["Moomintroll Ears", "Moomintroll Tail"],
   },
   {
     key: "cat",

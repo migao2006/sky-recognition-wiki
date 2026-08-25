@@ -12,7 +12,7 @@ test("renders the account organizer", async () => {
   assert.match(html, /帳號整理步驟/);
   assert.match(html, /選擇物品/);
   assert.match(html, /估價與匯出/);
-  assert.match(html, /姆明限定七件/);
+  assert.match(html, /姆明耳尾兩件套/);
   assert.match(html, /貓咪三件套/);
   assert.match(html, /下一步：選擇物品/);
   assert.match(html, /搜尋物品/);
