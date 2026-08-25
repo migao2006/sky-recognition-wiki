@@ -310,7 +310,7 @@ a:focus-visible {
   display: grid;
   grid-template-columns:
     minmax(150px, 0.8fr) minmax(150px, 0.8fr)
-    repeat(2, minmax(210px, 1.2fr)) auto;
+    repeat(3, minmax(180px, 1fr)) auto;
   gap: 9px;
   margin-top: 10px;
   padding-top: 10px;

@@ -25,6 +25,8 @@ test("renders the account organizer", async () => {
   assert.match(html, /更多條件/);
   assert.match(html, /清除篩選/);
   assert.match(html, /只看影響估價的物品/);
+  assert.match(html, /影片核對/);
+  assert.match(html, /畢業禮、聯動、禮包與熱門物品/);
   assert.match(html, /只看季卡項鍊與畢業禮/);
   assert.match(html, /資料來源：SkyGame-Data/);
   assert.match(html, /常用套組/);

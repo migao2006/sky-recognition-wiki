@@ -276,6 +276,8 @@ export const sourceKind = (x: WikiItem) => {
     return "年度活動";
   }
   if (x.section === "realms") return "常駐地圖";
+  if (x.section === "other" && /Sky_for_Steam|Steam/i.test(x.wiki))
+    return "平台限定";
   if (x.section === "store") {
     const store = storeSource(x);
     if (store.includes("專屬")) return "平台限定";
@@ -1488,6 +1490,17 @@ export const isValuationFocus = (x: WikiItem) =>
   isLimitedItem(x) ||
   isPaidItem(x) ||
   marketHighlightNames.has(x.name);
+const professionalVideoKinds = new Set(["聯動", "平台限定"]);
+export const isProfessionalVideoFocus = (x: WikiItem) => {
+  const kind = sourceKind(x);
+  return (
+    kind !== "國服限定" &&
+    (isSeasonUltimate(x) ||
+      isPaidItem(x) ||
+      professionalVideoKinds.has(kind) ||
+      marketHighlightNames.has(x.name))
+  );
+};
 export const searchIndex = new Map(
   wikiItems
     .filter((x) => allClosetTypeSet.has(x.type))

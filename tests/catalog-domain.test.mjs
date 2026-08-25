@@ -36,7 +36,13 @@ const loadCatalogDomain = async () => {
   return import(asModuleUrl(catalogModule));
 };
 
-const { matchesSourceFilter, sourceKind, zhName } = await loadCatalogDomain();
+const {
+  isProfessionalVideoFocus,
+  matchesSourceFilter,
+  sourceKind,
+  wikiItems,
+  zhName,
+} = await loadCatalogDomain();
 
 const item = (overrides = {}) => ({
   id: 1,
@@ -89,4 +95,41 @@ test("filters catalog items by source category", () => {
   );
   assert.equal(matchesSourceFilter(item({ section: "base" }), "permanent"), true);
   assert.equal(matchesSourceFilter(item({ section: "base" }), "collab"), false);
+});
+
+test("focuses professional video checks on globally relevant market items", () => {
+  assert.equal(
+    isProfessionalVideoFocus(
+      item({ section: "seasons", group: "Ultimate", type: "Hair" }),
+    ),
+    true,
+  );
+  assert.equal(
+    isProfessionalVideoFocus(
+      item({ section: "events", collection: "event-cinnamoroll" }),
+    ),
+    true,
+  );
+  assert.equal(
+    isProfessionalVideoFocus(
+      item({ section: "store", wiki: "https://example.com/PlayStation" }),
+    ),
+    true,
+  );
+  assert.equal(isProfessionalVideoFocus(item({ section: "base" })), false);
+  const companionCube = wikiItems.find((entry) => entry.name === "Companion Cube");
+  assert.ok(companionCube);
+  assert.equal(sourceKind(companionCube), "平台限定");
+  assert.equal(isProfessionalVideoFocus(companionCube), true);
+  assert.equal(
+    isProfessionalVideoFocus(
+      item({
+        section: "other",
+        collection: "china",
+        group: "Limited",
+        wiki: "https://example.com/china-only",
+      }),
+    ),
+    false,
+  );
 });

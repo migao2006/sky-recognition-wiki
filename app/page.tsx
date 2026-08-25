@@ -35,6 +35,7 @@ import {
   eventZh,
   graduationSeasonSlugs,
   isLimitedItem,
+  isProfessionalVideoFocus,
   isValuationFocus,
   labels,
   matchesSourceFilter,
@@ -196,7 +197,8 @@ export default function AccountOrganizer() {
     [onlyDiscontinued, setOnlyDiscontinued] = useState(false);
   const [query, setQuery] = useState(""),
     [sourceFilter, setSourceFilter] = useState("all"),
-    [valuationMode, setValuationMode] = useState(false);
+    [valuationMode, setValuationMode] = useState(false),
+    [videoMode, setVideoMode] = useState(false);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
@@ -344,6 +346,7 @@ export default function AccountOrganizer() {
             x.collection === season) &&
           (!onlyDiscontinued || isSeasonUltimate(x)) &&
           (!valuationMode || isValuationFocus(x)) &&
+          (!videoMode || isProfessionalVideoFocus(x)) &&
           (!q || searchIndex.get(x.guid)?.includes(q)),
       )
       .sort((a, b) =>
@@ -359,6 +362,7 @@ export default function AccountOrganizer() {
     deferredQuery,
     sourceFilter,
     valuationMode,
+    videoMode,
   ]);
   const visibleItems = filtered.slice(0, visibleCount);
   const resetVisibleItems = () => setVisibleCount(80);
@@ -375,12 +379,14 @@ export default function AccountOrganizer() {
     setSeason("全部季節");
     setOnlyDiscontinued(false);
     setValuationMode(false);
+    setVideoMode(false);
     resetVisibleItems();
   };
   const activeFilterCount = [
     sourceFilter !== "all",
     season !== "全部季節",
     valuationMode,
+    videoMode,
     onlyDiscontinued,
   ].filter(Boolean).length;
   const toggleOwned = useCallback((guid: string) =>
@@ -1147,7 +1153,9 @@ export default function AccountOrganizer() {
               type="button"
               className={`filter-toggle${valuationMode ? " active" : ""}`}
               onClick={() => {
-                setValuationMode((x) => !x);
+                const next = !valuationMode;
+                setValuationMode(next);
+                if (next) setVideoMode(false);
                 resetVisibleItems();
               }}
               aria-pressed={valuationMode}
@@ -1156,6 +1164,23 @@ export default function AccountOrganizer() {
               <span>
                 <b>估價重點</b>
                 <small>只看影響估價的物品</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`filter-toggle video-toggle${videoMode ? " active" : ""}`}
+              onClick={() => {
+                const next = !videoMode;
+                setVideoMode(next);
+                if (next) setValuationMode(false);
+                resetVisibleItems();
+              }}
+              aria-pressed={videoMode}
+            >
+              <i aria-hidden="true">{videoMode ? "✓" : ""}</i>
+              <span>
+                <b>影片核對</b>
+                <small>畢業禮、聯動、禮包與熱門物品</small>
               </span>
             </button>
             <button
@@ -1235,10 +1260,12 @@ export default function AccountOrganizer() {
           <h2>
             {deferredQuery
               ? `「${deferredQuery.trim()}」搜尋結果`
-              : season !== "全部季節"
-                ? seasonZh[season]
-                : valuationMode
-                  ? "估價重點"
+                : season !== "全部季節"
+                  ? seasonZh[season]
+                  : videoMode
+                    ? "影片核對"
+                  : valuationMode
+                    ? "估價重點"
                   : activeCloset.name}{" "}
             · {filtered.length.toLocaleString()} 件
           </h2>
