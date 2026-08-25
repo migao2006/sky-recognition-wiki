@@ -1,29 +1,12 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("renders the account organizer", async () => {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  const response = await worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
+  const html = await readFile(
+    new URL("../.next/server/app/index.html", import.meta.url),
+    "utf8",
   );
-
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
-  const html = await response.text();
   assert.match(html, /<title>光遇帳號整理<\/title>/i);
   assert.match(html, /整理帳號資料/);
   assert.match(html, /帳號整理步驟/);
@@ -34,4 +17,20 @@ test("renders the account organizer", async () => {
   assert.match(html, /資料來源：SkyGame-Data/);
   assert.match(html, /常用套組/);
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
+});
+
+test("ships a valid valuation model", async () => {
+  const source = await readFile(
+    new URL("../public/data/valuation-model-v1.json", import.meta.url),
+    "utf8",
+  );
+  const model = JSON.parse(source);
+
+  assert.equal(model.model_version, "1.0");
+  assert.equal(model.currency, "TWD");
+  assert.ok(Array.isArray(model.feature_names));
+  assert.equal(model.coefficients.length, model.feature_names.length);
+  assert.equal(model.scaler_mean.length, model.feature_names.length);
+  assert.equal(model.scaler_scale.length, model.feature_names.length);
+  assert.equal(model.clamp_twd.length, 2);
 });

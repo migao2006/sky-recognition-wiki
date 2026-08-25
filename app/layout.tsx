@@ -8,13 +8,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "光遇帳號整理",
     description: "季節、衣櫃、綁定、估價與匯出集中在同一頁完成。",
-    images: ["https://sky-recognition-wiki.a0912647176.chatgpt.site/og.png"],
+    images: ["https://sky-recognition-wiki.vercel.app/og.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "光遇帳號整理",
     description: "季節、衣櫃、綁定、估價與匯出集中在同一頁完成。",
-    images: ["https://sky-recognition-wiki.a0912647176.chatgpt.site/og.png"],
+    images: ["https://sky-recognition-wiki.vercel.app/og.png"],
   },
 };
 
