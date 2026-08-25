@@ -286,6 +286,27 @@ export const sourceKind = (x: WikiItem) => {
   }
   return x.section === "base" ? "基礎" : "國服限定";
 };
+const eventOrder = new Map(
+  Object.keys(eventZh).map((collection, index) => [collection, index]),
+);
+const realmOrder = new Map(
+  Object.keys(realmZh).map((collection, index) => [collection, index]),
+);
+export const showcaseClusterOrder = (item: WikiItem) => {
+  const kind = sourceKind(item);
+  if (item.section === "seasons")
+    return 1000 + (seasonOrder.get(item.collection) ?? 999);
+  if (kind === "聯動")
+    return 2000 + (eventOrder.get(item.collection) ?? 999);
+  if (kind === "平台限定") return 3000;
+  if (item.section === "events")
+    return 4000 + (eventOrder.get(item.collection) ?? 999);
+  if (item.section === "store") return 5000;
+  if (item.section === "realms")
+    return 6000 + (realmOrder.get(item.collection) ?? 999);
+  if (item.section === "base") return 7000;
+  return 8000;
+};
 export const source = (x: WikiItem) =>
   x.section === "seasons"
     ? `季節 · ${seasonZh[x.collection] || x.collection}`

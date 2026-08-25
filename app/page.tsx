@@ -44,11 +44,11 @@ import {
   realmZh,
   searchIndex,
   seasonGraduationItems,
-  seasonOrder,
   seasonUltimateItems,
   seasonUltimateSlugs,
   seasonZh,
   seasons,
+  showcaseClusterOrder,
   sortSeasonSlugs,
   source,
   sourceFilters,
@@ -613,19 +613,18 @@ export default function AccountOrganizer() {
     }
   };
   const exportShowcaseImage = async () => {
+    if (!chosen.length) {
+      setNotice("尚未選取物品");
+      return;
+    }
     setNotice("正在產生圖片…");
     try {
       const { renderShowcaseImage } = await import("./export-showcase");
       const blob = await renderShowcaseImage({
         items: chosen,
-        accountName: account.name,
-        accountType: account.accountType,
-        transferBindings: bindingGroup("transfer"),
-        keptBindings: bindingGroup("keep"),
-        resources: `資源：${account.candles || 0} 白蠟・${account.hearts || 0} 愛心・${account.ascended || 0} 昇華蠟・${account.passes || 0} 副卡`,
         isUltimate: isSeasonUltimate,
         isLimited: (item) => isPaidItem(item) || isLimitedItem(item),
-        getItemName: (item) => zhName(item.name),
+        isPendant: isSeasonPendant,
         getClusterName: (item) =>
           item.section === "seasons"
             ? seasonZh[item.collection] || item.collection
@@ -636,10 +635,9 @@ export default function AccountOrganizer() {
                 : item.section === "store"
                   ? storeSource(item)
                   : sourceKind(item),
-        getClusterOrder: (item) =>
-          item.section === "seasons"
-            ? (seasonOrder.get(item.collection) ?? 999)
-            : 1000,
+        getClusterOrder: showcaseClusterOrder,
+        getItemTypeName: (item) => labels[item.type] || item.type,
+        getItemTypeOrder: (item) => typeOrder.get(item.type) ?? 999,
       });
       downloadBlob(blob, `光遇帳號_${safeFileName(account.name)}_整理圖片.png`);
       setNotice("整理圖片已下載");

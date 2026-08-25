@@ -39,6 +39,7 @@ const loadCatalogDomain = async () => {
 const {
   isProfessionalVideoFocus,
   matchesSourceFilter,
+  showcaseClusterOrder,
   sourceKind,
   wikiItems,
   zhName,
@@ -132,4 +133,22 @@ test("focuses professional video checks on globally relevant market items", () =
     ),
     false,
   );
+});
+
+test("orders showcase sources consistently", () => {
+  const season = item({ section: "seasons", collection: "aurora" });
+  const collaboration = item({
+    section: "events",
+    collection: "event-cinnamoroll",
+  });
+  const platform = item({
+    section: "store",
+    wiki: "https://example.com/PlayStation",
+  });
+  const annual = item({ section: "events", collection: "days-of-love" });
+  assert.ok(showcaseClusterOrder(season) < showcaseClusterOrder(collaboration));
+  assert.ok(
+    showcaseClusterOrder(collaboration) < showcaseClusterOrder(platform),
+  );
+  assert.ok(showcaseClusterOrder(platform) < showcaseClusterOrder(annual));
 });

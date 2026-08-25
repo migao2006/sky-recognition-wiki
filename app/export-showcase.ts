@@ -2,16 +2,86 @@ import type { WikiItem } from "./wiki-data";
 
 type ExportShowcaseOptions = {
   items: WikiItem[];
-  accountName: string;
-  accountType: string;
-  transferBindings: string;
-  keptBindings: string;
-  resources: string;
   isUltimate: (item: WikiItem) => boolean;
   isLimited: (item: WikiItem) => boolean;
-  getItemName: (item: WikiItem) => string;
+  isPendant: (item: WikiItem) => boolean;
   getClusterName: (item: WikiItem) => string;
   getClusterOrder: (item: WikiItem) => number;
+  getItemTypeName: (item: WikiItem) => string;
+  getItemTypeOrder: (item: WikiItem) => number;
+};
+
+type ShowcaseGroupKey = "ultimate" | "limited" | "other";
+
+export const buildShowcaseGroups = ({
+  items,
+  isUltimate,
+  isLimited,
+  isPendant,
+  getClusterName,
+  getClusterOrder,
+  getItemTypeName,
+  getItemTypeOrder,
+}: ExportShowcaseOptions) => {
+  const ultimates = items.filter(isUltimate);
+  const limited = items.filter((item) => !isUltimate(item) && isLimited(item));
+  const featured = new Set([...ultimates, ...limited].map((item) => item.guid));
+  const groups = [
+    { key: "ultimate" as const, name: "季節畢業", items: ultimates },
+    { key: "limited" as const, name: "聯動／禮包／限定", items: limited },
+    {
+      key: "other" as const,
+      name: "其他衣櫃",
+      items: items.filter((item) => !featured.has(item.guid)),
+    },
+  ].filter((group) => group.items.length);
+
+  const compareItems = (
+    groupKey: ShowcaseGroupKey,
+    a: WikiItem,
+    b: WikiItem,
+  ) =>
+    (groupKey === "ultimate"
+      ? Number(isPendant(b)) - Number(isPendant(a))
+      : getItemTypeOrder(a) - getItemTypeOrder(b)) ||
+    a.order - b.order ||
+    a.id - b.id ||
+    a.guid.localeCompare(b.guid);
+
+  return groups.map((group) => {
+    const clusters = new Map<
+      string,
+      { name: string; items: WikiItem[]; order: number }
+    >();
+    group.items.forEach((item) => {
+      const key =
+        group.key === "other"
+          ? `type:${item.type}`
+          : `${item.section}:${item.collection}`;
+      const current = clusters.get(key);
+      if (current) current.items.push(item);
+      else
+        clusters.set(key, {
+          name:
+            group.key === "other"
+              ? getItemTypeName(item)
+              : getClusterName(item),
+          items: [item],
+          order:
+            group.key === "other"
+              ? getItemTypeOrder(item)
+              : getClusterOrder(item),
+        });
+    });
+    const sortedClusters = [...clusters.values()].sort(
+      (a, b) =>
+        a.order - b.order || a.name.localeCompare(b.name, "zh-Hant"),
+    );
+    sortedClusters.forEach((cluster) =>
+      cluster.items.sort((a, b) => compareItems(group.key, a, b)),
+    );
+    return { ...group, clusters: sortedClusters };
+  });
 };
 
 const iconCache = new Map<string, Promise<HTMLImageElement | null>>();
@@ -64,79 +134,48 @@ const loadIcons = async (items: WikiItem[], concurrency = 8) => {
   return icons;
 };
 
-export const renderShowcaseImage = async ({
-  items,
-  accountName,
-  accountType,
-  transferBindings,
-  keptBindings,
-  resources,
-  isUltimate,
-  isLimited,
-  getItemName,
-  getClusterName,
-  getClusterOrder,
-}: ExportShowcaseOptions) => {
-  const ultimates = items.filter(isUltimate);
-  const limited = items.filter((item) => !isUltimate(item) && isLimited(item));
-  const featured = new Set([...ultimates, ...limited].map((item) => item.guid));
-  const groups = [
-    { name: "季卡／畢業禮", items: ultimates },
-    { name: "聯動／禮包／限定", items: limited },
-    {
-      name: "其他衣櫃",
-      items: items.filter((item) => !featured.has(item.guid)),
-    },
-  ].filter((group) => group.items.length);
+const showcaseMetrics = {
+  width: 1200,
+  pad: 40,
+  panelPad: 28,
+  titleHeight: 58,
+  cellWidth: 86,
+  cellHeight: 86,
+  iconGap: 8,
+  clusterGap: 12,
+  clusterPad: 11,
+  clusterTitle: 30,
+  maxClusterColumns: 10,
+  clusterMinWidth: 200,
+  sectionGap: 24,
+} as const;
 
-  const clusterItems = (clusterSource: WikiItem[]) => {
-    const map = new Map<
-      string,
-      { name: string; items: WikiItem[]; order: number }
-    >();
-    clusterSource.forEach((item) => {
-      const key = `${item.section}:${item.collection}`;
-      const current = map.get(key);
-      if (current) current.items.push(item);
-      else
-        map.set(key, {
-          name: getClusterName(item),
-          items: [item],
-          order: getClusterOrder(item),
-        });
-    });
-    const clusters = [...map.values()].sort((a, b) => a.order - b.order);
-    if (clusterSource.length >= 80) {
-      return [
-        {
-          name: "整理總覽",
-          items: clusters.flatMap((cluster) => cluster.items),
-          order: 0,
-        },
-      ];
-    }
-    return clusters;
-  };
-
-  const width = 1200;
-  const pad = 48;
-  const panelPad = 28;
-  const titleHeight = 62;
-  const cellWidth = 92;
-  const cellHeight = 108;
-  const iconGap = 8;
-  const clusterGap = 12;
-  const clusterPad = 11;
-  const clusterTitle = 30;
-  const maxClusterColumns = 10;
-  const clusterMinWidth = 200;
+const buildShowcaseLayout = (
+  groups: ReturnType<typeof buildShowcaseGroups>,
+) => {
+  const {
+    width,
+    pad,
+    panelPad,
+    titleHeight,
+    cellWidth,
+    cellHeight,
+    iconGap,
+    clusterGap,
+    clusterPad,
+    clusterTitle,
+    maxClusterColumns,
+    clusterMinWidth,
+    sectionGap,
+  } = showcaseMetrics;
   const contentWidth = width - pad * 2 - panelPad * 2;
-
-  const layoutClusters = (clusterSource: WikiItem[]) => {
+  const layoutClusters = (
+    clusters: ReturnType<typeof buildShowcaseGroups>[number]["clusters"],
+  ) => {
     let cursorX = 0;
     let cursorY = 0;
     let rowHeight = 0;
-    const placements = clusterItems(clusterSource).map((cluster) => {
+    const placements = clusters.map((cluster) => {
       const columns = Math.min(maxClusterColumns, cluster.items.length || 1);
       const rows = Math.ceil(cluster.items.length / columns);
       const naturalWidth =
@@ -171,27 +210,43 @@ export const renderShowcaseImage = async ({
       height: placements.length ? cursorY + rowHeight : 0,
     };
   };
-
-  const headerHeight = 214;
-  const footerHeight = 88;
-  const sectionGap = 28;
-  const visibleGroups = groups.length
-    ? groups
-    : [{ name: "衣櫃清單", items: [] as WikiItem[] }];
-  const renderGroups = visibleGroups.map((group) => ({
+  const renderGroups = groups.map((group) => ({
     ...group,
-    layout: layoutClusters(group.items),
+    layout: layoutClusters(group.clusters),
   }));
   const panelHeight = (layoutHeight: number) =>
     titleHeight + Math.max(cellHeight + 26, layoutHeight) + panelPad;
   const height =
-    pad +
-    headerHeight +
+    pad * 2 +
     renderGroups.reduce(
-      (sum, group) => sum + panelHeight(group.layout.height) + sectionGap,
+      (sum, group) => sum + panelHeight(group.layout.height),
       0,
     ) +
-    footerHeight;
+    sectionGap * Math.max(0, renderGroups.length - 1);
+  return { height, panelHeight, renderGroups };
+};
+
+export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
+  const { height } = buildShowcaseLayout(buildShowcaseGroups(options));
+  return { width: showcaseMetrics.width, height };
+};
+
+export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
+  const { items } = options;
+  const groups = buildShowcaseGroups(options);
+  const {
+    width,
+    pad,
+    panelPad,
+    titleHeight,
+    cellWidth,
+    cellHeight,
+    iconGap,
+    clusterPad,
+    clusterTitle,
+    sectionGap,
+  } = showcaseMetrics;
+  const { height, panelHeight, renderGroups } = buildShowcaseLayout(groups);
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -239,54 +294,8 @@ export const renderShowcaseImage = async ({
     }
   };
 
-  const textLines = (text: string, maxWidth: number, maxLines = 2) => {
-    const lines: string[] = [];
-    let line = "";
-    [...text].forEach((character) => {
-      const candidate = line + character;
-      if (line && ctx.measureText(candidate).width > maxWidth) {
-        lines.push(line);
-        line = character;
-      } else line = candidate;
-    });
-    if (line) lines.push(line);
-    if (lines.length <= maxLines) return lines;
-    const visible = lines.slice(0, maxLines);
-    let last = visible[maxLines - 1];
-    while (last && ctx.measureText(`${last}…`).width > maxWidth)
-      last = last.slice(0, -1);
-    visible[maxLines - 1] = `${last}…`;
-    return visible;
-  };
-
-  roundRect(
-    pad,
-    pad,
-    width - pad * 2,
-    headerHeight,
-    28,
-    "rgba(7,11,20,.82)",
-    "rgba(169,207,255,.18)",
-  );
-  ctx.textAlign = "left";
-  ctx.fillStyle = "#f3f8f7";
-  ctx.font = "800 38px system-ui";
-  ctx.fillText(accountName || "光遇帳號衣櫃", pad + 32, pad + 58);
-  ctx.fillStyle = "#b9dce2";
-  ctx.font = "600 20px system-ui";
-  ctx.fillText(`${accountType}　已選取 ${items.length} 件`, pad + 32, pad + 96);
-  ctx.fillStyle = "#91aeb6";
-  ctx.font = "18px system-ui";
-  ctx.fillText(
-    `可出：${transferBindings}　｜　不出：${keptBindings}`,
-    pad + 32,
-    pad + 132,
-    width - pad * 2 - 64,
-  );
-  ctx.fillText(resources, pad + 32, pad + 166, width - pad * 2 - 64);
-
   const icons = await loadIcons(items);
-  let y = pad + headerHeight + sectionGap;
+  let y = pad;
   renderGroups.forEach((group) => {
     const boxHeight = panelHeight(group.layout.height);
     roundRect(
@@ -301,17 +310,7 @@ export const renderShowcaseImage = async ({
     ctx.textAlign = "center";
     ctx.fillStyle = "#f3f8f7";
     ctx.font = "800 24px system-ui";
-    ctx.fillText(`${group.name}　${group.items.length} 件`, width / 2, y + 40);
-
-    if (!group.items.length) {
-      ctx.fillStyle = "#9ab1b8";
-      ctx.font = "20px system-ui";
-      ctx.fillText(
-        "尚未選取物品",
-        width / 2,
-        y + titleHeight + cellHeight / 2 + 8,
-      );
-    }
+    ctx.fillText(group.name, width / 2, y + 38);
 
     group.layout.placements.forEach(
       ({ cluster, x: clusterX, y: clusterY, w, h, columns }) => {
@@ -329,12 +328,7 @@ export const renderShowcaseImage = async ({
         ctx.textAlign = "left";
         ctx.fillStyle = "#b7d6ff";
         ctx.font = "700 14px system-ui";
-        ctx.fillText(
-          `${cluster.name}　${cluster.items.length}`,
-          x + clusterPad,
-          clusterTop + 21,
-          w - clusterPad * 2,
-        );
+        ctx.fillText(cluster.name, x + clusterPad, clusterTop + 21);
 
         cluster.items.forEach((item, index) => {
           const col = index % columns;
@@ -364,7 +358,7 @@ export const renderShowcaseImage = async ({
           const image = icons.get(item.guid);
           if (image) {
             const maxWidth = cellWidth - 16;
-            const maxHeight = 58;
+            const maxHeight = 70;
             const scale = Math.min(
               maxWidth / image.naturalWidth,
               maxHeight / image.naturalHeight,
@@ -377,7 +371,7 @@ export const renderShowcaseImage = async ({
             ctx.drawImage(
               image,
               cellX + (cellWidth - drawW) / 2,
-              cellY + 7 + (maxHeight - drawH) / 2,
+              cellY + (cellHeight - drawH) / 2,
               drawW,
               drawH,
             );
@@ -386,37 +380,13 @@ export const renderShowcaseImage = async ({
             ctx.textAlign = "center";
             ctx.fillStyle = "#b7d6ff";
             ctx.font = "700 28px system-ui";
-            ctx.fillText("✦", cellX + cellWidth / 2, cellY + 48);
+            ctx.fillText("✦", cellX + cellWidth / 2, cellY + 55);
           }
-          ctx.textAlign = "center";
-          ctx.fillStyle = "#e7edf6";
-          ctx.font = "650 12px system-ui";
-          textLines(getItemName(item), cellWidth - 12).forEach(
-            (line, lineIndex) =>
-              ctx.fillText(
-                line,
-                cellX + cellWidth / 2,
-                cellY + 80 + lineIndex * 15,
-              ),
-          );
         });
       },
     );
     y += boxHeight + sectionGap;
   });
-
-  ctx.textAlign = "left";
-  ctx.fillStyle = "#91aeb6";
-  ctx.font = "16px system-ui";
-  ctx.fillText(
-    "資料來源：SkyGame-Data・SkyGame-Planner・BWiki 中文清單",
-    pad,
-    y + 18,
-  );
-  ctx.textAlign = "right";
-  ctx.fillStyle = "#b7d6ff";
-  ctx.font = "700 18px system-ui";
-  ctx.fillText(`共 ${items.length} 件`, width - pad, y + 18);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
