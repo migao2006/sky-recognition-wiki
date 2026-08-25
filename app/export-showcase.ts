@@ -135,19 +135,19 @@ const loadIcons = async (items: WikiItem[], concurrency = 8) => {
 };
 
 const showcaseMetrics = {
-  width: 1200,
-  pad: 40,
-  panelPad: 28,
-  titleHeight: 58,
-  cellWidth: 86,
-  cellHeight: 86,
-  iconGap: 8,
-  clusterGap: 12,
-  clusterPad: 11,
-  clusterTitle: 30,
-  maxClusterColumns: 10,
-  clusterMinWidth: 200,
-  sectionGap: 24,
+  width: 1440,
+  pad: 24,
+  panelPad: 18,
+  titleHeight: 44,
+  cellWidth: 56,
+  cellHeight: 56,
+  iconGap: 4,
+  clusterGap: 6,
+  clusterPad: 6,
+  clusterTitle: 20,
+  maxClusterColumns: 22,
+  clusterMinWidth: 96,
+  sectionGap: 12,
 } as const;
 
 const buildShowcaseLayout = (
@@ -215,7 +215,7 @@ const buildShowcaseLayout = (
     layout: layoutClusters(group.clusters),
   }));
   const panelHeight = (layoutHeight: number) =>
-    titleHeight + Math.max(cellHeight + 26, layoutHeight) + panelPad;
+    titleHeight + Math.max(cellHeight + 12, layoutHeight) + panelPad;
   const height =
     pad * 2 +
     renderGroups.reduce(
@@ -303,14 +303,14 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
       y,
       width - pad * 2,
       boxHeight,
-      28,
+      20,
       "rgba(7,11,20,.76)",
       "rgba(169,207,255,.16)",
     );
     ctx.textAlign = "center";
     ctx.fillStyle = "#f3f8f7";
-    ctx.font = "800 24px system-ui";
-    ctx.fillText(group.name, width / 2, y + 38);
+    ctx.font = "800 20px system-ui";
+    ctx.fillText(group.name, width / 2, y + 29);
 
     group.layout.placements.forEach(
       ({ cluster, x: clusterX, y: clusterY, w, h, columns }) => {
@@ -321,14 +321,14 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
           clusterTop,
           w,
           h,
-          16,
+          10,
           "rgba(111,158,232,.07)",
           "rgba(169,207,255,.15)",
         );
         ctx.textAlign = "left";
         ctx.fillStyle = "#b7d6ff";
-        ctx.font = "700 14px system-ui";
-        ctx.fillText(cluster.name, x + clusterPad, clusterTop + 21);
+        ctx.font = "700 11px system-ui";
+        ctx.fillText(cluster.name, x + clusterPad, clusterTop + 14);
 
         cluster.items.forEach((item, index) => {
           const col = index % columns;
@@ -346,19 +346,10 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
             clusterPad +
             clusterTitle +
             row * (cellHeight + iconGap);
-          roundRect(
-            cellX,
-            cellY,
-            cellWidth,
-            cellHeight,
-            13,
-            "rgba(255,255,255,.045)",
-            "rgba(255,255,255,.06)",
-          );
           const image = icons.get(item.guid);
           if (image) {
-            const maxWidth = cellWidth - 16;
-            const maxHeight = 70;
+            const maxWidth = cellWidth - 6;
+            const maxHeight = cellHeight - 6;
             const scale = Math.min(
               maxWidth / image.naturalWidth,
               maxHeight / image.naturalHeight,
@@ -379,8 +370,8 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
           } else {
             ctx.textAlign = "center";
             ctx.fillStyle = "#b7d6ff";
-            ctx.font = "700 28px system-ui";
-            ctx.fillText("✦", cellX + cellWidth / 2, cellY + 55);
+            ctx.font = "700 22px system-ui";
+            ctx.fillText("✦", cellX + cellWidth / 2, cellY + 36);
           }
         });
       },
