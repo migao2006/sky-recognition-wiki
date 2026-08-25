@@ -51,17 +51,17 @@ import {
   zhName,
 } from "./catalog-domain";
 import {
-  calibrateHighValueEstimate,
-  classifyPackageTier,
-  classifySeasonGap,
-} from "./valuation-calibration";
-import {
   isGraduationGift,
   isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
-  monotonicCoefficient,
 } from "./valuation-items";
+import {
+  analyzeValuation,
+  estimateValuation,
+  type ValuationDomain,
+  type ValuationModel,
+} from "./valuation-analysis";
 
 const safeFileName = (name: string) =>
   name.replace(/[\\/:*?"<>|]/g, "-").trim() || "未命名";
@@ -83,14 +83,16 @@ const valuationTag = (x: WikiItem) =>
       : "";
 const itemLine = (x: WikiItem, index: number) =>
   `${index + 1}. ${zhName(x.name)} / ${x.name}｜${labels[x.type] || x.type}｜ID ${x.id}｜來源：${source(x)}${valuationTag(x)}`;
-type ValuationModel = {
-  feature_names: string[];
-  keyword_patterns: Record<string, string>;
-  scaler_mean: number[];
-  scaler_scale: number[];
-  coefficients: number[];
-  intercept: number;
-  clamp_twd: [number, number];
+const valuationDomain: ValuationDomain = {
+  isValuationFocus,
+  isLimitedItem,
+  sourceKind,
+  getZhName: zhName,
+  getSource: source,
+  ongoingSeasonSlugs,
+  graduationSeasonSlugs,
+  seasonGraduationItems,
+  sortSeasonSlugs,
 };
 
 export default function AccountOrganizer() {
@@ -149,163 +151,26 @@ export default function AccountOrganizer() {
       ),
     [owned],
   );
-  const valuationAnalysis = useMemo(() => {
-    const valuationItems = chosen.filter(isValuationFocus),
-      ultimates = chosen.filter(isGraduationGift),
-      pendants = chosen.filter(isSeasonPendant),
-      packages = chosen.filter(isPaidItem),
-      collabs = chosen.filter((x) => sourceKind(x) === "聯動"),
-      limited = chosen.filter(isLimitedItem),
-      ultimateSeasonSlugs = sortSeasonSlugs([
-        ...new Set(
-          chosen
-            .filter(isSeasonUltimate)
-            .filter((x) => !ongoingSeasonSlugs.has(x.collection))
-            .map((x) => x.collection),
-        ),
-      ]),
-      startSeasonSlug = ultimateSeasonSlugs[0] || null,
-      earliestGraduationIndex = startSeasonSlug
-        ? graduationSeasonSlugs.indexOf(startSeasonSlug)
-        : -1,
-      expectedGraduationSlugs =
-        earliestGraduationIndex >= 0
-          ? graduationSeasonSlugs.slice(earliestGraduationIndex)
-          : [],
-      selectedUltimateCount = new Map(
-        expectedGraduationSlugs.map((slug) => [
-          slug,
-          ultimates.filter((x) => x.collection === slug).length,
-        ]),
-      ),
-      pendantSeasonSlugs = new Set(pendants.map((x) => x.collection)),
-      expectedUltimateCount = new Map(
-        expectedGraduationSlugs.map((slug) => [
-          slug,
-          seasonGraduationItems.get(slug)?.length ?? 0,
-        ]),
-      ),
-      missingSeasonSlugs = expectedGraduationSlugs.filter(
-        (slug) =>
-          !selectedUltimateCount.get(slug) && !pendantSeasonSlugs.has(slug),
-      ),
-      partialSeasonSlugs = expectedGraduationSlugs.filter(
-        (slug) =>
-          ((selectedUltimateCount.get(slug) || 0) > 0 ||
-            pendantSeasonSlugs.has(slug)) &&
-          (selectedUltimateCount.get(slug) || 0) <
-            (expectedUltimateCount.get(slug) || 0),
-      ),
-      gapTier = classifySeasonGap({
-        hasSeasonData: ultimateSeasonSlugs.length > 0,
-        missingSeasons: missingSeasonSlugs.length,
-        partialSeasons: partialSeasonSlugs.length,
+  const valuationAnalysis = useMemo(
+    () =>
+      analyzeValuation({
+        chosen,
+        bindings,
+        bindingNote: account.bindingNote,
+        domain: valuationDomain,
       }),
-      packageTier = classifyPackageTier(packages.length),
-      startEvidenceConfidence = Math.min(
-        1,
-        Math.max(0, ultimateSeasonSlugs.length - 1) / 8,
-      ),
-      bindingReviewed =
-        bindingKeys.some((key) => bindings[key] !== "none") ||
-        Boolean(account.bindingNote.trim()),
-      checks = [
-        Boolean(startSeasonSlug),
-        valuationItems.length > 0,
-        packages.length > 0 || limited.length > 0,
-        bindingReviewed,
-      ],
-      completeness = Math.round(
-        (checks.filter(Boolean).length / checks.length) * 100,
-      ),
-      issueCount = bindingKeys.filter(
-        (key) => bindings[key] === "issue",
-      ).length,
-      keepCount = bindingKeys.filter((key) => bindings[key] === "keep").length;
-    return {
-      valuationItems,
-      ultimates,
-      pendants,
-      packages,
-      collabs,
-      limited,
-      ultimateSeasonSlugs,
-      startSeasonSlug,
-      startEvidenceConfidence,
-      missingSeasonSlugs,
-      partialSeasonSlugs,
-      gapTier,
-      packageTier,
-      completeness,
-      issueCount,
-      keepCount,
-    };
-  }, [chosen, bindings, account]);
-  const modelEstimate = useMemo(() => {
-    if (!valuationModel || !valuationAnalysis.valuationItems.length)
-      return null;
-    const derived = [
-      ...valuationAnalysis.valuationItems.flatMap((x) => [
-        zhName(x.name),
-        x.name,
-        source(x),
-      ]),
-      account.accountType,
-      valuationAnalysis.packageTier.label,
-      valuationAnalysis.gapTier.label,
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const values = valuationModel.feature_names.map((name, index) => {
-      if (name === "binding_risk") return valuationModel.scaler_mean[index];
-      try {
-        return new RegExp(valuationModel.keyword_patterns[name], "i").test(
-          derived,
-        )
-          ? 1
-          : 0;
-      } catch {
-        return 0;
-      }
-    });
-    const logPrice =
-        valuationModel.intercept +
-        values.reduce(
-          (sum, value, index) =>
-            sum +
-            ((value - valuationModel.scaler_mean[index]) /
-              (valuationModel.scaler_scale[index] || 1)) *
-              monotonicCoefficient(valuationModel.coefficients[index]),
-          0,
-        ),
-      raw = Math.expm1(logPrice),
-      tailAnchor = 40000,
-      tailAdjusted =
-        raw > tailAnchor ? tailAnchor + Math.sqrt(raw - tailAnchor) * 180 : raw,
-      marketCalibrated = calibrateHighValueEstimate({
-        statisticalEstimate: tailAdjusted,
-        earliestSeasonSlug: valuationAnalysis.startSeasonSlug,
-        startEvidenceConfidence: valuationAnalysis.startEvidenceConfidence,
-        ultimateCount: valuationAnalysis.ultimates.length,
-        collaborationCount: valuationAnalysis.collabs.length,
-        gapTier: valuationAnalysis.gapTier,
-        packageTier: valuationAnalysis.packageTier,
-        missingSeasonSlugs: valuationAnalysis.missingSeasonSlugs,
-        partialSeasonSlugs: valuationAnalysis.partialSeasonSlugs,
+    [chosen, bindings, account.bindingNote],
+  );
+  const modelEstimate = useMemo(
+    () =>
+      estimateValuation({
+        model: valuationModel,
+        analysis: valuationAnalysis,
+        accountType: account.accountType,
+        domain: valuationDomain,
       }),
-      riskMultiplier =
-        Math.pow(0.86, valuationAnalysis.issueCount) *
-        Math.pow(0.95, valuationAnalysis.keepCount),
-      adjusted = Math.max(
-        valuationModel.clamp_twd[0],
-        marketCalibrated * riskMultiplier,
-      );
-    return Math.round(adjusted / 100) * 100;
-  }, [
-    valuationModel,
-    account.accountType,
-    valuationAnalysis,
-  ]);
+    [valuationModel, account.accountType, valuationAnalysis],
+  );
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLocaleLowerCase("zh-Hant");
     return wikiItems
