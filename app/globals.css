@@ -146,3 +146,22 @@ footer{color:#7e8d9f;font-size:10px}.notice{font-size:12px}
   .valuation-report-head h2{font-size:21px}.valuation-report-head p{font-size:11px}.valuation-verdict .model-price{font-size:31px}.valuation-verdict p{font-size:11px}.valuation-metrics span{font-size:10px}.valuation-metrics small{font-size:9px}.valuation-detail-title h3{font-size:13px}.highlight-list span,.risk-list span,.valuation-method{font-size:9px}.risk-list b{font-size:10px}
   .bottom-nav{background:#091721f4}.bottom-nav button.active{background:#9ed8e41b;color:#d9f5f7;box-shadow:inset 0 0 0 1px #9ed8e438}.bottom-nav span{font-size:10px}.bottom-nav i{font-size:19px}
 }
+
+/* 季節項鍊與畢業禮逐件選擇 */
+.season-picker{border-inline:1px solid var(--line);background:#0c1b24}
+.season-picker summary{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 22px;border-top:1px solid var(--line);cursor:pointer;list-style:none;user-select:none}
+.season-picker summary::-webkit-details-marker{display:none}.season-picker summary>span{display:grid;gap:4px}.season-picker summary b{color:#e1f4f6;font-size:15px}.season-picker summary small{color:#94a5ab;font-size:11px}
+.season-picker summary i{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:#07131d;color:#a5dce8;font-size:17px;font-style:normal;transition:transform .2s}.season-picker[open] summary i{transform:rotate(180deg)}
+.season-picker-body{padding:2px 22px 22px}.season-ultimate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.season-ultimate-card{min-width:0;padding:11px;border:1px solid #bfd9df24;border-radius:14px;background:#091720;transition:border-color .18s,background-color .18s}.season-ultimate-card.has-selected{border-color:#79d8aa62;background:#0c211f}
+.season-ultimate-card header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.season-ultimate-card header b{color:#dcebed;font-size:11px}.season-ultimate-card header span{flex:none;padding:2px 6px;border-radius:6px;background:#9ed8e412;color:#94bcc4;font-size:8px;font-weight:800}
+.season-ultimate-items{display:flex;align-items:flex-start;flex-wrap:wrap;gap:7px}.season-ultimate-item{width:52px;display:grid;justify-items:center;gap:4px;padding:0;border:0;background:transparent;color:#91a3aa;cursor:pointer}
+.season-ultimate-icon{width:52px;height:52px;position:relative;display:grid;place-items:center;border:1px solid #bfd9df25;border-radius:11px;background:radial-gradient(circle at 50% 40%,#243d48,#10232c 68%);overflow:hidden}.season-ultimate-icon img{width:82%;height:82%;object-fit:contain;filter:drop-shadow(0 6px 7px #0008)}
+.season-ultimate-icon i{position:absolute;right:3px;bottom:3px;width:15px;height:15px;display:grid;place-items:center;border-radius:5px;background:#79d8aa;color:#102f26;font-size:9px;font-style:normal;font-weight:900;opacity:0;transform:scale(.7);transition:.16s}.season-ultimate-item small{width:100%;overflow:hidden;color:#82949b;font-size:8px;line-height:1.3;text-align:center;text-overflow:ellipsis;white-space:nowrap}
+.season-ultimate-item.pendant .season-ultimate-icon{border-color:#e8cc9452;background:radial-gradient(circle at 50% 40%,#473e2a,#17262b 70%)}.season-ultimate-item.pendant small{color:#cdb986}.season-ultimate-item.selected .season-ultimate-icon{border-color:#83d8ad;background:radial-gradient(circle at 50% 40%,#28564d,#102a2d 70%);box-shadow:inset 0 0 0 1px #83d8ad2e}.season-ultimate-item.selected .season-ultimate-icon i{opacity:1;transform:scale(1)}.season-ultimate-item.selected small{color:#c6e9d8;font-weight:800}
+.season-ultimate-item:hover .season-ultimate-icon{border-color:#9ed8e46b}.season-ultimate-item:active{transform:scale(.96)}.season-ultimate-item:focus-visible{outline:2px solid var(--sky);outline-offset:3px;border-radius:12px}
+
+@media(max-width:900px){.season-ultimate-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){
+  .season-picker summary{min-height:60px;padding:12px 14px}.season-picker summary b{font-size:14px}.season-picker summary small{font-size:10px}.season-picker-body{padding:0 12px 14px}.season-ultimate-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.season-ultimate-card{padding:9px;border-radius:12px}.season-ultimate-card header b{font-size:10px}.season-ultimate-item{width:43px}.season-ultimate-icon{width:43px;height:43px;border-radius:9px}.season-ultimate-item small{font-size:7px}.season-ultimate-items{gap:5px}
+}
