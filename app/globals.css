@@ -13,6 +13,9 @@
 * {
   box-sizing: border-box;
 }
+[hidden] {
+  display: none !important;
+}
 html {
   scroll-behavior: smooth;
 }
@@ -1048,6 +1051,11 @@ a:focus-visible {
   font-weight: 800;
   cursor: pointer;
 }
+.account-danger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .export-tools {
   display: flex;
   justify-content: flex-end;
@@ -1483,6 +1491,8 @@ footer {
   }
   .account-danger {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .account-danger .clear-owned {
     width: 100%;

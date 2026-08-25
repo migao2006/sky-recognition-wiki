@@ -21,7 +21,13 @@ import {
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
-import { createAccountBackup, parseAccountBackup } from "./account-backup";
+import {
+  ACCOUNT_DRAFT_STORAGE_KEY,
+  createAccountBackup,
+  createAccountDraft,
+  parseAccountBackup,
+  parseAccountDraft,
+} from "./account-backup";
 import type { WikiItem } from "./wiki-data";
 import {
   allClosetTypeSet,
@@ -108,6 +114,34 @@ const bundlePresetItems = new Map(
     ),
   ]),
 );
+const validItemGuids = new Set(wikiItems.map((item) => item.guid));
+const emptyAccount = (): AccountInfo => ({
+  name: "",
+  accountType: "有翼",
+  candles: "",
+  hearts: "",
+  ascended: "",
+  passes: "",
+  bindingNote: "",
+  notes: "",
+});
+const hasAccountData = (
+  account: AccountInfo,
+  bindings: Record<BindingKey, BindingStatus>,
+  owned: ReadonlySet<string>,
+) =>
+  owned.size > 0 ||
+  account.accountType !== "有翼" ||
+  [
+    account.name,
+    account.candles,
+    account.hearts,
+    account.ascended,
+    account.passes,
+    account.bindingNote,
+    account.notes,
+  ].some((value) => value.trim()) ||
+  Object.values(bindings).some((value) => value !== "none");
 
 const CatalogItemCard = memo(function CatalogItemCard({
   item,
@@ -166,23 +200,17 @@ export default function AccountOrganizer() {
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
   const [owned, setOwned] = useState<Set<string>>(new Set());
-  const [account, setAccount] = useState<AccountInfo>({
-    name: "",
-    accountType: "有翼",
-    candles: "",
-    hearts: "",
-    ascended: "",
-    passes: "",
-    bindingNote: "",
-    notes: "",
-  });
+  const [account, setAccount] = useState<AccountInfo>(emptyAccount);
   const [bindings, setBindings] =
     useState<Record<BindingKey, BindingStatus>>(emptyBindings);
   const [notice, setNotice] = useState("");
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftAvailable, setDraftAvailable] = useState(true);
   const [valuationModel, setValuationModel] = useState<ValuationModel | null>(
     null,
   );
   const importRef = useRef<HTMLInputElement>(null);
+  const skipNextDraftSave = useRef(false);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 2600);
@@ -200,6 +228,77 @@ export default function AccountOrganizer() {
       active = false;
     };
   }, []);
+  useEffect(() => {
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      let restored: ReturnType<typeof parseAccountDraft> | null = null;
+      let available = true;
+      try {
+        const stored = localStorage.getItem(ACCOUNT_DRAFT_STORAGE_KEY);
+        if (stored) {
+          restored = parseAccountDraft(JSON.parse(stored), validItemGuids);
+        }
+      } catch {
+        try {
+          localStorage.removeItem(ACCOUNT_DRAFT_STORAGE_KEY);
+        } catch {
+          available = false;
+        }
+      }
+      if (cancelled) return;
+      if (restored) {
+        const restoredOwned = new Set(restored.owned);
+        if (hasAccountData(restored.account, restored.bindings, restoredOwned)) {
+          skipNextDraftSave.current = true;
+          setAccount(restored.account);
+          setBindings(restored.bindings);
+          setOwned(restoredOwned);
+          setNotice("已恢復此裝置上的草稿");
+        } else {
+          try {
+            localStorage.removeItem(ACCOUNT_DRAFT_STORAGE_KEY);
+          } catch {
+            available = false;
+          }
+        }
+      }
+      setDraftAvailable(available);
+      setDraftReady(true);
+    }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
+  useEffect(() => {
+    if (!draftReady || !draftAvailable) return;
+    if (skipNextDraftSave.current) {
+      skipNextDraftSave.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        if (hasAccountData(account, bindings, owned)) {
+          localStorage.setItem(
+            ACCOUNT_DRAFT_STORAGE_KEY,
+            JSON.stringify(
+              createAccountDraft({ account, bindings, owned }),
+            ),
+          );
+        } else {
+          localStorage.removeItem(ACCOUNT_DRAFT_STORAGE_KEY);
+        }
+      } catch {
+        try {
+          localStorage.removeItem(ACCOUNT_DRAFT_STORAGE_KEY);
+        } catch {
+          // Storage is unavailable; the in-memory session remains usable.
+        }
+        setDraftAvailable(false);
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [account, bindings, draftAvailable, draftReady, owned]);
   const activeCloset =
     closetGroups.find((x) => x.key === closet) || closetGroups[0];
   const chosen = useMemo(
@@ -419,7 +518,7 @@ export default function AccountOrganizer() {
     try {
       const imported = parseAccountBackup(
         JSON.parse(await file.text()),
-        new Set(wikiItems.map((item) => item.guid)),
+        validItemGuids,
       );
       setAccount(imported.account);
       setBindings(imported.bindings);
@@ -428,6 +527,18 @@ export default function AccountOrganizer() {
     } catch {
       setNotice("無法匯入：檔案格式不正確");
     }
+  };
+  const clearAllData = () => {
+    if (!window.confirm("確定要清除帳號資料、綁定狀態與已選物品？")) return;
+    try {
+      localStorage.removeItem(ACCOUNT_DRAFT_STORAGE_KEY);
+    } catch {
+      setDraftAvailable(false);
+    }
+    setAccount(emptyAccount());
+    setBindings(emptyBindings());
+    setOwned(new Set());
+    setNotice("已清除全部資料");
   };
   const exportValuable = () => {
     const items = chosen.filter((x) => isPaidItem(x) || isGraduationGift(x));
@@ -778,7 +889,11 @@ export default function AccountOrganizer() {
           </div>
         </details>
         <div className="step-actions" hidden={activeStep !== 1}>
-          <span>資料只會保留在本次操作中。</span>
+          <span>
+            {draftAvailable
+              ? "草稿會自動儲存在此裝置 30 天。"
+              : "瀏覽器無法保存草稿；資料只保留在本次操作中。"}
+          </span>
           <button type="button" onClick={() => goToStep(2)}>
             下一步：選擇物品
           </button>
@@ -892,6 +1007,13 @@ export default function AccountOrganizer() {
               onClick={() => setOwned(new Set())}
             >
               清除已選物品
+            </button>
+            <button
+              className="clear-owned"
+              disabled={!hasAccountData(account, bindings, owned)}
+              onClick={clearAllData}
+            >
+              清除全部資料
             </button>
           </div>
           <div className="export-tools" aria-label="帳號匯入與匯出">

@@ -29,7 +29,13 @@ const loadAccountBackup = async () => {
   return import(asModuleUrl(moduleSource));
 };
 
-const { createAccountBackup, parseAccountBackup } = await loadAccountBackup();
+const {
+  ACCOUNT_DRAFT_MAX_AGE_MS,
+  createAccountBackup,
+  createAccountDraft,
+  parseAccountBackup,
+  parseAccountDraft,
+} = await loadAccountBackup();
 
 const account = {
   name: "測試帳號",
@@ -138,4 +144,68 @@ test("preserves the legacy version-agnostic import policy", () => {
   );
 
   assert.equal(imported.account.name, "測試帳號");
+});
+
+test("creates and restores a compact account draft", () => {
+  const savedAt = new Date("2026-08-26T00:00:00.000Z");
+  const draft = createAccountDraft({
+    account,
+    bindings: {
+      google: "transfer",
+      nintendo: "none",
+      gameCenter: "none",
+      facebook: "none",
+      steam: "none",
+      twitch: "keep",
+    },
+    owned: ["valid-guid"],
+    savedAt,
+  });
+
+  assert.equal(draft.savedAt, savedAt.toISOString());
+  assert.equal("items" in draft, false);
+  assert.deepEqual(
+    parseAccountDraft(draft, new Set(["valid-guid"]), savedAt),
+    {
+      account,
+      bindings: draft.bindings,
+      owned: ["valid-guid"],
+    },
+  );
+});
+
+test("rejects expired or malformed drafts", () => {
+  const savedAt = new Date("2026-08-26T00:00:00.000Z");
+  const draft = createAccountDraft({
+    account,
+    bindings: {
+      google: "none",
+      nintendo: "none",
+      gameCenter: "none",
+      facebook: "none",
+      steam: "none",
+      twitch: "none",
+    },
+    owned: [],
+    savedAt,
+  });
+  const expiredAt = new Date(savedAt.getTime() + ACCOUNT_DRAFT_MAX_AGE_MS + 1);
+
+  assert.throws(
+    () => parseAccountDraft(draft, new Set(), expiredAt),
+    /Expired account draft/,
+  );
+  assert.throws(
+    () => parseAccountDraft({ ...draft, savedAt: "invalid" }, new Set()),
+    /Expired account draft/,
+  );
+  assert.throws(
+    () =>
+      parseAccountDraft(
+        { ...draft, savedAt: "2027-08-26T00:00:00.000Z" },
+        new Set(),
+        savedAt,
+      ),
+    /Expired account draft/,
+  );
 });

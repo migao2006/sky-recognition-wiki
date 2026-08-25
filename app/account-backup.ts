@@ -11,6 +11,10 @@ import type { WikiItem } from "./wiki-data";
 const BACKUP_FORMAT = "sky-recognition-wiki";
 const BACKUP_VERSION = 2;
 
+export const ACCOUNT_DRAFT_STORAGE_KEY = "sky-recognition-wiki:draft:v2";
+export const ACCOUNT_DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const ACCOUNT_DRAFT_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
 type BackupOptions = {
   account: AccountInfo;
   bindings: Record<BindingKey, BindingStatus>;
@@ -21,6 +25,13 @@ type BackupOptions = {
 };
 
 type UnknownRecord = Record<string, unknown>;
+
+type DraftOptions = {
+  account: AccountInfo;
+  bindings: Record<BindingKey, BindingStatus>;
+  owned: Iterable<string>;
+  savedAt?: Date;
+};
 
 const asRecord = (value: unknown): UnknownRecord | null =>
   value !== null && typeof value === "object"
@@ -50,6 +61,20 @@ export const createAccountBackup = ({
     source: getSource(item),
     sourceUrl: item.wiki,
   })),
+});
+
+export const createAccountDraft = ({
+  account,
+  bindings,
+  owned,
+  savedAt = new Date(),
+}: DraftOptions) => ({
+  format: BACKUP_FORMAT,
+  version: BACKUP_VERSION,
+  savedAt: savedAt.toISOString(),
+  account,
+  bindings,
+  owned: [...owned],
 });
 
 export const parseAccountBackup = (
@@ -95,4 +120,21 @@ export const parseAccountBackup = (
   );
 
   return { account, bindings, owned };
+};
+
+export const parseAccountDraft = (
+  value: unknown,
+  validGuids: ReadonlySet<string>,
+  now = new Date(),
+) => {
+  const draft = asRecord(value);
+  const savedAt = Date.parse(String(draft?.savedAt || ""));
+  if (
+    !Number.isFinite(savedAt) ||
+    savedAt - now.getTime() > ACCOUNT_DRAFT_CLOCK_SKEW_MS ||
+    now.getTime() - savedAt > ACCOUNT_DRAFT_MAX_AGE_MS
+  ) {
+    throw new Error("Expired account draft");
+  }
+  return parseAccountBackup(value, validGuids);
 };

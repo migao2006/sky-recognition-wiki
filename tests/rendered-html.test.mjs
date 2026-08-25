@@ -23,6 +23,8 @@ test("renders the account organizer", async () => {
   assert.match(html, /搜尋物品/);
   assert.match(html, /資料來源：SkyGame-Data/);
   assert.match(html, /常用套組/);
+  assert.match(html, /草稿會自動儲存在此裝置 30 天/);
+  assert.match(html, /清除全部資料/);
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
 });
 
