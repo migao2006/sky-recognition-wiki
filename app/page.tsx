@@ -197,6 +197,7 @@ export default function AccountOrganizer() {
   const [query, setQuery] = useState(""),
     [sourceFilter, setSourceFilter] = useState("all"),
     [valuationMode, setValuationMode] = useState(false);
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
   const [owned, setOwned] = useState<Set<string>>(new Set());
@@ -369,15 +370,19 @@ export default function AccountOrganizer() {
       : "smooth";
     window.scrollTo({ top: 0, behavior });
   };
-  const resetFilters = () => {
-    setQuery("");
+  const resetAdvancedFilters = () => {
     setSourceFilter("all");
     setSeason("全部季節");
     setOnlyDiscontinued(false);
     setValuationMode(false);
-    setSub("all");
     resetVisibleItems();
   };
+  const activeFilterCount = [
+    sourceFilter !== "all",
+    season !== "全部季節",
+    valuationMode,
+    onlyDiscontinued,
+  ].filter(Boolean).length;
   const toggleOwned = useCallback((guid: string) =>
     setOwned((prev) => {
       const next = new Set(prev);
@@ -1043,99 +1048,148 @@ export default function AccountOrganizer() {
           <div>
             <span className="step-kicker">步驟 2／3</span>
             <h1>選擇物品</h1>
-            <p>可用搜尋快速查找，也可依來源、季節與衣櫃分類核對。</p>
+            <p>搜尋或選擇分類，點一下物品即可加入。</p>
           </div>
           <button type="button" onClick={() => goToStep(3)}>
-            查看估價結果 · {owned.size} 件
+            前往估價 · {owned.size} 件
           </button>
         </div>
         <div className="discovery-tools">
-          <label className="catalog-search">
-            <span>搜尋物品</span>
-            <div>
-              <i>⌕</i>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  resetVisibleItems();
-                }}
-                placeholder="中文名、英文名、簡稱、季節、ID…"
-                aria-label="搜尋全部衣櫃物品"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("");
+          <div className="discovery-primary">
+            <label className="catalog-search">
+              <span>搜尋物品</span>
+              <div>
+                <i>⌕</i>
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
                     resetVisibleItems();
                   }}
-                  aria-label="清除搜尋"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          </label>
-          <label className="source-select">
-            <span>來源</span>
-            <select
-              value={sourceFilter}
-              onChange={(e) => {
-                const next = e.target.value;
-                setSourceFilter(next);
-                if (next !== "seasons") setSeason("全部季節");
-                resetVisibleItems();
-              }}
-              aria-label="來源篩選"
+                  placeholder="搜尋名稱、季節或 ID"
+                  aria-label="搜尋全部衣櫃物品"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery("");
+                      resetVisibleItems();
+                    }}
+                    aria-label="清除搜尋"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </label>
+            <button
+              type="button"
+              className={`filter-trigger${filterPanelOpen ? " open" : ""}${activeFilterCount ? " active" : ""}`}
+              aria-expanded={filterPanelOpen}
+              aria-controls="advanced-filters"
+              onClick={() => setFilterPanelOpen((open) => !open)}
             >
-              {sourceFilters.map((x) => (
-                <option key={x.key} value={x.key}>
-                  {x.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {sourceFilter === "seasons" && (
-            <label className="source-select season-select">
-              <span>季節</span>
+              <span>
+                <b>篩選</b>
+                {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
+              </span>
+              <small>{activeFilterCount ? "已套用條件" : "更多條件"}</small>
+              <i aria-hidden="true">⌄</i>
+            </button>
+          </div>
+          <div
+            className="filter-panel"
+            id="advanced-filters"
+            hidden={!filterPanelOpen}
+          >
+            <label className="source-select">
+              <span>來源</span>
               <select
-                aria-label="季節篩選"
-                value={season}
+                value={sourceFilter}
                 onChange={(e) => {
-                  setSeason(e.target.value);
+                  const next = e.target.value;
+                  setSourceFilter(next);
+                  if (next !== "seasons") setSeason("全部季節");
                   resetVisibleItems();
                 }}
+                aria-label="來源篩選"
               >
-                <option value="全部季節">全部季節</option>
-                {seasons.map(([slug, name]) => (
-                  <option key={slug} value={slug}>
-                    {name}
+                {sourceFilters.map((x) => (
+                  <option key={x.key} value={x.key}>
+                    {x.name}
                   </option>
                 ))}
               </select>
             </label>
-          )}
-          <button
-            type="button"
-            className={
-              valuationMode ? "valuation-toggle active" : "valuation-toggle"
-            }
-            onClick={() => {
-              setValuationMode((x) => !x);
-              resetVisibleItems();
-            }}
-            aria-pressed={valuationMode}
-          >
-            <b>✦ 估價重點</b>
-          </button>
+            {sourceFilter === "seasons" && (
+              <label className="source-select season-select">
+                <span>季節</span>
+                <select
+                  aria-label="季節篩選"
+                  value={season}
+                  onChange={(e) => {
+                    setSeason(e.target.value);
+                    resetVisibleItems();
+                  }}
+                >
+                  <option value="全部季節">全部季節</option>
+                  {seasons.map(([slug, name]) => (
+                    <option key={slug} value={slug}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <button
+              type="button"
+              className={`filter-toggle${valuationMode ? " active" : ""}`}
+              onClick={() => {
+                setValuationMode((x) => !x);
+                resetVisibleItems();
+              }}
+              aria-pressed={valuationMode}
+            >
+              <i aria-hidden="true">{valuationMode ? "✓" : ""}</i>
+              <span>
+                <b>估價重點</b>
+                <small>只看影響估價的物品</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`filter-toggle discontinued-toggle${onlyDiscontinued ? " active" : ""}`}
+              onClick={() => {
+                setOnlyDiscontinued((x) => !x);
+                resetVisibleItems();
+              }}
+              aria-pressed={onlyDiscontinued}
+            >
+              <i aria-hidden="true">{onlyDiscontinued ? "✓" : ""}</i>
+              <span>
+                <b>季卡／畢業禮</b>
+                <small>只看季卡項鍊與畢業禮</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              className="clear-filters"
+              onClick={resetAdvancedFilters}
+              disabled={activeFilterCount === 0}
+            >
+              清除篩選
+            </button>
+          </div>
         </div>
         <div className="closet-nav" aria-label="衣櫃順序">
           {closetGroups.map((x) => (
             <button
+              type="button"
               key={x.key}
               className={closet === x.key ? "selected" : ""}
+              aria-pressed={closet === x.key}
               onClick={() => {
                 setCloset(x.key);
                 setSub("all");
@@ -1150,7 +1204,9 @@ export default function AccountOrganizer() {
         {activeCloset.subs.length > 0 && (
           <div className="closet-subs">
             <button
+              type="button"
               className={sub === "all" ? "selected" : ""}
+              aria-pressed={sub === "all"}
               onClick={() => {
                 setSub("all");
                 resetVisibleItems();
@@ -1160,8 +1216,10 @@ export default function AccountOrganizer() {
             </button>
             {activeCloset.subs.map((x, i) => (
               <button
+                type="button"
                 key={x.key}
                 className={sub === x.key ? "selected" : ""}
+                aria-pressed={sub === x.key}
                 onClick={() => {
                   setSub(x.key);
                   resetVisibleItems();
@@ -1171,19 +1229,6 @@ export default function AccountOrganizer() {
                 {x.name}
               </button>
             ))}
-            <button
-              className={
-                onlyDiscontinued
-                  ? "selected discontinued-filter"
-                  : "discontinued-filter"
-              }
-              onClick={() => {
-                setOnlyDiscontinued((x) => !x);
-                resetVisibleItems();
-              }}
-            >
-              絕版
-            </button>
           </div>
         )}
         <div className="result-head">
@@ -1197,18 +1242,7 @@ export default function AccountOrganizer() {
                   : activeCloset.name}{" "}
             · {filtered.length.toLocaleString()} 件
           </h2>
-          <div className="result-actions">
-            {searchPending && <small role="status">搜尋中…</small>}
-            {(query ||
-              sourceFilter !== "all" ||
-              season !== "全部季節" ||
-              valuationMode ||
-              onlyDiscontinued) && (
-              <button className="reset-filters" onClick={resetFilters}>
-                清除篩選
-              </button>
-            )}
-          </div>
+          {searchPending && <small role="status">搜尋中…</small>}
         </div>
         {filtered.length ? (
           <div className="grid" aria-busy={searchPending}>
