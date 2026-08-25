@@ -1413,7 +1413,7 @@ const sourceFilters = [
   { key: "seasons", name: "季節" },
   { key: "annual", name: "年度／特殊活動" },
   { key: "collab", name: "聯動" },
-  { key: "package", name: "禮包／商店" },
+  { key: "package", name: "付費套組" },
   { key: "platform", name: "平台限定" },
   { key: "permanent", name: "常駐" },
   { key: "other", name: "國服／其他限定" },
@@ -1421,8 +1421,9 @@ const sourceFilters = [
 const allClosetTypes = [...new Set(closetGroups.flatMap((x) => x.types))];
 const allClosetTypeSet = new Set(allClosetTypes);
 const typeOrder = new Map(allClosetTypes.map((type, index) => [type, index]));
-const isPackage = (x: WikiItem) =>
-  x.section === "store" || /Pack|IAP|Gift|Shop|Purchase/i.test(x.wiki);
+// Only explicit paid packs are counted as packages. "Ultimate Gifts" and
+// "Nesting Workshop" are wiki page names, not proof that an item is an IAP.
+const isPackage = (x: WikiItem) => /Pack/i.test(x.wiki);
 const limitedSourceKinds = new Set(["聯動", "平台限定", "限定"]);
 const isLimitedItem = (x: WikiItem) =>
   x.group === "Limited" || limitedSourceKinds.has(sourceKind(x));
@@ -1484,39 +1485,25 @@ const matchesSourceFilter = (x: WikiItem, key: string) => {
     );
   return key === "other" && ["國服限定", "限定"].includes(kind);
 };
-const featuredNames = new Set([
-  "Owl Hair",
-  "Penguin Hair",
-  "Rhythm Ultimate Hair",
-  "Performance Ultimate Hair",
-  "Anubis Mask",
-  "Sword Outfit",
-  "Little Prince Scarf Cape",
-  "Little Prince Asteroid Cape",
-  "Kizuna AI Cape",
-  "Kizuna AI Hair",
-  "Kizuna AI Bow",
-  "Cinnamoroll Cloud Cape",
-  "Cinnamoroll Plushie",
-  "Cat Cape",
+const marketHighlightNames = new Set([
+  "Prophet of Fire Outfit",
+  "Peeking Postman Cape",
+  "Festival Spin Dancer Outfit",
+  "Respectful Pianist Hair",
+  "Daydream Forester Hair",
   "Spooky Bat Cape",
-  "Wings of AURORA",
-  "Journey Cape",
-  "Nintendo Red Switch Cape",
-  "Nintendo Blue Switch Cape",
-  "Founder's Cape",
-  "Beta Cape",
+  "Cat Cape",
+  "Mischief Witch Hair",
+  "Mischief Witch Hat",
+  "Mischief Withered Antlers",
+  "Snowflake Cape",
+  "Days of Feast Horns",
 ]);
-const isValuationFocus = (x: WikiItem) => {
-  const kind = sourceKind(x);
-  return (
-    isDiscontinued(x) ||
-    kind === "聯動" ||
-    isPackage(x) ||
-    kind === "平台限定" ||
-    featuredNames.has(x.name)
-  );
-};
+const isValuationFocus = (x: WikiItem) =>
+  isDiscontinued(x) ||
+  isLimitedItem(x) ||
+  isPackage(x) ||
+  marketHighlightNames.has(x.name);
 const searchIndex = new Map(
   wikiItems
     .filter((x) => allClosetTypeSet.has(x.type))
@@ -2460,7 +2447,7 @@ export default function AccountOrganizer() {
               <p>
                 {chosen.length
                   ? modelEstimate !== null
-                    ? "依目前已選衣櫃、帳號類型與綁定狀態計算。"
+                    ? "依起季完整度、畢業禮、付費禮包、限定物品與綁定狀態計算。"
                     : "模型載入中，請稍候。"
                   : "選取衣櫃物品後，這裡會直接顯示台幣估價。"}
               </p>
@@ -2474,7 +2461,7 @@ export default function AccountOrganizer() {
                 <b>{valuationAnalysis.ultimates.length}</b>
               </article>
               <article>
-                <span>禮包／商店</span>
+                <span>付費套組</span>
                 <b>{valuationAnalysis.packages.length}</b>
               </article>
               <article>
@@ -2482,13 +2469,15 @@ export default function AccountOrganizer() {
                 <b>{valuationAnalysis.collabs.length}</b>
               </article>
               <article>
-                <span>限定總量</span>
+                <span>絕版／限定</span>
                 <b>{valuationAnalysis.limited.length}</b>
               </article>
             </div>
           </div>
           <p className="valuation-method">
-            估價資料：1,022 筆帳號樣本、
+            估價只列：起季與斷季、畢業禮、付費套組、絕版／聯動、熱門復刻與綁定狀態；一般家具、常駐物品、魔法與普通資源不列入重點。
+            <br />
+            核對資料：1,022 筆帳號樣本、
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"
@@ -2498,11 +2487,19 @@ export default function AccountOrganizer() {
             </a>
             、
             <a
-              href="https://docs.google.com/document/d/14cRTLpELyRdMyLzcAEf4a5wMEO-UA6O2LJgFTJ9ZGYk/edit"
+              href="https://m.kejinshou.com/report/high/d_28268174"
               target="_blank"
               rel="noreferrer"
             >
-              高價案例
+              中國估價案例
+            </a>
+            、
+            <a
+              href="https://skygj.cn/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              SKY 估價平台
             </a>
             。刊價不等同成交價，結果僅供議價參考。
           </p>
@@ -2606,7 +2603,7 @@ export default function AccountOrganizer() {
             onClick={() => setValuationMode((x) => !x)}
             aria-pressed={valuationMode}
           >
-            <b>✦ 估價重點</b>
+            <b>✦ 估價物品</b>
           </button>
         </div>
         <div className="closet-nav" aria-label="衣櫃順序">
@@ -2661,7 +2658,7 @@ export default function AccountOrganizer() {
               : season !== "全部季節"
                 ? seasonZh[season]
                 : valuationMode
-                  ? "估價重點"
+                  ? "估價物品"
                   : activeCloset.name}{" "}
             · {filtered.length.toLocaleString()} 件
           </h1>
