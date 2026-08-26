@@ -69,11 +69,32 @@ import {
   analyzeValuation,
   estimateValuation,
   type ValuationDomain,
-  type ValuationModel,
 } from "./valuation-analysis";
+import {
+  seasonPriceBands,
+  valuationSampleSummary,
+  type SeasonConfidence,
+} from "./valuation-season-bands";
 
 const safeFileName = (name: string) =>
   name.replace(/[\\/:*?"<>|]/g, "-").trim() || "未命名";
+const formatTwd = (value: number) =>
+  `NT$ ${Math.abs(value).toLocaleString("zh-TW")}`;
+const formatContribution = (low: number, high: number) => {
+  const signed = (value: number) =>
+    `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatTwd(value)}`;
+  return low === high ? signed(low) : `${signed(low)}～${signed(high)}`;
+};
+const confidenceNames: Record<SeasonConfidence, string> = {
+  high: "高信心",
+  medium: "中信心",
+  low: "低信心",
+  inferred: "推定",
+};
+const localizeValuationLabel = (label: string) => {
+  const match = Object.entries(seasonZh).find(([slug]) => label.includes(slug));
+  return match ? label.replace(match[0], match[1]) : label;
+};
 const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -96,8 +117,6 @@ const valuationDomain: ValuationDomain = {
   isValuationFocus,
   isLimitedItem,
   sourceKind,
-  getZhName: zhName,
-  getSource: source,
   ongoingSeasonSlugs,
   graduationSeasonSlugs,
   seasonGraduationItems,
@@ -209,9 +228,6 @@ export default function AccountOrganizer() {
   const [notice, setNotice] = useState("");
   const [draftReady, setDraftReady] = useState(false);
   const [draftAvailable, setDraftAvailable] = useState(true);
-  const [valuationModel, setValuationModel] = useState<ValuationModel | null>(
-    null,
-  );
   const importRef = useRef<HTMLInputElement>(null);
   const skipNextDraftSave = useRef(false);
   useEffect(() => {
@@ -219,18 +235,6 @@ export default function AccountOrganizer() {
     const timer = setTimeout(() => setNotice(""), 2600);
     return () => clearTimeout(timer);
   }, [notice]);
-  useEffect(() => {
-    let active = true;
-    fetch("/data/valuation-model-v1.json")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (active && data?.feature_names) setValuationModel(data);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
   useEffect(() => {
     let cancelled = false;
     const timer = window.setTimeout(() => {
@@ -321,15 +325,24 @@ export default function AccountOrganizer() {
       }),
     [chosen, bindings, account.bindingNote],
   );
-  const modelEstimate = useMemo(
+  const valuationEstimate = useMemo(
     () =>
       estimateValuation({
-        model: valuationModel,
         analysis: valuationAnalysis,
-        accountType: account.accountType,
-        domain: valuationDomain,
+        resources: {
+          candles: account.candles,
+          hearts: account.hearts,
+          ascended: account.ascended,
+          passes: account.passes,
+        },
       }),
-    [valuationModel, account.accountType, valuationAnalysis],
+    [
+      account.ascended,
+      account.candles,
+      account.hearts,
+      account.passes,
+      valuationAnalysis,
+    ],
   );
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLocaleLowerCase("zh-Hant");
@@ -939,17 +952,20 @@ export default function AccountOrganizer() {
           </div>
           <div className="valuation-summary">
             <article className="valuation-verdict">
-              <span>目前估價結論</span>
+              <span>
+                市場估算
+                {valuationEstimate
+                  ? ` · ${confidenceNames[valuationEstimate.confidence]}`
+                  : ""}
+              </span>
               <h3 className="model-price">
-                {modelEstimate !== null
-                  ? `NT$ ${modelEstimate.toLocaleString("zh-TW")}`
+                {valuationEstimate
+                  ? `${formatTwd(valuationEstimate.range.low)}～${formatTwd(valuationEstimate.range.high)}`
                   : "NT$ —"}
               </h3>
               <p>
                 {valuationAnalysis.valuationItems.length
-                  ? modelEstimate !== null
-                    ? "依起始季證據、畢業禮、付費物品、限定物品與綁定狀態估算。"
-                    : "模型載入中，請稍候。"
+                  ? "左側為合理快售價，右側為合理刊登價；可展開查看每項加減分。"
                   : chosen.length
                     ? "目前選取的物品不在估價範圍內。"
                     : "選取估價重點後，即會顯示預估金額。"}
@@ -979,10 +995,110 @@ export default function AccountOrganizer() {
               </article>
             </div>
           </div>
+          {valuationEstimate && (
+            <div className="valuation-details">
+              <details open>
+                <summary>
+                  <b>加減分明細</b>
+                  <span>{valuationEstimate.contributions.length} 項</span>
+                </summary>
+                <div className="valuation-contributions">
+                  {valuationEstimate.contributions.map((row, index) => (
+                    <div key={`${row.group}-${row.label}-${index}`}>
+                      <span>
+                        <i>{
+                          {
+                            season: "季節",
+                            package: "禮包",
+                            limited: "限定",
+                            binding: "綁定",
+                            resource: "資源",
+                          }[row.group]
+                        }</i>
+                        {localizeValuationLabel(row.label)}
+                      </span>
+                      <b className={row.low < 0 || (row.percent ?? 0) < 0 ? "negative" : ""}>
+                        {row.percent !== undefined
+                          ? `${row.percent > 0 ? "+" : ""}${row.percent}%`
+                          : formatContribution(row.low, row.high)}
+                      </b>
+                    </div>
+                  ))}
+                </div>
+              </details>
+              {valuationEstimate.seasonRows.length > 0 && (
+                <details>
+                  <summary>
+                    <b>帳號季節完成度</b>
+                    <span>{valuationEstimate.seasonRows.length} 季</span>
+                  </summary>
+                  <div className="valuation-season-table-wrap">
+                    <table className="valuation-season-table">
+                      <thead>
+                        <tr>
+                          <th>季節</th>
+                          <th>完成</th>
+                          <th>起季基準</th>
+                          <th>單季貢獻</th>
+                          <th>信心</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {valuationEstimate.seasonRows.map((row) => (
+                          <tr key={row.slug}>
+                            <th>{seasonZh[row.slug] || row.slug}</th>
+                            <td>{Math.round(row.completion * 100)}%</td>
+                            <td>{formatTwd(row.low)}～{formatTwd(row.high)}</td>
+                            <td>{formatTwd(row.contributionLow)}～{formatTwd(row.contributionHigh)}</td>
+                            <td>{confidenceNames[row.confidence]} · {row.sampleCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              )}
+              <details>
+                <summary>
+                  <b>查看全部季節價位</b>
+                  <span>{seasonPriceBands.length} 季</span>
+                </summary>
+                <div className="valuation-season-table-wrap">
+                  <table className="valuation-season-table">
+                    <thead>
+                      <tr>
+                        <th>季節</th>
+                        <th>快售～刊登</th>
+                        <th>單季貢獻</th>
+                        <th>樣本</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {seasonPriceBands.map((row) => (
+                        <tr key={row.slug}>
+                          <th>{seasonZh[row.slug] || row.slug}</th>
+                          <td>{formatTwd(row.low)}～{formatTwd(row.high)}</td>
+                          <td>{formatTwd(row.contributionLow)}～{formatTwd(row.contributionHigh)}</td>
+                          <td>{confidenceNames[row.confidence]} · {row.sampleCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+              {valuationEstimate.warnings.length > 0 && (
+                <div className="valuation-warnings" role="status">
+                  {valuationEstimate.warnings.map((warning) => (
+                    <p key={warning}>• {warning}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <p className="valuation-method">
-            估價僅納入：起季與斷季、畢業禮、付費物品、絕版／聯動、熱門復刻與綁定狀態；季卡項鍊僅代表持有季卡，不代表畢業。一般家具、常駐物品、魔法與普通資源不列入重點。
+            快售／刊登區間依季節完整度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
             <br />
-            核對資料：1,022 筆帳號樣本、
+            核對資料：{valuationSampleSummary.sourceRows.toLocaleString("zh-TW")} 筆帳號樣本，其中 {valuationSampleSummary.eligibleRows} 筆國際服台幣中高證據樣本納入推斷（資料日期 {valuationSampleSummary.asOf}）。
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"
@@ -1006,7 +1122,7 @@ export default function AccountOrganizer() {
             >
               SKY 估價平台
             </a>
-            。刊登價格不等於成交價；結果僅供參考。
+            。另以 {valuationSampleSummary.secondaryMarketRows} 筆中國服資料作趨勢校驗，不直接混入台幣價格；刊登價格不等於成交價，結果僅供市場參考。
           </p>
         </section>
         <div className="account-actions" hidden={activeStep !== 3}>

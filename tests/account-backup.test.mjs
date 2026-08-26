@@ -71,6 +71,7 @@ test("creates a stable versioned account backup", () => {
       facebook: "none",
       steam: "none",
       twitch: "keep",
+      playstation: "none",
     },
     items: [item],
     getZhName: () => "彩虹斗篷",
@@ -114,6 +115,7 @@ test("normalizes imports and keeps only known item ids", () => {
   assert.equal(imported.bindings.google, "transfer");
   assert.equal(imported.bindings.twitch, "keep");
   assert.equal(imported.bindings.steam, "none");
+  assert.equal(imported.bindings.playstation, "none");
   assert.deepEqual(imported.owned, ["valid-guid"]);
 });
 
@@ -144,6 +146,28 @@ test("preserves the legacy version-agnostic import policy", () => {
   );
 
   assert.equal(imported.account.name, "測試帳號");
+  assert.equal(imported.bindings.playstation, "none");
+});
+
+test("migrates legacy backups and drafts without PlayStation bindings", () => {
+  const legacy = {
+    format: "sky-recognition-wiki",
+    version: 2,
+    savedAt: "2026-08-26T00:00:00.000Z",
+    account,
+    bindings: { google: "transfer", twitch: "keep" },
+    owned: [],
+  };
+
+  const imported = parseAccountBackup(legacy, new Set());
+  const draft = parseAccountDraft(
+    legacy,
+    new Set(),
+    new Date("2026-08-26T00:00:00.000Z"),
+  );
+
+  assert.equal(imported.bindings.playstation, "none");
+  assert.equal(draft.bindings.playstation, "none");
 });
 
 test("creates and restores a compact account draft", () => {
@@ -157,6 +181,7 @@ test("creates and restores a compact account draft", () => {
       facebook: "none",
       steam: "none",
       twitch: "keep",
+      playstation: "none",
     },
     owned: ["valid-guid"],
     savedAt,
@@ -185,6 +210,7 @@ test("rejects expired or malformed drafts", () => {
       facebook: "none",
       steam: "none",
       twitch: "none",
+      playstation: "none",
     },
     owned: [],
     savedAt,

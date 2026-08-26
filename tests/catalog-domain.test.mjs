@@ -37,8 +37,10 @@ const loadCatalogDomain = async () => {
 };
 
 const {
+  graduationSeasonSlugs,
   isProfessionalVideoFocus,
   matchesSourceFilter,
+  seasonGraduationItems,
   showcaseClusterOrder,
   sourceKind,
   wikiItems,
@@ -65,6 +67,11 @@ test("translates verified and tokenized catalog names", () => {
     "追光季畢業禮雨傘",
   );
   assert.equal(zhName("Rainbow Cape"), "彩虹斗篷");
+});
+
+test("keeps the verified Lightseekers graduation gift in valuation order", () => {
+  assert.equal(graduationSeasonSlugs.includes("lightseekers"), true);
+  assert.ok((seasonGraduationItems.get("lightseekers")?.length ?? 0) > 0);
 });
 
 test("classifies representative catalog sources", () => {

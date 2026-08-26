@@ -12,7 +12,8 @@
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出
 - `app/sale-copy.ts`：出售文案輸出
-- `public/data/valuation-model-v1.json`：瀏覽器載入的估價模型
+- `app/valuation-season-bands.ts`：彙總後的季節價格帶與樣本信心
+- `scripts/audit-valuation-source.mjs`：從原始 JSONL 重算合格樣本、季節樣本數與分位數
 
 ## 本機開發
 

@@ -1104,9 +1104,122 @@ a:focus-visible {
 .valuation-verdict .model-price {
   margin: 7px 0 5px;
   color: #9fc9fb;
-  font-size: 36px;
+  font-size: 31px;
   font-weight: 820;
   letter-spacing: -0.02em;
+}
+.valuation-details {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.valuation-details details {
+  overflow: hidden;
+  border: 1px solid #a9cfff22;
+  border-radius: 14px;
+  background: #070c14;
+}
+.valuation-details summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  color: #dce8f6;
+  cursor: pointer;
+  list-style: none;
+}
+.valuation-details summary::-webkit-details-marker {
+  display: none;
+}
+.valuation-details summary b {
+  font-size: 12px;
+}
+.valuation-details summary span {
+  color: #8295ad;
+  font-size: 10px;
+}
+.valuation-contributions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  padding: 1px;
+  background: #a9cfff14;
+}
+.valuation-contributions > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  background: #0a101a;
+}
+.valuation-contributions span {
+  min-width: 0;
+  overflow: hidden;
+  color: #bbc8d7;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.valuation-contributions i {
+  margin-right: 7px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #8fc7ff12;
+  color: #8fb9e8;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 850;
+}
+.valuation-contributions b {
+  flex: none;
+  color: #a9d3ff;
+  font-size: 11px;
+}
+.valuation-contributions b.negative {
+  color: #e7a1ad;
+}
+.valuation-season-table-wrap {
+  overflow-x: auto;
+  border-top: 1px solid #a9cfff18;
+}
+.valuation-season-table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  color: #b8c5d5;
+  font-size: 10px;
+  text-align: left;
+}
+.valuation-season-table th,
+.valuation-season-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #a9cfff12;
+  white-space: nowrap;
+}
+.valuation-season-table thead th {
+  color: #8297b1;
+  font-size: 9px;
+  font-weight: 800;
+}
+.valuation-season-table tbody th {
+  color: #e1eaf5;
+  font-weight: 750;
+}
+.valuation-warnings {
+  padding: 9px 12px;
+  border: 1px solid #d79aa232;
+  border-radius: 12px;
+  background: #d79aa20a;
+}
+.valuation-warnings p {
+  margin: 3px 0;
+  color: #c9aab1;
+  font-size: 10px;
+  line-height: 1.55;
 }
 .account-actions {
   display: flex;
@@ -1545,7 +1658,7 @@ footer {
     padding: 15px;
   }
   .valuation-verdict .model-price {
-    font-size: 31px;
+    font-size: 25px;
   }
   .valuation-verdict p {
     font-size: 11px;
@@ -1566,6 +1679,19 @@ footer {
   .valuation-method {
     font-size: 12px;
     line-height: 1.7;
+  }
+  .valuation-contributions {
+    grid-template-columns: 1fr;
+  }
+  .valuation-details summary {
+    min-height: 46px;
+    padding: 9px 11px;
+  }
+  .valuation-contributions > div {
+    padding: 10px 11px;
+  }
+  .valuation-warnings p {
+    font-size: 11px;
   }
   .account-actions {
     padding: 12px;

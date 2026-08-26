@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  canonicalPackageKey,
   isGraduationGift,
   isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
-  monotonicCoefficient,
 } from "../app/valuation-items.ts";
 
 const item = (overrides = {}) => ({
@@ -69,7 +69,19 @@ test("explicit packs and verified standalone IAPs are treated as paid", () => {
   assert.equal(isPaidItem(item({ name: "Spooky Bat Cape" })), true);
 });
 
-test("valuable-item coefficients cannot become negative", () => {
-  assert.equal(monotonicCoefficient(-0.25), 0);
-  assert.equal(monotonicCoefficient(0.25), 0.25);
+test("canonicalizes real pack anchors without merging separate sets", () => {
+  const journey = item({
+    name: "Journey Cape",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_PlayStation#Journey_Pack",
+  });
+  const journeyMask = item({
+    name: "Journey Mask",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_PlayStation#Journey_Pack",
+  });
+  const transcendent = item({
+    name: "Transcendent Journey Mask",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_PlayStation#Transcendent_Journey_Pack",
+  });
+  assert.equal(canonicalPackageKey(journey), canonicalPackageKey(journeyMask));
+  assert.notEqual(canonicalPackageKey(journey), canonicalPackageKey(transcendent));
 });

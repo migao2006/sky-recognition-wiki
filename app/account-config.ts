@@ -4,7 +4,8 @@ export type BindingKey =
   | "gameCenter"
   | "facebook"
   | "steam"
-  | "twitch";
+  | "twitch"
+  | "playstation";
 
 export type BindingStatus = "none" | "transfer" | "keep" | "issue";
 
@@ -26,6 +27,7 @@ export const bindingNames: Record<BindingKey, string> = {
   facebook: "Facebook（FB）",
   steam: "Steam",
   twitch: "Twitch（TWI）",
+  playstation: "PlayStation Network（PSN）",
 };
 
 export const bindingKeys = Object.keys(bindingNames) as BindingKey[];

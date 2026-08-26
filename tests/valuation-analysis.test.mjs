@@ -3,187 +3,281 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import ts from "typescript";
 
-const asModuleUrl = (source) =>
-  `data:text/javascript,${encodeURIComponent(
-    ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.ESNext,
-        target: ts.ScriptTarget.ES2022,
-      },
-    }).outputText,
-  )}`;
-
-const loadValuationAnalysis = async () => {
-  const [configSource, calibrationSource, itemsSource, analysisSource] =
-    await Promise.all(
-      [
-        "account-config.ts",
-        "valuation-calibration.ts",
-        "valuation-items.ts",
-        "valuation-analysis.ts",
-      ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
-    );
-  const moduleSource = analysisSource
-    .replace(
-      /import \{([\s\S]*?)\} from "\.\/account-config";/,
-      (_, imports) =>
-        `const {${imports.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(configSource))});`,
-    )
-    .replace(
-      /import \{([\s\S]*?)\} from "\.\/valuation-calibration";/,
-      (_, imports) =>
-        `const {${imports.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(calibrationSource))});`,
-    )
-    .replace(
-      /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
-      (_, imports) =>
-        `const {${imports}} = await import(${JSON.stringify(asModuleUrl(itemsSource))});`,
-    );
-  return import(asModuleUrl(moduleSource));
-};
-
-const { analyzeValuation, estimateValuation } = await loadValuationAnalysis();
-
-const emptyBindings = () => ({
+const moduleUrl = (source) =>
+  `data:text/javascript,${encodeURIComponent(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText)}`;
+const sources = await Promise.all(
+  [
+    "account-config.ts",
+    "valuation-calibration.ts",
+    "valuation-items.ts",
+    "valuation-season-bands.ts",
+    "valuation-analysis.ts",
+  ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
+);
+const [config, calibration, items, bands, analysis] = sources;
+const loaded = await import(
+  moduleUrl(
+    analysis
+      .replace(
+        /import \{([\s\S]*?)\} from "\.\/account-config";/,
+        (_, names) =>
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(moduleUrl(config))});`,
+      )
+      .replace(
+        /import \{([\s\S]*?)\} from "\.\/valuation-calibration";/,
+        (_, names) =>
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(moduleUrl(calibration))});`,
+      )
+      .replace(
+        /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
+        (_, names) =>
+          `const {${names}} = await import(${JSON.stringify(moduleUrl(items))});`,
+      )
+      .replace(
+        /import \{([\s\S]*?)\} from "\.\/valuation-season-bands";/,
+        (_, names) =>
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(moduleUrl(bands))});`,
+      ),
+  )
+);
+const { analyzeValuation, estimateValuation } = loaded;
+const bindings = (values = {}) => ({
   google: "none",
   nintendo: "none",
   gameCenter: "none",
   facebook: "none",
   steam: "none",
   twitch: "none",
+  playstation: "none",
+  ...values,
 });
-
-const item = (overrides = {}) => ({
+const item = (values = {}) => ({
   id: 1,
   order: 1,
-  guid: "test",
-  name: "Test Item",
+  guid: Math.random().toString(),
+  name: "Item",
   type: "Cape",
   group: "",
   icon: "",
   previewUrl: "",
-  wiki: "https://example.test/item",
+  wiki: "https://example.test/Item",
   section: "events",
-  collection: "event-test",
-  ...overrides,
+  collection: "event",
+  ...values,
 });
-
 const domain = {
-  isValuationFocus: (value) => value.name !== "Ordinary Item",
-  isLimitedItem: (value) => value.collection === "collab",
+  isValuationFocus: (value) => value.name !== "ordinary",
+  isLimitedItem: (value) =>
+    value.collection === "collab" || value.group === "Limited",
   sourceKind: (value) => (value.collection === "collab" ? "聯動" : "活動"),
-  getZhName: (name) => `中:${name}`,
-  getSource: (value) => `來源:${value.collection}`,
-  ongoingSeasonSlugs: new Set(["ongoing"]),
-  graduationSeasonSlugs: ["first", "second"],
+  getZhName: (value) => value,
+  getSource: (value) => value.collection,
+  ongoingSeasonSlugs: new Set(),
+  graduationSeasonSlugs: ["enchantment", "sanctuary"],
   seasonGraduationItems: new Map([
-    ["first", [item(), item()]],
-    ["second", [item()]],
+    [
+      "enchantment",
+      [
+        item({ group: "Ultimate", section: "seasons" }),
+        item({ group: "Ultimate", section: "seasons" }),
+      ],
+    ],
+    ["sanctuary", [item({ group: "Ultimate", section: "seasons" })]],
   ]),
   sortSeasonSlugs: (slugs) => [...slugs].sort(),
 };
+const analyze = (chosen, selectedBindings = bindings()) =>
+  analyzeValuation({
+    chosen,
+    bindings: selectedBindings,
+    bindingNote: "",
+    domain,
+  });
 
-const analyze = (chosen = [], bindings = emptyBindings(), bindingNote = "") =>
-  analyzeValuation({ chosen, bindings, bindingNote, domain });
-
-test("empty data reports no valuation evidence and zero completeness", () => {
-  const analysis = analyze();
-  assert.equal(analysis.completeness, 0);
-  assert.equal(analysis.startSeasonSlug, null);
-  assert.equal(analysis.valuationItems.length, 0);
-  assert.equal(analysis.gapTier.key, "unknown");
+test("v2 returns a price range and does not treat a pendant as graduation", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({
+        name: "Enchantment Ultimate",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+      item({
+        name: "Enchantment Ultimate Pendant",
+        type: "Necklace",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+    ]),
+  });
+  assert.ok(result);
+  assert.equal(result.range.currency, "TWD");
+  assert.ok(result.range.high >= result.range.low);
+  assert.equal(result.seasonRows[0].selected, 1);
+  assert.ok(
+    result.contributions.some((row) =>
+      row.label.includes("sanctuary 畢業禮完成 0%"),
+    ),
+  );
 });
 
-test("paid, ultimate and collaboration fixtures produce representative analysis", () => {
-  const ultimate = item({
-    guid: "ultimate",
-    name: "First Ultimate",
-    group: "Ultimate",
-    section: "seasons",
-    collection: "first",
+test("a canonical pack is counted once and China-only content is excluded", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({ name: "One", wiki: "https://wiki.test/Pack_Name#One" }),
+      item({ name: "Two", wiki: "https://wiki.test/Pack_Name#Two" }),
+      item({ name: "國服限定", group: "Limited", collection: "collab" }),
+    ]),
   });
-  const paidCollab = item({
-    guid: "paid-collab",
-    name: "Collab Pack",
-    wiki: "https://example.test/Collab_Pack",
+  assert.ok(result);
+  assert.equal(
+    result.contributions.filter((row) => row.group === "package").length,
+    1,
+  );
+  assert.ok(result.warnings.some((warning) => warning.includes("國服限定")));
+});
+
+test("binding penalties are capped and platform issues remove platform value", () => {
+  const platform = item({
+    name: "Nintendo Cape",
+    wiki: "https://wiki.test/Nintendo_Pack",
+    group: "Limited",
     collection: "collab",
   });
-  const analysis = analyze([ultimate, paidCollab]);
-  assert.deepEqual(analysis.ultimateSeasonSlugs, ["first"]);
-  assert.equal(analysis.ultimates.length, 1);
-  assert.equal(analysis.packages.length, 1);
-  assert.equal(analysis.collabs.length, 1);
-  assert.equal(analysis.limited.length, 1);
-  assert.deepEqual(analysis.partialSeasonSlugs, ["first"]);
-  assert.deepEqual(analysis.missingSeasonSlugs, ["second"]);
-  assert.equal(analysis.completeness, 75);
+  const safe = estimateValuation({
+    analysis: analyze([platform], bindings({ nintendo: "transfer" })),
+  });
+  const risky = estimateValuation({
+    analysis: analyze(
+      [platform],
+      bindings({
+        nintendo: "issue",
+        google: "issue",
+        steam: "issue",
+        twitch: "issue",
+      }),
+    ),
+  });
+  const unbound = estimateValuation({ analysis: analyze([platform]) });
+  assert.ok(safe && risky);
+  assert.ok(unbound);
+  assert.ok(risky.range.high < safe.range.high);
+  assert.equal(
+    risky.contributions.filter((row) => row.group === "package").length,
+    0,
+  );
+  assert.equal(
+    unbound.contributions.filter((row) => row.group === "package").length,
+    0,
+  );
 });
 
-test("binding issues and kept bindings are independently counted", () => {
-  const bindings = emptyBindings();
-  bindings.google = "issue";
-  bindings.steam = "keep";
-  bindings.twitch = "keep";
-  const analysis = analyze([item({ guid: "paid", wiki: "https://x/Pack" })], bindings);
-  assert.equal(analysis.issueCount, 1);
-  assert.equal(analysis.keepCount, 2);
-  assert.equal(analysis.completeness, 75);
+test("resource brackets preserve their explicit low and high values", () => {
+  const analysis = analyze([
+    item({ name: "Pack", wiki: "https://wiki.test/Pack" }),
+  ]);
+  const cases = [
+    [200, [100, 200]],
+    [500, [250, 450]],
+    [1000, [500, 800]],
+    [2000, [800, 1200]],
+  ];
+  for (const [candles, expected] of cases) {
+    const result = estimateValuation({ analysis, resources: { candles } });
+    const resource = result?.contributions.find(
+      (row) => row.group === "resource",
+    );
+    assert.deepEqual(resource && [resource.low, resource.high], expected);
+  }
 });
 
-test("estimate returns null without a model or valuation-eligible item", () => {
-  const noModel = estimateValuation({
-    model: null,
-    analysis: analyze([item()]),
-    accountType: "有翼",
-    domain,
+test("China-only content has zero international-market value", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({ name: "國服限定斗篷", group: "Limited", collection: "collab" }),
+    ]),
   });
-  const noItems = estimateValuation({
-    model: { feature_names: [], keyword_patterns: {}, scaler_mean: [], scaler_scale: [], coefficients: [], intercept: 1, clamp_twd: [0, 9999] },
-    analysis: analyze([item({ name: "Ordinary Item" })]),
-    accountType: "有翼",
-    domain,
-  });
-  assert.equal(noModel, null);
-  assert.equal(noItems, null);
+  assert.ok(result);
+  assert.deepEqual(result.range, { low: 0, high: 0, currency: "TWD" });
 });
 
-test("fixed model estimates are stable, respect the lower clamp, and apply binding risk", () => {
-  const model = {
-    feature_names: ["collab", "binding_risk"],
-    keyword_patterns: { collab: "Collab" },
-    scaler_mean: [0, 0],
-    scaler_scale: [1, 1],
-    coefficients: [1, -100],
-    intercept: Math.log(5001),
-    clamp_twd: [1000, 999999],
-  };
-  const chosen = [item({ guid: "collab", name: "Collab Pack", wiki: "https://x/Pack", collection: "collab" })];
-  const safe = estimateValuation({ model, analysis: analyze(chosen), accountType: "有翼", domain });
-  const riskyBindings = emptyBindings();
-  riskyBindings.google = "issue";
-  riskyBindings.steam = "keep";
-  const risky = estimateValuation({ model, analysis: analyze(chosen, riskyBindings), accountType: "有翼", domain });
-  const clamped = estimateValuation({
-    model: { ...model, feature_names: [], intercept: 0, clamp_twd: [1200, 999999] },
-    analysis: analyze(chosen),
-    accountType: "有翼",
-    domain,
+test("resources add a small capped contribution", () => {
+  const result = estimateValuation({
+    analysis: analyze([item({ name: "Pack", wiki: "https://wiki.test/Pack" })]),
+    resources: { candles: 9000, hearts: 9000, ascended: 9000, passes: 99 },
   });
-  const highTail = estimateValuation({
-    model: { ...model, feature_names: [], intercept: Math.log(100001) },
-    analysis: analyze(chosen),
-    accountType: "有翼",
-    domain,
+  assert.ok(result);
+  const resource = result.contributions.find((row) => row.group === "resource");
+  assert.deepEqual(resource && [resource.low, resource.high], [1500, 2500]);
+});
+
+test("empty resources add no value", () => {
+  const result = estimateValuation({
+    analysis: analyze([item({ name: "Pack", wiki: "https://wiki.test/Pack" })]),
+    resources: { candles: "", hearts: "", ascended: "", passes: "" },
   });
-  const riskClamped = estimateValuation({
-    model: { ...model, clamp_twd: [12000, 999999] },
-    analysis: analyze(chosen, riskyBindings),
-    accountType: "有翼",
-    domain,
+  assert.ok(result);
+  assert.equal(
+    result.contributions.some((row) => row.group === "resource"),
+    false,
+  );
+});
+
+test("a partial starting season is deducted and kept platform content is excluded", () => {
+  const partial = item({
+    name: "Enchantment Ultimate",
+    group: "Ultimate",
+    section: "seasons",
+    collection: "enchantment",
   });
-  assert.equal(safe, 13600);
-  assert.equal(risky, 11100);
-  assert.equal(clamped, 1200);
-  assert.equal(highTail, 84100);
-  assert.equal(riskClamped, 12000);
+  const platform = item({
+    name: "PlayStation Cape",
+    wiki: "https://wiki.test/PlayStation_Pack",
+    group: "Limited",
+    collection: "collab",
+  });
+  const result = estimateValuation({
+    analysis: analyze([partial, platform], bindings({ playstation: "keep" })),
+  });
+  assert.ok(result);
+  assert.ok(
+    result.contributions.some((row) => row.group === "season" && row.low < 0),
+  );
+  assert.equal(
+    result.contributions.some((row) => row.group === "package"),
+    false,
+  );
+  assert.ok(result.warnings.some((warning) => warning.includes("playstation")));
+});
+
+test("excluded packages cannot raise the tier of transferable packages", () => {
+  const transferable = Array.from({ length: 14 }, (_, index) =>
+    item({
+      name: `Pack ${index}`,
+      wiki: `https://wiki.test/Pack_${index}`,
+    }),
+  );
+  const excluded = [
+    item({
+      name: "Nintendo Pack",
+      wiki: "https://wiki.test/Nintendo_Pack",
+    }),
+    item({
+      name: "國服限定 Pack",
+      wiki: "https://wiki.test/China_Pack",
+    }),
+  ];
+  const baseline = estimateValuation({ analysis: analyze(transferable) });
+  const mixed = estimateValuation({
+    analysis: analyze([...transferable, ...excluded]),
+  });
+
+  assert.ok(baseline && mixed);
+  assert.deepEqual(mixed.range, baseline.range);
+  assert.deepEqual(
+    mixed.contributions.filter((row) => row.group === "package"),
+    baseline.contributions.filter((row) => row.group === "package"),
+  );
 });
