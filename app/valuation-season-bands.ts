@@ -21,7 +21,8 @@ export const valuationSampleSummary = {
 // Seller-side TWD samples are aggregated before reaching the client.  The
 // source listings and their free text deliberately never ship with the app.
 // slug, prior midpoint, matching eligible samples, observed P25 and P75.
-// Sparse quantiles are shrunk toward a ±25% prior with n/(n+8).
+// Direct mentions below five samples are too sparse to override early-season
+// scarcity, so they use stronger shrinkage than established season samples.
 const seed: readonly [string, number, number, number?, number?][] = [
   ["gratitude", 180000, 0],
   ["lightseekers", 140000, 2, 1800, 5200],
@@ -77,7 +78,8 @@ const logBlend = (
 let previousLow = Number.POSITIVE_INFINITY;
 let previousHigh = Number.POSITIVE_INFINITY;
 const ranges = seed.map(([, prior, sampleCount, observedLow, observedHigh]) => {
-  const weight = sampleCount / (sampleCount + 8);
+  const priorStrength = sampleCount < 5 ? 24 : 8;
+  const weight = sampleCount / (sampleCount + priorStrength);
   const low = Math.min(
     logBlend(prior * 0.75, observedLow, weight),
     previousLow * 0.97,

@@ -38,6 +38,17 @@ test("sample confidence reflects direct eligible mentions", () => {
   );
 });
 
+test("sparse Lightseekers mentions do not erase early-season scarcity", () => {
+  const lightseekers = seasonPriceBands.find(
+    (band) => band.slug === "lightseekers",
+  );
+  assert.ok(lightseekers);
+  assert.equal(lightseekers.sampleCount, 2);
+  assert.ok(lightseekers.low >= 75000);
+  assert.ok(lightseekers.high >= 130000);
+  assert.ok(lightseekers.high < seasonPriceBands[0].high);
+});
+
 test("client summary contains no raw listing text", () => {
   const serialized = JSON.stringify(seasonPriceBands);
   assert.equal(/listing|description|seller|title/i.test(serialized), false);
