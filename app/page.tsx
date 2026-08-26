@@ -953,19 +953,25 @@ export default function AccountOrganizer() {
           <div className="valuation-summary">
             <article className="valuation-verdict">
               <span>
-                市場估算
+                參考中位價
                 {valuationEstimate
                   ? ` · ${confidenceNames[valuationEstimate.confidence]}`
                   : ""}
               </span>
               <h3 className="model-price">
                 {valuationEstimate
-                  ? `${formatTwd(valuationEstimate.range.low)}～${formatTwd(valuationEstimate.range.high)}`
+                  ? formatTwd(valuationEstimate.midpoint)
                   : "NT$ —"}
               </h3>
+              {valuationEstimate && (
+                <div className="valuation-range">
+                  合理區間 {formatTwd(valuationEstimate.range.low)}～
+                  {formatTwd(valuationEstimate.range.high)}
+                </div>
+              )}
               <p>
                 {valuationAnalysis.valuationItems.length
-                  ? "左側為合理快售價，右側為合理刊登價；可展開查看每項加減分。"
+                  ? "中位價作為主要參考，區間已依資料信心收斂；可展開查看每項加減分。"
                   : chosen.length
                     ? "目前選取的物品不在估價範圍內。"
                     : "選取估價重點後，即會顯示預估金額。"}
@@ -1096,7 +1102,7 @@ export default function AccountOrganizer() {
             </div>
           )}
           <p className="valuation-method">
-            快售／刊登區間依季節完整度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
+            成交中位與合理區間依季節完整度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
             <br />
             核對資料：{valuationSampleSummary.sourceRows.toLocaleString("zh-TW")} 筆帳號樣本，其中 {valuationSampleSummary.eligibleRows} 筆國際服台幣中高證據樣本納入推斷（資料日期 {valuationSampleSummary.asOf}）。
             <a

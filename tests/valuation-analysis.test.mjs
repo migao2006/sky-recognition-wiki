@@ -40,7 +40,7 @@ const loaded = await import(
       ),
   )
 );
-const { analyzeValuation, estimateValuation } = loaded;
+const { analyzeValuation, estimateValuation, summarizeValuationRange } = loaded;
 const bindings = (values = {}) => ({
   google: "none",
   nintendo: "none",
@@ -114,6 +114,8 @@ test("v2 returns a price range and does not treat a pendant as graduation", () =
   });
   assert.ok(result);
   assert.equal(result.range.currency, "TWD");
+  assert.ok(result.midpoint >= result.range.low);
+  assert.ok(result.midpoint <= result.range.high);
   assert.ok(result.range.high >= result.range.low);
   assert.equal(result.seasonRows[0].selected, 1);
   assert.ok(
@@ -121,6 +123,19 @@ test("v2 returns a price range and does not treat a pendant as graduation", () =
       row.label.includes("sanctuary 畢業禮完成 0%"),
     ),
   );
+});
+
+test("market anchors produce a centered, narrower reference range", () => {
+  assert.deepEqual(summarizeValuationRange(15300, 46200, "high"), {
+    low: 30800,
+    high: 39200,
+    midpoint: 35000,
+  });
+  assert.deepEqual(summarizeValuationRange(0, 0, "inferred"), {
+    low: 0,
+    high: 0,
+    midpoint: 0,
+  });
 });
 
 test("a canonical pack is counted once and China-only content is excluded", () => {

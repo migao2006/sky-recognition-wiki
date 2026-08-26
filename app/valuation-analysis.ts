@@ -46,6 +46,7 @@ export type ValuationSeasonRow = SeasonPriceBand & {
 };
 export type ValuationEstimate = {
   range: { low: number; high: number; currency: "TWD" };
+  midpoint: number;
   confidence: SeasonConfidence;
   contributions: ValuationContribution[];
   warnings: string[];
@@ -71,6 +72,33 @@ export type ValuationAnalysis = {
 };
 
 const roundHundred = (value: number) => Math.round(value / 100) * 100;
+const roundFiveHundred = (value: number) => Math.round(value / 500) * 500;
+
+export const summarizeValuationRange = (
+  rawLow: number,
+  rawHigh: number,
+  confidence: SeasonConfidence,
+) => {
+  if (rawHigh <= 0) return { low: 0, high: 0, midpoint: 0 };
+
+  // Listing prices usually sit above realized transactions. A 64% position
+  // between quick-sale and listing anchors best represents the reference set.
+  const midpoint = roundFiveHundred(rawLow + (rawHigh - rawLow) * 0.64);
+  const spread =
+    confidence === "high"
+      ? 0.12
+      : confidence === "medium"
+        ? 0.14
+        : confidence === "low"
+          ? 0.16
+          : 0.18;
+
+  return {
+    low: roundHundred(Math.max(rawLow, midpoint * (1 - spread))),
+    high: roundHundred(Math.min(rawHigh, midpoint * (1 + spread))),
+    midpoint,
+  };
+};
 
 export const analyzeValuation = ({
   chosen,
@@ -208,6 +236,7 @@ export const estimateValuation = ({
   if (!analysis.valuationItems.some((item) => !isChinaOnlyItem(item))) {
     return {
       range: { low: 0, high: 0, currency: "TWD" },
+      midpoint: 0,
       confidence: "inferred",
       contributions: [],
       warnings: ["國服限定物品不納入國際服估價。"],
@@ -396,10 +425,12 @@ export const estimateValuation = ({
   low = roundHundred(Math.max(300, low * risk));
   high = roundHundred(Math.max(low, high * risk));
   const confidence: SeasonConfidence = startBand?.confidence ?? "inferred";
+  const summary = summarizeValuationRange(low, high, confidence);
   if (!analysis.startSeasonSlug)
     warnings.push("未辨識到完整畢業季，估價以禮包／限定保守基準計算。");
   return {
-    range: { low, high, currency: "TWD" },
+    range: { low: summary.low, high: summary.high, currency: "TWD" },
+    midpoint: summary.midpoint,
     confidence,
     contributions,
     warnings: [...new Set(warnings)],

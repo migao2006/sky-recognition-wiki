@@ -1102,11 +1102,17 @@ a:focus-visible {
   text-underline-offset: 2px;
 }
 .valuation-verdict .model-price {
-  margin: 7px 0 5px;
+  margin: 7px 0 2px;
   color: #9fc9fb;
   font-size: 31px;
   font-weight: 820;
   letter-spacing: -0.02em;
+}
+.valuation-range {
+  margin-bottom: 9px;
+  color: #c1ccda;
+  font-size: 11px;
+  font-weight: 700;
 }
 .valuation-details {
   display: grid;
