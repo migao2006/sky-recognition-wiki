@@ -66,6 +66,7 @@ import {
 } from "./catalog-domain";
 import {
   isGraduationGift,
+  isChinaOnlyItem,
   isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
@@ -194,6 +195,7 @@ const orderShowcaseItems = (items: WikiItem[]) =>
 const emptyAccount = (): AccountInfo => ({
   name: "",
   accountType: "有翼",
+  bindingsConfirmed: false,
   candles: "",
   hearts: "",
   ascended: "",
@@ -208,6 +210,7 @@ const hasAccountData = (
 ) =>
   owned.size > 0 ||
   account.accountType !== "有翼" ||
+  account.bindingsConfirmed ||
   [
     account.name,
     account.candles,
@@ -514,53 +517,48 @@ export default function AccountOrganizer() {
       `光遇帳號_${safeFileName(account.name)}_${suffix}.txt`,
     );
   const saleCopyData = () => {
-    const seasonSlugs = sortSeasonSlugs([
-      ...new Set(
-        chosen.filter((x) => x.section === "seasons").map((x) => x.collection),
+    const collectibleItems = uniqueByGuid(
+      chosen.filter(
+        (item) =>
+          isLimitedItem(item) ||
+          isPaidItem(item) ||
+          item.collection === "event-sky-anniversary",
       ),
-    ]);
-    const graduationStatus = seasonSlugs
-      .map((slug) => {
-        const total = seasonGraduationItems.get(slug)?.length ?? 0,
-          ownedCount = chosen.filter(
-            (x) =>
-              x.section === "seasons" &&
-              x.collection === slug &&
-              isGraduationGift(x),
-          ).length;
-        if (!ownedCount) return "";
-        return `${seasonZh[slug] || slug}${total && ownedCount === total ? "畢" : ` ${ownedCount}/${total || "?"}`}`;
-      })
-      .filter(Boolean);
-    const uniqueItems = chosen.filter(isLimitedItem),
-      uniqueIds = new Set(uniqueItems.map((x) => x.guid)),
-      packages = chosen.filter(isPaidItem),
-      otherPackages = packages.filter((x) => !uniqueIds.has(x.guid));
+    );
     return {
-      accountName: account.name,
-      accountType: account.accountType,
-      selectedCount: chosen.length,
-      earliestGraduationSeason: valuationAnalysis.startSeasonSlug
-        ? seasonZh[valuationAnalysis.startSeasonSlug] ||
-          valuationAnalysis.startSeasonSlug
-        : "",
-      seasonNames: seasonSlugs.map((slug) => seasonZh[slug] || slug),
-      graduationStatus,
+      seasons: seasons.map(([slug, name]) => ({
+        slug,
+        name,
+        owned: chosen.filter(
+          (item) =>
+            item.section === "seasons" &&
+            item.collection === slug &&
+            isGraduationGift(item),
+        ).length,
+        total: seasonGraduationItems.get(slug)?.length ?? 0,
+      })),
+      bindingsConfirmed: account.bindingsConfirmed,
       bindings,
-      resources: {
-        candles: account.candles,
-        hearts: account.hearts,
-        ascended: account.ascended,
-        passes: account.passes,
-      },
-      uniqueEvents: uniqueItems.map(zhItemName),
-      otherPackages: otherPackages.map(zhItemName),
-      highlights: uniqueByGuid([
-        ...chosen.filter(isGraduationGift),
-        ...uniqueItems,
-        ...packages,
-      ]).map(zhItemName),
-      notes: [account.bindingNote, account.notes].filter(Boolean).join("；"),
+      items: collectibleItems.map((item) => ({
+        guid: item.guid,
+        name: item.name,
+        displayName: zhItemName(item),
+        section: item.section,
+        collection: item.collection,
+        group: item.group,
+        wiki: item.wiki,
+        sourceName:
+          isChinaOnlyItem(item)
+            ? "國服限定"
+            : item.section === "seasons"
+            ? seasonZh[item.collection] || item.collection
+            : item.section === "events"
+              ? eventZh[item.collection] || item.collection
+              : item.section === "store"
+                ? storeSource(item)
+                : sourceKind(item),
+        order: item.order,
+      })),
     };
   };
   const exportAccount = async () => {
@@ -689,7 +687,9 @@ export default function AccountOrganizer() {
     }
   };
   const changedBindings = bindingKeys.filter((key) => bindings[key] !== "none");
-  const bindingSummary = formatMarketBindings(bindings);
+  const bindingSummary = account.bindingsConfirmed
+    ? formatMarketBindings(bindings)
+    : "尚未確認";
   const hasBindingIssue = changedBindings.some(
     (key) => bindings[key] === "issue",
   );
@@ -834,12 +834,13 @@ export default function AccountOrganizer() {
                   <span>{formatMarketPlatform(key)}</span>
                   <select
                     value={bindings[key]}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setBindings({
                         ...bindings,
                         [key]: e.target.value as BindingStatus,
-                      })
-                    }
+                      });
+                      setAccount({ ...account, bindingsConfirmed: true });
+                    }}
                     aria-label={`${bindingNames[key]}綁定狀態`}
                   >
                     {bindingOptions.map((option) => (
@@ -853,6 +854,19 @@ export default function AccountOrganizer() {
                 </label>
               ))}
             </div>
+              <label className="binding-confirm">
+                <input
+                  type="checkbox"
+                  checked={account.bindingsConfirmed}
+                  onChange={(event) =>
+                    setAccount({
+                      ...account,
+                      bindingsConfirmed: event.target.checked,
+                    })
+                  }
+                />
+                已確認以上綁定狀態
+              </label>
               <label className="account-notes">
                 綁定說明
                 <input

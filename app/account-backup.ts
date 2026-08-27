@@ -105,9 +105,14 @@ export const parseAccountBackup = (
   });
 
   const importedType = String(rawAccount.accountType || "有翼");
+  const rawBindingsConfirmed = rawAccount.bindingsConfirmed;
   const account: AccountInfo = {
     name: String(rawAccount.name || ""),
     accountType: importedType.includes("無翼") ? "無翼" : "有翼",
+    bindingsConfirmed:
+      typeof rawBindingsConfirmed === "boolean"
+        ? rawBindingsConfirmed
+        : Object.values(bindings).some((status) => status !== "none"),
     candles: String(rawAccount.candles || ""),
     hearts: String(rawAccount.hearts || ""),
     ascended: String(rawAccount.ascended || ""),

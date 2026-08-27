@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   canonicalPackageKey,
+  isChinaOnlyItem,
   isGraduationGift,
   isPaidItem,
   isSeasonPendant,
@@ -53,6 +54,18 @@ test("ordinary workshop furniture is not treated as paid", () => {
     wiki: "https://example.com/Nesting_Workshop#Stone_Kitchen_Cabinet",
   });
   assert.equal(isPaidItem(furniture), false);
+});
+
+test("recognizes NetEase catalog entries as China-only", () => {
+  const clover = item({
+    guid: "-0MdVdgbqv",
+    name: "Spring Clover Sprout",
+    group: "Limited",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/NetEase/Tree_Planting_Day#Spring_Clover_Sprout",
+    section: "store",
+    collection: "store",
+  });
+  assert.equal(isChinaOnlyItem(clover), true);
 });
 
 test("explicit packs and verified standalone IAPs are treated as paid", () => {

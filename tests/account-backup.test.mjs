@@ -40,6 +40,7 @@ const {
 const account = {
   name: "測試帳號",
   accountType: "有翼",
+  bindingsConfirmed: true,
   candles: "12",
   hearts: "3",
   ascended: "1",
@@ -150,11 +151,13 @@ test("preserves the legacy version-agnostic import policy", () => {
 });
 
 test("migrates legacy backups and drafts without PlayStation bindings", () => {
+  const legacyAccount = { ...account };
+  delete legacyAccount.bindingsConfirmed;
   const legacy = {
     format: "sky-recognition-wiki",
     version: 2,
     savedAt: "2026-08-26T00:00:00.000Z",
-    account,
+    account: legacyAccount,
     bindings: { google: "transfer", twitch: "keep" },
     owned: [],
   };
@@ -168,6 +171,7 @@ test("migrates legacy backups and drafts without PlayStation bindings", () => {
 
   assert.equal(imported.bindings.playstation, "none");
   assert.equal(draft.bindings.playstation, "none");
+  assert.equal(imported.account.bindingsConfirmed, true);
 });
 
 test("creates and restores a compact account draft", () => {
@@ -197,6 +201,28 @@ test("creates and restores a compact account draft", () => {
       owned: ["valid-guid"],
     },
   );
+});
+
+test("preserves an explicit unconfirmed binding state", () => {
+  const savedAt = new Date("2026-08-26T00:00:00.000Z");
+  const draft = createAccountDraft({
+    account: { ...account, bindingsConfirmed: false },
+    bindings: {
+      google: "transfer",
+      nintendo: "none",
+      gameCenter: "none",
+      facebook: "none",
+      steam: "none",
+      twitch: "none",
+      playstation: "none",
+    },
+    owned: [],
+    savedAt,
+  });
+
+  const restored = parseAccountDraft(draft, new Set(), savedAt);
+  assert.equal(restored.account.bindingsConfirmed, false);
+  assert.equal(restored.bindings.google, "transfer");
 });
 
 test("rejects expired or malformed drafts", () => {

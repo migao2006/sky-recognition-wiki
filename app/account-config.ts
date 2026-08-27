@@ -12,6 +12,7 @@ export type BindingStatus = "none" | "transfer" | "keep" | "issue";
 export type AccountInfo = {
   name: string;
   accountType: string;
+  bindingsConfirmed: boolean;
   candles: string;
   hearts: string;
   ascended: string;

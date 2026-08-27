@@ -3,96 +3,223 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import ts from "typescript";
 
-const moduleUrl = (source) =>
-  `data:text/javascript,${encodeURIComponent(
-    ts.transpileModule(source, {
-      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-    }).outputText,
-  )}`;
-
-const [marketSource, saleSource] = await Promise.all(
-  ["market-copy.ts", "sale-copy.ts"].map((file) =>
-    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-  ),
+const source = await readFile(
+  new URL("../app/sale-copy.ts", import.meta.url),
+  "utf8",
 );
-const marketUrl = moduleUrl(marketSource);
-const saleUrl = moduleUrl(
-  saleSource.replace(
-    /import \{ formatMarketBindings \} from "\.\/market-copy";/,
-    `const { formatMarketBindings } = await import(${JSON.stringify(marketUrl)});`,
-  ),
-);
-const { buildSaleCopy, buildShareSummary } = await import(saleUrl);
-const { formatMarketBindings } = await import(marketUrl);
+const moduleUrl = `data:text/javascript,${encodeURIComponent(
+  ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText,
+)}`;
+const { buildSaleCopy, buildShareSummary } = await import(moduleUrl);
 
+const season = (slug, name, owned = 0, total = 3) => ({
+  slug,
+  name,
+  owned,
+  total,
+});
+const item = (overrides = {}) => ({
+  guid: "test-item",
+  name: "Test Item",
+  displayName: "測試物品",
+  section: "store",
+  collection: "store",
+  group: "",
+  wiki: "https://example.com/item",
+  sourceName: "常駐商店",
+  order: 1,
+  ...overrides,
+});
 const input = (overrides = {}) => ({
-  accountName: "追光大斷禮包號",
-  accountType: "有翼",
-  selectedCount: 42,
-  earliestGraduationSeason: "追光季",
-  seasonNames: ["追光季", "音韻季"],
-  graduationStatus: ["追光季畢"],
+  seasons: [
+    season("lightseekers", "追光季", 0, 2),
+    season("moments", "拾光季", 2, 3),
+    season("revival", "歸巢季", 0, 2),
+    season("nine-colored-deer", "九色鹿季", 3, 3),
+    season("nesting", "築巢季", 1, 2),
+    season("duets", "協奏季", 1, 3),
+    season("moomin", "姆明季", 0, 3),
+    season("radiance", "染色季", 2, 2),
+    season("blue-bird", "青鳥季", 2, 2),
+  ],
+  bindingsConfirmed: true,
   bindings: { google: "transfer", nintendo: "keep", steam: "issue" },
-  resources: { candles: "1537", hearts: "31", ascended: "35", passes: "1" },
-  uniqueEvents: ["AURORA 之翼", "AURORA 之翼"],
-  otherPackages: ["大耳狗耳飾"],
-  highlights: ["追光斗篷", "AURORA 之翼"],
-  notes: "綁定以驗號影片為準",
+  items: [],
   ...overrides,
 });
 
-test("builds a compact market listing in the fixed section order", () => {
+test("formats continuous graduation progress from the first owned season", () => {
   const copy = buildSaleCopy(input()).join("\n");
-  assert.match(copy, /^▍⬪ 追光大斷禮包號$/m);
-  assert.match(copy, /最早畢業季：追光季/);
-  assert.match(copy, /季節物品：追光季⸝音韻季/);
-  assert.equal(copy.includes("起季"), false);
-  assert.match(copy, /♡ › 綁定\nɢɢ 出 ┊ ɴs 不出 ┊ sᴛᴇᴀᴍ 遺失／異常/);
-  assert.match(copy, /◇ › 限定／聯動\nAURORA 之翼/);
-  assert.match(copy, /⭔ › 資源\n1537𖠜｜31ෆ｜35✦｜1副卡/);
-  assert.ok(copy.indexOf("♤ › 季節") < copy.indexOf("♡ › 綁定"));
-  assert.ok(copy.indexOf("♡ › 綁定") < copy.indexOf("◇ › 限定／聯動"));
-  assert.ok(copy.endsWith("─── ☁ 文案為輔 · 影片為主 ☁ ───"));
-  for (const forbidden of ["請填寫", "售價", "包仲", "資料來源"]) {
+  assert.match(copy, /^✦ 季節進度$/m);
+  assert.equal(copy.includes("追光"), false);
+  for (const expected of [
+    "拾光2/3",
+    "歸巢⁰",
+    "九色鹿畢",
+    "築巢1/2",
+    "協奏1/3",
+    "姆明⁰",
+    "染色畢",
+    "青鳥畢",
+  ]) {
+    assert.match(copy, new RegExp(expected.replace("/", "\\/")));
+  }
+  assert.ok(copy.indexOf("拾光2/3") < copy.indexOf("歸巢⁰"));
+  assert.ok(copy.indexOf("歸巢⁰") < copy.indexOf("九色鹿畢"));
+  assert.doesNotMatch(copy, /拾光\s+2\/3|九色鹿季|畢業/);
+  assert.match(copy, /✦ 綁定狀態\nGG 出｜NS 不出｜Steam 遺失／異常/);
+});
+
+test("groups collaborations, anniversaries, and special collections", () => {
+  const items = [
+    item({
+      guid: "deer-antlers",
+      name: "Gift of the Nine-Colored Deer Antlers",
+      displayName: "禮物之九色鹿鹿角",
+      section: "seasons",
+      collection: "nine-colored-deer",
+      group: "Limited",
+      sourceName: "九色鹿季",
+    }),
+    item({
+      guid: "deer-mask",
+      name: "Gift of the Nine-Colored Deer Mask",
+      displayName: "禮物之九色鹿面具",
+      section: "seasons",
+      collection: "nine-colored-deer",
+      group: "Limited",
+      sourceName: "九色鹿季",
+      order: 2,
+    }),
+    item({
+      guid: "nintendo-hair",
+      name: "Nintendo Elf Hair",
+      displayName: "Nintendo 精靈髮型",
+      collection: "store",
+      wiki: "https://example.com/Nintendo_Pack",
+      sourceName: "Nintendo Switch 專屬",
+      order: 3,
+    }),
+    item({
+      guid: "sixth-hat",
+      name: "6th Anniversary Hat",
+      displayName: "6週年帽",
+      section: "events",
+      collection: "event-sky-anniversary",
+      wiki: "https://example.com/wiki/Sky_Anniversary/2025#Hat",
+      sourceName: "光遇週年慶",
+      order: 4,
+    }),
+    item({
+      guid: "fifth-shirt",
+      name: "Anniversary T-Shirt",
+      displayName: "週年T恤",
+      section: "events",
+      collection: "event-sky-anniversary",
+      wiki: "https://example.com/wiki/Sky_Anniversary/2024#Shirt",
+      sourceName: "光遇週年慶",
+      order: 5,
+    }),
+    item({
+      guid: "unknown-anniversary",
+      name: "Anniversary Teacup Headband",
+      displayName: "茶杯頭飾",
+      section: "events",
+      collection: "event-sky-anniversary",
+      wiki: "https://example.com/wiki/Sky_Anniversary#Teacup",
+      sourceName: "光遇週年慶",
+      order: 6,
+    }),
+    item({
+      guid: "witch-hair",
+      name: "Mischief Witch Hair",
+      displayName: "女巫髮型",
+      section: "events",
+      collection: "days-of-mischief",
+      sourceName: "惡作劇之日",
+      order: 7,
+    }),
+    item({
+      guid: "piano",
+      name: "Fledgling Upright Piano",
+      displayName: "新手鋼琴",
+      sourceName: "常駐商店",
+      order: 8,
+    }),
+    item({
+      guid: "china-clover",
+      name: "Spring Clover Sprout",
+      displayName: "春日幸運草嫩芽",
+      group: "Limited",
+      sourceName: "國服限定",
+      order: 9,
+    }),
+    item({
+      guid: "duplicate-hair",
+      name: "Duplicate Hair",
+      displayName: "精靈髮型",
+      sourceName: "常駐商店",
+      order: 10,
+    }),
+  ];
+  const copy = buildSaleCopy(input({ items: [...items, items[0]] })).join("\n");
+  assert.match(copy, /✦ 限定聯動\n九色鹿｜鹿角・九色鹿面具\nNintendo｜精靈髮型/);
+  assert.match(copy, /✦ 週年收藏\n6th｜週年帽\n5th｜週年T恤\n其他｜茶杯頭飾/);
+  assert.match(copy, /✦ 特殊限定/);
+  assert.match(copy, /惡作劇之日｜女巫髮型/);
+  assert.match(copy, /國服限定｜春日幸運草嫩芽/);
+  assert.match(copy, /✦ 其他收藏\n常駐商店｜新手鋼琴/);
+  assert.equal(copy.match(/鹿角/g)?.length, 1);
+  assert.equal(copy.match(/精靈髮型/g)?.length, 1);
+  assert.equal(copy.match(/╶────── ✦ ──────╴/g)?.length, 5);
+});
+
+test("omits empty optional sections and never adds the removed market copy", () => {
+  const copy = buildSaleCopy(
+    input({ seasons: [], bindingsConfirmed: true, bindings: {}, items: [] }),
+  ).join("\n");
+  assert.equal(copy, "✦ 綁定狀態\n無綁");
+  for (const forbidden of [
+    "最早畢業季",
+    "季節物品",
+    "起季",
+    "帳號資源",
+    "備註",
+    "♤",
+    "♡",
+    "◇",
+    "☁",
+  ]) {
     assert.equal(copy.includes(forbidden), false);
   }
 });
 
-test("omits unavailable and zero-value sections without inventing claims", () => {
+test("omits bindings until the seller explicitly confirms them", () => {
+  const copy = buildSaleCopy(
+    input({ bindingsConfirmed: false, bindings: {} }),
+  ).join("\n");
+  assert.match(copy, /^✦ 季節進度$/m);
+  assert.doesNotMatch(copy, /綁定狀態|無綁/);
+});
+
+test("drops invalid future-season ratios instead of publishing 1/0", () => {
   const copy = buildSaleCopy(
     input({
-      accountName: "",
-      earliestGraduationSeason: "",
-      seasonNames: [],
-      graduationStatus: [],
-      bindings: {},
-      resources: { candles: "0", hearts: "", ascended: "0", passes: "" },
-      uniqueEvents: [],
-      otherPackages: [],
-      highlights: [],
-      notes: "",
+      seasons: [
+        season("future", "未來季", 1, 0),
+        season("current", "當前季", 1, 2),
+      ],
     }),
   ).join("\n");
-  assert.match(copy, /^▍⬪ 有翼號$/m);
-  assert.match(copy, /♡ › 綁定\n無綁/);
-  for (const heading of ["♤ › 季節", "◇ › 限定／聯動", "ᴏᴛʜᴇʀs ╻", "⭔ › 資源", "⚝ › 備註"]) {
-    assert.equal(copy.includes(heading), false);
-  }
+  assert.doesNotMatch(copy, /未來|1\/0/);
+  assert.match(copy, /當前1\/2/);
 });
 
-test("share summary keeps only buyer-facing facts", () => {
-  const summary = buildShareSummary(input()).join("\n");
-  assert.match(summary, /^▍⬪ 追光大斷禮包號/m);
-  assert.match(summary, /♤ › 最早畢業季 追光季 ┊ 畢業 追光季畢/);
-  assert.match(summary, /♡ › ɢɢ 出 ┊ ɴs 不出 ┊ sᴛᴇᴀᴍ 遺失／異常/);
-  assert.match(summary, /◇ › 追光斗篷⸝AURORA 之翼/);
-  assert.match(summary, /衣櫃 42 件/);
-  assert.equal(summary.includes("季節物品：追光季⸝音韻季"), false);
-});
-
-test("uses the market-specific Nintendo transfer word", () => {
-  assert.equal(
-    formatMarketBindings({ google: "transfer", nintendo: "transfer" }),
-    "ɢɢ 出 ┊ ɴs 解",
-  );
+test("download and share use the exact same listing", () => {
+  assert.deepEqual(buildShareSummary(input()), buildSaleCopy(input()));
 });

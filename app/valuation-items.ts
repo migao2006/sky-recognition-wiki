@@ -87,7 +87,7 @@ export const canonicalPackageKey = (item: WikiItem) => {
 };
 
 export const isChinaOnlyItem = (item: WikiItem) =>
-  /\b(?:china|cn|guo?fu)\b|國服|国服/i.test(
+  /\b(?:china|cn|guo?fu|netease)\b|國服|国服/i.test(
     `${item.name} ${item.wiki} ${item.collection} ${item.group}`,
   );
 

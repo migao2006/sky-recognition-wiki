@@ -949,6 +949,19 @@ a:focus-visible {
   border-color: #e7929f55 !important;
   background: #e7929f0c !important;
 }
+.account-form .binding-confirm {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 11px 1px 0;
+  color: #bec8d4;
+  font-size: 12px;
+}
+.account-form .binding-confirm input {
+  width: 18px;
+  height: 18px;
+  accent-color: #8fc7ff;
+}
 .account-extra {
   grid-column: 1/-1;
   overflow: hidden;
