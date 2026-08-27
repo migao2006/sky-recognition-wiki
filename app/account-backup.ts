@@ -19,7 +19,7 @@ type BackupOptions = {
   account: AccountInfo;
   bindings: Record<BindingKey, BindingStatus>;
   items: WikiItem[];
-  getZhName: (name: string) => string;
+  getZhName: (item: WikiItem) => string;
   getSource: (item: WikiItem) => string;
   exportedAt?: Date;
 };
@@ -56,7 +56,7 @@ export const createAccountBackup = ({
     guid: item.guid,
     id: item.id,
     name: item.name,
-    zhName: getZhName(item.name),
+    zhName: getZhName(item),
     type: item.type,
     source: getSource(item),
     sourceUrl: item.wiki,

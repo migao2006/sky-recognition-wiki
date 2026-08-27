@@ -1,5 +1,6 @@
 import { wikiItems as baseWikiItems } from "./wiki-data";
 import type { WikiItem } from "./wiki-data";
+import wikiZhNames from "./wiki-zh-names.json";
 import {
   isGraduationGift,
   isPaidItem,
@@ -1581,13 +1582,14 @@ const communityZh: Record<string, string> = {
   "Wonderland Primrose Pinafore Dress": "仙境報春花圍裙洋裝",
   "Ocean Sea Foam Boots": "海洋泡沫靴",
 };
-export const zhName = (name: string) => {
-  if (verifiedInstrumentZh[name]) return verifiedInstrumentZh[name];
-  if (verifiedHeldPropZh[name]) return verifiedHeldPropZh[name];
-  if (verifiedUltimateZh[name]) return verifiedUltimateZh[name];
-  if (verifiedZh[name]) return verifiedZh[name];
-  if (exactZh[name]) return exactZh[name];
-  if (communityZh[name]) return communityZh[name];
+const manualZhName = (name: string) =>
+  verifiedInstrumentZh[name] ??
+  verifiedHeldPropZh[name] ??
+  verifiedUltimateZh[name] ??
+  verifiedZh[name] ??
+  exactZh[name] ??
+  communityZh[name];
+const tokenizedZhName = (name: string) => {
   const translated = name
     .replace(/[’']s\b/g, "")
     .replace(/[’']/g, "")
@@ -1605,6 +1607,10 @@ export const zhName = (name: string) => {
     .join("");
   return translated || name;
 };
+export const zhName = (name: string) => manualZhName(name) ?? tokenizedZhName(name);
+const wikiZhByGuid = wikiZhNames.items as Record<string, string>;
+export const zhItemName = (item: WikiItem) =>
+  wikiZhByGuid[item.guid] ?? manualZhName(item.name) ?? tokenizedZhName(item.name);
 const valuationKey = (x: WikiItem) => {
   if (isSeasonPendant(x)) return "pendant";
   if (isGraduationGift(x)) return "discontinued";
@@ -1733,7 +1739,7 @@ export const searchIndex = new Map(
     .map((x) => [
       x.guid,
       [
-        zhName(x.name),
+        zhItemName(x),
         x.name,
         labels[x.type] || x.type,
         source(x),

@@ -62,7 +62,7 @@ import {
   type ClosetSubRoute,
   uniqueByGuid,
   wikiItems,
-  zhName,
+  zhItemName,
 } from "./catalog-domain";
 import {
   isGraduationGift,
@@ -118,6 +118,7 @@ const valuationDomain: ValuationDomain = {
   graduationSeasonSlugs,
   seasonGraduationItems,
   sortSeasonSlugs,
+  getZhName: zhItemName,
 };
 const bundlePresetItems = new Map(
   bundlePresets.map((preset) => [
@@ -254,7 +255,7 @@ const CatalogItemCard = memo(function CatalogItemCard({
         />
       </div>
       <div className="card-body">
-        <h2>{zhName(item.name)}</h2>
+        <h2>{zhItemName(item)}</h2>
       </div>
     </button>
   );
@@ -552,13 +553,13 @@ export default function AccountOrganizer() {
         ascended: account.ascended,
         passes: account.passes,
       },
-      uniqueEvents: uniqueItems.map((x) => zhName(x.name)),
-      otherPackages: otherPackages.map((x) => zhName(x.name)),
+      uniqueEvents: uniqueItems.map(zhItemName),
+      otherPackages: otherPackages.map(zhItemName),
       highlights: uniqueByGuid([
         ...chosen.filter(isGraduationGift),
         ...uniqueItems,
         ...packages,
-      ]).map((x) => zhName(x.name)),
+      ]).map(zhItemName),
       notes: [account.bindingNote, account.notes].filter(Boolean).join("；"),
     };
   };
@@ -572,7 +573,7 @@ export default function AccountOrganizer() {
       account,
       bindings,
       items: chosen,
-      getZhName: zhName,
+      getZhName: zhItemName,
       getSource: source,
     });
     downloadBlob(
@@ -894,14 +895,14 @@ export default function AccountOrganizer() {
                       {items.map((item) => {
                         const selected = owned.has(item.guid),
                           pendant = isSeasonPendant(item),
-                          name = pendant ? "項鍊" : zhName(item.name);
+                          name = pendant ? "項鍊" : zhItemName(item);
                         return (
                           <button
                             type="button"
                             className={`season-ultimate-item${selected ? " selected" : ""}${pendant ? " pendant" : ""}`}
                             aria-pressed={selected}
                             aria-label={`${seasonZh[slug]}　${name}`}
-                            title={`${seasonZh[slug]} · ${zhName(item.name)}`}
+                            title={`${seasonZh[slug]} · ${zhItemName(item)}`}
                             key={item.guid}
                             onClick={() => toggleOwned(item.guid)}
                           >
@@ -1048,11 +1049,11 @@ export default function AccountOrganizer() {
             )}
             <div className="showcase-preview-icons">
               {previewItems.slice(0, previewLimit).map((item) => (
-                <span key={item.guid} title={zhName(item.name)}>
+                <span key={item.guid} title={zhItemName(item)}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.icon}
-                    alt={zhName(item.name)}
+                    alt={zhItemName(item)}
                     loading="lazy"
                     referrerPolicy="no-referrer"
                   />

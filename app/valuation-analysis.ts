@@ -25,6 +25,7 @@ export type ValuationDomain = {
   graduationSeasonSlugs: readonly string[];
   seasonGraduationItems: ReadonlyMap<string, readonly WikiItem[]>;
   sortSeasonSlugs: (slugs: string[]) => string[];
+  getZhName: (item: WikiItem) => string;
 };
 export type ValuationResources = {
   candles?: string | number;
@@ -69,6 +70,7 @@ export type ValuationAnalysis = {
   issueCount: number;
   keepCount: number;
   bindings: Record<string, BindingStatus>;
+  getZhName: (item: WikiItem) => string;
 };
 
 const roundHundred = (value: number) => Math.round(value / 100) * 100;
@@ -176,6 +178,7 @@ export const analyzeValuation = ({
     issueCount: statuses.filter((status) => status === "issue").length,
     keepCount: statuses.filter((status) => status === "keep").length,
     bindings: bindings as Record<string, BindingStatus>,
+    getZhName: domain.getZhName,
   };
 };
 
@@ -327,7 +330,7 @@ export const estimateValuation = ({
     const base = packageUnit * multiplier;
     contributions.push({
       group: "package",
-      label: item.name,
+      label: analysis.getZhName(item),
       low: roundHundred(base * 0.7),
       high: roundHundred(base * 1.15),
     });
@@ -368,7 +371,7 @@ export const estimateValuation = ({
             : [100, 250];
     contributions.push({
       group: "limited",
-      label: item.name,
+      label: analysis.getZhName(item),
       low: itemLow,
       high: itemHigh,
     });

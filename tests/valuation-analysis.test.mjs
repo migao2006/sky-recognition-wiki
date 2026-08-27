@@ -70,7 +70,7 @@ const domain = {
   isLimitedItem: (value) =>
     value.collection === "collab" || value.group === "Limited",
   sourceKind: (value) => (value.collection === "collab" ? "聯動" : "活動"),
-  getZhName: (value) => value,
+  getZhName: (value) => value.name,
   getSource: (value) => value.collection,
   ongoingSeasonSlugs: new Set(),
   graduationSeasonSlugs: ["enchantment", "sanctuary"],
@@ -152,6 +152,22 @@ test("a canonical pack is counted once and China-only content is excluded", () =
     1,
   );
   assert.ok(result.warnings.some((warning) => warning.includes("國服限定")));
+});
+
+test("valuation contribution labels use the catalog Chinese name", () => {
+  const translatedAnalysis = analyzeValuation({
+    chosen: [item({ name: "Kizuna AI Cape", wiki: "https://wiki.test/Kizuna_AI_Pack" })],
+    bindings: bindings(),
+    bindingNote: "",
+    domain: { ...domain, getZhName: () => "絆愛雪紡斗篷" },
+  });
+  const result = estimateValuation({ analysis: translatedAnalysis });
+  assert.ok(result);
+  assert.ok(
+    result.contributions.some(
+      (row) => row.group === "package" && row.label === "絆愛雪紡斗篷",
+    ),
+  );
 });
 
 test("binding penalties are capped and platform issues remove platform value", () => {

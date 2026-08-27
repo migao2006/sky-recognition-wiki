@@ -136,8 +136,8 @@ test("uses the shared valuation wording in image summaries", () => {
 });
 
 test("keeps the complete catalog export within mobile canvas limits", async () => {
-  const [wikiSource, valuationSource, catalogSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts"].map((file) =>
+  const [wikiSource, valuationSource, catalogSource, wikiZhSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
@@ -149,6 +149,10 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
         `const { wikiItems: baseWikiItems } = await import(${JSON.stringify(
           asModuleUrl(wikiSource),
         )});`,
+      )
+      .replace(
+        'import wikiZhNames from "./wiki-zh-names.json";',
+        `const wikiZhNames = ${wikiZhSource};`,
       )
       .replace(
         /import \{([\s\S]*?)\} from "\.\/valuation-items";/,

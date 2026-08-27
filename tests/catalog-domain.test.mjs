@@ -14,8 +14,8 @@ const asModuleUrl = (source) =>
   )}`;
 
 const loadCatalogDomain = async () => {
-  const [wikiSource, valuationSource, catalogSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts"].map((file) =>
+  const [wikiSource, valuationSource, catalogSource, wikiZhSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
@@ -25,6 +25,10 @@ const loadCatalogDomain = async () => {
       `const { wikiItems: baseWikiItems } = await import(${JSON.stringify(
         asModuleUrl(wikiSource),
       )});`,
+    )
+    .replace(
+      'import wikiZhNames from "./wiki-zh-names.json";',
+      `const wikiZhNames = ${wikiZhSource};`,
     )
     .replace(
       /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
@@ -39,6 +43,7 @@ const loadCatalogDomain = async () => {
 const {
   closetSubSequence,
   closetGroups,
+  allClosetTypeSet,
   getNextClosetSub,
   graduationSeasonSlugs,
   heldClosetOrder,
@@ -49,6 +54,7 @@ const {
   showcaseClusterOrder,
   sourceKind,
   wikiItems,
+  zhItemName,
   zhName,
 } = await loadCatalogDomain();
 
@@ -74,6 +80,43 @@ test("translates verified and tokenized catalog names", () => {
   assert.equal(zhName("Rainbow Cape"), "彩虹斗篷");
   assert.equal(zhName("Transverse Flute"), "橫笛");
   assert.equal(zhName("Sentry Shield"), "哨兵盾牌");
+});
+
+test("uses reviewed Wiki names by guid before legacy manual names", () => {
+  const treasureCape = wikiItems.find((entry) => entry.guid === "aGS2A9wzQ8");
+  assert.ok(treasureCape);
+  assert.equal(zhItemName(treasureCape), "尋寶金幣斗篷");
+  assert.equal(
+    zhItemName(item({ guid: "aGS2A9wzQ8", name: "Unknown Catalog Label" })),
+    "尋寶金幣斗篷",
+  );
+  assert.equal(
+    zhItemName(item({ guid: "aGS2A9wzQ8", name: "Rainbow Cape" })),
+    "尋寶金幣斗篷",
+  );
+});
+
+test("reviewed Wiki snapshot contains only catalog guids and complete Chinese names", async () => {
+  const snapshot = JSON.parse(
+    await readFile(new URL("../app/wiki-zh-names.json", import.meta.url), "utf8"),
+  );
+  const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
+  assert.equal(Object.keys(snapshot.items).length, 105);
+  assert.equal(Object.keys(snapshot.revisions).length, 10);
+  assert.ok(Object.values(snapshot.revisions).every(Number.isInteger));
+  for (const [guid, name] of Object.entries(snapshot.items)) {
+    assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
+    assert.match(name, /[\u3400-\u9fff]/);
+    assert.doesNotMatch(name, /[A-Za-z]/);
+  }
+});
+
+test("every visible wardrobe item has a Chinese display name", () => {
+  const wardrobeItems = wikiItems.filter((entry) => allClosetTypeSet.has(entry.type));
+  assert.equal(wardrobeItems.length, 1164);
+  for (const entry of wardrobeItems) {
+    assert.match(zhItemName(entry), /[\u3400-\u9fff]/, entry.name);
+  }
 });
 
 test("matches the three in-game prop closet tabs", () => {
