@@ -163,29 +163,12 @@ const showcaseMetrics = {
   sectionGap: 12,
 } as const;
 
-export const EXPORT_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
-const exportImageQualities = [
-  0.94, 0.9, 0.86, 0.82, 0.76, 0.68, 0.58, 0.48, 0.4,
-] as const;
-
-export const encodeImageWithinLimit = async (
-  encode: (quality: number) => Promise<Blob>,
-  maxBytes = EXPORT_IMAGE_MAX_BYTES,
-) => {
-  for (const quality of exportImageQualities) {
-    const blob = await encode(quality);
-    if (blob.size <= maxBytes) return blob;
-  }
-  throw new Error("image-too-large");
-};
-
-const canvasToJpeg = (canvas: HTMLCanvasElement, quality: number) =>
+const canvasToPng = (canvas: HTMLCanvasElement) =>
   new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) =>
         blob ? resolve(blob) : reject(new Error("image-export-failed")),
-      "image/jpeg",
-      quality,
+      "image/png",
     );
   });
 
@@ -295,25 +278,10 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
   canvas.height = height + summaryHeight;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas-unavailable");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
-  const background = ctx.createLinearGradient(0, 0, width, height);
-  background.addColorStop(0, "#04060c");
-  background.addColorStop(0.52, "#0a1020");
-  background.addColorStop(1, "#11152a");
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, width, canvas.height);
-
-  const aura = ctx.createRadialGradient(
-    width * 0.72,
-    40,
-    20,
-    width * 0.72,
-    40,
-    width * 0.8,
-  );
-  aura.addColorStop(0, "rgba(111,158,232,.24)");
-  aura.addColorStop(1, "rgba(4,6,12,0)");
-  ctx.fillStyle = aura;
+  ctx.fillStyle = "#070b14";
   ctx.fillRect(0, 0, width, canvas.height);
 
   const roundRect = (
@@ -331,7 +299,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.fill();
     if (stroke) {
       ctx.strokeStyle = stroke;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.stroke();
     }
   };
@@ -343,8 +311,8 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
       width - pad * 2,
       summaryHeight - sectionGap,
       20,
-      "rgba(7,11,20,.86)",
-      "rgba(169,207,255,.2)",
+      "#0b111e",
+      "rgba(169,207,255,.08)",
     );
     ctx.textAlign = "left";
     ctx.fillStyle = "#9fc8ff";
@@ -389,8 +357,8 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
       width - pad * 2,
       boxHeight,
       20,
-      "rgba(7,11,20,.76)",
-      "rgba(169,207,255,.16)",
+      "#0b111e",
+      "rgba(169,207,255,.07)",
     );
     ctx.textAlign = "center";
     ctx.fillStyle = "#f3f8f7";
@@ -407,8 +375,8 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
           w,
           h,
           10,
-          "rgba(111,158,232,.07)",
-          "rgba(169,207,255,.15)",
+          "#101827",
+          "rgba(169,207,255,.06)",
         );
         ctx.textAlign = "left";
         ctx.fillStyle = "#b7d6ff";
@@ -441,9 +409,6 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
             );
             const drawW = image.naturalWidth * scale;
             const drawH = image.naturalHeight * scale;
-            ctx.save();
-            ctx.shadowColor = "rgba(143,199,255,.38)";
-            ctx.shadowBlur = 9;
             ctx.drawImage(
               image,
               cellX + (cellWidth - drawW) / 2,
@@ -451,7 +416,6 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
               drawW,
               drawH,
             );
-            ctx.restore();
           } else {
             ctx.textAlign = "center";
             ctx.fillStyle = "#b7d6ff";
@@ -464,5 +428,5 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     y += boxHeight + sectionGap;
   });
 
-  return encodeImageWithinLimit((quality) => canvasToJpeg(canvas, quality));
+  return canvasToPng(canvas);
 };

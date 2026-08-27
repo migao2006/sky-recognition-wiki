@@ -757,7 +757,7 @@ export default function AccountOrganizer() {
       });
       downloadBlob(
         blob,
-        `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}.jpg`,
+        `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}.png`,
       );
       setNotice("整理圖片已下載");
     } catch {

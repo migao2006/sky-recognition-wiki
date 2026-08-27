@@ -19,8 +19,6 @@ const showcaseSource = (
 const {
   buildShowcaseGroups,
   measureShowcaseCanvas,
-  EXPORT_IMAGE_MAX_BYTES,
-  encodeImageWithinLimit,
 } = await import(
   asModuleUrl(showcaseSource)
 );
@@ -129,24 +127,6 @@ test("adds a compact valuation summary without changing collection layout", () =
   assert.equal(valuation.height, collection.height + 236);
 });
 
-test("never returns an encoded image above the byte limit", async () => {
-  const attempts = [];
-  const result = await encodeImageWithinLimit(async (quality) => {
-    attempts.push(quality);
-    return new Blob([new Uint8Array(quality > 0.58 ? 120 : 80)]);
-  }, 100);
-  assert.equal(result.size, 80);
-  assert.ok(attempts.length > 1);
-
-  await assert.rejects(
-    encodeImageWithinLimit(
-      async () => new Blob([new Uint8Array(120)]),
-      100,
-    ),
-    /image-too-large/,
-  );
-});
-
 test("keeps the complete catalog export within mobile canvas limits", async () => {
   const [wikiSource, valuationSource, catalogSource] = await Promise.all(
     ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts"].map((file) =>
@@ -199,5 +179,4 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
   assert.equal(size.width, 1600);
   assert.ok(size.height <= 16384);
   assert.ok(size.width * size.height <= 16777216);
-  assert.equal(EXPORT_IMAGE_MAX_BYTES, 3 * 1024 * 1024);
 });
