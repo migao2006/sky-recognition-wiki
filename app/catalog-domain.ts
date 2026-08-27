@@ -239,14 +239,42 @@ export const closetGroups = [
     name: "道具衣櫃",
     types: ["Instrument", "Prop", "Furniture"],
     subs: [
-      { key: "Instrument", name: "樂器", types: ["Instrument"] },
-      { key: "Prop", name: "手持／背負道具", types: ["Prop"] },
-      { key: "Furniture", name: "家具／擺設", types: ["Furniture"] },
+      { key: "held", name: "手持道具", types: ["Instrument", "Prop"] },
+      { key: "large", name: "大型可放置道具", types: ["Furniture", "Instrument"] },
+      { key: "small", name: "小型可放置道具", types: ["Prop", "Furniture", "Instrument"] },
     ],
   },
 ];
-export const matchesSub = (x: WikiItem, sub: string) =>
-  x.type === sub;
+// The source catalog maps to Sky's three prop tabs, with these verified exceptions.
+const heldPropGuids = new Set(["2o3CEU9QhM", "W-3Nh_yWGv", "dkfdFCaemY"]);
+const largeInstrumentGuids = new Set(["WMNr4yo_35"]);
+const smallInstrumentGuids = new Set([
+  "WuZeLoUATs",
+  "O9jSph-v7e",
+  "10Ol7H9jKg",
+]);
+const smallFurnitureGuids = new Set(["sZRjoCGw_u"]);
+export const matchesSub = (x: WikiItem, sub: string) => {
+  if (sub === "held")
+    return (
+      (x.type === "Instrument" &&
+        !largeInstrumentGuids.has(x.guid) &&
+        !smallInstrumentGuids.has(x.guid)) ||
+      heldPropGuids.has(x.guid)
+    );
+  if (sub === "large")
+    return (
+      largeInstrumentGuids.has(x.guid) ||
+      (x.type === "Furniture" && !smallFurnitureGuids.has(x.guid))
+    );
+  if (sub === "small")
+    return (
+      smallInstrumentGuids.has(x.guid) ||
+      (x.type === "Prop" && !heldPropGuids.has(x.guid)) ||
+      smallFurnitureGuids.has(x.guid)
+    );
+  return x.type === sub;
+};
 export const seasonZh: Record<string, string> = {
   gratitude: "感恩季",
   lightseekers: "追光季",

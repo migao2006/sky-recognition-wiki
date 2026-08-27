@@ -72,23 +72,21 @@ test("translates verified and tokenized catalog names", () => {
   assert.equal(zhName("Transverse Flute"), "橫笛");
 });
 
-test("keeps instruments separate in the fifth closet", () => {
+test("matches the three in-game prop closet tabs", () => {
   const propsCloset = closetGroups.find((group) => group.key === "props");
   assert.ok(propsCloset);
   assert.deepEqual(
     propsCloset.subs.map((sub) => [sub.key, sub.name]),
     [
-      ["Instrument", "樂器"],
-      ["Prop", "手持／背負道具"],
-      ["Furniture", "家具／擺設"],
+      ["held", "手持道具"],
+      ["large", "大型可放置道具"],
+      ["small", "小型可放置道具"],
     ],
   );
 
   const instruments = wikiItems.filter((entry) => entry.type === "Instrument");
   assert.equal(instruments.length, 38);
   assert.equal(new Set(instruments.map((entry) => entry.guid)).size, 38);
-  assert.ok(instruments.every((entry) => matchesSub(entry, "Instrument")));
-  assert.ok(instruments.every((entry) => !matchesSub(entry, "Prop")));
   assert.ok(instruments.some((entry) => entry.name === "Harp"));
   assert.ok(instruments.some((entry) => entry.name === "Transverse Flute"));
   for (const [name, guid] of [
@@ -115,6 +113,46 @@ test("keeps instruments separate in the fifth closet", () => {
     const entry = instruments.find((item) => item.name === name);
     assert.equal(entry?.section, "store");
     assert.equal(entry?.group, "");
+  }
+  const instrumentByName = (name) =>
+    instruments.find((entry) => entry.name === name);
+  assert.deepEqual(
+    ["held", "large", "small"].map(
+      (tab) => instruments.filter((entry) => matchesSub(entry, tab)).length,
+    ),
+    [34, 1, 3],
+  );
+  assert.equal(matchesSub(instrumentByName("Jam Station"), "large"), true);
+  for (const name of [
+    "Grand Piano",
+    "Duets Grand Piano",
+    "Fledgling Upright Piano",
+  ]) {
+    assert.equal(matchesSub(instrumentByName(name), "small"), true);
+  }
+});
+
+test("uses verified game placement categories for representative props", () => {
+  const byName = (name) => wikiItems.find((entry) => entry.name === name);
+  const held = byName("Lightseekers Ultimate Umbrella");
+  const large = byName("Challenge Bounce Pad Level 3");
+  const small = byName("Tournament Skyball Set");
+  assert.ok(held && large && small);
+  assert.equal(matchesSub(held, "held"), true);
+  assert.equal(matchesSub(held, "small"), false);
+  assert.equal(matchesSub(large, "large"), true);
+  assert.equal(matchesSub(large, "small"), false);
+  assert.equal(matchesSub(small, "small"), true);
+  assert.equal(matchesSub(small, "large"), false);
+
+  const propTypes = new Set(["Instrument", "Prop", "Furniture"]);
+  for (const entry of wikiItems.filter((item) => propTypes.has(item.type))) {
+    assert.equal(
+      ["held", "large", "small"].filter((tab) => matchesSub(entry, tab))
+        .length,
+      1,
+      `${entry.name} must appear in exactly one prop closet tab`,
+    );
   }
 });
 
