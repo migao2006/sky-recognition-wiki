@@ -33,8 +33,8 @@ export const bindingNames: Record<BindingKey, string> = {
 export const bindingKeys = Object.keys(bindingNames) as BindingKey[];
 
 export const bindingOptions: { key: BindingStatus; name: string }[] = [
-  { key: "none", name: "未綁定" },
-  { key: "transfer", name: "可出" },
+  { key: "none", name: "無綁" },
+  { key: "transfer", name: "出" },
   { key: "keep", name: "不出" },
   { key: "issue", name: "遺失／異常" },
 ];

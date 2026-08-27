@@ -317,7 +317,10 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.textAlign = "left";
     ctx.fillStyle = "#9fc8ff";
     ctx.font = "800 20px system-ui";
-    ctx.fillText("估價重點", pad + 28, pad + 38);
+    ctx.fillText("估價摘要", pad + 28, pad + 38);
+    ctx.fillStyle = "#b7c8dd";
+    ctx.font = "700 15px system-ui";
+    ctx.fillText("參考中位價", pad + 28, pad + 62);
     ctx.fillStyle = "#f3f8f7";
     ctx.font = "900 48px system-ui";
     ctx.fillText(
@@ -325,25 +328,25 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
         ? "NT$ —"
         : `NT$ ${valuation.midpoint.toLocaleString("zh-TW")}`,
       pad + 28,
-      pad + 96,
+      pad + 106,
     );
     ctx.fillStyle = "#b7c8dd";
     ctx.font = "700 18px system-ui";
     const range = valuation.range
-      ? `合理區間 NT$ ${valuation.range.low.toLocaleString("zh-TW")}～NT$ ${valuation.range.high.toLocaleString("zh-TW")}`
-      : "尚無足夠估價重點";
-    ctx.fillText(range, pad + 28, pad + 132);
+      ? `價格區間 NT$ ${valuation.range.low.toLocaleString("zh-TW")}～NT$ ${valuation.range.high.toLocaleString("zh-TW")}`
+      : "選取估價物品後顯示";
+    ctx.fillText(range, pad + 28, pad + 142);
     ctx.fillText(
-      `完整度 ${valuation.completeness}% · ${valuation.confidence} · 估價重點 ${valuation.itemCount} 件`,
+      `估價完整度 ${valuation.completeness}% · ${valuation.confidence} · 已納入 ${valuation.itemCount} 件`,
       pad + 28,
-      pad + 164,
+      pad + 174,
     );
     ctx.fillStyle = "#8fa6c2";
     ctx.font = "600 15px system-ui";
     ctx.fillText(
-      valuation.highlights.slice(0, 5).join("　") || "尚未選取估價重點",
+      valuation.highlights.slice(0, 5).join("　") || "尚未選取估價物品",
       pad + 28,
-      pad + 196,
+      pad + 206,
     );
   }
 

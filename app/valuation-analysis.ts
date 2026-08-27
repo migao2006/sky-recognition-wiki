@@ -239,7 +239,7 @@ export const estimateValuation = ({
       midpoint: 0,
       confidence: "inferred",
       contributions: [],
-      warnings: ["國服限定物品不納入國際服估價。"],
+      warnings: ["國服限定物品不列入國際服參考價格。"],
       seasonRows: [],
       dataAsOf: valuationSampleSummary.asOf,
     };
@@ -271,12 +271,12 @@ export const estimateValuation = ({
     high = startBand.high;
     contributions.push({
       group: "season",
-      label: `起季 ${analysis.startSeasonSlug}`,
+      label: `最早畢業季 ${analysis.startSeasonSlug}`,
       low,
       high,
     });
   } else if (analysis.startSeasonSlug)
-    warnings.push("起季不在目前的市場樣本範圍，已使用保守基準。");
+    warnings.push("最早畢業季不在目前的市場樣本範圍，已使用保守基準。");
   for (const row of seasonRows) {
     if (row.completion >= 1) continue;
     const absent = 1 - row.completion;
@@ -294,7 +294,7 @@ export const estimateValuation = ({
   const packageMap = new Map<string, WikiItem>();
   analysis.packages.forEach((item) => {
     if (isChinaOnlyItem(item)) {
-      warnings.push("國服限定物品不納入國際服估價。");
+      warnings.push("國服限定物品不列入國際服參考價格。");
       return;
     }
     const platform = platformBindingForItem(item);
@@ -302,7 +302,9 @@ export const estimateValuation = ({
       ? (analysis.bindings[platform] ?? "none")
       : "transfer";
     if (platform && status !== "transfer") {
-      warnings.push(`${platform} 未綁定或不可交割，該平台物品不計價。`);
+      warnings.push(
+        `${platform} 無綁或無法交易，該平台物品不列入參考價格。`,
+      );
       return;
     }
     const key = canonicalPackageKey(item);
@@ -334,7 +336,7 @@ export const estimateValuation = ({
   const limitedKeys = new Set<string>();
   for (const item of analysis.limited) {
     if (isChinaOnlyItem(item)) {
-      warnings.push("國服限定物品不納入國際服估價。");
+      warnings.push("國服限定物品不列入國際服參考價格。");
       continue;
     }
     if (
@@ -348,7 +350,9 @@ export const estimateValuation = ({
       ? (analysis.bindings[platform] ?? "none")
       : "transfer";
     if (platform && status !== "transfer") {
-      warnings.push(`${platform} 未綁定或不可交割，該平台限定不計價。`);
+      warnings.push(
+        `${platform} 無綁或無法交易，該平台限定不列入參考價格。`,
+      );
       continue;
     }
     const key = `${kind}:${item.collection || item.name}`;
@@ -427,7 +431,7 @@ export const estimateValuation = ({
   const confidence: SeasonConfidence = startBand?.confidence ?? "inferred";
   const summary = summarizeValuationRange(low, high, confidence);
   if (!analysis.startSeasonSlug)
-    warnings.push("未辨識到完整畢業季，估價以禮包／限定保守基準計算。");
+    warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
   return {
     range: { low: summary.low, high: summary.high, currency: "TWD" },
     midpoint: summary.midpoint,

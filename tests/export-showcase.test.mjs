@@ -127,6 +127,14 @@ test("adds a compact valuation summary without changing collection layout", () =
   assert.equal(valuation.height, collection.height + 236);
 });
 
+test("uses the shared valuation wording in image summaries", () => {
+  assert.match(showcaseSource, /估價摘要/);
+  assert.match(showcaseSource, /參考中位價/);
+  assert.match(showcaseSource, /價格區間/);
+  assert.match(showcaseSource, /估價完整度/);
+  assert.doesNotMatch(showcaseSource, /合理區間|尚無足夠估價重點|`完整度 \$\{/);
+});
+
 test("keeps the complete catalog export within mobile canvas limits", async () => {
   const [wikiSource, valuationSource, catalogSource] = await Promise.all(
     ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts"].map((file) =>

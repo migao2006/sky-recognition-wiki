@@ -13,14 +13,16 @@ import {
   bindingKeys,
   bindingNames,
   bindingOptions,
-  bindingStatusName,
   bundlePresets,
   emptyBindings,
-  shortBindingName,
   type AccountInfo,
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
+import {
+  formatMarketBindings,
+  formatMarketPlatform,
+} from "./market-copy";
 import {
   ACCOUNT_DRAFT_STORAGE_KEY,
   createAccountBackup,
@@ -89,10 +91,10 @@ const formatContribution = (low: number, high: number) => {
   return low === high ? signed(low) : `${signed(low)}～${signed(high)}`;
 };
 const confidenceNames: Record<SeasonConfidence, string> = {
-  high: "高信心",
-  medium: "中信心",
-  low: "低信心",
-  inferred: "推定",
+  high: "高可信",
+  medium: "中可信",
+  low: "低可信",
+  inferred: "推估",
 };
 const localizeValuationLabel = (label: string) => {
   const match = Object.entries(seasonZh).find(([slug]) => label.includes(slug));
@@ -134,12 +136,12 @@ const emptySelectedGuids = new Set<string>();
 type FocusMode = "all" | "video" | "ultimate" | "limited";
 type ShowcasePreset = "valuation" | "video" | "collection";
 const showcasePresetNames: Record<ShowcasePreset, string> = {
-  valuation: "估價重點",
+  valuation: "專業估價",
   video: "快速核對",
   collection: "完整衣櫃",
 };
 const showcasePresetDescriptions: Record<ShowcasePreset, string> = {
-  valuation: "含估價資訊",
+  valuation: "含參考價格",
   video: "重點物品",
   collection: "全部物品",
 };
@@ -503,18 +505,6 @@ export default function AccountOrganizer() {
         : `已選取「${label}」${ids.length} 件`,
     );
   };
-  const bindingLines = () =>
-    bindingKeys.map(
-      (key) => `${bindingNames[key]}：${bindingStatusName[bindings[key]]}`,
-    );
-  const bindingGroup = (status: BindingStatus, excludeNintendo = false) =>
-    bindingKeys
-      .filter(
-        (key) =>
-          (!excludeNintendo || key !== "nintendo") && bindings[key] === status,
-      )
-      .map(shortBindingName)
-      .join("、") || "無";
   const downloadText = (lines: string[], suffix: string) =>
     downloadBlob(
       new Blob(["\uFEFF" + lines.join("\n")], {
@@ -522,7 +512,7 @@ export default function AccountOrganizer() {
       }),
       `光遇帳號_${safeFileName(account.name)}_${suffix}.txt`,
     );
-  const exportAccount = async () => {
+  const saleCopyData = () => {
     const seasonSlugs = sortSeasonSlugs([
       ...new Set(
         chosen.filter((x) => x.section === "seasons").map((x) => x.collection),
@@ -538,41 +528,43 @@ export default function AccountOrganizer() {
               isGraduationGift(x),
           ).length;
         if (!ownedCount) return "";
-        return `${seasonZh[slug] || slug}${total && ownedCount === total ? "（全畢）" : `（畢業禮 ${ownedCount}/${total || "?"}）`}`;
+        return `${seasonZh[slug] || slug}${total && ownedCount === total ? "畢" : ` ${ownedCount}/${total || "?"}`}`;
       })
       .filter(Boolean);
     const uniqueItems = chosen.filter(isLimitedItem),
       uniqueIds = new Set(uniqueItems.map((x) => x.guid)),
       packages = chosen.filter(isPaidItem),
       otherPackages = packages.filter((x) => !uniqueIds.has(x.guid));
-    const { buildSaleCopy } = await import("./sale-copy");
-    const lines = buildSaleCopy({
+    return {
       accountName: account.name,
       accountType: account.accountType,
       selectedCount: chosen.length,
-      earliestSeason: valuationAnalysis.startSeasonSlug
+      earliestGraduationSeason: valuationAnalysis.startSeasonSlug
         ? seasonZh[valuationAnalysis.startSeasonSlug] ||
           valuationAnalysis.startSeasonSlug
         : "",
       seasonNames: seasonSlugs.map((slug) => seasonZh[slug] || slug),
       graduationStatus,
-      bindingDetails: bindingLines(),
-      transferable: bindingGroup("transfer", true),
-      swappable: bindings.nintendo === "transfer" ? "Nintendo（NS）" : "無",
-      kept: bindingGroup("keep"),
-      issues: bindingGroup("issue"),
+      bindings,
       resources: {
         candles: account.candles,
         hearts: account.hearts,
         ascended: account.ascended,
         passes: account.passes,
       },
-      ultimates: chosen.filter(isGraduationGift).map((x) => zhName(x.name)),
       uniqueEvents: uniqueItems.map((x) => zhName(x.name)),
       otherPackages: otherPackages.map((x) => zhName(x.name)),
-      packageItemCount: packages.length,
+      highlights: uniqueByGuid([
+        ...chosen.filter(isGraduationGift),
+        ...uniqueItems,
+        ...packages,
+      ]).map((x) => zhName(x.name)),
       notes: [account.bindingNote, account.notes].filter(Boolean).join("；"),
-    });
+    };
+  };
+  const exportAccount = async () => {
+    const { buildSaleCopy } = await import("./sale-copy");
+    const lines = buildSaleCopy(saleCopyData());
     downloadText(lines, "出售文案");
   };
   const exportJson = () => {
@@ -620,24 +612,8 @@ export default function AccountOrganizer() {
     setNotice("已清除全部資料");
   };
   const shareSummary = async () => {
-    const { ultimates, packages, collabs } = valuationAnalysis;
-    const highlights = uniqueByGuid([...ultimates, ...packages, ...collabs])
-      .slice(0, 12)
-      .map((x) => zhName(x.name));
-    const summary = [
-      `【光遇帳號摘要｜${account.name || "未命名"}】`,
-      `${account.accountType}｜可出：${bindingGroup("transfer")}｜不出：${bindingGroup("keep")}`,
-      `資源：${account.candles || 0} 白蠟｜${account.hearts || 0} 愛心｜${account.ascended || 0} 昇華蠟｜${account.passes || 0} 副卡`,
-      `衣櫃已選取 ${chosen.length} 件｜畢業禮 ${ultimates.length}｜付費物品 ${packages.length}｜聯動 ${collabs.length}`,
-      highlights.length
-        ? `重點物品：${highlights.join("、")}`
-        : "重點物品：尚未選取",
-      account.bindingNote ? `綁定補充：${account.bindingNote}` : "",
-      `資料來源：SkyGame-Data、SkyGame-Planner、BWiki 中文清單`,
-      account.notes ? `備註：${account.notes}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+    const { buildShareSummary } = await import("./sale-copy");
+    const summary = buildShareSummary(saleCopyData()).join("\n");
     try {
       if (navigator.share)
         await navigator.share({ title: "光遇帳號摘要", text: summary });
@@ -712,14 +688,7 @@ export default function AccountOrganizer() {
     }
   };
   const changedBindings = bindingKeys.filter((key) => bindings[key] !== "none");
-  const bindingSummary = changedBindings.length
-    ? `${changedBindings
-        .map(
-          (key) =>
-            `${shortBindingName(key)} ${bindingStatusName[bindings[key]]}`,
-        )
-        .join("｜")}｜其餘 ${bindingKeys.length - changedBindings.length} 項未綁定`
-    : `全部 ${bindingKeys.length} 項未綁定`;
+  const bindingSummary = formatMarketBindings(bindings);
   const hasBindingIssue = changedBindings.some(
     (key) => bindings[key] === "issue",
   );
@@ -752,19 +721,19 @@ export default function AccountOrganizer() {
           <div>
             <span className="step-kicker">步驟 1／3</span>
             <h1>帳號資料</h1>
-            <p>先填基本資料；其餘欄位可稍後補上。</p>
+            <p>先填帳號類型與綁定，其餘可後補。</p>
           </div>
         </div>
         <div className="account-form">
           <div className="form-section-title">
-            <b>交易資訊</b>
+            <b>帳號資訊</b>
           </div>
           <label className="account-name">
             帳號名稱
             <input
               value={account.name}
               onChange={(e) => setAccount({ ...account, name: e.target.value })}
-              placeholder="例如：白鳥簡號"
+              placeholder="例如：追光大斷禮包號"
             />
           </label>
           <label>
@@ -782,14 +751,14 @@ export default function AccountOrganizer() {
           <details className="account-extra">
             <summary>
               <span>
-                <b>補充資料</b>
-                <small>資源數量與其他備註</small>
+                <b>資源／備註</b>
+                <small>白蠟、愛心、副卡與其他說明</small>
               </span>
               <i aria-hidden="true">⌄</i>
             </summary>
             <div className="account-extra-grid">
               <label>
-                白蠟燭
+                白蠟
                 <input
                   inputMode="numeric"
                   value={account.candles}
@@ -811,7 +780,7 @@ export default function AccountOrganizer() {
                 />
               </label>
               <label>
-                昇華蠟燭
+                昇華蠟
                 <input
                   inputMode="numeric"
                   value={account.ascended}
@@ -822,7 +791,7 @@ export default function AccountOrganizer() {
                 />
               </label>
               <label>
-                季卡副卡
+                副卡
                 <input
                   inputMode="numeric"
                   value={account.passes}
@@ -833,13 +802,13 @@ export default function AccountOrganizer() {
                 />
               </label>
               <label className="account-notes">
-                其他備註
+                其他說明
                 <input
                   value={account.notes}
                   onChange={(e) =>
                     setAccount({ ...account, notes: e.target.value })
                   }
-                  placeholder="帳號狀態、缺少資料等"
+                  placeholder="帳號狀態、缺資料或交易前須知"
                 />
               </label>
             </div>
@@ -849,7 +818,7 @@ export default function AccountOrganizer() {
           >
             <summary>
               <span>
-                <b>登入綁定</b>
+                <b>綁定狀態</b>
                 <small>{bindingSummary}</small>
               </span>
               <i aria-hidden="true">⌄</i>
@@ -861,7 +830,7 @@ export default function AccountOrganizer() {
                   className={`binding-card status-${bindings[key]}`}
                   key={key}
                 >
-                  <span>{bindingNames[key]}</span>
+                  <span>{formatMarketPlatform(key)}</span>
                   <select
                     value={bindings[key]}
                     onChange={(e) =>
@@ -874,7 +843,9 @@ export default function AccountOrganizer() {
                   >
                     {bindingOptions.map((option) => (
                       <option key={option.key} value={option.key}>
-                        {option.name}
+                        {key === "nintendo" && option.key === "transfer"
+                          ? "解"
+                          : option.name}
                       </option>
                     ))}
                   </select>
@@ -882,13 +853,13 @@ export default function AccountOrganizer() {
               ))}
             </div>
               <label className="account-notes">
-                綁定補充
+                綁定說明
                 <input
                   value={account.bindingNote}
                   onChange={(e) =>
                     setAccount({ ...account, bindingNote: e.target.value })
                   }
-                  placeholder="例如：GC 前號不出、GG 私用、FB 遺失"
+                  placeholder="例如：ɢᴄ 前號不出、ɢɢ 私用、ғʙ 遺失"
                 />
               </label>
             </div>
@@ -999,8 +970,8 @@ export default function AccountOrganizer() {
         <div className="step-actions">
           <span>
             {draftAvailable
-              ? "草稿會自動儲存在此裝置 30 天。"
-              : "瀏覽器無法保存草稿；資料只保留在本次操作中。"}
+              ? "草稿保留在此裝置 30 天。"
+              : "此瀏覽器無法保存草稿。"}
           </span>
           <button type="button" onClick={() => goToStep(2)}>
             下一步：選擇物品
@@ -1012,7 +983,7 @@ export default function AccountOrganizer() {
           <div>
             <span className="step-kicker">步驟 3／3</span>
             <h1>估價與匯出</h1>
-            <p>確認估價依據，再匯出備份、分享或刊登用資料。</p>
+            <p>核對參考價格，再整理圖片或刊登文案。</p>
           </div>
           <button type="button" onClick={() => goToStep(2)}>
             返回衣櫃
@@ -1022,7 +993,7 @@ export default function AccountOrganizer() {
           <div className="showcase-builder-head">
             <div>
               <span className="step-kicker">整理圖片</span>
-              <h2 id="showcase-title">先看成品，再一鍵下載</h2>
+              <h2 id="showcase-title">預覽後直接下載</h2>
             </div>
             <button
               type="button"
@@ -1070,8 +1041,8 @@ export default function AccountOrganizer() {
                 </strong>
                 <small>
                   {valuationEstimate
-                    ? `合理區間 ${formatTwd(valuationEstimate.range.low)}～${formatTwd(valuationEstimate.range.high)}`
-                    : "選取估價重點後顯示金額"}
+                    ? `價格區間 ${formatTwd(valuationEstimate.range.low)}～${formatTwd(valuationEstimate.range.high)}`
+                    : "選取估價物品後顯示"}
                 </small>
               </div>
             )}
@@ -1099,7 +1070,7 @@ export default function AccountOrganizer() {
             <h2 id="valuation-title">估價分析</h2>
             <div
               className="completion-ring"
-              aria-label={`估價依據完整度 ${valuationAnalysis.completeness}%`}
+              aria-label={`估價完整度 ${valuationAnalysis.completeness}%`}
               style={
                 {
                   "--completion": `${valuationAnalysis.completeness * 3.6}deg`,
@@ -1124,21 +1095,21 @@ export default function AccountOrganizer() {
               </h3>
               {valuationEstimate && (
                 <div className="valuation-range">
-                  合理區間 {formatTwd(valuationEstimate.range.low)}～
+                  價格區間 {formatTwd(valuationEstimate.range.low)}～
                   {formatTwd(valuationEstimate.range.high)}
                 </div>
               )}
               <p>
                 {valuationAnalysis.valuationItems.length
-                  ? "中位價作為主要參考，區間已依資料信心收斂；可展開查看每項加減分。"
+                  ? "以中位價為主，展開可查看各項加減分。"
                   : chosen.length
                     ? "目前選取的物品不在估價範圍內。"
-                    : "選取估價重點後，即會顯示預估金額。"}
+                    : "選取估價物品後顯示參考價格。"}
               </p>
               <button type="button" onClick={() => goToStep(2)}>
                 {valuationAnalysis.valuationItems.length
                   ? "繼續核對衣櫃"
-                  : "前往選取估價重點"}
+                  : "前往選取估價物品"}
               </button>
             </article>
             <div className="valuation-metrics">
@@ -1203,7 +1174,7 @@ export default function AccountOrganizer() {
                         <tr>
                           <th>季節</th>
                           <th>完成</th>
-                          <th>起季基準</th>
+                          <th>季節基準</th>
                           <th>單季貢獻</th>
                           <th>信心</th>
                         </tr>
@@ -1261,7 +1232,7 @@ export default function AccountOrganizer() {
             </div>
           )}
           <p className="valuation-method">
-            成交中位與合理區間依季節完整度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
+            參考中位價與價格區間依季節完成度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
             <br />
             核對資料：{valuationSampleSummary.sourceRows.toLocaleString("zh-TW")} 筆帳號樣本，其中 {valuationSampleSummary.eligibleRows} 筆國際服台幣中高證據樣本納入推斷（資料日期 {valuationSampleSummary.asOf}）。
             <a
@@ -1313,7 +1284,7 @@ export default function AccountOrganizer() {
               <i aria-hidden="true">⌄</i>
             </summary>
             <div className="export-tools" aria-label="帳號匯入與匯出">
-              <button onClick={exportAccount}>匯出文字</button>
+              <button onClick={exportAccount}>出售文案</button>
               <button onClick={exportJson}>匯出 JSON</button>
               <button onClick={() => importRef.current?.click()}>
                 匯入 JSON
@@ -1340,7 +1311,7 @@ export default function AccountOrganizer() {
           <div>
             <span className="step-kicker">步驟 2／3</span>
             <h1>選擇物品</h1>
-            <p>搜尋或選擇分類，點一下物品即可加入。</p>
+            <p>搜尋或選分類，點一下即可加入。</p>
           </div>
           <button type="button" onClick={() => goToStep(3)}>
             前往估價 · {owned.size} 件
