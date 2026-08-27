@@ -3,10 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("renders the account organizer", async () => {
-  const html = await readFile(
-    new URL("../.next/server/app/index.html", import.meta.url),
-    "utf8",
-  );
+  const [html, source] = await Promise.all([
+    readFile(new URL("../.next/server/app/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+  ]);
   assert.match(html, /<title>光遇帳號整理<\/title>/i);
   assert.match(html, /帳號資料/);
   assert.match(html, /帳號整理步驟/);
@@ -28,4 +28,9 @@ test("renders the account organizer", async () => {
   assert.match(html, /常用套組/);
   assert.match(html, /草稿會自動儲存在此裝置 30 天/);
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
+  assert.doesNotMatch(source, /依季節匯出|匯出付費物品與畢業禮/);
+  assert.match(source, /匯出文字/);
+  assert.match(source, /匯出 JSON/);
+  assert.match(source, /匯入 JSON/);
+  assert.match(source, /分享摘要/);
 });

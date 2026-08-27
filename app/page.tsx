@@ -108,14 +108,6 @@ const downloadBlob = (blob: Blob, fileName: string) => {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
-const valuationTag = (x: WikiItem) =>
-  isSeasonPendant(x)
-    ? "｜季卡項鍊"
-    : isGraduationGift(x)
-      ? "｜畢業禮／絕版"
-      : "";
-const itemLine = (x: WikiItem, index: number) =>
-  `${index + 1}. ${zhName(x.name)} / ${x.name}｜${labels[x.type] || x.type}｜ID ${x.id}｜來源：${source(x)}${valuationTag(x)}`;
 const valuationDomain: ValuationDomain = {
   isValuationFocus,
   isLimitedItem,
@@ -523,23 +515,6 @@ export default function AccountOrganizer() {
       )
       .map(shortBindingName)
       .join("、") || "無";
-  const accountHeader = (count = chosen.length) => [
-    "光遇帳號衣櫃整理",
-    "================",
-    `帳號名稱：${account.name || "未填寫"}`,
-    `帳號類型：${account.accountType}`,
-    "【登入綁定】",
-    ...bindingLines(),
-    `綁定補充：${account.bindingNote || "無"}`,
-    "【帳號資源】",
-    `白蠟燭：${account.candles || 0}`,
-    `愛心：${account.hearts || 0}`,
-    `昇華蠟燭：${account.ascended || 0}`,
-    `季卡副卡：${account.passes || 0}`,
-    `其他備註：${account.notes || "無"}`,
-    `物品總數：${count}`,
-    "",
-  ];
   const downloadText = (lines: string[], suffix: string) =>
     downloadBlob(
       new Blob(["\uFEFF" + lines.join("\n")], {
@@ -643,34 +618,6 @@ export default function AccountOrganizer() {
     setBindings(emptyBindings());
     setOwned(new Set());
     setNotice("已清除全部資料");
-  };
-  const exportValuable = () => {
-    const items = chosen.filter((x) => isPaidItem(x) || isGraduationGift(x));
-    const lines = accountHeader(items.length);
-    lines.push("【只列付費物品與畢業禮】");
-    items.forEach((x, i) => lines.push(itemLine(x, i)));
-    if (!items.length) lines.push("尚未選取付費物品或畢業禮。");
-    downloadText(lines, "付費物品與畢業禮");
-  };
-  const exportBySeason = () => {
-    const lines = accountHeader();
-    const groups = new Map<string, WikiItem[]>();
-    chosen.forEach((x) => {
-      const key =
-        x.section === "seasons"
-          ? seasonZh[x.collection] || x.collection
-          : source(x);
-      groups.set(key, [...(groups.get(key) || []), x]);
-    });
-    [...groups.entries()]
-      .sort(([a], [b]) => a.localeCompare(b, "zh-Hant"))
-      .forEach(([name, items]) => {
-        lines.push(`【${name}】共 ${items.length} 件`);
-        items.forEach((x, i) => lines.push(itemLine(x, i)));
-        lines.push("");
-      });
-    if (!chosen.length) lines.push("尚未選取物品。");
-    downloadText(lines, "依季節整理");
   };
   const shareSummary = async () => {
     const { ultimates, packages, collabs } = valuationAnalysis;
@@ -1371,8 +1318,6 @@ export default function AccountOrganizer() {
               <button onClick={() => importRef.current?.click()}>
                 匯入 JSON
               </button>
-              <button onClick={exportValuable}>匯出付費物品與畢業禮</button>
-              <button onClick={exportBySeason}>依季節匯出</button>
               <button className="export-account" onClick={shareSummary}>
                 分享摘要
               </button>
