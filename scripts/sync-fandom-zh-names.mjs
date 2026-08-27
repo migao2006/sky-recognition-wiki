@@ -103,6 +103,7 @@ async function loadRuntimeCatalog() {
   try {
     for (const name of ["wiki-data", "valuation-items", "catalog-domain"]) {
       const source = (await readFile(join(ROOT, "app", `${name}.ts`), "utf8"))
+        .replace('import playerZhNames from "./player-zh-names.json";', 'const playerZhNames = { items: {} };')
         .replace('import wikiZhNames from "./wiki-zh-names.json";', 'const wikiZhNames = { items: {} };');
       const output = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText
         .replaceAll('from "./wiki-data"', 'from "./wiki-data.js"')

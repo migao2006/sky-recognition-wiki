@@ -1,5 +1,6 @@
 import { wikiItems as baseWikiItems } from "./wiki-data";
 import type { WikiItem } from "./wiki-data";
+import playerZhNames from "./player-zh-names.json";
 import wikiZhNames from "./wiki-zh-names.json";
 import {
   isGraduationGift,
@@ -1608,9 +1609,21 @@ const tokenizedZhName = (name: string) => {
   return translated || name;
 };
 export const zhName = (name: string) => manualZhName(name) ?? tokenizedZhName(name);
+const playerZhByGuid = playerZhNames.items as Record<string, string>;
 const wikiZhByGuid = wikiZhNames.items as Record<string, string>;
 export const zhItemName = (item: WikiItem) =>
-  wikiZhByGuid[item.guid] ?? manualZhName(item.name) ?? tokenizedZhName(item.name);
+  playerZhByGuid[item.guid] ??
+  wikiZhByGuid[item.guid] ??
+  manualZhName(item.name) ??
+  tokenizedZhName(item.name);
+export const zhItemSearchNames = (item: WikiItem) =>
+  [
+    zhItemName(item),
+    wikiZhByGuid[item.guid],
+    manualZhName(item.name),
+    tokenizedZhName(item.name),
+    item.name,
+  ].filter((name, index, names): name is string => Boolean(name) && names.indexOf(name) === index);
 const valuationKey = (x: WikiItem) => {
   if (isSeasonPendant(x)) return "pendant";
   if (isGraduationGift(x)) return "discontinued";
@@ -1739,8 +1752,7 @@ export const searchIndex = new Map(
     .map((x) => [
       x.guid,
       [
-        zhItemName(x),
-        x.name,
+        ...zhItemSearchNames(x),
         labels[x.type] || x.type,
         source(x),
         sourceKind(x),

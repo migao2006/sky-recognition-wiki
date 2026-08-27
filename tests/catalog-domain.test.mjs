@@ -14,12 +14,16 @@ const asModuleUrl = (source) =>
   )}`;
 
 const loadCatalogDomain = async () => {
-  const [wikiSource, valuationSource, catalogSource, wikiZhSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json"].map((file) =>
+  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
   const catalogModule = catalogSource
+    .replace(
+      'import playerZhNames from "./player-zh-names.json";',
+      `const playerZhNames = ${playerZhSource};`,
+    )
     .replace(
       'import { wikiItems as baseWikiItems } from "./wiki-data";',
       `const { wikiItems: baseWikiItems } = await import(${JSON.stringify(
@@ -51,10 +55,12 @@ const {
   matchesSub,
   matchesSourceFilter,
   seasonGraduationItems,
+  searchIndex,
   showcaseClusterOrder,
   sourceKind,
   wikiItems,
   zhItemName,
+  zhItemSearchNames,
   zhName,
 } = await loadCatalogDomain();
 
@@ -94,6 +100,39 @@ test("uses reviewed Wiki names by guid before legacy manual names", () => {
     zhItemName(item({ guid: "aGS2A9wzQ8", name: "Rainbow Cape" })),
     "尋寶金幣斗篷",
   );
+});
+
+test("uses player-friendly names while keeping Wiki names searchable", () => {
+  const naturalHair = wikiItems.find((entry) => entry.guid === "57_e_eF6Ek");
+  assert.ok(naturalHair);
+  assert.equal(zhItemName(naturalHair), "自然潛水髮型");
+  assert.ok(zhItemSearchNames(naturalHair).includes("自然潛游髮型"));
+  assert.match(searchIndex.get(naturalHair.guid), /自然潛水髮型/);
+  assert.match(searchIndex.get(naturalHair.guid), /自然潛游髮型/);
+});
+
+test("player-friendly names use known catalog guids", async () => {
+  const playerNames = JSON.parse(
+    await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
+  );
+  const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
+  assert.equal(Object.keys(playerNames.items).length, 43);
+  for (const [guid, name] of Object.entries(playerNames.items)) {
+    assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
+    assert.match(name, /[\u3400-\u9fff]/);
+  }
+});
+
+test("player-friendly names keep representative accessory, instrument, and prop identities", () => {
+  for (const [guid, expected] of [
+    ["_Y-80G-t_2", "海龜夥伴"],
+    ["instrument-fortune-drum", "幸運鼓"],
+    ["held-treasure-shovel", "尋寶鏟"],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(zhItemName(entry), expected);
+  }
 });
 
 test("reviewed Wiki snapshot contains only catalog guids and complete Chinese names", async () => {
