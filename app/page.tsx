@@ -32,6 +32,7 @@ import type { WikiItem } from "./wiki-data";
 import {
   allClosetTypeSet,
   closetGroups,
+  getNextClosetSub,
   eventZh,
   graduationSeasonSlugs,
   heldClosetOrder,
@@ -56,6 +57,7 @@ import {
   sourceKind,
   storeSource,
   typeOrder,
+  type ClosetSubRoute,
   uniqueByGuid,
   wikiItems,
   zhName,
@@ -262,8 +264,8 @@ const CatalogItemCard = memo(function CatalogItemCard({
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [visibleCount, setVisibleCount] = useState(80);
-  const [closet, setCloset] = useState("outfit"),
-    [sub, setSub] = useState("all"),
+  const [closet, setCloset] = useState(closetGroups[0].key),
+    [sub, setSub] = useState(closetGroups[0].subs[0].key),
     [season, setSeason] = useState("全部季節");
   const [query, setQuery] = useState(""),
     [sourceFilter, setSourceFilter] = useState("all");
@@ -360,6 +362,10 @@ export default function AccountOrganizer() {
   }, [account, bindings, draftAvailable, draftReady, owned]);
   const activeCloset =
     closetGroups.find((x) => x.key === closet) || closetGroups[0];
+  const activeSub =
+    activeCloset.subs.find((entry) => entry.key === sub) ||
+    activeCloset.subs[0];
+  const nextClosetSub = getNextClosetSub(activeCloset.key, activeSub.key);
   const valuationOwned = activeStep === 3 ? owned : emptySelectedGuids;
   const chosen = useMemo(
     () =>
@@ -405,7 +411,7 @@ export default function AccountOrganizer() {
           (q
             ? allClosetTypeSet.has(x.type)
             : activeCloset.types.includes(x.type)) &&
-          (!q && sub !== "all" ? matchesSub(x, sub) : true) &&
+          (!q ? matchesSub(x, sub) : true) &&
           matchesSourceFilter(x, sourceFilter) &&
           (sourceFilter !== "seasons" ||
             season === "全部季節" ||
@@ -433,6 +439,25 @@ export default function AccountOrganizer() {
   ]);
   const visibleItems = filtered.slice(0, visibleCount);
   const resetVisibleItems = () => setVisibleCount(80);
+  const selectClosetSub = (
+    route: ClosetSubRoute,
+    scrollToResults = false,
+  ) => {
+    setCloset(route.closetKey);
+    setSub(route.subKey);
+    setQuery("");
+    resetVisibleItems();
+    if (!scrollToResults) return;
+    window.requestAnimationFrame(() => {
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)")
+        .matches
+        ? "auto"
+        : "smooth";
+      document
+        .querySelector(".result-head")
+        ?.scrollIntoView({ behavior, block: "start" });
+    });
+  };
   const goToStep = (step: 1 | 2 | 3) => {
     if (step === activeStep) return;
     setActiveStep(step);
@@ -1493,9 +1518,13 @@ export default function AccountOrganizer() {
               className={closet === x.key ? "selected" : ""}
               aria-pressed={closet === x.key}
               onClick={() => {
-                setCloset(x.key);
-                setSub("all");
-                resetVisibleItems();
+                const firstSub = x.subs[0];
+                selectClosetSub({
+                  closetKey: x.key,
+                  closetName: x.name,
+                  subKey: firstSub.key,
+                  subName: firstSub.name,
+                });
               }}
             >
               {x.order && <b>{x.order}</b>}
@@ -1505,17 +1534,6 @@ export default function AccountOrganizer() {
         </div>
         {activeCloset.subs.length > 0 && (
           <div className="closet-subs">
-            <button
-              type="button"
-              className={sub === "all" ? "selected" : ""}
-              aria-pressed={sub === "all"}
-              onClick={() => {
-                setSub("all");
-                resetVisibleItems();
-              }}
-            >
-              全部
-            </button>
             {activeCloset.subs.map((x, i) => (
               <button
                 type="button"
@@ -1523,8 +1541,12 @@ export default function AccountOrganizer() {
                 className={sub === x.key ? "selected" : ""}
                 aria-pressed={sub === x.key}
                 onClick={() => {
-                  setSub(x.key);
-                  resetVisibleItems();
+                  selectClosetSub({
+                    closetKey: activeCloset.key,
+                    closetName: activeCloset.name,
+                    subKey: x.key,
+                    subName: x.name,
+                  });
                 }}
               >
                 <i>{i + 1}</i>
@@ -1545,7 +1567,7 @@ export default function AccountOrganizer() {
                       ? "季節畢業"
                       : focusMode === "limited"
                         ? "禮包限定"
-                        : activeCloset.name}{" "}
+                        : `${activeCloset.name}／${activeSub.name}`}{" "}
             · {filtered.length.toLocaleString()} 件
           </h2>
           {searchPending && <small role="status">搜尋中…</small>}
@@ -1577,6 +1599,26 @@ export default function AccountOrganizer() {
               onClick={() => setVisibleCount((count) => count + 80)}
             >
               顯示更多
+            </button>
+          </div>
+        )}
+        {!query.trim() && (
+          <div className="catalog-sub-next">
+            <small>
+              {activeCloset.name} · {activeSub.name}
+            </small>
+            <button
+              type="button"
+              onClick={() => {
+                if (nextClosetSub) selectClosetSub(nextClosetSub, true);
+                else goToStep(3);
+              }}
+            >
+              {nextClosetSub
+                ? nextClosetSub.closetKey === activeCloset.key
+                  ? `下一類：${nextClosetSub.subName}`
+                  : `下一衣櫃：${nextClosetSub.closetName} · ${nextClosetSub.subName}`
+                : "下一步：估價與匯出"}
             </button>
           </div>
         )}

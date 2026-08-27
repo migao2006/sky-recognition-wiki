@@ -161,7 +161,8 @@ a:focus-visible {
 .catalog-intro > button,
 .summary-intro > button,
 .step-actions button,
-.load-more button {
+.load-more button,
+.catalog-sub-next button {
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid #8fc7ff70;
@@ -533,6 +534,24 @@ a:focus-visible {
   margin: 28px 0;
   color: #a6b1c0;
   font-size: 12px;
+}
+.catalog-sub-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 16px 18px;
+  border: 1px solid #a9cfff24;
+  border-radius: 18px;
+  background: #080d16;
+}
+.catalog-sub-next small {
+  color: #8f9daf;
+  font-size: 11px;
+}
+.catalog-sub-next button {
+  min-width: 230px;
 }
 .step-actions {
   display: flex;
@@ -2050,6 +2069,16 @@ footer {
   .catalog-next {
     display: grid;
     grid-template-columns: 1fr 1.25fr;
+  }
+  .catalog-sub-next {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+    padding: 14px;
+  }
+  .catalog-sub-next button {
+    width: 100%;
+    min-width: 0;
   }
   .catalog-next button {
     padding: 0 9px;

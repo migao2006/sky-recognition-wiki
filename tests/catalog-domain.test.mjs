@@ -37,7 +37,9 @@ const loadCatalogDomain = async () => {
 };
 
 const {
+  closetSubSequence,
   closetGroups,
+  getNextClosetSub,
   graduationSeasonSlugs,
   heldClosetOrder,
   isProfessionalVideoFocus,
@@ -132,6 +134,29 @@ test("matches the three in-game prop closet tabs", () => {
   ]) {
     assert.equal(matchesSub(instrumentByName(name), "small"), true);
   }
+});
+
+test("walks all wardrobe subcategories in game order", () => {
+  assert.equal(closetSubSequence.length, 13);
+  assert.deepEqual(closetSubSequence[0], {
+    closetKey: "outfit",
+    closetName: "服裝衣櫃",
+    subKey: "Outfit",
+    subName: "一般服裝",
+  });
+  assert.deepEqual(getNextClosetSub("outfit", "OutfitShoes"), {
+    closetKey: "face",
+    closetName: "臉部衣櫃",
+    subKey: "Mask",
+    subName: "面具",
+  });
+  assert.deepEqual(getNextClosetSub("cape", "Cape"), {
+    closetKey: "props",
+    closetName: "道具衣櫃",
+    subKey: "held",
+    subName: "手持道具",
+  });
+  assert.equal(getNextClosetSub("props", "small"), null);
 });
 
 test("uses verified game placement categories for representative props", () => {

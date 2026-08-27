@@ -333,6 +333,27 @@ export const closetGroups = [
     ],
   },
 ];
+export type ClosetSubRoute = {
+  closetKey: string;
+  closetName: string;
+  subKey: string;
+  subName: string;
+};
+export const closetSubSequence: ClosetSubRoute[] = closetGroups.flatMap(
+  (group) =>
+    group.subs.map((sub) => ({
+      closetKey: group.key,
+      closetName: group.name,
+      subKey: sub.key,
+      subName: sub.name,
+    })),
+);
+export const getNextClosetSub = (closetKey: string, subKey: string) => {
+  const index = closetSubSequence.findIndex(
+    (route) => route.closetKey === closetKey && route.subKey === subKey,
+  );
+  return index >= 0 ? closetSubSequence[index + 1] || null : null;
+};
 const largeInstrumentGuids = new Set(["WMNr4yo_35"]);
 const smallInstrumentGuids = new Set([
   "WuZeLoUATs",
