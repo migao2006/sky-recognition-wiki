@@ -11,7 +11,6 @@ import {
 } from "./valuation-items";
 import {
   seasonBandBySlug,
-  valuationSampleSummary,
   type SeasonConfidence,
   type SeasonPriceBand,
 } from "./valuation-season-bands";
@@ -20,7 +19,6 @@ import type { WikiItem } from "./wiki-data";
 export type ValuationDomain = {
   isValuationFocus: (item: WikiItem) => boolean;
   isLimitedItem: (item: WikiItem) => boolean;
-  sourceKind: (item: WikiItem) => string;
   ongoingSeasonSlugs: ReadonlySet<string>;
   graduationSeasonSlugs: readonly string[];
   seasonGraduationItems: ReadonlyMap<string, readonly WikiItem[]>;
@@ -52,19 +50,14 @@ export type ValuationEstimate = {
   contributions: ValuationContribution[];
   warnings: string[];
   seasonRows: ValuationSeasonRow[];
-  dataAsOf: string;
 };
 export type ValuationAnalysis = {
   valuationItems: WikiItem[];
   ultimates: WikiItem[];
   pendants: WikiItem[];
   packages: WikiItem[];
-  collabs: WikiItem[];
   limited: WikiItem[];
-  ultimateSeasonSlugs: string[];
   startSeasonSlug: string | null;
-  missingSeasonSlugs: string[];
-  partialSeasonSlugs: string[];
   seasonCompletion: ReadonlyMap<string, { selected: number; expected: number }>;
   completeness: number;
   issueCount: number;
@@ -117,7 +110,6 @@ export const analyzeValuation = ({
   const ultimates = chosen.filter(isGraduationGift);
   const pendants = chosen.filter(isSeasonPendant);
   const packages = chosen.filter(isPaidItem);
-  const collabs = chosen.filter((item) => domain.sourceKind(item) === "聯動");
   const limited = chosen.filter(domain.isLimitedItem);
   const ultimateSeasonSlugs = domain.sortSeasonSlugs([
     ...new Set(
@@ -143,13 +135,6 @@ export const analyzeValuation = ({
       return [slug, { selected, expected }];
     }),
   );
-  const missingSeasonSlugs = expectedSlugs.filter(
-    (slug) => !seasonCompletion.get(slug)?.selected,
-  );
-  const partialSeasonSlugs = expectedSlugs.filter((slug) => {
-    const row = seasonCompletion.get(slug);
-    return Boolean(row && row.selected > 0 && row.selected < row.expected);
-  });
   const statuses = Object.values(bindings);
   const reviewed =
     statuses.some((status) => status !== "none") || Boolean(bindingNote.trim());
@@ -158,12 +143,8 @@ export const analyzeValuation = ({
     ultimates,
     pendants,
     packages,
-    collabs,
     limited,
-    ultimateSeasonSlugs,
     startSeasonSlug,
-    missingSeasonSlugs,
-    partialSeasonSlugs,
     seasonCompletion,
     completeness: Math.round(
       ([
@@ -244,7 +225,6 @@ export const estimateValuation = ({
       contributions: [],
       warnings: ["國服限定物品不列入國際服參考價格。"],
       seasonRows: [],
-      dataAsOf: valuationSampleSummary.asOf,
     };
   }
   const warnings: string[] = [];
@@ -442,6 +422,5 @@ export const estimateValuation = ({
     contributions,
     warnings: [...new Set(warnings)],
     seasonRows,
-    dataAsOf: seasonRows[0]?.asOf ?? valuationSampleSummary.asOf,
   };
 };

@@ -338,57 +338,6 @@ a:focus-visible {
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
-.filter-toggle {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #080d16;
-  color: #c6d0dd;
-  text-align: left;
-  cursor: pointer;
-}
-.filter-toggle > i {
-  flex: none;
-  width: 23px;
-  height: 23px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #a9cfff55;
-  border-radius: 8px;
-  color: #07101d;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 900;
-}
-.filter-toggle > span {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-.filter-toggle b {
-  color: #eef3f9;
-  font-size: 12px;
-}
-.filter-toggle small {
-  color: #8f9cae;
-  font-size: 9px;
-}
-.filter-toggle.active {
-  border-color: #8fc7ff80;
-  background: #8fc7ff17;
-}
-.filter-toggle.active > i {
-  border-color: #8fc7ff;
-  background: #8fc7ff;
-}
-.discontinued-toggle.active {
-  border-color: #e7929f7a;
-  background: #e7929f12;
-}
 .clear-filters {
   min-height: 52px;
   padding: 0 13px;
@@ -1645,9 +1594,6 @@ footer {
   .filter-panel .source-select {
     min-width: 0;
   }
-  .filter-toggle {
-    grid-column: span 1;
-  }
   .clear-filters {
     grid-column: 1/-1;
   }
@@ -1782,7 +1728,6 @@ footer {
   .filter-panel:not(:has(.season-select)) .source-select {
     grid-column: 1/-1;
   }
-  .filter-toggle,
   .clear-filters {
     grid-column: 1/-1;
   }

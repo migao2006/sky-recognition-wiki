@@ -1,7 +1,6 @@
 import type { BindingKey, BindingStatus } from "./account-config";
 
 export type SaleSeasonProgress = {
-  slug: string;
   name: string;
   owned: number;
   total: number;

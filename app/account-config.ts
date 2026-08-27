@@ -40,13 +40,6 @@ export const bindingOptions: { key: BindingStatus; name: string }[] = [
   { key: "issue", name: "遺失／異常" },
 ];
 
-export const bindingStatusName = Object.fromEntries(
-  bindingOptions.map((option) => [option.key, option.name]),
-) as Record<BindingStatus, string>;
-
-export const shortBindingName = (key: BindingKey) =>
-  bindingNames[key].replace(/（.*?）/g, "");
-
 export const emptyBindings = () =>
   Object.fromEntries(bindingKeys.map((key) => [key, "none"])) as Record<
     BindingKey,

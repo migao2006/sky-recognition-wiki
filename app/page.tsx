@@ -114,7 +114,6 @@ const downloadBlob = (blob: Blob, fileName: string) => {
 const valuationDomain: ValuationDomain = {
   isValuationFocus,
   isLimitedItem,
-  sourceKind,
   ongoingSeasonSlugs,
   graduationSeasonSlugs,
   seasonGraduationItems,
@@ -533,7 +532,6 @@ export default function AccountOrganizer() {
     );
     return {
       seasons: seasons.map(([slug, name]) => ({
-        slug,
         name,
         owned: chosen.filter(
           (item) =>
