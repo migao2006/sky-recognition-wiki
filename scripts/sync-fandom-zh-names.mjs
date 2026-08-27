@@ -10,11 +10,9 @@
  *   node scripts/sync-fandom-zh-names.mjs --out dist/tmp/fandom-zh-names.json
  *   node scripts/sync-fandom-zh-names.mjs --snapshot
  */
-import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-import ts from "typescript";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { basename, dirname, resolve } from "node:path";
+import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const API = "https://sky-children-of-the-light.fandom.com/zh/api.php";
@@ -96,27 +94,6 @@ function parseLuaRecords(source) {
   return records;
 }
 
-async function loadRuntimeCatalog() {
-  // Load the actual runtime catalog rather than trying to reproduce its
-  // instrument/held-prop transformations in this synchronizer.
-  const directory = await mkdtemp(join(tmpdir(), "sky-fandom-catalog-"));
-  try {
-    for (const name of ["wiki-data", "valuation-items", "catalog-domain"]) {
-      const source = (await readFile(join(ROOT, "app", `${name}.ts`), "utf8"))
-        .replace('import playerZhNames from "./player-zh-names.json";', 'const playerZhNames = { items: {} };')
-        .replace('import wikiZhNames from "./wiki-zh-names.json";', 'const wikiZhNames = { items: {} };');
-      const output = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText
-        .replaceAll('from "./wiki-data"', 'from "./wiki-data.js"')
-        .replaceAll('from "./valuation-items"', 'from "./valuation-items.js"');
-      await writeFile(join(directory, `${name}.js`), output, "utf8");
-    }
-    const runtime = await import(`${pathToFileURL(join(directory, "catalog-domain.js")).href}?v=${Date.now()}`);
-    return runtime.wikiItems;
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
-}
-
 const suffix = {
   hair: "髮型", hairpiece: "髮飾", headpiece: "頭飾", mask: "面具", facepiece: "臉部配件",
   necklace: "項鍊", neckpiece: "頸飾", cape: "斗篷", outfit: "服飾", footwear: "鞋子", shoes: "鞋子", prop: "道具",
@@ -137,7 +114,7 @@ function translatedName(zh, field, moduleName) {
 }
 
 async function main() {
-  const catalog = await loadRuntimeCatalog();
+  const { wikiItems: catalog } = await loadRuntimeCatalog();
   const fetched = [];
   for (const page of MODULES) {
     try {

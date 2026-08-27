@@ -1,0 +1,844 @@
+{
+  "description": "髮型共識顯示名與搜尋別名；詳細來源保留在 data/hair-name-research.json。",
+  "items": {
+    "jaI5b86En7": {
+      "displayName": "陽光衝浪者髮型",
+      "aliases": []
+    },
+    "awbPVRa_Fw": {
+      "displayName": "喜悅回憶髮型",
+      "aliases": []
+    },
+    "q8EsW2_NSv": {
+      "displayName": "荷蘭的回憶髮型",
+      "aliases": []
+    },
+    "2cm-8PvvzE": {
+      "displayName": "致梵谷季畢業禮髮型",
+      "aliases": []
+    },
+    "RL14anXFvE": {
+      "displayName": "彩虹絨毛髮型",
+      "aliases": []
+    },
+    "iWBlE2ByGK": {
+      "displayName": "寶藏追尋者頭巾",
+      "aliases": []
+    },
+    "eJXt3-aUsV": {
+      "displayName": "狂歡特技演員髮型",
+      "aliases": []
+    },
+    "Lh-GtlP5L-": {
+      "displayName": "狂歡拼圖導演髮型",
+      "aliases": []
+    },
+    "NQkQftFUgs": {
+      "displayName": "鳥妹",
+      "aliases": [
+        "白鳥妹妹",
+        "簇羽",
+        "白羽"
+      ]
+    },
+    "57_e_eF6Ek": {
+      "displayName": "自然潛水髮型",
+      "aliases": []
+    },
+    "1XyFlfFPPJ": {
+      "displayName": "向日葵頭巾髮型",
+      "aliases": []
+    },
+    "qpl9PPDD8z": {
+      "displayName": "福瑞緞帶馬尾",
+      "aliases": []
+    },
+    "PwIov7bp-r": {
+      "displayName": "錦標賽風髮型",
+      "aliases": []
+    },
+    "OkF8hPi0dS": {
+      "displayName": "織光先驅髮型",
+      "aliases": []
+    },
+    "6kEm2pWNBt": {
+      "displayName": "織光淺色學者髮型",
+      "aliases": []
+    },
+    "bR78DxxVAu": {
+      "displayName": "織光季畢業禮髮型",
+      "aliases": []
+    },
+    "rA-RHusWvS": {
+      "displayName": "惡作劇拼圖工匠寬簷帽子",
+      "aliases": []
+    },
+    "E2L4G603B5": {
+      "displayName": "遷徙製鈴者髮型",
+      "aliases": []
+    },
+    "fzEiiF2gx4": {
+      "displayName": "遷徙遙鯤語者髮型",
+      "aliases": []
+    },
+    "UvRqz7iRMq": {
+      "displayName": "傷痕哨兵頭盔",
+      "aliases": []
+    },
+    "uv_rlb5LLl": {
+      "displayName": "嚴肅牧羊人髮型",
+      "aliases": []
+    },
+    "afxsZPgxN7": {
+      "displayName": "傷痕哨兵裂紋頭盔",
+      "aliases": []
+    },
+    "vizYM6Cgw5": {
+      "displayName": "溫柔的玩具匠髮型",
+      "aliases": []
+    },
+    "SgIsK6N6pA": {
+      "displayName": "彩虹頭部披巾",
+      "aliases": []
+    },
+    "B57ZJ9lCAE": {
+      "displayName": "海洋遙鯤髮型",
+      "aliases": []
+    },
+    "8yAJpgKLul": {
+      "displayName": "盛裝彩紙表親髮型",
+      "aliases": []
+    },
+    "TfItBIVTeP": {
+      "displayName": "超凡旅人髮型",
+      "aliases": []
+    },
+    "Rrhk8jKU4u": {
+      "displayName": "花憩玫瑰辮髮",
+      "aliases": []
+    },
+    "V0Y7dn2l4H": {
+      "displayName": "日之愛之日辮子",
+      "aliases": [
+        "雙馬尾"
+      ]
+    },
+    "Yxt4jz3je6": {
+      "displayName": "日之愛之日紫水晶尖端尾巴",
+      "aliases": [
+        "挑染雙馬尾",
+        "挑染髮型"
+      ]
+    },
+    "u_CN5B-cYN": {
+      "displayName": "幸運節蛇頭巾",
+      "aliases": []
+    },
+    "5fUF9wGrq6": {
+      "displayName": "染色問候薩滿髮型",
+      "aliases": []
+    },
+    "ShjewpJf_F": {
+      "displayName": "染色跳躍舞者髮型",
+      "aliases": []
+    },
+    "oelvOczEPw": {
+      "displayName": "仙境慌張髮型",
+      "aliases": []
+    },
+    "lgu5DNRE7k": {
+      "displayName": "仙境野兔髮型",
+      "aliases": []
+    },
+    "CCT1qLLxKN": {
+      "displayName": "惡作劇蜘蛛髮髻髮型",
+      "aliases": []
+    },
+    "foQGge-GsM": {
+      "displayName": "先祖之冒險髮型",
+      "aliases": []
+    },
+    "n5NfIqlzgz": {
+      "displayName": "安慰之善意髮型",
+      "aliases": []
+    },
+    "oDLczC36GR": {
+      "displayName": "月華盤髮",
+      "aliases": []
+    },
+    "JXXQvwug8B": {
+      "displayName": "錦標賽捲髮",
+      "aliases": []
+    },
+    "krE8-lSgNh": {
+      "displayName": "大提琴手的開始髮型",
+      "aliases": []
+    },
+    "I1B2G8p1uQ": {
+      "displayName": "鋼琴家的開始髮型",
+      "aliases": []
+    },
+    "xN5Lftk7mA": {
+      "displayName": "彩色華麗短髮",
+      "aliases": []
+    },
+    "jWAPWGsEd-": {
+      "displayName": "自然海浪輕拂髮型",
+      "aliases": []
+    },
+    "8aoU-Pwe_p": {
+      "displayName": "大耳狗捲髮",
+      "aliases": [
+        "大耳狗髮型"
+      ]
+    },
+    "l8H1fmaKQ4": {
+      "displayName": "築巢中庭髮型",
+      "aliases": []
+    },
+    "nkJXDrn2cV": {
+      "displayName": "花憩海芋花瓣髮型",
+      "aliases": [
+        "馬蹄蓮髮型",
+        "馬蹄蓮短髮"
+      ]
+    },
+    "vxfZZiaabO": {
+      "displayName": "花憩尖刺嫩枝髮型",
+      "aliases": []
+    },
+    "qoqOCLQ-on": {
+      "displayName": "九色鹿季畢業禮髮型",
+      "aliases": []
+    },
+    "XBA8t0KAgo": {
+      "displayName": "公主髮型",
+      "aliases": [
+        "公主頭"
+      ]
+    },
+    "5NmGXSaWaK": {
+      "displayName": "獵人髮型",
+      "aliases": []
+    },
+    "HbrxremuY-": {
+      "displayName": "藥草採集者髮型",
+      "aliases": []
+    },
+    "xB3Auq2DFR": {
+      "displayName": "充滿希望管家髮型",
+      "aliases": []
+    },
+    "3YCGoFkIsG": {
+      "displayName": "初始髮型3",
+      "aliases": []
+    },
+    "fgx077j-05": {
+      "displayName": "初始髮型2",
+      "aliases": []
+    },
+    "8P8dL_Zp8q": {
+      "displayName": "風之旅人髮型",
+      "aliases": []
+    },
+    "MHArTLwxyq": {
+      "displayName": "林克髮型",
+      "aliases": [
+        "林克頭",
+        "林克套裝髮型"
+      ]
+    },
+    "6uObjDNBAm": {
+      "displayName": "行進樂隊帽子",
+      "aliases": []
+    },
+    "FLMn1Hib7k": {
+      "displayName": "絆愛髮型",
+      "aliases": [
+        "愛哥頭"
+      ]
+    },
+    "hZr0q9nYbz": {
+      "displayName": "冬日宴會帽子",
+      "aliases": []
+    },
+    "z2M4HqpR9C": {
+      "displayName": "宴會帽子",
+      "aliases": []
+    },
+    "MnzYzRK9sY": {
+      "displayName": "貓貓頭",
+      "aliases": [
+        "貓耳髮型",
+        "貓耳"
+      ]
+    },
+    "ARZC1Eg2jx": {
+      "displayName": "惡作劇蜘蛛飛機頭",
+      "aliases": [
+        "蜘蛛頭",
+        "蜘蛛龐克",
+        "飛機頭"
+      ]
+    },
+    "si_8YhNtmr": {
+      "displayName": "女巫髮型",
+      "aliases": [
+        "女巫頭",
+        "女巫長髮"
+      ]
+    },
+    "cMNnwUbQed": {
+      "displayName": "巫師帽",
+      "aliases": [
+        "女巫帽"
+      ]
+    },
+    "Dlp71JdHg2": {
+      "displayName": "南瓜頭",
+      "aliases": [
+        "大南瓜頭",
+        "南瓜帽"
+      ]
+    },
+    "cMLcvRtjoh": {
+      "displayName": "彩虹帽",
+      "aliases": []
+    },
+    "uKLD12UrPr": {
+      "displayName": "櫻花髮型",
+      "aliases": [
+        "櫻花頭"
+      ]
+    },
+    "A26TJj3cSl": {
+      "displayName": "福瑞魚兜帽",
+      "aliases": [
+        "鯉魚頭",
+        "錦鯉頭"
+      ]
+    },
+    "rNDDbcjS4G": {
+      "displayName": "福瑞髮髻髮型",
+      "aliases": [
+        "雙丸子頭"
+      ]
+    },
+    "udspGJd38_": {
+      "displayName": "福瑞羊毛帽子",
+      "aliases": []
+    },
+    "LgDGqWw-NO": {
+      "displayName": "福瑞獅子頭飾",
+      "aliases": [
+        "獅子頭",
+        "舞獅帽"
+      ]
+    },
+    "Ym_ptDkaZQ": {
+      "displayName": "回憶之失落村莊髮型",
+      "aliases": []
+    },
+    "SuYJ2QcMi9": {
+      "displayName": "遺跡之荒廢綠洲髮型",
+      "aliases": []
+    },
+    "ygFxGKMla2": {
+      "displayName": "夜行鳥語者髮型",
+      "aliases": []
+    },
+    "3Kwn4gx5Sw": {
+      "displayName": "苦行僧侶彩繪",
+      "aliases": [
+        "光頭",
+        "刺青光頭"
+      ]
+    },
+    "cXuwp1MnHZ": {
+      "displayName": "歡樂地質學家髮型",
+      "aliases": []
+    },
+    "k90TESSTBg": {
+      "displayName": "過度活躍力求完美髮型",
+      "aliases": []
+    },
+    "Mz9HHVc0_f": {
+      "displayName": "憂鬱消沉髮型",
+      "aliases": []
+    },
+    "rbV0FWIENC": {
+      "displayName": "翻滾搗蛋鬼髮型",
+      "aliases": []
+    },
+    "uE2-9qAMKP": {
+      "displayName": "怪人流放者髮型",
+      "aliases": []
+    },
+    "XOnAJpU3ZZ": {
+      "displayName": "踮腳茶釀造師髮型",
+      "aliases": []
+    },
+    "CfVWayXiTh": {
+      "displayName": "祈求孩童髮型",
+      "aliases": []
+    },
+    "3Ja8-MaUke": {
+      "displayName": "悲傷老兵髮型",
+      "aliases": []
+    },
+    "wZGUtak1mb": {
+      "displayName": "歐若拉逃跑髮型",
+      "aliases": [
+        "奔離遠行頭"
+      ]
+    },
+    "-RfQBaoydI": {
+      "displayName": "種子之希望髮型",
+      "aliases": []
+    },
+    "ndKNh6XHP4": {
+      "displayName": "戰士之愛之日髮型",
+      "aliases": []
+    },
+    "VqtNIgq8G0": {
+      "displayName": "細心礦工髮型",
+      "aliases": []
+    },
+    "VKeEo_F_7G": {
+      "displayName": "奔跑旅人髮型",
+      "aliases": []
+    },
+    "TsL-GHL_RI": {
+      "displayName": "龍髮型",
+      "aliases": [
+        "冥龍頭",
+        "冥龍髮型"
+      ]
+    },
+    "nhgIi8TLn0": {
+      "displayName": "遙鯤髮型",
+      "aliases": []
+    },
+    "JmM2DNyEcO": {
+      "displayName": "水母髮型",
+      "aliases": [
+        "皇冠水母頭",
+        "水母頭"
+      ]
+    },
+    "zBs2Y94DY2": {
+      "displayName": "謙遜舞者髮型",
+      "aliases": []
+    },
+    "Z6kNG4kwEC": {
+      "displayName": "溫和音樂家髮型",
+      "aliases": []
+    },
+    "Z53G2IN-L3": {
+      "displayName": "健忘說書人髮型",
+      "aliases": []
+    },
+    "BtWvDojIDg": {
+      "displayName": "慌張舞台工作者髮型",
+      "aliases": []
+    },
+    "OuUFDFFKlQ": {
+      "displayName": "大笑炮手髮型",
+      "aliases": []
+    },
+    "WwuCeXn8wy": {
+      "displayName": "停止艦長髮型",
+      "aliases": []
+    },
+    "Qqsui-W6Gr": {
+      "displayName": "焦慮垂釣者髮型",
+      "aliases": []
+    },
+    "cZfBtj_CYb": {
+      "displayName": "有才華建造者髮型",
+      "aliases": []
+    },
+    "ARYCvmatxR": {
+      "displayName": "修補風鈴匠髮型",
+      "aliases": []
+    },
+    "k_dtQhg8Ii": {
+      "displayName": "淺色語者髮型",
+      "aliases": []
+    },
+    "QiLz0mb3x4": {
+      "displayName": "活潑領航員髮型",
+      "aliases": []
+    },
+    "A_Mhqh3fL1": {
+      "displayName": "打噴嚏地理學家髮型",
+      "aliases": []
+    },
+    "2BhjMSGnvW": {
+      "displayName": "垂頭士兵髮型",
+      "aliases": []
+    },
+    "SkVA_XphTc": {
+      "displayName": "伸展掌燈人髮型",
+      "aliases": []
+    },
+    "8PpkvJHDLx": {
+      "displayName": "得意自戀者髮型",
+      "aliases": []
+    },
+    "k0po-n3Zem": {
+      "displayName": "招手統治者髮型",
+      "aliases": []
+    },
+    "Pn_wGqjtoX": {
+      "displayName": "白日夢森林人髮型",
+      "aliases": []
+    },
+    "InfpXXK1sw": {
+      "displayName": "行進冒險家髮型",
+      "aliases": []
+    },
+    "g8AB_9bQIK": {
+      "displayName": "膽小學員髮型",
+      "aliases": []
+    },
+    "6NGF44qiL6": {
+      "displayName": "責備學生髮型",
+      "aliases": []
+    },
+    "mDc9qQKCBy": {
+      "displayName": "茫然植物學家髮型",
+      "aliases": []
+    },
+    "J9R4HX-ZHf": {
+      "displayName": "旋轉導師髮型",
+      "aliases": []
+    },
+    "fasyzIliRV": {
+      "displayName": "跳舞表演者髮型",
+      "aliases": []
+    },
+    "C1z7gdAqFH": {
+      "displayName": "熊抱隱士髮型",
+      "aliases": []
+    },
+    "IRhRDSL-8R": {
+      "displayName": "先知之火焰髮型",
+      "aliases": []
+    },
+    "PN1kAtqtky": {
+      "displayName": "先知之空氣髮型",
+      "aliases": []
+    },
+    "kQMCuUAOtU": {
+      "displayName": "先知之地球髮型",
+      "aliases": []
+    },
+    "JeLUbTDjy3": {
+      "displayName": "高馬尾",
+      "aliases": [
+        "水先知高馬尾"
+      ]
+    },
+    "yiZSilInIg": {
+      "displayName": "正太頭",
+      "aliases": [
+        "正太髮型"
+      ]
+    },
+    "hGLEh1ula3": {
+      "displayName": "健行壞脾氣髮型",
+      "aliases": []
+    },
+    "DH-qXh6CMZ": {
+      "displayName": "鼓舞尋刺激者髮型",
+      "aliases": [
+        "總裁頭"
+      ]
+    },
+    "e6JjMLgK2V": {
+      "displayName": "膽小書蟲髮型",
+      "aliases": []
+    },
+    "hC1gh9FWhv": {
+      "displayName": "水母頭",
+      "aliases": []
+    },
+    "8vNIpRiWxo": {
+      "displayName": "粗辮",
+      "aliases": [
+        "粗辮髮型"
+      ]
+    },
+    "1pSVV2aJ5S": {
+      "displayName": "公主頭",
+      "aliases": []
+    },
+    "PxvVMovhCo": {
+      "displayName": "稻草人農夫髮型",
+      "aliases": []
+    },
+    "TyRibJeEa5": {
+      "displayName": "螃蟹行者髮型",
+      "aliases": []
+    },
+    "ad7KAaSuU8": {
+      "displayName": "冷漠煉金術士髮型",
+      "aliases": []
+    },
+    "0HHq0_mt50": {
+      "displayName": "點頭壁畫家髮型",
+      "aliases": []
+    },
+    "mK47aJa3Uy": {
+      "displayName": "致敬鋼琴家髮型",
+      "aliases": []
+    },
+    "hsTWje5YU_": {
+      "displayName": "冰淇淋頭",
+      "aliases": [
+        "冰淇淋髮型"
+      ]
+    },
+    "stQCebAgsm": {
+      "displayName": "節慶旋轉舞者髮型",
+      "aliases": []
+    },
+    "hySf4FUV-w": {
+      "displayName": "煙火棒家長髮型",
+      "aliases": []
+    },
+    "4NjsRif40c": {
+      "displayName": "蝴蝶結頭",
+      "aliases": [
+        "蝴蝶結"
+      ]
+    },
+    "A3jFFEXAKu": {
+      "displayName": "太陽帽",
+      "aliases": [
+        "寬簷太陽帽"
+      ]
+    },
+    "EjjybJGcTN": {
+      "displayName": "迴旋冠軍髮型",
+      "aliases": []
+    },
+    "qPAqxHGUVI": {
+      "displayName": "隨性先驅髮型",
+      "aliases": [
+        "花苞盤頭",
+        "花苞頭"
+      ]
+    },
+    "Ur7gRzB_VK": {
+      "displayName": "斗笠",
+      "aliases": [
+        "綴珠斗笠"
+      ]
+    },
+    "BGoYhVYvBZ": {
+      "displayName": "背背追光者髮型",
+      "aliases": []
+    },
+    "HzMNk4W-bM": {
+      "displayName": "挑釁表演者髮型",
+      "aliases": []
+    },
+    "L5rpNhBlkt": {
+      "displayName": "伸展高人髮型",
+      "aliases": []
+    },
+    "VIQ3DJwLpu": {
+      "displayName": "刁蠻浪者髮型",
+      "aliases": []
+    },
+    "MhNSP7HiqL": {
+      "displayName": "歸巢季畢業禮髮型",
+      "aliases": []
+    },
+    "Gon7mR-WVa": {
+      "displayName": "歐若拉畢業禮髮型",
+      "aliases": []
+    },
+    "Lw93RiDG46": {
+      "displayName": "白梟",
+      "aliases": [
+        "白梟頭",
+        "白梟髮型",
+        "貓貓頭"
+      ]
+    },
+    "dTnb7tLoOB": {
+      "displayName": "小王子頭",
+      "aliases": [
+        "小王子髮型"
+      ]
+    },
+    "_qNmWZx0rp": {
+      "displayName": "重組畢業禮髮型",
+      "aliases": []
+    },
+    "EUVtYtLoeB": {
+      "displayName": "魔法畢業禮髮型",
+      "aliases": []
+    },
+    "wXiFi4y6YU": {
+      "displayName": "白鳥",
+      "aliases": [
+        "白鳥頭",
+        "白鳥髮型"
+      ]
+    },
+    "RIkdOtUAeN": {
+      "displayName": "禁閣長老髮型",
+      "aliases": []
+    },
+    "SSrCZW8Cf-": {
+      "displayName": "龍骨",
+      "aliases": [
+        "龍骨頭",
+        "龍骨髮型"
+      ]
+    },
+    "AjiVTxnCly": {
+      "displayName": "霞谷長老髮型 2",
+      "aliases": []
+    },
+    "YdtLj5dJE7": {
+      "displayName": "霞谷長老髮型 1",
+      "aliases": []
+    },
+    "T0wsTbmzvv": {
+      "displayName": "雨媽",
+      "aliases": [
+        "雨媽頭",
+        "雨媽髮型"
+      ]
+    },
+    "x_pH3kjLjO": {
+      "displayName": "雲野長老髮型",
+      "aliases": []
+    },
+    "7FqA0RC1D4": {
+      "displayName": "晨島長老髮型",
+      "aliases": []
+    },
+    "exlIascN2K": {
+      "displayName": "祈禱侍者髮型",
+      "aliases": []
+    },
+    "DTMwTb6_mu": {
+      "displayName": "禮貌學者髮型",
+      "aliases": []
+    },
+    "tBRghYOFon": {
+      "displayName": "禪修院士髮型",
+      "aliases": []
+    },
+    "feolA3Sbwy": {
+      "displayName": "漂浮高手髮型",
+      "aliases": []
+    },
+    "S793LWvPuI": {
+      "displayName": "敬禮艦長髮型",
+      "aliases": []
+    },
+    "DGzYI5od5x": {
+      "displayName": "隱密倖存者髮型",
+      "aliases": []
+    },
+    "l1nLKz7suC": {
+      "displayName": "勇敢士兵髮型",
+      "aliases": []
+    },
+    "_oYTtTvbrv": {
+      "displayName": "昏厥戰士髮型",
+      "aliases": []
+    },
+    "LY0kFk4zt9": {
+      "displayName": "驚恐難民髮型",
+      "aliases": []
+    },
+    "wNv_ZY93TS": {
+      "displayName": "鞠躬季軍髮型",
+      "aliases": []
+    },
+    "RtX7BAaov2": {
+      "displayName": "歡呼觀眾髮型",
+      "aliases": []
+    },
+    "NPM3TvV95I": {
+      "displayName": "空翻冠軍髮型",
+      "aliases": []
+    },
+    "sNTC_fhMeO": {
+      "displayName": "自信觀光客髮型",
+      "aliases": []
+    },
+    "7ypZrcAvXa": {
+      "displayName": "悲傷淺色礦工髮型",
+      "aliases": []
+    },
+    "VizeW9_N4M": {
+      "displayName": "歉意伐木工髮型",
+      "aliases": []
+    },
+    "KZh9gbVJU2": {
+      "displayName": "沮喪獵人髮型",
+      "aliases": []
+    },
+    "UX_lsf-RuX": {
+      "displayName": "嬌嗔搬運工髮型",
+      "aliases": []
+    },
+    "LqipUD_Mmh": {
+      "displayName": "躲貓貓先驅髮型",
+      "aliases": []
+    },
+    "aKz1gRuXma": {
+      "displayName": "害羞勘探者髮型",
+      "aliases": []
+    },
+    "5oWTpEPXWn": {
+      "displayName": "顫抖拓荒者髮型",
+      "aliases": []
+    },
+    "0_BW6Cnzkn": {
+      "displayName": "鳥語者髮型",
+      "aliases": []
+    },
+    "XEoOJENom1": {
+      "displayName": "歡笑淺色捕捉者髮型",
+      "aliases": []
+    },
+    "ISKgSOaoko": {
+      "displayName": "犯困船匠髮型",
+      "aliases": []
+    },
+    "-N-LV3VirV": {
+      "displayName": "揮手製鈴者髮型",
+      "aliases": []
+    },
+    "PffQbv7Rw5": {
+      "displayName": "鼓掌製鈴者髮型",
+      "aliases": []
+    },
+    "g95lk3pzSR": {
+      "displayName": "回絕行者髮型",
+      "aliases": []
+    },
+    "e4wyPtwoPO": {
+      "displayName": "引路觀星者髮型",
+      "aliases": []
+    },
+    "X6dudcTAFc": {
+      "displayName": "指路蠟燭匠髮型",
+      "aliases": []
+    },
+    "QmNo-bmeLi": {
+      "displayName": "初始髮型1",
+      "aliases": []
+    }
+  }
+}

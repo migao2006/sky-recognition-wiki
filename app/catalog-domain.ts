@@ -1,5 +1,6 @@
 import { wikiItems as baseWikiItems } from "./wiki-data";
 import type { WikiItem } from "./wiki-data";
+import playerHairNames from "./player-hair-names.json";
 import playerZhNames from "./player-zh-names.json";
 import wikiZhNames from "./wiki-zh-names.json";
 import {
@@ -1610,8 +1611,13 @@ const tokenizedZhName = (name: string) => {
 };
 export const zhName = (name: string) => manualZhName(name) ?? tokenizedZhName(name);
 const playerZhByGuid = playerZhNames.items as Record<string, string>;
+const playerHairByGuid = playerHairNames.items as Record<
+  string,
+  { displayName: string; aliases: string[] }
+>;
 const wikiZhByGuid = wikiZhNames.items as Record<string, string>;
 export const zhItemName = (item: WikiItem) =>
+  playerHairByGuid[item.guid]?.displayName ??
   playerZhByGuid[item.guid] ??
   wikiZhByGuid[item.guid] ??
   manualZhName(item.name) ??
@@ -1619,6 +1625,7 @@ export const zhItemName = (item: WikiItem) =>
 export const zhItemSearchNames = (item: WikiItem) =>
   [
     zhItemName(item),
+    ...(playerHairByGuid[item.guid]?.aliases ?? []),
     wikiZhByGuid[item.guid],
     manualZhName(item.name),
     tokenizedZhName(item.name),

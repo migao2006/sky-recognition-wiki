@@ -14,12 +14,16 @@ const asModuleUrl = (source) =>
   )}`;
 
 const loadCatalogDomain = async () => {
-  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json"].map((file) =>
+  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
   const catalogModule = catalogSource
+    .replace(
+      'import playerHairNames from "./player-hair-names.json";',
+      `const playerHairNames = ${playerHairSource};`,
+    )
     .replace(
       'import playerZhNames from "./player-zh-names.json";',
       `const playerZhNames = ${playerZhSource};`,
@@ -116,11 +120,79 @@ test("player-friendly names use known catalog guids", async () => {
     await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
   );
   const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
-  assert.equal(Object.keys(playerNames.items).length, 43);
+  assert.equal(Object.keys(playerNames.items).length, 39);
   for (const [guid, name] of Object.entries(playerNames.items)) {
     assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
     assert.match(name, /[\u3400-\u9fff]/);
   }
+});
+
+test("hair-name research covers the complete Hair catalog and matches the runtime snapshot", async () => {
+  const [research, runtime] = await Promise.all(
+    ["hair-name-research.json", "../app/player-hair-names.json"].map(async (file) =>
+      JSON.parse(
+        await readFile(
+          new URL(file.startsWith("..") ? file : `../data/${file}`, import.meta.url),
+          "utf8",
+        ),
+      ),
+    ),
+  );
+  const hairs = wikiItems.filter((entry) => entry.type === "Hair");
+  assert.equal(research.items.length, 187);
+  assert.equal(Object.keys(runtime.items).length, 187);
+  assert.deepEqual(
+    new Set(research.items.map((entry) => entry.guid)),
+    new Set(hairs.map((entry) => entry.guid)),
+  );
+  const canonicalTerm = (value) =>
+    value
+      .toLowerCase()
+      .replace(/[（(][^）)]*[）)]/g, "")
+      .replace(/髮型|頭/g, "")
+      .replace(/[^\p{L}\p{N}]+/gu, "");
+  for (const entry of research.items) {
+    assert.deepEqual(runtime.items[entry.guid], {
+      displayName: entry.displayName,
+      aliases: entry.aliases,
+    });
+    if (entry.displayName === entry.currentName) continue;
+    assert.equal(entry.confidence, "consensus");
+    const supporters = new Set(
+      entry.playerSources
+        .filter(
+          (source) =>
+            source.name === entry.displayName &&
+            source.author &&
+            !source.platform.toLowerCase().includes("wiki") &&
+            canonicalTerm(source.observedName || source.name).includes(
+              canonicalTerm(entry.displayName),
+            ),
+        )
+        .map((source) => source.author.toLowerCase()),
+    );
+    assert.ok(supporters.size >= 2, entry.guid);
+  }
+});
+
+test("popular player hair names and aliases stay searchable", () => {
+  for (const [guid, displayName, aliases] of [
+    ["wXiFi4y6YU", "白鳥", ["白鳥頭", "白鳥髮型"]],
+    ["Lw93RiDG46", "白梟", ["白梟頭", "白梟髮型", "貓貓頭"]],
+    ["SSrCZW8Cf-", "龍骨", ["龍骨頭", "龍骨髮型"]],
+    ["T0wsTbmzvv", "雨媽", ["雨媽頭", "雨媽髮型"]],
+    ["1pSVV2aJ5S", "公主頭", []],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(zhItemName(entry), displayName);
+    for (const term of [displayName, ...aliases, entry.name]) {
+      assert.ok(searchIndex.get(guid).includes(term.toLowerCase()), `${guid}: ${term}`);
+    }
+  }
+  const dragonHair = wikiItems.find((candidate) => candidate.guid === "TsL-GHL_RI");
+  assert.ok(dragonHair);
+  assert.doesNotMatch(searchIndex.get(dragonHair.guid), /龍骨/);
 });
 
 test("player-friendly names keep representative accessory, instrument, and prop identities", () => {

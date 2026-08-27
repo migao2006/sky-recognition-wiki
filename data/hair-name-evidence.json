@@ -1,0 +1,275 @@
+{
+  "method": "顯示短名需由至少兩位不同玩家作者使用；頭／髮型等通用尾詞視為同一叫法，observedName 缺省代表來源原文即為 name；BWiki 只用於確認物品身分。",
+  "baselineNames": {
+    "57_e_eF6Ek": "自然潛水髮型",
+    "Rrhk8jKU4u": "花憩玫瑰辮髮",
+    "oDLczC36GR": "月華盤髮",
+    "8aoU-Pwe_p": "大耳狗捲髮"
+  },
+  "items": {
+    "NQkQftFUgs": {
+      "displayName": "鳥妹",
+      "aliases": ["白鳥妹妹", "簇羽", "白羽"],
+      "sources": [
+        { "name": "鳥妹", "observedName": "鳥妹／白鳥妹妹髮型", "platform": "抖音", "author": "sky光遇_軒少", "url": "https://www.douyin.com/video/7632171816752643194" },
+        { "name": "鳥妹", "observedName": "鳥妹", "platform": "Bilibili", "author": "魚餅餅餅ybyb", "url": "https://www.bilibili.com/video/BV1SqoQBMET2/" }
+      ]
+    },
+    "V0Y7dn2l4H": {
+      "aliases": ["雙馬尾"],
+      "sources": [
+        { "name": "雙馬尾", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV13swseDEEV/" }
+      ]
+    },
+    "Yxt4jz3je6": {
+      "aliases": ["挑染雙馬尾", "挑染髮型"],
+      "sources": [
+        { "name": "挑染雙馬尾", "platform": "Bilibili", "author": "是Mr龐呀", "url": "https://www.bilibili.com/video/BV1uxN8eKEEt/" },
+        { "name": "挑染髮型", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV13swseDEEV/" }
+      ]
+    },
+    "8aoU-Pwe_p": {
+      "aliases": ["大耳狗髮型"],
+      "sources": [
+        { "name": "大耳狗髮型", "platform": "YouTube", "author": "是Mr龐呀", "url": "https://www.youtube.com/watch?v=wsMclkFr0HU" },
+        { "name": "大耳狗髮型", "platform": "遊戲鳥", "author": "燃燒軍團", "url": "https://www.youxiniao.com/news/chanye/2726117_full.html" }
+      ]
+    },
+    "MHArTLwxyq": {
+      "displayName": "林克髮型",
+      "aliases": ["林克頭", "林克套裝髮型"],
+      "sources": [
+        { "name": "林克髮型", "platform": "Bilibili", "author": "飲露Neo", "url": "https://www.bilibili.com/video/BV1rQ4y1d7q8/" },
+        { "name": "林克髮型", "observedName": "林克套裝／林克髮型", "platform": "Bilibili", "author": "SKY米樂樂", "url": "https://www.bilibili.com/video/BV1dzKKzrEvt/" }
+      ]
+    },
+    "MnzYzRK9sY": {
+      "displayName": "貓貓頭",
+      "aliases": ["貓耳髮型", "貓耳"],
+      "sources": [
+        { "name": "貓貓頭", "platform": "Bilibili", "author": "飲露Neo", "url": "https://www.bilibili.com/video/BV16a411G7fk/" },
+        { "name": "貓貓頭", "platform": "TapTap", "author": "懺月&清闆", "url": "https://www.taptap.cn/moment/777277230962183615" }
+      ]
+    },
+    "si_8YhNtmr": {
+      "displayName": "女巫髮型",
+      "aliases": ["女巫頭", "女巫長髮"],
+      "sources": [
+        { "name": "女巫髮型", "platform": "TapTap", "author": "懺月&清闆", "url": "https://www.taptap.cn/moment/777277230962183615" },
+        { "name": "女巫髮型", "platform": "小米遊戲中心", "author": "第六君", "url": "https://game.xiaomi.com/viewpoint/126790439_1633000519853_114" }
+      ]
+    },
+    "cMNnwUbQed": {
+      "displayName": "巫師帽",
+      "aliases": ["女巫帽"],
+      "sources": [
+        { "name": "巫師帽", "platform": "Bilibili", "author": "木易不高興了", "url": "https://www.bilibili.com/video/BV1Ja411c7NF/" },
+        { "name": "巫師帽", "platform": "小米遊戲中心", "author": "第六君", "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16" }
+      ]
+    },
+    "Dlp71JdHg2": {
+      "displayName": "南瓜頭",
+      "aliases": ["大南瓜頭", "南瓜帽"],
+      "sources": [
+        { "name": "南瓜頭", "platform": "Bilibili", "author": "木易不高興了", "url": "https://www.bilibili.com/video/BV1Ja411c7NF/" },
+        { "name": "南瓜頭", "observedName": "南瓜頭／南瓜帽", "platform": "OurPlay", "author": "柯浩", "url": "https://www.ourplay.net/ask/detail/1244725" }
+      ]
+    },
+    "uKLD12UrPr": {
+      "displayName": "櫻花髮型",
+      "aliases": ["櫻花頭"],
+      "sources": [
+        { "name": "櫻花髮型", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://search.bilibili.com/all?keyword=%E6%A8%B1%E8%8A%B1%E5%8F%91%E5%9E%8B" },
+        { "name": "櫻花髮型", "platform": "Bilibili", "author": "y深海y", "url": "https://search.bilibili.com/all?keyword=%E6%A8%B1%E8%8A%B1%E5%8F%91%E5%9E%8B" }
+      ]
+    },
+    "TsL-GHL_RI": {
+      "aliases": ["冥龍頭", "冥龍髮型"],
+      "sources": [
+        { "name": "冥龍髮型", "platform": "Bilibili", "author": "秋-褲-怪-獸", "url": "https://www.bilibili.com/video/BV1nY4y1N7r3/" }
+      ]
+    },
+    "nkJXDrn2cV": {
+      "aliases": ["馬蹄蓮髮型", "馬蹄蓮短髮"],
+      "sources": [
+        { "name": "馬蹄蓮髮型", "platform": "Bilibili", "author": "菜芽子唷", "url": "https://www.bilibili.com/video/BV12j421d7eP/" }
+      ]
+    },
+    "XBA8t0KAgo": {
+      "aliases": ["公主頭"],
+      "sources": [
+        { "name": "公主頭", "platform": "Bilibili", "author": "漫美假髮", "url": "https://www.bilibili.com/video/BV1iT4y1L7Sv/" }
+      ]
+    },
+    "FLMn1Hib7k": {
+      "aliases": ["愛哥頭", "絆愛髮型"],
+      "sources": [
+        { "name": "愛哥頭", "platform": "Bilibili", "author": "漫美假髮", "url": "https://www.bilibili.com/video/BV1qi4y1T7Xf/" }
+      ]
+    },
+    "ARZC1Eg2jx": {
+      "aliases": ["蜘蛛頭", "蜘蛛龐克", "飛機頭"],
+      "sources": [
+        { "name": "蜘蛛頭", "platform": "小米遊戲中心", "author": "第六君", "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16" }
+      ]
+    },
+    "A26TJj3cSl": {
+      "aliases": ["鯉魚頭", "錦鯉頭"],
+      "sources": [
+        { "name": "鯉魚頭", "platform": "百度貼吧", "author": "南陽i灬", "url": "https://tieba.baidu.com/p/8748002272" }
+      ]
+    },
+    "rNDDbcjS4G": {
+      "aliases": ["雙丸子頭"],
+      "sources": [
+        { "name": "雙丸子頭", "platform": "ThatSkyShop CN", "author": "官方商品文案", "url": "https://thatskyshop.cn/products/sky-button-pin-warm-companions" }
+      ]
+    },
+    "LgDGqWw-NO": {
+      "aliases": ["獅子頭", "舞獅帽"],
+      "sources": [
+        { "name": "獅子頭", "platform": "Bilibili", "author": "Sky小追追", "url": "https://www.bilibili.com/opus/481123237230292868" }
+      ]
+    },
+    "3Kwn4gx5Sw": {
+      "aliases": ["光頭", "刺青光頭"],
+      "sources": [
+        { "name": "刺青光頭", "platform": "Dcard", "author": "南臺科技大學資訊管理系卡友", "url": "https://www.dcard.tw/f/sky/p/242673217" }
+      ]
+    },
+    "wZGUtak1mb": {
+      "aliases": ["奔離遠行頭"],
+      "sources": [
+        { "name": "奔離遠行頭", "platform": "Bilibili", "author": "飲露Neo", "url": "https://www.bilibili.com/video/BV1oN411Y7Dy/" }
+      ]
+    },
+    "JmM2DNyEcO": {
+      "aliases": ["皇冠水母頭", "水母頭"],
+      "sources": [
+        { "name": "皇冠水母頭", "platform": "遊戲369", "author": "369小編", "url": "https://www.youxi369.com/gonglue/127750.html" }
+      ]
+    },
+    "JeLUbTDjy3": {
+      "displayName": "高馬尾",
+      "aliases": ["水先知高馬尾"],
+      "sources": [
+        { "name": "高馬尾", "platform": "Bilibili", "author": "檸檬味的2546", "url": "https://www.bilibili.com/video/BV1Ce4y1a7qW/" },
+        { "name": "高馬尾", "platform": "Bilibili", "author": "光遇-Tiramisu裡的時光", "url": "https://www.bilibili.com/video/BV1d64y1X7cZ/" }
+      ]
+    },
+    "yiZSilInIg": {
+      "displayName": "正太頭",
+      "aliases": ["正太髮型"],
+      "sources": [
+        { "name": "正太頭", "platform": "Bilibili", "author": "駱梟然_星年", "url": "https://www.bilibili.com/video/BV1Et4y1W7fa" },
+        { "name": "正太頭", "observedName": "正太髮型", "platform": "Bilibili", "author": "SKY米樂樂", "url": "https://search.bilibili.com/all?keyword=%E5%85%89%E9%81%87%E7%9A%86%E5%8F%AF%E6%8B%8D" }
+      ]
+    },
+    "hC1gh9FWhv": {
+      "displayName": "水母頭",
+      "sources": [
+        { "name": "水母頭", "platform": "Bilibili", "author": "養隻魈魈子", "url": "https://www.bilibili.com/video/BV1Sa411K72i/" },
+        { "name": "水母頭", "platform": "Bilibili", "author": "光遇-Tiramisu裡的時光", "url": "https://www.bilibili.com/video/BV1d64y1X7cZ/" }
+      ]
+    },
+    "8vNIpRiWxo": {
+      "displayName": "粗辮",
+      "aliases": ["粗辮髮型"],
+      "sources": [
+        { "name": "粗辮", "observedName": "粗辮髮型", "platform": "Bilibili", "author": "機小杼", "url": "https://www.bilibili.com/video/BV1wqYNefEQT/" },
+        { "name": "粗辮", "observedName": "粗辮先祖", "platform": "Bilibili", "author": "月啊_月", "url": "https://search.bilibili.com/all?keyword=%E6%83%85%E7%BB%AA%E8%8D%89%E8%8D%AF%E5%B8%88" }
+      ]
+    },
+    "1pSVV2aJ5S": {
+      "displayName": "公主頭",
+      "sources": [
+        { "name": "公主頭", "platform": "抖音", "author": "破譯進度99%", "url": "https://www.douyin.com/video/7569630868328526245" },
+        { "name": "公主頭", "platform": "TapTap", "author": "陌夭夭夭", "url": "https://www.taptap.cn/moment/747469853773793294" }
+      ]
+    },
+    "hsTWje5YU_": {
+      "displayName": "冰淇淋頭",
+      "aliases": ["冰淇淋髮型"],
+      "sources": [
+        { "name": "冰淇淋頭", "platform": "Bilibili", "author": "堯堯天上星", "url": "https://www.bilibili.com/video/BV1aS4y1y7bV/" },
+        { "name": "冰淇淋頭", "observedName": "冰淇淋髮型", "platform": "小米遊戲中心", "author": "第六君", "url": "https://game.xiaomi.com/viewpoint/1360104664_1624127541702_11" }
+      ]
+    },
+    "4NjsRif40c": {
+      "displayName": "蝴蝶結頭",
+      "aliases": ["蝴蝶結"],
+      "sources": [
+        { "name": "蝴蝶結頭", "platform": "Bilibili", "author": "SKY米樂樂", "url": "https://www.bilibili.com/video/BV1WC4y1f7Gm/" },
+        { "name": "蝴蝶結頭", "observedName": "蝴蝶結先祖", "platform": "Bilibili", "author": "光遇-Tiramisu裡的時光", "url": "https://www.bilibili.com/video/BV1d64y1X7cZ/" }
+      ]
+    },
+    "A3jFFEXAKu": {
+      "displayName": "太陽帽",
+      "aliases": ["寬簷太陽帽"],
+      "sources": [
+        { "name": "太陽帽", "observedName": "寬簷太陽帽", "platform": "Bilibili", "author": "一塊融化的冰", "url": "https://search.bilibili.com/all?keyword=%E8%9E%83%E8%9F%B9%E5%8F%AB%E5%85%88%E7%A5%96%E4%BD%8D%E7%BD%AE%2F" },
+        { "name": "太陽帽", "observedName": "寬簷太陽帽", "platform": "Bilibili", "author": "光遇大軟子", "url": "https://search.bilibili.com/all?keyword=%E8%9E%83%E8%9F%B9%E5%8F%AB%E5%85%88%E7%A5%96%E4%BD%8D%E7%BD%AE%2F" }
+      ]
+    },
+    "Ur7gRzB_VK": {
+      "displayName": "斗笠",
+      "aliases": ["綴珠斗笠"],
+      "sources": [
+        { "name": "斗笠", "platform": "TapTap", "author": "光遇華妃厶", "url": "https://www.taptap.cn/app/62448/topic?group_label_id=47740&type=group_label" },
+        { "name": "斗笠", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://search.bilibili.com/all?keyword=%E5%85%89%E9%81%87%E6%9C%AC%E5%91%A8%E5%A4%8D%E5%88%BB" }
+      ]
+    },
+    "DH-qXh6CMZ": {
+      "aliases": ["總裁頭"],
+      "sources": [
+        { "name": "總裁頭", "platform": "Bilibili", "author": "月啊_月", "url": "https://search.bilibili.com/all?keyword=%E7%83%AD%E8%A1%80%E8%BF%90%E5%8A%A8%E5%91%98%E5%8F%91%E5%9E%8B" }
+      ]
+    },
+    "qPAqxHGUVI": {
+      "aliases": ["花苞盤頭", "花苞頭"],
+      "sources": [
+        { "name": "花苞頭", "platform": "TapTap", "author": "光遇華妃厶", "url": "https://www.taptap.cn/app/62448/topic?group_label_id=47740&type=group_label" }
+      ]
+    },
+    "Lw93RiDG46": {
+      "displayName": "白梟",
+      "aliases": ["白梟頭", "白梟髮型", "貓貓頭"],
+      "sources": [
+        { "name": "白梟", "observedName": "白梟髮型", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV1Fz4y187bd/" },
+        { "name": "白梟", "observedName": "白梟（帝企鵝）髮型", "platform": "天天要聞", "author": "林克", "url": "https://daydaynews.cc/zh-hans/game/2917202.html" }
+      ]
+    },
+    "dTnb7tLoOB": {
+      "displayName": "小王子頭",
+      "aliases": ["小王子髮型"],
+      "sources": [
+        { "name": "小王子頭", "observedName": "小王子髮型", "platform": "Bilibili", "author": "福氣滿滿小財神", "url": "https://search.bilibili.com/all?keyword=%E5%B0%8F%E7%8E%8B%E5%AD%90%E5%AD%A3%E5%85%91%E6%8D%A2%E6%A0%91" },
+        { "name": "小王子頭", "observedName": "小王子髮型", "platform": "Bilibili", "author": "綢月十三", "url": "https://search.bilibili.com/all?keyword=%E5%85%89%E9%81%87%E5%B0%8F%E7%8E%8B%E5%AD%90%E5%AD%A3%E8%8A%82" }
+      ]
+    },
+    "wXiFi4y6YU": {
+      "displayName": "白鳥",
+      "aliases": ["白鳥頭", "白鳥髮型"],
+      "sources": [
+        { "name": "白鳥", "observedName": "白鳥髮型", "platform": "Bilibili", "author": "柏時嶼", "url": "https://www.bilibili.com/opus/484678774371762666" },
+        { "name": "白鳥", "observedName": "白鳥 vs 白梟", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV1Fz4y187bd/" }
+      ]
+    },
+    "SSrCZW8Cf-": {
+      "displayName": "龍骨",
+      "aliases": ["龍骨頭", "龍骨髮型"],
+      "sources": [
+        { "name": "龍骨", "observedName": "龍骨髮型", "platform": "Bilibili", "author": "李難瘦2333", "url": "https://www.bilibili.com/video/BV1HK4y1d7ac/" },
+        { "name": "龍骨", "platform": "Bilibili", "author": "漫美假髮", "url": "https://www.bilibili.com/video/BV1GV411m7gm/" }
+      ]
+    },
+    "T0wsTbmzvv": {
+      "displayName": "雨媽",
+      "aliases": ["雨媽頭", "雨媽髮型"],
+      "sources": [
+        { "name": "雨媽", "observedName": "雨媽髮型", "platform": "Bilibili", "author": "-織束月色-", "url": "https://www.bilibili.com/video/BV1R94y1a7f8/" },
+        { "name": "雨媽", "observedName": "雨媽髮型", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV18o4y147aQ/" }
+      ]
+    }
+  }
+}

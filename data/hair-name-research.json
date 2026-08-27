@@ -1,0 +1,2945 @@
+{
+  "method": "顯示短名需由至少兩位不同玩家作者使用；頭／髮型等通用尾詞視為同一叫法，observedName 缺省代表來源原文即為 name；BWiki 只用於確認物品身分。",
+  "count": 187,
+  "items": [
+    {
+      "guid": "jaI5b86En7",
+      "englishName": "Sunlight Surfer Hair",
+      "currentName": "陽光衝浪者髮型",
+      "displayName": "陽光衝浪者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight/2026#Sunlight_Surfer_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "awbPVRa_Fw",
+      "englishName": "Joyful Memory Hair",
+      "currentName": "喜悅回憶髮型",
+      "displayName": "喜悅回憶髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Joyful_Memory#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "q8EsW2_NSv",
+      "englishName": "Dutch Memory Hair",
+      "currentName": "荷蘭的回憶髮型",
+      "displayName": "荷蘭的回憶髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Dutch_Memory#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "2cm-8PvvzE",
+      "englishName": "Dear Van Gogh Ultimate Hair",
+      "currentName": "致梵谷季畢業禮髮型",
+      "displayName": "致梵谷季畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Vase_with_Fifteen_Sunflowers#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "RL14anXFvE",
+      "englishName": "Rainbow Tufted Hair",
+      "currentName": "彩虹絨毛髮型",
+      "displayName": "彩虹絨毛髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Color/2026#Rainbow_Tufted_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "iWBlE2ByGK",
+      "englishName": "Treasure Seeker's Bandana",
+      "currentName": "寶藏追尋者頭巾",
+      "displayName": "寶藏追尋者頭巾",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Treasure/2026#Treasure_Seeker%E2%80%99s_Bandana",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "eJXt3-aUsV",
+      "englishName": "Carnival Stunt Actor Hair",
+      "currentName": "狂歡特技演員髮型",
+      "displayName": "狂歡特技演員髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Carnival_Stunt_Actor#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Lh-GtlP5L-",
+      "englishName": "Carnival Puzzle Director Hair",
+      "currentName": "狂歡拼圖導演髮型",
+      "displayName": "狂歡拼圖導演髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Carnival_Puzzle_Director#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "NQkQftFUgs",
+      "englishName": "Carnival Ultimate Hair",
+      "currentName": "狂歡季畢業禮髮型",
+      "displayName": "鳥妹",
+      "aliases": [
+        "白鳥妹妹",
+        "簇羽",
+        "白羽"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Carnival_Guide#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "鳥妹",
+          "observedName": "鳥妹／白鳥妹妹髮型",
+          "platform": "抖音",
+          "author": "sky光遇_軒少",
+          "url": "https://www.douyin.com/video/7632171816752643194"
+        },
+        {
+          "name": "鳥妹",
+          "observedName": "鳥妹",
+          "platform": "Bilibili",
+          "author": "魚餅餅餅ybyb",
+          "url": "https://www.bilibili.com/video/BV1SqoQBMET2/"
+        }
+      ]
+    },
+    {
+      "guid": "57_e_eF6Ek",
+      "englishName": "Nature Underwater Hair",
+      "currentName": "自然潛水髮型",
+      "displayName": "自然潛水髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Nature/2026#Nature_Underwater_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "1XyFlfFPPJ",
+      "englishName": "Sunflower Bandana Hair",
+      "currentName": "向日葵頭巾髮型",
+      "displayName": "向日葵頭巾髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom/2026#Sunflower_Bandana_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "qpl9PPDD8z",
+      "englishName": "Fortune Ribboned Ponytail",
+      "currentName": "福瑞緞帶馬尾",
+      "displayName": "福瑞緞帶馬尾",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2026#Fortune_Ribboned_Ponytail",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "PwIov7bp-r",
+      "englishName": "Tournament Wind Hairstyle",
+      "currentName": "錦標賽風髮型",
+      "displayName": "錦標賽風髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tournament_of_Triumph/2026#Tournament_Hairstyle",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "OkF8hPi0dS",
+      "englishName": "Lightmending Pioneer Hair",
+      "currentName": "織光先驅髮型",
+      "displayName": "織光先驅髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Lightmending_Pioneer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "6kEm2pWNBt",
+      "englishName": "Lightmending Light Scholar Hairstyle",
+      "currentName": "織光淺色學者髮型",
+      "displayName": "織光淺色學者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Lightmending_Light_Scholar#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "bR78DxxVAu",
+      "englishName": "Lightmending Ultimate Hair",
+      "currentName": "織光季畢業禮髮型",
+      "displayName": "織光季畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Lightmending_Guide#Lightmending_Ultimate_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "rA-RHusWvS",
+      "englishName": "Mischief Puzzlewright's Brimmed Hat",
+      "currentName": "惡作劇拼圖工匠寬簷帽子",
+      "displayName": "惡作劇拼圖工匠寬簷帽子",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2025#Mischief_Puzzlewright's_Brimmed_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "E2L4G603B5",
+      "englishName": "Migrating Bellmaker Hair",
+      "currentName": "遷徙製鈴者髮型",
+      "displayName": "遷徙製鈴者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Migrating_Bellmaker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "fzEiiF2gx4",
+      "englishName": "Migrating Manta Whisperer Hair",
+      "currentName": "遷徙遙鯤語者髮型",
+      "displayName": "遷徙遙鯤語者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Migrating_Manta_Whisperer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "UvRqz7iRMq",
+      "englishName": "Scarred Sentry Helmet",
+      "currentName": "傷痕哨兵頭盔",
+      "displayName": "傷痕哨兵頭盔",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "uv_rlb5LLl",
+      "englishName": "Stern Shepherd Hair",
+      "currentName": "嚴肅牧羊人髮型",
+      "displayName": "嚴肅牧羊人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Stern_Shepherd#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "afxsZPgxN7",
+      "englishName": "Scarred Sentry Cracked Helmet",
+      "currentName": "傷痕哨兵裂紋頭盔",
+      "displayName": "傷痕哨兵裂紋頭盔",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "vizYM6Cgw5",
+      "englishName": "Tender Toymaker Hair",
+      "currentName": "溫柔的玩具匠髮型",
+      "displayName": "溫柔的玩具匠髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tender_Toymaker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "SgIsK6N6pA",
+      "englishName": "Rainbow Head Wrap",
+      "currentName": "彩虹頭部披巾",
+      "displayName": "彩虹頭部披巾",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Color/2025#Rainbow_Head_Wrap",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "B57ZJ9lCAE",
+      "englishName": "Ocean Manta Hair",
+      "currentName": "海洋遙鯤髮型",
+      "displayName": "海洋遙鯤髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Nature/2025#Ocean_Manta_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "8yAJpgKLul",
+      "englishName": "Costumed Confetti Cousin Hair",
+      "currentName": "盛裝彩紙表親髮型",
+      "displayName": "盛裝彩紙表親髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Costumed_Confetti_Cousin#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "TfItBIVTeP",
+      "englishName": "Transcendent Journey Hair",
+      "currentName": "超凡旅人髮型",
+      "displayName": "超凡旅人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_PlayStation#Transcendent_Journey_Pack",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Rrhk8jKU4u",
+      "englishName": "Bloom Rose Braided Hair",
+      "currentName": "花憩玫瑰辮髮",
+      "displayName": "花憩玫瑰辮髮",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom/2025#Bloom_Rose_Braided_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "V0Y7dn2l4H",
+      "englishName": "Days Of Love Braids",
+      "currentName": "日之愛之日辮子",
+      "displayName": "日之愛之日辮子",
+      "aliases": [
+        "雙馬尾"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2025#Days_of_Love_Braids",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "雙馬尾",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://www.bilibili.com/video/BV13swseDEEV/"
+        }
+      ]
+    },
+    {
+      "guid": "Yxt4jz3je6",
+      "englishName": "Days Of Love Amethyst-Tipped Tails",
+      "currentName": "日之愛之日紫水晶尖端尾巴",
+      "displayName": "日之愛之日紫水晶尖端尾巴",
+      "aliases": [
+        "挑染雙馬尾",
+        "挑染髮型"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2025#Days_of_Love_Amethyst-Tipped_Tails",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "挑染雙馬尾",
+          "platform": "Bilibili",
+          "author": "是Mr龐呀",
+          "url": "https://www.bilibili.com/video/BV1uxN8eKEEt/"
+        },
+        {
+          "name": "挑染髮型",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://www.bilibili.com/video/BV13swseDEEV/"
+        }
+      ]
+    },
+    {
+      "guid": "u_CN5B-cYN",
+      "englishName": "Fortune Snake Hair",
+      "currentName": "幸運節蛇頭巾",
+      "displayName": "幸運節蛇頭巾",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2025#Fortune_Snake_Coif_and_Cloak",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "5fUF9wGrq6",
+      "englishName": "Radiance Greeting Shaman Hair",
+      "currentName": "染色問候薩滿髮型",
+      "displayName": "染色問候薩滿髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Radiance_Greeting_Shaman#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "ShjewpJf_F",
+      "englishName": "Radiance Leaping Dancer Hair",
+      "currentName": "染色跳躍舞者髮型",
+      "displayName": "染色跳躍舞者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Radiance_Leaping_Dancer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "oelvOczEPw",
+      "englishName": "Wonderland Frantic Hair",
+      "currentName": "仙境慌張髮型",
+      "displayName": "仙境慌張髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast/2024#Wonderland_Frantic_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "lgu5DNRE7k",
+      "englishName": "Wonderland Hare Hairstyle",
+      "currentName": "仙境野兔髮型",
+      "displayName": "仙境野兔髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast/2024#Wonderland_Hare_Hairstyle",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "CCT1qLLxKN",
+      "englishName": "Mischief Spider Bun Hair",
+      "currentName": "惡作劇蜘蛛髮髻髮型",
+      "displayName": "惡作劇蜘蛛髮髻髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2024#Mischief_Spider_Bun",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "foQGge-GsM",
+      "englishName": "Spirit Of Adventure Hair",
+      "currentName": "先祖之冒險髮型",
+      "displayName": "先祖之冒險髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Spirit_of_Adventure#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "n5NfIqlzgz",
+      "englishName": "Comfort of Kindness Hair",
+      "currentName": "安慰之善意髮型",
+      "displayName": "安慰之善意髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Comfort_of_Kindness#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "oDLczC36GR",
+      "englishName": "Moonlight Updo",
+      "currentName": "月華盤髮",
+      "displayName": "月華盤髮",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2024#Moonlight_Frock_and_Updo",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "JXXQvwug8B",
+      "englishName": "Tournament Curls",
+      "currentName": "錦標賽捲髮",
+      "displayName": "錦標賽捲髮",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tournament_of_Triumph/2024#Tournament_Curls",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "krE8-lSgNh",
+      "englishName": "The Cellist's Beginnings Hair",
+      "currentName": "大提琴手的開始髮型",
+      "displayName": "大提琴手的開始髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/The_Cellist%27s_Beginnings#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "I1B2G8p1uQ",
+      "englishName": "The Pianist's Beginnings Hair",
+      "currentName": "鋼琴家的開始髮型",
+      "displayName": "鋼琴家的開始髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/The_Pianist%27s_Beginnings#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "xN5Lftk7mA",
+      "englishName": "Color Glam Cut",
+      "currentName": "彩色華麗短髮",
+      "displayName": "彩色華麗短髮",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Color/2024#Color_Glam_Cut",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "jWAPWGsEd-",
+      "englishName": "Nature Wave-Touched Hair",
+      "currentName": "自然海浪輕拂髮型",
+      "displayName": "自然海浪輕拂髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Nature/2024#Nature_Wave-Touched_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "8aoU-Pwe_p",
+      "englishName": "Cinnamoroll Swirled Hair",
+      "currentName": "大耳狗捲髮",
+      "displayName": "大耳狗捲髮",
+      "aliases": [
+        "大耳狗髮型"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sky_%C3%97_Cinnamoroll_Pop-Up_Cafe#Cinnamoroll_Pop-Up_Cafe_Combo",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "大耳狗髮型",
+          "platform": "YouTube",
+          "author": "是Mr龐呀",
+          "url": "https://www.youtube.com/watch?v=wsMclkFr0HU"
+        },
+        {
+          "name": "大耳狗髮型",
+          "platform": "遊戲鳥",
+          "author": "燃燒軍團",
+          "url": "https://www.youxiniao.com/news/chanye/2726117_full.html"
+        }
+      ]
+    },
+    {
+      "guid": "l8H1fmaKQ4",
+      "englishName": "Nesting Atrium Hair",
+      "currentName": "築巢中庭髮型",
+      "displayName": "築巢中庭髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Nesting_Atrium#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "nkJXDrn2cV",
+      "englishName": "Bloom Arum Petal Hair",
+      "currentName": "花憩海芋花瓣髮型",
+      "displayName": "花憩海芋花瓣髮型",
+      "aliases": [
+        "馬蹄蓮髮型",
+        "馬蹄蓮短髮"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom/2024#Bloom_Arum_Petal_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "馬蹄蓮髮型",
+          "platform": "Bilibili",
+          "author": "菜芽子唷",
+          "url": "https://www.bilibili.com/video/BV12j421d7eP/"
+        }
+      ]
+    },
+    {
+      "guid": "vxfZZiaabO",
+      "englishName": "Bloom Spiky Sprig Hair",
+      "currentName": "花憩尖刺嫩枝髮型",
+      "displayName": "花憩尖刺嫩枝髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom/2024#Bloom_Spiky_Sprig_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "qoqOCLQ-on",
+      "englishName": "Nine-Colored Deer Ultimate Hair",
+      "currentName": "九色鹿季畢業禮髮型",
+      "displayName": "九色鹿季畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Spirit_of_Mural#Nine-Colored_Deer_Ultimate_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "XBA8t0KAgo",
+      "englishName": "Princess Hair",
+      "currentName": "公主髮型",
+      "displayName": "公主髮型",
+      "aliases": [
+        "公主頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Princess#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "公主頭",
+          "platform": "Bilibili",
+          "author": "漫美假髮",
+          "url": "https://www.bilibili.com/video/BV1iT4y1L7Sv/"
+        }
+      ]
+    },
+    {
+      "guid": "5NmGXSaWaK",
+      "englishName": "Hunter Hair",
+      "currentName": "獵人髮型",
+      "displayName": "獵人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hunter#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "HbrxremuY-",
+      "englishName": "Herb Gatherer Hair",
+      "currentName": "藥草採集者髮型",
+      "displayName": "藥草採集者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Herb_Gatherer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "xB3Auq2DFR",
+      "englishName": "Hopeful Steward Hair",
+      "currentName": "充滿希望管家髮型",
+      "displayName": "充滿希望管家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hopeful_Steward_Ultimate_Guide#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "3YCGoFkIsG",
+      "englishName": "Base Hair 3",
+      "currentName": "初始髮型3",
+      "displayName": "初始髮型3",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hair#Base_Hairstyle",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "fgx077j-05",
+      "englishName": "Base Hair 2",
+      "currentName": "初始髮型2",
+      "displayName": "初始髮型2",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hair#Base_Hairstyle",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "8P8dL_Zp8q",
+      "englishName": "Journey Hair",
+      "currentName": "風之旅人髮型",
+      "displayName": "風之旅人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_PlayStation#Journey_Pack",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "MHArTLwxyq",
+      "englishName": "Nintendo Elf Hair",
+      "currentName": "Nintendo 精靈髮型",
+      "displayName": "林克髮型",
+      "aliases": [
+        "林克頭",
+        "林克套裝髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_Nintendo_Switch#Nintendo_Pack",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "林克髮型",
+          "platform": "Bilibili",
+          "author": "飲露Neo",
+          "url": "https://www.bilibili.com/video/BV1rQ4y1d7q8/"
+        },
+        {
+          "name": "林克髮型",
+          "observedName": "林克套裝／林克髮型",
+          "platform": "Bilibili",
+          "author": "SKY米樂樂",
+          "url": "https://www.bilibili.com/video/BV1dzKKzrEvt/"
+        }
+      ]
+    },
+    {
+      "guid": "6uObjDNBAm",
+      "englishName": "Marching Band Hat",
+      "currentName": "行進樂隊帽子",
+      "displayName": "行進樂隊帽子",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Music/2023#Harmony_Hall_Marching_Band_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "FLMn1Hib7k",
+      "englishName": "Kizuna AI Hair",
+      "currentName": "絆愛髮型",
+      "displayName": "絆愛髮型",
+      "aliases": [
+        "愛哥頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Kizuna_AI#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "愛哥頭",
+          "platform": "Bilibili",
+          "author": "漫美假髮",
+          "url": "https://www.bilibili.com/video/BV1qi4y1T7Xf/"
+        }
+      ]
+    },
+    {
+      "guid": "hZr0q9nYbz",
+      "englishName": "Winter Feast Hat",
+      "currentName": "冬日宴會帽子",
+      "displayName": "冬日宴會帽子",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast/2021#Winter_Feast_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "z2M4HqpR9C",
+      "englishName": "Feast Hat",
+      "currentName": "宴會帽子",
+      "displayName": "宴會帽子",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast/2019#Days_of_Feast_Pack",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "MnzYzRK9sY",
+      "englishName": "Mischief Tufted Hair",
+      "currentName": "惡作劇絨毛髮型",
+      "displayName": "貓貓頭",
+      "aliases": [
+        "貓耳髮型",
+        "貓耳"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2022#Mischief_Tufted_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "貓貓頭",
+          "platform": "Bilibili",
+          "author": "飲露Neo",
+          "url": "https://www.bilibili.com/video/BV16a411G7fk/"
+        },
+        {
+          "name": "貓貓頭",
+          "platform": "TapTap",
+          "author": "懺月&清闆",
+          "url": "https://www.taptap.cn/moment/777277230962183615"
+        }
+      ]
+    },
+    {
+      "guid": "ARZC1Eg2jx",
+      "englishName": "Mischief Spider Quiff",
+      "currentName": "惡作劇蜘蛛飛機頭",
+      "displayName": "惡作劇蜘蛛飛機頭",
+      "aliases": [
+        "蜘蛛頭",
+        "蜘蛛龐克",
+        "飛機頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2021#Mischief_Spider_Quiff",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "蜘蛛頭",
+          "platform": "小米遊戲中心",
+          "author": "第六君",
+          "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16"
+        }
+      ]
+    },
+    {
+      "guid": "si_8YhNtmr",
+      "englishName": "Mischief Witch Hair",
+      "currentName": "惡作劇巫師髮型",
+      "displayName": "女巫髮型",
+      "aliases": [
+        "女巫頭",
+        "女巫長髮"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2021#Mischief_Witch_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "女巫髮型",
+          "platform": "TapTap",
+          "author": "懺月&清闆",
+          "url": "https://www.taptap.cn/moment/777277230962183615"
+        },
+        {
+          "name": "女巫髮型",
+          "platform": "小米遊戲中心",
+          "author": "第六君",
+          "url": "https://game.xiaomi.com/viewpoint/126790439_1633000519853_114"
+        }
+      ]
+    },
+    {
+      "guid": "cMNnwUbQed",
+      "englishName": "Mischief Witch Hat",
+      "currentName": "惡作劇巫師帽子",
+      "displayName": "巫師帽",
+      "aliases": [
+        "女巫帽"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2020#Mischief_Witch_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "巫師帽",
+          "platform": "Bilibili",
+          "author": "木易不高興了",
+          "url": "https://www.bilibili.com/video/BV1Ja411c7NF/"
+        },
+        {
+          "name": "巫師帽",
+          "platform": "小米遊戲中心",
+          "author": "第六君",
+          "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16"
+        }
+      ]
+    },
+    {
+      "guid": "Dlp71JdHg2",
+      "englishName": "Hungry Pumpkin Hat",
+      "currentName": "飢餓南瓜帽子",
+      "displayName": "南瓜頭",
+      "aliases": [
+        "大南瓜頭",
+        "南瓜帽"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2020#Hungry_Pumpkin_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "南瓜頭",
+          "platform": "Bilibili",
+          "author": "木易不高興了",
+          "url": "https://www.bilibili.com/video/BV1Ja411c7NF/"
+        },
+        {
+          "name": "南瓜頭",
+          "observedName": "南瓜頭／南瓜帽",
+          "platform": "OurPlay",
+          "author": "柯浩",
+          "url": "https://www.ourplay.net/ask/detail/1244725"
+        }
+      ]
+    },
+    {
+      "guid": "cMLcvRtjoh",
+      "englishName": "Rainbow Beanie Hat",
+      "currentName": "彩虹帽",
+      "displayName": "彩虹帽",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Color/2021#Rainbow_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "uKLD12UrPr",
+      "englishName": "Pink Bloom Hair",
+      "currentName": "粉紅色花憩髮型",
+      "displayName": "櫻花髮型",
+      "aliases": [
+        "櫻花頭"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom/2021#Pink_Bloom_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "櫻花髮型",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://search.bilibili.com/all?keyword=%E6%A8%B1%E8%8A%B1%E5%8F%91%E5%9E%8B"
+        },
+        {
+          "name": "櫻花髮型",
+          "platform": "Bilibili",
+          "author": "y深海y",
+          "url": "https://search.bilibili.com/all?keyword=%E6%A8%B1%E8%8A%B1%E5%8F%91%E5%9E%8B"
+        }
+      ]
+    },
+    {
+      "guid": "A26TJj3cSl",
+      "englishName": "Fortune Fish Hood",
+      "currentName": "福瑞魚兜帽",
+      "displayName": "福瑞魚兜帽",
+      "aliases": [
+        "鯉魚頭",
+        "錦鯉頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2022#Days_of_Fortune_Fish_Pack",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "鯉魚頭",
+          "platform": "百度貼吧",
+          "author": "南陽i灬",
+          "url": "https://tieba.baidu.com/p/8748002272"
+        }
+      ]
+    },
+    {
+      "guid": "rNDDbcjS4G",
+      "englishName": "Fortune Bun Hair",
+      "currentName": "福瑞髮髻髮型",
+      "displayName": "福瑞髮髻髮型",
+      "aliases": [
+        "雙丸子頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2021#Days_of_Fortune_Pack",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "雙丸子頭",
+          "platform": "ThatSkyShop CN",
+          "author": "官方商品文案",
+          "url": "https://thatskyshop.cn/products/sky-button-pin-warm-companions"
+        }
+      ]
+    },
+    {
+      "guid": "udspGJd38_",
+      "englishName": "Fortune Wool Hat",
+      "currentName": "福瑞羊毛帽子",
+      "displayName": "福瑞羊毛帽子",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2021#Days_of_Fortune_Wool_Hat",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "LgDGqWw-NO",
+      "englishName": "Fortune Lion Headdress",
+      "currentName": "福瑞獅子頭飾",
+      "displayName": "福瑞獅子頭飾",
+      "aliases": [
+        "獅子頭",
+        "舞獅帽"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2021#Days_of_Fortune_Lion_Headdress",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "獅子頭",
+          "platform": "Bilibili",
+          "author": "Sky小追追",
+          "url": "https://www.bilibili.com/opus/481123237230292868"
+        }
+      ]
+    },
+    {
+      "guid": "Ym_ptDkaZQ",
+      "englishName": "Memory of a Lost Village Hair",
+      "currentName": "回憶之失落村莊髮型",
+      "displayName": "回憶之失落村莊髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Memory_of_a_Lost_Village#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "SuYJ2QcMi9",
+      "englishName": "Vestige of a Deserted Oasis Hair",
+      "currentName": "遺跡之荒廢綠洲髮型",
+      "displayName": "遺跡之荒廢綠洲髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Vestige_of_a_Deserted_Oasis#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "ygFxGKMla2",
+      "englishName": "Nightbird Whisperer Hair",
+      "currentName": "夜行鳥語者髮型",
+      "displayName": "夜行鳥語者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Nightbird_Whisperer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "3Kwn4gx5Sw",
+      "englishName": "Ascetic Monk Tattoo",
+      "currentName": "苦行僧侶彩繪",
+      "displayName": "苦行僧侶彩繪",
+      "aliases": [
+        "光頭",
+        "刺青光頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Ascetic_Monk#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "刺青光頭",
+          "platform": "Dcard",
+          "author": "南臺科技大學資訊管理系卡友",
+          "url": "https://www.dcard.tw/f/sky/p/242673217"
+        }
+      ]
+    },
+    {
+      "guid": "cXuwp1MnHZ",
+      "englishName": "Jolly Geologist Hair",
+      "currentName": "歡樂地質學家髮型",
+      "displayName": "歡樂地質學家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Jolly_Geologist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "k90TESSTBg",
+      "englishName": "Overactive Overachiever Hair",
+      "currentName": "過度活躍力求完美髮型",
+      "displayName": "過度活躍力求完美髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Overactive_Overachiever#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Mz9HHVc0_f",
+      "englishName": "Melancholy Mope Hair",
+      "currentName": "憂鬱消沉髮型",
+      "displayName": "憂鬱消沉髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Melancholy_Mope#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "rbV0FWIENC",
+      "englishName": "Tumbling Troublemaker Hair",
+      "currentName": "翻滾搗蛋鬼髮型",
+      "displayName": "翻滾搗蛋鬼髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tumbling_Troublemaker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "uE2-9qAMKP",
+      "englishName": "Oddball Outcast Hair",
+      "currentName": "怪人流放者髮型",
+      "displayName": "怪人流放者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Oddball_Outcast#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "XOnAJpU3ZZ",
+      "englishName": "Tiptoeing Tea-Brewer Hair",
+      "currentName": "踮腳茶釀造師髮型",
+      "displayName": "踮腳茶釀造師髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tiptoeing_Tea-Brewer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "CfVWayXiTh",
+      "englishName": "Pleading Child Hair",
+      "currentName": "祈求孩童髮型",
+      "displayName": "祈求孩童髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Pleading_Child#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "3Ja8-MaUke",
+      "englishName": "Bereft Veteran Hair",
+      "currentName": "悲傷老兵髮型",
+      "displayName": "悲傷老兵髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Bereft_Veteran#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "wZGUtak1mb",
+      "englishName": "AURORA Runaway Hair",
+      "currentName": "歐若拉逃跑髮型",
+      "displayName": "歐若拉逃跑髮型",
+      "aliases": [
+        "奔離遠行頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Season_of_AURORA#Runaway_Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "奔離遠行頭",
+          "platform": "Bilibili",
+          "author": "飲露Neo",
+          "url": "https://www.bilibili.com/video/BV1oN411Y7Dy/"
+        }
+      ]
+    },
+    {
+      "guid": "-RfQBaoydI",
+      "englishName": "Seed of Hope Hair",
+      "currentName": "種子之希望髮型",
+      "displayName": "種子之希望髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Seed_of_Hope#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "ndKNh6XHP4",
+      "englishName": "Warrior of Love Hair",
+      "currentName": "戰士之愛之日髮型",
+      "displayName": "戰士之愛之日髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Warrior_of_Love#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "VqtNIgq8G0",
+      "englishName": "Mindful Miner Hair",
+      "currentName": "細心礦工髮型",
+      "displayName": "細心礦工髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Mindful_Miner#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "VKeEo_F_7G",
+      "englishName": "Running Wayfarer Hair",
+      "currentName": "奔跑旅人髮型",
+      "displayName": "奔跑旅人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Running_Wayfarer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "TsL-GHL_RI",
+      "englishName": "Dragon Hair",
+      "currentName": "龍髮型",
+      "displayName": "龍髮型",
+      "aliases": [
+        "冥龍頭",
+        "冥龍髮型"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Ancient_Darkness#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "冥龍髮型",
+          "platform": "Bilibili",
+          "author": "秋-褲-怪-獸",
+          "url": "https://www.bilibili.com/video/BV1nY4y1N7r3/"
+        }
+      ]
+    },
+    {
+      "guid": "nhgIi8TLn0",
+      "englishName": "Manta Hair",
+      "currentName": "遙鯤髮型",
+      "displayName": "遙鯤髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Ancient_Light#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "JmM2DNyEcO",
+      "englishName": "Jellyfish Hair",
+      "currentName": "水母髮型",
+      "displayName": "水母髮型",
+      "aliases": [
+        "皇冠水母頭",
+        "水母頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Ancient_Light#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "皇冠水母頭",
+          "platform": "遊戲369",
+          "author": "369小編",
+          "url": "https://www.youxi369.com/gonglue/127750.html"
+        }
+      ]
+    },
+    {
+      "guid": "zBs2Y94DY2",
+      "englishName": "Modest Dancer Hair",
+      "currentName": "謙遜舞者髮型",
+      "displayName": "謙遜舞者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Modest_Dancer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Z6kNG4kwEC",
+      "englishName": "Mellow Musician Hair",
+      "currentName": "溫和音樂家髮型",
+      "displayName": "溫和音樂家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Mellow_Musician#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Z53G2IN-L3",
+      "englishName": "Forgetful Storyteller Hair",
+      "currentName": "健忘說書人髮型",
+      "displayName": "健忘說書人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Forgetful_Storyteller#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "BtWvDojIDg",
+      "englishName": "Frantic Stagehand Hair",
+      "currentName": "慌張舞台工作者髮型",
+      "displayName": "慌張舞台工作者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Frantic_Stagehand#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "OuUFDFFKlQ",
+      "englishName": "Cackling Cannoneer Hair",
+      "currentName": "大笑炮手髮型",
+      "displayName": "大笑炮手髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Cackling_Cannoneer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "WwuCeXn8wy",
+      "englishName": "Ceasing Commodore Hair",
+      "currentName": "停止艦長髮型",
+      "displayName": "停止艦長髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Ceasing_Commodore#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Qqsui-W6Gr",
+      "englishName": "Anxious Angler Hair",
+      "currentName": "焦慮垂釣者髮型",
+      "displayName": "焦慮垂釣者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Anxious_Angler#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "cZfBtj_CYb",
+      "englishName": "Talented Builder Hair",
+      "currentName": "有才華建造者髮型",
+      "displayName": "有才華建造者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Talented_Builder#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "ARYCvmatxR",
+      "englishName": "Tinkering Chimesmith Hair",
+      "currentName": "修補風鈴匠髮型",
+      "displayName": "修補風鈴匠髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tinkering_Chimesmith#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "k_dtQhg8Ii",
+      "englishName": "Light Whisperer Hair",
+      "currentName": "淺色語者髮型",
+      "displayName": "淺色語者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Light_Whisperer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "QiLz0mb3x4",
+      "englishName": "Lively Navigator Hair",
+      "currentName": "活潑領航員髮型",
+      "displayName": "活潑領航員髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Lively_Navigator#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "A_Mhqh3fL1",
+      "englishName": "Sneezing Geographer Hair",
+      "currentName": "打噴嚏地理學家髮型",
+      "displayName": "打噴嚏地理學家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sneezing_Geographer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "2BhjMSGnvW",
+      "englishName": "Slouching Soldier Hair",
+      "currentName": "垂頭士兵髮型",
+      "displayName": "垂頭士兵髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Slouching_Soldier#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "SkVA_XphTc",
+      "englishName": "Stretching Lamplighter Hair",
+      "currentName": "伸展掌燈人髮型",
+      "displayName": "伸展掌燈人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Stretching_Lamplighter#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "8PpkvJHDLx",
+      "englishName": "Gloating Narcissist Hair",
+      "currentName": "得意自戀者髮型",
+      "displayName": "得意自戀者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Gloating_Narcissist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "k0po-n3Zem",
+      "englishName": "Beckoning Ruler Hair",
+      "currentName": "招手統治者髮型",
+      "displayName": "招手統治者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Beckoning_Ruler#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Pn_wGqjtoX",
+      "englishName": "Daydream Forester Hair",
+      "currentName": "白日夢森林人髮型",
+      "displayName": "白日夢森林人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Daydream_Forester#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "InfpXXK1sw",
+      "englishName": "Marching Adventurer Hair",
+      "currentName": "行進冒險家髮型",
+      "displayName": "行進冒險家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Marching_Adventurer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "g8AB_9bQIK",
+      "englishName": "Scaredy Cadet Hair",
+      "currentName": "膽小學員髮型",
+      "displayName": "膽小學員髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Scaredy_Cadet#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "6NGF44qiL6",
+      "englishName": "Scolding Student Hair",
+      "currentName": "責備學生髮型",
+      "displayName": "責備學生髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Scolding_Student#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "mDc9qQKCBy",
+      "englishName": "Baffled Botanist Hair",
+      "currentName": "茫然植物學家髮型",
+      "displayName": "茫然植物學家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Baffled_Botanist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "J9R4HX-ZHf",
+      "englishName": "Spinning Mentor Hair",
+      "currentName": "旋轉導師髮型",
+      "displayName": "旋轉導師髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Spinning_Mentor#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "fasyzIliRV",
+      "englishName": "Dancing Performer Hair",
+      "currentName": "跳舞表演者髮型",
+      "displayName": "跳舞表演者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Dancing_Performer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "C1z7gdAqFH",
+      "englishName": "Bearhug Hermit Hair",
+      "currentName": "熊抱隱士髮型",
+      "displayName": "熊抱隱士髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Bearhug_Hermit#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "IRhRDSL-8R",
+      "englishName": "Prophet of Fire Hair",
+      "currentName": "先知之火焰髮型",
+      "displayName": "先知之火焰髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Prophet_of_Fire#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "PN1kAtqtky",
+      "englishName": "Prophet of Air Hair",
+      "currentName": "先知之空氣髮型",
+      "displayName": "先知之空氣髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Prophet_of_Air#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "kQMCuUAOtU",
+      "englishName": "Prophet of Earth Hair",
+      "currentName": "先知之地球髮型",
+      "displayName": "先知之地球髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Prophet_of_Earth#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "JeLUbTDjy3",
+      "englishName": "Prophet of Water Hair",
+      "currentName": "先知之水髮型",
+      "displayName": "高馬尾",
+      "aliases": [
+        "水先知高馬尾"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Prophet_of_Water#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "高馬尾",
+          "platform": "Bilibili",
+          "author": "檸檬味的2546",
+          "url": "https://www.bilibili.com/video/BV1Ce4y1a7qW/"
+        },
+        {
+          "name": "高馬尾",
+          "platform": "Bilibili",
+          "author": "光遇-Tiramisu裡的時光",
+          "url": "https://www.bilibili.com/video/BV1d64y1X7cZ/"
+        }
+      ]
+    },
+    {
+      "guid": "yiZSilInIg",
+      "englishName": "Grateful Shell Collector Hair",
+      "currentName": "感恩貝殼收藏家髮型",
+      "displayName": "正太頭",
+      "aliases": [
+        "正太髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Grateful_Shell_Collector#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "正太頭",
+          "platform": "Bilibili",
+          "author": "駱梟然_星年",
+          "url": "https://www.bilibili.com/video/BV1Et4y1W7fa"
+        },
+        {
+          "name": "正太頭",
+          "observedName": "正太髮型",
+          "platform": "Bilibili",
+          "author": "SKY米樂樂",
+          "url": "https://search.bilibili.com/all?keyword=%E5%85%89%E9%81%87%E7%9A%86%E5%8F%AF%E6%8B%8D"
+        }
+      ]
+    },
+    {
+      "guid": "hGLEh1ula3",
+      "englishName": "Hiking Grouch Hair",
+      "currentName": "健行壞脾氣髮型",
+      "displayName": "健行壞脾氣髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hiking_Grouch#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "DH-qXh6CMZ",
+      "englishName": "Rallying Thrillseeker Hair",
+      "currentName": "鼓舞尋刺激者髮型",
+      "displayName": "鼓舞尋刺激者髮型",
+      "aliases": [
+        "總裁頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Rallying_Thrillseeker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "總裁頭",
+          "platform": "Bilibili",
+          "author": "月啊_月",
+          "url": "https://search.bilibili.com/all?keyword=%E7%83%AD%E8%A1%80%E8%BF%90%E5%8A%A8%E5%91%98%E5%8F%91%E5%9E%8B"
+        }
+      ]
+    },
+    {
+      "guid": "e6JjMLgK2V",
+      "englishName": "Timid Bookworm Hair",
+      "currentName": "膽小書蟲髮型",
+      "displayName": "膽小書蟲髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Timid_Bookworm#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "hC1gh9FWhv",
+      "englishName": "Jelly Whisperer Hair",
+      "currentName": "果凍語者髮型",
+      "displayName": "水母頭",
+      "aliases": [],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Jelly_Whisperer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "水母頭",
+          "platform": "Bilibili",
+          "author": "養隻魈魈子",
+          "url": "https://www.bilibili.com/video/BV1Sa411K72i/"
+        },
+        {
+          "name": "水母頭",
+          "platform": "Bilibili",
+          "author": "光遇-Tiramisu裡的時光",
+          "url": "https://www.bilibili.com/video/BV1d64y1X7cZ/"
+        }
+      ]
+    },
+    {
+      "guid": "8vNIpRiWxo",
+      "englishName": "Playfighting Herbalist Hair",
+      "currentName": "嬉鬧草藥師髮型",
+      "displayName": "粗辮",
+      "aliases": [
+        "粗辮髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Playfighting_Herbalist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "粗辮",
+          "observedName": "粗辮髮型",
+          "platform": "Bilibili",
+          "author": "機小杼",
+          "url": "https://www.bilibili.com/video/BV1wqYNefEQT/"
+        },
+        {
+          "name": "粗辮",
+          "observedName": "粗辮先祖",
+          "platform": "Bilibili",
+          "author": "月啊_月",
+          "url": "https://search.bilibili.com/all?keyword=%E6%83%85%E7%BB%AA%E8%8D%89%E8%8D%AF%E5%B8%88"
+        }
+      ]
+    },
+    {
+      "guid": "1pSVV2aJ5S",
+      "englishName": "Snoozing Carpenter Hair",
+      "currentName": "瞌睡木匠髮型",
+      "displayName": "公主頭",
+      "aliases": [],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Snoozing_Carpenter#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "公主頭",
+          "platform": "抖音",
+          "author": "破譯進度99%",
+          "url": "https://www.douyin.com/video/7569630868328526245"
+        },
+        {
+          "name": "公主頭",
+          "platform": "TapTap",
+          "author": "陌夭夭夭",
+          "url": "https://www.taptap.cn/moment/747469853773793294"
+        }
+      ]
+    },
+    {
+      "guid": "PxvVMovhCo",
+      "englishName": "Scarecrow Farmer Hair",
+      "currentName": "稻草人農夫髮型",
+      "displayName": "稻草人農夫髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Scarecrow_Farmer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "TyRibJeEa5",
+      "englishName": "Crab Walker Hair",
+      "currentName": "螃蟹行者髮型",
+      "displayName": "螃蟹行者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Crab_Walker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "ad7KAaSuU8",
+      "englishName": "Indifferent Alchemist Hair",
+      "currentName": "冷漠煉金術士髮型",
+      "displayName": "冷漠煉金術士髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Indifferent_Alchemist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "0HHq0_mt50",
+      "englishName": "Nodding Muralist Hair",
+      "currentName": "點頭壁畫家髮型",
+      "displayName": "點頭壁畫家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Nodding_Muralist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "mK47aJa3Uy",
+      "englishName": "Respectful Pianist Hair",
+      "currentName": "致敬鋼琴家髮型",
+      "displayName": "致敬鋼琴家髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Respectful_Pianist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "hsTWje5YU_",
+      "englishName": "Troupe Juggler Hair",
+      "currentName": "劇團雜耍者髮型",
+      "displayName": "冰淇淋頭",
+      "aliases": [
+        "冰淇淋髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Troupe_Juggler#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "冰淇淋頭",
+          "platform": "Bilibili",
+          "author": "堯堯天上星",
+          "url": "https://www.bilibili.com/video/BV1aS4y1y7bV/"
+        },
+        {
+          "name": "冰淇淋頭",
+          "observedName": "冰淇淋髮型",
+          "platform": "小米遊戲中心",
+          "author": "第六君",
+          "url": "https://game.xiaomi.com/viewpoint/1360104664_1624127541702_11"
+        }
+      ]
+    },
+    {
+      "guid": "stQCebAgsm",
+      "englishName": "Festival Spin Dancer Hair",
+      "currentName": "節慶旋轉舞者髮型",
+      "displayName": "節慶旋轉舞者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Festival_Spin_Dancer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "hySf4FUV-w",
+      "englishName": "Sparkler Parent Hair",
+      "currentName": "煙火棒家長髮型",
+      "displayName": "煙火棒家長髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sparkler_Parent#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "4NjsRif40c",
+      "englishName": "Confetti Cousin Hair",
+      "currentName": "彩紙表親髮型",
+      "displayName": "蝴蝶結頭",
+      "aliases": [
+        "蝴蝶結"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Confetti_Cousin#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "蝴蝶結頭",
+          "platform": "Bilibili",
+          "author": "SKY米樂樂",
+          "url": "https://www.bilibili.com/video/BV1WC4y1f7Gm/"
+        },
+        {
+          "name": "蝴蝶結頭",
+          "observedName": "蝴蝶結先祖",
+          "platform": "Bilibili",
+          "author": "光遇-Tiramisu裡的時光",
+          "url": "https://www.bilibili.com/video/BV1d64y1X7cZ/"
+        }
+      ]
+    },
+    {
+      "guid": "A3jFFEXAKu",
+      "englishName": "Crab Whisperer Hair",
+      "currentName": "蟹語者髮型",
+      "displayName": "太陽帽",
+      "aliases": [
+        "寬簷太陽帽"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Crab_Whisperer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "太陽帽",
+          "observedName": "寬簷太陽帽",
+          "platform": "Bilibili",
+          "author": "一塊融化的冰",
+          "url": "https://search.bilibili.com/all?keyword=%E8%9E%83%E8%9F%B9%E5%8F%AB%E5%85%88%E7%A5%96%E4%BD%8D%E7%BD%AE%2F"
+        },
+        {
+          "name": "太陽帽",
+          "observedName": "寬簷太陽帽",
+          "platform": "Bilibili",
+          "author": "光遇大軟子",
+          "url": "https://search.bilibili.com/all?keyword=%E8%9E%83%E8%9F%B9%E5%8F%AB%E5%85%88%E7%A5%96%E4%BD%8D%E7%BD%AE%2F"
+        }
+      ]
+    },
+    {
+      "guid": "EjjybJGcTN",
+      "englishName": "Twirling Champion Hair",
+      "currentName": "迴旋冠軍髮型",
+      "displayName": "迴旋冠軍髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Twirling_Champion#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "qPAqxHGUVI",
+      "englishName": "Laidback Pioneer Hair",
+      "currentName": "隨性先驅髮型",
+      "displayName": "隨性先驅髮型",
+      "aliases": [
+        "花苞盤頭",
+        "花苞頭"
+      ],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Laidback_Pioneer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "花苞頭",
+          "platform": "TapTap",
+          "author": "光遇華妃厶",
+          "url": "https://www.taptap.cn/app/62448/topic?group_label_id=47740&type=group_label"
+        }
+      ]
+    },
+    {
+      "guid": "Ur7gRzB_VK",
+      "englishName": "Doublefive Light Catcher Hair",
+      "currentName": "擊掌淺色捕捉者髮型",
+      "displayName": "斗笠",
+      "aliases": [
+        "綴珠斗笠"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Doublefive_Light_Catcher#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "斗笠",
+          "platform": "TapTap",
+          "author": "光遇華妃厶",
+          "url": "https://www.taptap.cn/app/62448/topic?group_label_id=47740&type=group_label"
+        },
+        {
+          "name": "斗笠",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://search.bilibili.com/all?keyword=%E5%85%89%E9%81%87%E6%9C%AC%E5%91%A8%E5%A4%8D%E5%88%BB"
+        }
+      ]
+    },
+    {
+      "guid": "BGoYhVYvBZ",
+      "englishName": "Piggyback Lightseeker Hair",
+      "currentName": "背背追光者髮型",
+      "displayName": "背背追光者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Piggyback_Lightseeker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "HzMNk4W-bM",
+      "englishName": "Provoking Performer Hair",
+      "currentName": "挑釁表演者髮型",
+      "displayName": "挑釁表演者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Provoking_Performer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "L5rpNhBlkt",
+      "englishName": "Stretching Guru Hair",
+      "currentName": "伸展高人髮型",
+      "displayName": "伸展高人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Stretching_Guru#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "VIQ3DJwLpu",
+      "englishName": "Sassy Drifter Hair",
+      "currentName": "刁蠻浪者髮型",
+      "displayName": "刁蠻浪者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Sassy_Drifter#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "MhNSP7HiqL",
+      "englishName": "Revival Ultimate Hair",
+      "currentName": "歸巢季畢業禮髮型",
+      "displayName": "歸巢季畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hopeful_Steward#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Gon7mR-WVa",
+      "englishName": "AURORA Ultimate Hair",
+      "currentName": "歐若拉畢業禮髮型",
+      "displayName": "歐若拉畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/AURORA_Guide#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "Lw93RiDG46",
+      "englishName": "Performance Ultimate Hair",
+      "currentName": "白梟髮型",
+      "displayName": "白梟",
+      "aliases": [
+        "白梟頭",
+        "白梟髮型",
+        "貓貓頭"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Performance_Guide#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "白梟",
+          "observedName": "白梟髮型",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://www.bilibili.com/video/BV1Fz4y187bd/"
+        },
+        {
+          "name": "白梟",
+          "observedName": "白梟（帝企鵝）髮型",
+          "platform": "天天要聞",
+          "author": "林克",
+          "url": "https://daydaynews.cc/zh-hans/game/2917202.html"
+        }
+      ]
+    },
+    {
+      "guid": "dTnb7tLoOB",
+      "englishName": "Little Prince Ultimate Hair",
+      "currentName": "小王子季畢業禮髮型",
+      "displayName": "小王子頭",
+      "aliases": [
+        "小王子髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/The_Rose#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "小王子頭",
+          "observedName": "小王子髮型",
+          "platform": "Bilibili",
+          "author": "福氣滿滿小財神",
+          "url": "https://search.bilibili.com/all?keyword=%E5%B0%8F%E7%8E%8B%E5%AD%90%E5%AD%A3%E5%85%91%E6%8D%A2%E6%A0%91"
+        },
+        {
+          "name": "小王子頭",
+          "observedName": "小王子髮型",
+          "platform": "Bilibili",
+          "author": "綢月十三",
+          "url": "https://search.bilibili.com/all?keyword=%E5%85%89%E9%81%87%E5%B0%8F%E7%8E%8B%E5%AD%90%E5%AD%A3%E8%8A%82"
+        }
+      ]
+    },
+    {
+      "guid": "_qNmWZx0rp",
+      "englishName": "Assembly Ultimate Hair",
+      "currentName": "重組畢業禮髮型",
+      "displayName": "重組畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Assembly_Guide#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "EUVtYtLoeB",
+      "englishName": "Enchantment Ultimate Hair",
+      "currentName": "魔法畢業禮髮型",
+      "displayName": "魔法畢業禮髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Enchantment_Guide#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "wXiFi4y6YU",
+      "englishName": "Rhythm Ultimate Hair",
+      "currentName": "白鳥髮型",
+      "displayName": "白鳥",
+      "aliases": [
+        "白鳥頭",
+        "白鳥髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Rhythm_Guide#Ultimate_Gifts",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "白鳥",
+          "observedName": "白鳥髮型",
+          "platform": "Bilibili",
+          "author": "柏時嶼",
+          "url": "https://www.bilibili.com/opus/484678774371762666"
+        },
+        {
+          "name": "白鳥",
+          "observedName": "白鳥 vs 白梟",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://www.bilibili.com/video/BV1Fz4y187bd/"
+        }
+      ]
+    },
+    {
+      "guid": "RIkdOtUAeN",
+      "englishName": "Vault Elder Hair",
+      "currentName": "禁閣長老髮型",
+      "displayName": "禁閣長老髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Vault_Elder#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "SSrCZW8Cf-",
+      "englishName": "Wasteland Elder Hair",
+      "currentName": "龍骨髮型",
+      "displayName": "龍骨",
+      "aliases": [
+        "龍骨頭",
+        "龍骨髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Wasteland_Elder#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "龍骨",
+          "observedName": "龍骨髮型",
+          "platform": "Bilibili",
+          "author": "李難瘦2333",
+          "url": "https://www.bilibili.com/video/BV1HK4y1d7ac/"
+        },
+        {
+          "name": "龍骨",
+          "platform": "Bilibili",
+          "author": "漫美假髮",
+          "url": "https://www.bilibili.com/video/BV1GV411m7gm/"
+        }
+      ]
+    },
+    {
+      "guid": "AjiVTxnCly",
+      "englishName": "Valley Elder Hair 2",
+      "currentName": "霞谷長老髮型 2",
+      "displayName": "霞谷長老髮型 2",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Valley_Elders#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "YdtLj5dJE7",
+      "englishName": "Valley Elder Hair 1",
+      "currentName": "霞谷長老髮型 1",
+      "displayName": "霞谷長老髮型 1",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Valley_Elders#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "T0wsTbmzvv",
+      "englishName": "Forest Elder Hair",
+      "currentName": "雨林長老髮型（雨媽）",
+      "displayName": "雨媽",
+      "aliases": [
+        "雨媽頭",
+        "雨媽髮型"
+      ],
+      "confidence": "consensus",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Forest_Elder#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": [
+        {
+          "name": "雨媽",
+          "observedName": "雨媽髮型",
+          "platform": "Bilibili",
+          "author": "-織束月色-",
+          "url": "https://www.bilibili.com/video/BV1R94y1a7f8/"
+        },
+        {
+          "name": "雨媽",
+          "observedName": "雨媽髮型",
+          "platform": "Bilibili",
+          "author": "sky光遇_軒少",
+          "url": "https://www.bilibili.com/video/BV18o4y147aQ/"
+        }
+      ]
+    },
+    {
+      "guid": "x_pH3kjLjO",
+      "englishName": "Prairie Elder Hair",
+      "currentName": "雲野長老髮型",
+      "displayName": "雲野長老髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Prairie_Elder#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "7FqA0RC1D4",
+      "englishName": "Isle Elder Hair",
+      "currentName": "晨島長老髮型",
+      "displayName": "晨島長老髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Isle_Elder#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "exlIascN2K",
+      "englishName": "Praying Acolyte Hair",
+      "currentName": "祈禱侍者髮型",
+      "displayName": "祈禱侍者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Praying_Acolyte#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "DTMwTb6_mu",
+      "englishName": "Polite Scholar Hair",
+      "currentName": "禮貌學者髮型",
+      "displayName": "禮貌學者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Polite_Scholar#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "tBRghYOFon",
+      "englishName": "Meditating Monastic Hair",
+      "currentName": "禪修院士髮型",
+      "displayName": "禪修院士髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Meditating_Monastic#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "feolA3Sbwy",
+      "englishName": "Levitating Adept Hair",
+      "currentName": "漂浮高手髮型",
+      "displayName": "漂浮高手髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Levitating_Adept#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "S793LWvPuI",
+      "englishName": "Saluting Captain Hair",
+      "currentName": "敬禮艦長髮型",
+      "displayName": "敬禮艦長髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Saluting_Captain#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "DGzYI5od5x",
+      "englishName": "Stealthy Survivor Hair",
+      "currentName": "隱密倖存者髮型",
+      "displayName": "隱密倖存者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Stealthy_Survivor#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "l1nLKz7suC",
+      "englishName": "Courageous Soldier Hair",
+      "currentName": "勇敢士兵髮型",
+      "displayName": "勇敢士兵髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Courageous_Soldier#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "_oYTtTvbrv",
+      "englishName": "Fainting Warrior Hair",
+      "currentName": "昏厥戰士髮型",
+      "displayName": "昏厥戰士髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Fainting_Warrior#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "LY0kFk4zt9",
+      "englishName": "Frightened Refugee Hair",
+      "currentName": "驚恐難民髮型",
+      "displayName": "驚恐難民髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Frightened_Refugee#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "wNv_ZY93TS",
+      "englishName": "Bowing Medalist Hair",
+      "currentName": "鞠躬季軍髮型",
+      "displayName": "鞠躬季軍髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Bowing_Medalist#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "RtX7BAaov2",
+      "englishName": "Cheerful Spectator Hair",
+      "currentName": "歡呼觀眾髮型",
+      "displayName": "歡呼觀眾髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Cheerful_Spectator#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "NPM3TvV95I",
+      "englishName": "Backflipping Champion Hair",
+      "currentName": "空翻冠軍髮型",
+      "displayName": "空翻冠軍髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Backflipping_Champion#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "sNTC_fhMeO",
+      "englishName": "Confident Sightseer Hair",
+      "currentName": "自信觀光客髮型",
+      "displayName": "自信觀光客髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Confident_Sightseer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "7ypZrcAvXa",
+      "englishName": "Tearful Light Miner Hair",
+      "currentName": "悲傷淺色礦工髮型",
+      "displayName": "悲傷淺色礦工髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Tearful_Light_Miner#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "VizeW9_N4M",
+      "englishName": "Apologetic Lumberjack Hair",
+      "currentName": "歉意伐木工髮型",
+      "displayName": "歉意伐木工髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Apologetic_Lumberjack#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "KZh9gbVJU2",
+      "englishName": "Dismayed Hunter Hair",
+      "currentName": "沮喪獵人髮型",
+      "displayName": "沮喪獵人髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Dismayed_Hunter#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "UX_lsf-RuX",
+      "englishName": "Pouty Porter Hair",
+      "currentName": "嬌嗔搬運工髮型",
+      "displayName": "嬌嗔搬運工髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Pouty_Porter#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "LqipUD_Mmh",
+      "englishName": "Hide'n'Seek Pioneer Hair",
+      "currentName": "躲貓貓先驅髮型",
+      "displayName": "躲貓貓先驅髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hide%27n%27Seek_Pioneer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "aKz1gRuXma",
+      "englishName": "Blushing Prospector Hair",
+      "currentName": "害羞勘探者髮型",
+      "displayName": "害羞勘探者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Blushing_Prospector#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "5oWTpEPXWn",
+      "englishName": "Shivering Trailblazer Hair",
+      "currentName": "顫抖拓荒者髮型",
+      "displayName": "顫抖拓荒者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Shivering_Trailblazer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "0_BW6Cnzkn",
+      "englishName": "Bird Whisperer Hair",
+      "currentName": "鳥語者髮型",
+      "displayName": "鳥語者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Bird_Whisperer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "XEoOJENom1",
+      "englishName": "Laughing Light Catcher Hair",
+      "currentName": "歡笑淺色捕捉者髮型",
+      "displayName": "歡笑淺色捕捉者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Laughing_Light_Catcher#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "ISKgSOaoko",
+      "englishName": "Slumbering Shipwright Hair",
+      "currentName": "犯困船匠髮型",
+      "displayName": "犯困船匠髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Slumbering_Shipwright#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "-N-LV3VirV",
+      "englishName": "Waving Bellmaker Hair",
+      "currentName": "揮手製鈴者髮型",
+      "displayName": "揮手製鈴者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Waving_Bellmaker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "PffQbv7Rw5",
+      "englishName": "Applauding Bellmaker Hair",
+      "currentName": "鼓掌製鈴者髮型",
+      "displayName": "鼓掌製鈴者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Applauding_Bellmaker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "g95lk3pzSR",
+      "englishName": "Rejecting Voyager Hair",
+      "currentName": "回絕行者髮型",
+      "displayName": "回絕行者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Rejecting_Voyager#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "e4wyPtwoPO",
+      "englishName": "Ushering Stargazer Hair",
+      "currentName": "引路觀星者髮型",
+      "displayName": "引路觀星者髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Ushering_Stargazer#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "X6dudcTAFc",
+      "englishName": "Pointing Candlemaker Hair",
+      "currentName": "指路蠟燭匠髮型",
+      "displayName": "指路蠟燭匠髮型",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Pointing_Candlemaker#Hair",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    },
+    {
+      "guid": "QmNo-bmeLi",
+      "englishName": "Base Hair 1",
+      "currentName": "初始髮型1",
+      "displayName": "初始髮型1",
+      "aliases": [],
+      "confidence": "fallback",
+      "identitySources": [
+        "https://sky-children-of-the-light.fandom.com/wiki/Hair#Base_Hairstyle",
+        "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
+      ],
+      "playerSources": []
+    }
+  ]
+}
