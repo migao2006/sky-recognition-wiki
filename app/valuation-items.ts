@@ -37,6 +37,14 @@ const paidMarketNames = new Set([
   "Cinnamoroll Cloud Cape",
   "Cinnamoroll Bowtie",
   "Cinnamoroll Mini Companion",
+  "Fledgling Harp",
+  "Rhythm Guitar",
+  "Triumph Handpan",
+  "Blue Electric Guitar",
+  "Voice of AURORA",
+  "Vessel Flute",
+  "Triumph Violin",
+  "Fledgling Upright Piano",
 ]);
 
 export const isSeasonUltimate = (item: WikiItem) =>

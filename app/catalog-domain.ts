@@ -81,7 +81,90 @@ const verifiedUltimateItems: WikiItem[] = [
     collection: "moomin",
   },
 ];
-export const wikiItems: WikiItem[] = [...baseWikiItems, ...verifiedUltimateItems];
+type InstrumentSeed = {
+  name: string;
+  zh: string;
+  icon: string;
+  section: string;
+  collection: string;
+  group?: string;
+  guid?: string;
+};
+
+const instrumentSeeds: readonly InstrumentSeed[] = [
+  { name: "Harp", zh: "豎琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c0/LaughingLightCatcher-2.png", section: "realms", collection: "daylight-prairie" },
+  { name: "Fledgling Harp", zh: "雛鳥豎琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/ae/SOPerformance-Fledgling-harp-icon-Morybel-0146.png", section: "store", collection: "harmony-hall" },
+  { name: "Contrabass", zh: "低音提琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/64/FrightenedRefugee-3.png", section: "realms", collection: "golden-wasteland" },
+  { name: "Piano Keyboard", zh: "鋼琴鍵盤", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b0/CheerfulSpectator-Piano-Credit-Ed.png", section: "realms", collection: "valley-of-triumph" },
+  { name: "Horn", zh: "號角", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/82/LookoutScout-2.png", section: "realms", collection: "golden-wasteland" },
+  { name: "Small Bell", zh: "小鈴鐺", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/67/Mimi-4117_02_leaping_dancer_instrument.png", section: "seasons", collection: "gratitude" },
+  { name: "Large Bell", zh: "大鈴鐺", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/10/Mimi-4117_02_greeting_shaman_instrument.png", section: "seasons", collection: "gratitude" },
+  { name: "Flute", zh: "笛子", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/01/Mimi-4117_03_doublefive_light_catcher_instrument.png", section: "seasons", collection: "lightseekers" },
+  { name: "Panflute", zh: "排笛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ea/Mimi-4117_03_twirling_champion_instrument.png", section: "seasons", collection: "lightseekers" },
+  { name: "Guitar", zh: "吉他", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/cd/Mimi-4117_04_pleaful_parent_instrument.png", section: "seasons", collection: "belonging" },
+  { name: "Rhythm Guitar", zh: "節奏吉他", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4c/SOPerformance-Rhythm-Guitar-icon-Morybel-0146.png", section: "store", collection: "harmony-hall" },
+  { name: "Ukulele", zh: "烏克麗麗", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/5d/Mimi-4117_04_hairtousle_teen_instrument.png", section: "seasons", collection: "belonging" },
+  { name: "Xylophone", zh: "木琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/5f/Mimi-4117_05_thoughtful_director_instrument.png", section: "seasons", collection: "rhythm" },
+  { name: "Winter Piano", zh: "冬季鋼琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/84/Mimi-4117_05_respectful_pianist_instrument.png", section: "seasons", collection: "rhythm" },
+  { name: "Sanctuary Handpan", zh: "聖島季畢業禮手碟", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e4/Icon_instrument_sanctuary_hand_pan.png", section: "seasons", collection: "sanctuary", group: "Ultimate", guid: "Hvq52gCeih" },
+  { name: "Triumph Handpan", zh: "凱旋手碟", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/42/SOPerformance-Triumph-Handpan-icon-Morybel-0146.png", section: "store", collection: "harmony-hall" },
+  { name: "Prophecy Drum", zh: "預言季畢業禮鼓", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/1c/Icon_instrument_prophecy_drum.png", section: "seasons", collection: "prophecy", group: "Ultimate", guid: "wGQSuhVWXD" },
+  { name: "Lute", zh: "魯特琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/a8/Icon_instrument_dreams_lute.png", section: "seasons", collection: "dreams" },
+  { name: "Bugle", zh: "重組季畢業禮號角", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/83/Icon_instrument_assembly_bugle.png", section: "seasons", collection: "assembly", group: "Ultimate", guid: "B59f4_ru60" },
+  { name: "Kalimba", zh: "拇指琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d9/Icon_season_of_flight_instrument_kalimba.png", section: "seasons", collection: "flight" },
+  { name: "Electric Guitar", zh: "電吉他", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/9b/Morybel-0146-SoPerformance_-_Mellow_Musician-electrice-guitar-icon.png", section: "seasons", collection: "performance" },
+  { name: "Blue Electric Guitar", zh: "藍色電吉他", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/01/Days-of-Sky-2022-instrument-blue-electric-guitar-icon-Morybel-0146.png", section: "store", collection: "office" },
+  { name: "Voice of AURORA", zh: "AURORA 之聲", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/09/Aurora-Voice-of-Aurora-Icon-Morybel-0146-.png", section: "events", collection: "event-aurora", group: "Limited" },
+  { name: "Manta Ocarina", zh: "遙鯤陶笛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/8e/Passage-Overactive-Overachiever-Instrument-icon-Morybel-0146.png", section: "seasons", collection: "passage" },
+  { name: "Cello", zh: "大提琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4a/Musicians-Legacy-Cello-Prop-icon.png", section: "seasons", collection: "duets" },
+  { name: "Duets Cello", zh: "協奏大提琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/03/Compassionate-Cellist-Duets-Cello-icon.png", section: "seasons", collection: "duets" },
+  { name: "Harmonica", zh: "口琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0b/Spirit-of-Adventure-Harmonica-icon.png", section: "seasons", collection: "moomin" },
+  { name: "Cymbals", zh: "鈸", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/be/Radiance-Greeting-Shaman-instrument-Cymbals-icon.png", section: "seasons", collection: "radiance" },
+  { name: "Vessel Flute", zh: "陶笛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/59/Icon_instrument_vessel_flute.png", section: "store", collection: "nintendo", group: "Limited" },
+  { name: "Drum", zh: "鼓", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/89/BlushingProspector-3.png", section: "realms", collection: "hidden-forest" },
+  { name: "Triumph Violin", zh: "凱旋小提琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3c/Triumph-Violon-Instrument-icon-Morybel-0146.png", section: "store", collection: "harmony-hall" },
+  { name: "Triumph Saxophone", zh: "凱旋薩克斯風", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/05/Triumph-Saxophone-instrument-icon-Morybel-0146.png", section: "store", collection: "harmony-hall" },
+  { name: "Fortune Drum", zh: "福瑞鼓", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/28/Days-of-Fortune-Drum-icon.png", section: "events", collection: "days-of-fortune" },
+  { name: "Grand Piano", zh: "平台鋼琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f1/Musicians-Legacy-Grand-Piano-Prop-icon.png", section: "seasons", collection: "duets", group: "SeasonPass", guid: "WuZeLoUATs" },
+  { name: "Duets Grand Piano", zh: "協奏季畢業禮鋼琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/57/Duets-Ultimate-Grand-Piano-Prop-icon.png", section: "seasons", collection: "duets", group: "Ultimate", guid: "O9jSph-v7e" },
+  { name: "Fledgling Upright Piano", zh: "雛鳥直立鋼琴", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/b2/Fledgling-upright-Piano-instrument-icon.png", section: "store", collection: "harmony-hall", guid: "10Ol7H9jKg" },
+  { name: "Jam Station", zh: "即興演奏台", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/33/Jam-Station-instrument-icon.png", section: "store", collection: "harmony-hall", guid: "WMNr4yo_35" },
+  { name: "Transverse Flute", zh: "橫笛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6b/Lightmending-Light-Catcher-Instrument-icon.png", section: "seasons", collection: "lightmending" },
+];
+
+const replacedInstrumentNames = new Set([
+  ...instrumentSeeds.map((item) => item.name),
+  "Sanctuary Ultimate Handpan",
+  "Prophecy Ultimate Drum",
+  "Assembly Ultimate Bugle",
+  "The Musicians' Legacy Piano",
+  "Duets Ultimate Instrument",
+]);
+const instrumentItems: WikiItem[] = instrumentSeeds.map((item, index) => ({
+  id: 5000 + index,
+  order: index + 1,
+  guid:
+    item.guid ??
+    `instrument-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+  name: item.name,
+  type: "Instrument",
+  group: item.group ?? "",
+  icon: item.icon,
+  wiki: `https://sky-children-of-the-light.fandom.com/wiki/Instruments#${item.name.replaceAll(" ", "_")}`,
+  section: item.section,
+  collection: item.collection,
+}));
+
+export const wikiItems: WikiItem[] = [
+  ...baseWikiItems.filter((item) => !replacedInstrumentNames.has(item.name)),
+  ...verifiedUltimateItems.filter(
+    (item) => !replacedInstrumentNames.has(item.name),
+  ),
+  ...instrumentItems,
+];
+const verifiedInstrumentZh = Object.fromEntries(
+  instrumentSeeds.map((item) => [item.name, item.zh]),
+);
 const verifiedUltimateZh: Record<string, string> = {
   "Lightseekers Ultimate Umbrella": "追光季畢業禮雨傘",
   "Sanctuary Ultimate Handpan": "聖島季畢業禮手碟",
@@ -154,24 +237,16 @@ export const closetGroups = [
     key: "props",
     order: "05",
     name: "道具衣櫃",
-    types: ["Prop", "Furniture", "Instrument"],
+    types: ["Instrument", "Prop", "Furniture"],
     subs: [
-      { key: "held", name: "手持／背負道具", types: ["Prop", "Instrument"] },
-      { key: "large", name: "大型擺設", types: ["Furniture"] },
-      { key: "small", name: "小型擺設", types: ["Furniture"] },
+      { key: "Instrument", name: "樂器", types: ["Instrument"] },
+      { key: "Prop", name: "手持／背負道具", types: ["Prop"] },
+      { key: "Furniture", name: "家具／擺設", types: ["Furniture"] },
     ],
   },
 ];
-const largeFurniture =
-  /table|chair|bench|sofa|couch|bed|cabinet|shelf|wardrobe|bathtub|kitchen|oven|stove|desk|tent|piano|teaset|washstand|drawers|chandelier|bookcase|swing/i;
 export const matchesSub = (x: WikiItem, sub: string) =>
-  sub === "large"
-    ? x.type === "Furniture" && largeFurniture.test(x.name)
-    : sub === "small"
-      ? x.type === "Furniture" && !largeFurniture.test(x.name)
-      : sub === "held"
-        ? ["Prop", "Instrument"].includes(x.type)
-        : x.type === sub;
+  x.type === sub;
 export const seasonZh: Record<string, string> = {
   gratitude: "感恩季",
   lightseekers: "追光季",
@@ -1379,6 +1454,7 @@ const communityZh: Record<string, string> = {
   "Ocean Sea Foam Boots": "海洋泡沫靴",
 };
 export const zhName = (name: string) => {
+  if (verifiedInstrumentZh[name]) return verifiedInstrumentZh[name];
   if (verifiedUltimateZh[name]) return verifiedUltimateZh[name];
   if (verifiedZh[name]) return verifiedZh[name];
   if (exactZh[name]) return exactZh[name];

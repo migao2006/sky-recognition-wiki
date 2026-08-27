@@ -69,6 +69,17 @@ test("explicit packs and verified standalone IAPs are treated as paid", () => {
   assert.equal(isPaidItem(item({ name: "Spooky Bat Cape" })), true);
 });
 
+test("paid instruments retain their market classification", () => {
+  assert.equal(
+    isPaidItem(item({ name: "Triumph Violin", type: "Instrument" })),
+    true,
+  );
+  assert.equal(
+    isPaidItem(item({ name: "Transverse Flute", type: "Instrument" })),
+    false,
+  );
+});
+
 test("canonicalizes real pack anchors without merging separate sets", () => {
   const journey = item({
     name: "Journey Cape",

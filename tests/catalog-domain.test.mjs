@@ -37,8 +37,10 @@ const loadCatalogDomain = async () => {
 };
 
 const {
+  closetGroups,
   graduationSeasonSlugs,
   isProfessionalVideoFocus,
+  matchesSub,
   matchesSourceFilter,
   seasonGraduationItems,
   showcaseClusterOrder,
@@ -67,6 +69,53 @@ test("translates verified and tokenized catalog names", () => {
     "追光季畢業禮雨傘",
   );
   assert.equal(zhName("Rainbow Cape"), "彩虹斗篷");
+  assert.equal(zhName("Transverse Flute"), "橫笛");
+});
+
+test("keeps instruments separate in the fifth closet", () => {
+  const propsCloset = closetGroups.find((group) => group.key === "props");
+  assert.ok(propsCloset);
+  assert.deepEqual(
+    propsCloset.subs.map((sub) => [sub.key, sub.name]),
+    [
+      ["Instrument", "樂器"],
+      ["Prop", "手持／背負道具"],
+      ["Furniture", "家具／擺設"],
+    ],
+  );
+
+  const instruments = wikiItems.filter((entry) => entry.type === "Instrument");
+  assert.equal(instruments.length, 38);
+  assert.equal(new Set(instruments.map((entry) => entry.guid)).size, 38);
+  assert.ok(instruments.every((entry) => matchesSub(entry, "Instrument")));
+  assert.ok(instruments.every((entry) => !matchesSub(entry, "Prop")));
+  assert.ok(instruments.some((entry) => entry.name === "Harp"));
+  assert.ok(instruments.some((entry) => entry.name === "Transverse Flute"));
+  for (const [name, guid] of [
+    ["Sanctuary Handpan", "Hvq52gCeih"],
+    ["Prophecy Drum", "wGQSuhVWXD"],
+    ["Bugle", "B59f4_ru60"],
+    ["Grand Piano", "WuZeLoUATs"],
+    ["Duets Grand Piano", "O9jSph-v7e"],
+    ["Fledgling Upright Piano", "10Ol7H9jKg"],
+    ["Jam Station", "WMNr4yo_35"],
+  ]) {
+    assert.equal(instruments.find((entry) => entry.name === name)?.guid, guid);
+  }
+  assert.equal(
+    instruments.find((entry) => entry.name === "Grand Piano")?.group,
+    "SeasonPass",
+  );
+  for (const name of [
+    "Triumph Violin",
+    "Triumph Saxophone",
+    "Fledgling Upright Piano",
+    "Jam Station",
+  ]) {
+    const entry = instruments.find((item) => item.name === name);
+    assert.equal(entry?.section, "store");
+    assert.equal(entry?.group, "");
+  }
 });
 
 test("keeps the verified Lightseekers graduation gift in valuation order", () => {
