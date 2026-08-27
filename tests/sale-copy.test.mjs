@@ -71,6 +71,9 @@ test("formats continuous graduation progress from the first owned season", () =>
   }
   assert.ok(copy.indexOf("拾光2/3") < copy.indexOf("歸巢⁰"));
   assert.ok(copy.indexOf("歸巢⁰") < copy.indexOf("九色鹿畢"));
+  const progressLines = copy.split("\n").slice(1, 4);
+  assert.equal(progressLines[0], "拾光2/3｜歸巢⁰｜九色鹿畢｜築巢1/2");
+  assert.equal(progressLines[1], "協奏1/3｜姆明⁰｜染色畢｜青鳥畢");
   assert.doesNotMatch(copy, /拾光\s+2\/3|九色鹿季|畢業/);
   assert.match(copy, /✦ 綁定狀態\nGG 出｜NS 不出｜Steam 遺失／異常/);
 });
@@ -171,9 +174,11 @@ test("groups collaborations, anniversaries, and special collections", () => {
   assert.match(copy, /✦ 限定聯動\n九色鹿｜鹿角・九色鹿面具\nNintendo｜精靈髮型/);
   assert.match(copy, /✦ 週年收藏\n6th｜週年帽\n5th｜週年T恤\n其他｜茶杯頭飾/);
   assert.match(copy, /✦ 特殊限定/);
-  assert.match(copy, /惡作劇之日｜女巫髮型/);
-  assert.match(copy, /國服限定｜春日幸運草嫩芽/);
-  assert.match(copy, /✦ 其他收藏\n常駐商店｜新手鋼琴/);
+  assert.match(copy, /女巫髮型/);
+  assert.match(copy, /春日幸運草嫩芽/);
+  assert.doesNotMatch(copy, /惡作劇之日｜|國服限定｜/);
+  assert.match(copy, /✦ 其他收藏\n新手鋼琴/);
+  assert.doesNotMatch(copy, /常駐商店｜/);
   assert.equal(copy.match(/鹿角/g)?.length, 1);
   assert.equal(copy.match(/精靈髮型/g)?.length, 1);
   assert.equal(copy.match(/╶────── ✦ ──────╴/g)?.length, 5);

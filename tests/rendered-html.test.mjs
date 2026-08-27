@@ -30,6 +30,7 @@ test("renders the account organizer", async () => {
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
   assert.doesNotMatch(source, /依季節匯出|匯出付費物品與畢業禮/);
   assert.match(source, /出售文案/);
+  assert.match(source, /saleCopyPresetGuids\.has\(item\.guid\)/);
   assert.match(source, /key === "nintendo" && option\.key === "transfer"/);
   assert.match(source, /匯出 JSON/);
   assert.match(source, /匯入 JSON/);

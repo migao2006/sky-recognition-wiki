@@ -133,6 +133,11 @@ const bundlePresetItems = new Map(
     ),
   ]),
 );
+const saleCopyPresetGuids = new Set(
+  [...bundlePresetItems.values()].flatMap((items) =>
+    items.map((item) => item.guid),
+  ),
+);
 const validItemGuids = new Set(wikiItems.map((item) => item.guid));
 const emptySelectedGuids = new Set<string>();
 type FocusMode = "all" | "video" | "ultimate" | "limited";
@@ -522,6 +527,7 @@ export default function AccountOrganizer() {
         (item) =>
           isLimitedItem(item) ||
           isPaidItem(item) ||
+          saleCopyPresetGuids.has(item.guid) ||
           item.collection === "event-sky-anniversary",
       ),
     );

@@ -78,15 +78,9 @@ const wrapSeasonProgress = (seasons: SaleSeasonProgress[]) => {
     if (season.total > 0 && season.owned === season.total) return `${name}畢`;
     return `${name}${season.owned}/${season.total}`;
   });
-  const lines: string[] = [];
-  for (const token of tokens) {
-    const previous = lines.at(-1);
-    const joined = previous ? `${previous}｜${token}` : token;
-    if (previous && joined.length > 34) lines.push(token);
-    else if (previous) lines[lines.length - 1] = joined;
-    else lines.push(token);
-  }
-  return lines;
+  return Array.from({ length: Math.ceil(tokens.length / 4) }, (_, index) =>
+    tokens.slice(index * 4, index * 4 + 4).join("｜"),
+  );
 };
 
 const collaborationSeries = [
@@ -240,15 +234,23 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
       );
     });
 
+  const ordered = (groups: Map<string, CopyGroup>) =>
+    [...groups.values()].sort(
+      (a, b) => a.rank - b.rank || a.name.localeCompare(b.name, "zh-Hant"),
+    );
   const format = (groups: Map<string, CopyGroup>) =>
-    [...groups.values()]
-      .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name, "zh-Hant"))
-      .map((group) => `${group.name}｜${group.items.join("・")}`);
+    ordered(groups).map((group) => `${group.name}｜${group.items.join("・")}`);
+  const directItems = (groups: Map<string, CopyGroup>) => {
+    const names = ordered(groups).flatMap((group) => group.items);
+    return Array.from({ length: Math.ceil(names.length / 4) }, (_, index) =>
+      names.slice(index * 4, index * 4 + 4).join("・"),
+    );
+  };
   return {
     limited: format(limited),
     anniversaries: format(anniversaries),
-    special: format(special),
-    other: format(other),
+    special: directItems(special),
+    other: directItems(other),
   };
 };
 
