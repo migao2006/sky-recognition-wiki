@@ -927,11 +927,13 @@ a:focus-visible {
 .account-extra-grid .account-notes {
   grid-column: 1/-1;
 }
-.quick-select {
+.quick-select,
+.season-picker {
   border-inline: 1px solid var(--line);
   background: #0a101a;
 }
-.quick-select summary {
+.quick-select summary,
+.season-picker summary {
   min-height: 64px;
   display: flex;
   align-items: center;
@@ -943,14 +945,17 @@ a:focus-visible {
   list-style: none;
   user-select: none;
 }
-.quick-select summary::-webkit-details-marker {
+.quick-select summary::-webkit-details-marker,
+.season-picker summary::-webkit-details-marker {
   display: none;
 }
-.quick-select summary b {
+.quick-select summary b,
+.season-picker summary b {
   color: #f4f7fb;
   font-size: 15px;
 }
-.quick-select summary i {
+.quick-select summary i,
+.season-picker summary i {
   width: 32px;
   height: 32px;
   display: grid;
@@ -963,10 +968,12 @@ a:focus-visible {
   font-style: normal;
   transition: transform 0.2s;
 }
-.quick-select[open] summary i {
+.quick-select[open] summary i,
+.season-picker[open] summary i {
   transform: rotate(180deg);
 }
-.quick-select-body {
+.quick-select-body,
+.season-picker-body {
   padding: 2px 22px 22px;
 }
 .quick-select-body > section {
@@ -1871,16 +1878,21 @@ footer {
     height: 40px;
     font-size: 12px;
   }
-  .quick-select summary {
+  .quick-select summary,
+  .season-picker summary {
     min-height: 60px;
     padding: 12px 14px;
   }
-  .quick-select summary b {
+  .quick-select summary b,
+  .season-picker summary b {
     font-size: 14px;
+  }
+  .quick-select-body,
+  .season-picker-body {
+    padding: 0 12px 14px;
   }
   .quick-select-body {
     gap: 12px;
-    padding: 0 12px 14px;
   }
   .quick-select-body > section {
     padding: 12px;
@@ -2074,48 +2086,6 @@ footer {
 }
 
 /* 季節項鍊與畢業禮逐件選擇 */
-.season-picker {
-  border-inline: 1px solid var(--line);
-  background: #0a101a;
-}
-.season-picker summary {
-  min-height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 22px;
-  border-top: 1px solid var(--line);
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-}
-.season-picker summary::-webkit-details-marker {
-  display: none;
-}
-.season-picker summary b {
-  color: #f4f7fb;
-  font-size: 15px;
-}
-.season-picker summary i {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #060a11;
-  color: #8eb5e3;
-  font-size: 17px;
-  font-style: normal;
-  transition: transform 0.2s;
-}
-.season-picker[open] summary i {
-  transform: rotate(180deg);
-}
-.season-picker-body {
-  padding: 2px 22px 22px;
-}
 .season-ultimate-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -2255,16 +2225,6 @@ footer {
   }
 }
 @media (max-width: 700px) {
-  .season-picker summary {
-    min-height: 60px;
-    padding: 12px 14px;
-  }
-  .season-picker summary b {
-    font-size: 14px;
-  }
-  .season-picker-body {
-    padding: 0 12px 14px;
-  }
   .season-ultimate-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;

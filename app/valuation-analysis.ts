@@ -209,6 +209,18 @@ const resourceValue = (resources: ValuationResources | undefined) => {
   };
 };
 
+const isPlatformTransferable = (
+  item: WikiItem,
+  bindings: Readonly<Record<string, BindingStatus>>,
+  warnings: string[],
+  label: string,
+) => {
+  const platform = platformBindingForItem(item);
+  if (!platform || bindings[platform] === "transfer") return true;
+  warnings.push(`${platform} 無綁或無法交易，該平台${label}不列入參考價格。`);
+  return false;
+};
+
 export const estimateValuation = ({
   analysis,
   resources,
@@ -280,16 +292,8 @@ export const estimateValuation = ({
       warnings.push("國服限定物品不列入國際服參考價格。");
       return;
     }
-    const platform = platformBindingForItem(item);
-    const status = platform
-      ? (analysis.bindings[platform] ?? "none")
-      : "transfer";
-    if (platform && status !== "transfer") {
-      warnings.push(
-        `${platform} 無綁或無法交易，該平台物品不列入參考價格。`,
-      );
+    if (!isPlatformTransferable(item, analysis.bindings, warnings, "物品"))
       return;
-    }
     const key = canonicalPackageKey(item);
     if (key) packageMap.set(key, item);
   });
@@ -322,22 +326,11 @@ export const estimateValuation = ({
       warnings.push("國服限定物品不列入國際服參考價格。");
       continue;
     }
-    if (
-      canonicalPackageKey(item) &&
-      packageKeys.has(canonicalPackageKey(item)!)
-    )
-      continue;
+    const packageKey = canonicalPackageKey(item);
+    if (packageKey && packageKeys.has(packageKey)) continue;
     const kind = limitedItemKind(item);
-    const platform = platformBindingForItem(item);
-    const status = platform
-      ? (analysis.bindings[platform] ?? "none")
-      : "transfer";
-    if (platform && status !== "transfer") {
-      warnings.push(
-        `${platform} 無綁或無法交易，該平台限定不列入參考價格。`,
-      );
+    if (!isPlatformTransferable(item, analysis.bindings, warnings, "限定"))
       continue;
-    }
     const key = `${kind}:${item.collection || item.name}`;
     if (limitedKeys.has(key)) continue;
     limitedKeys.add(key);

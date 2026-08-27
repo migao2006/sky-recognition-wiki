@@ -24,42 +24,6 @@ const verifiedUltimateItems: WikiItem[] = [
     collection: "lightseekers",
   },
   {
-    id: 394,
-    order: 1500,
-    guid: "Hvq52gCeih",
-    name: "Sanctuary Ultimate Handpan",
-    type: "Prop",
-    group: "Ultimate",
-    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/e4/Icon_instrument_sanctuary_hand_pan.png",
-    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sanctuary_Guide#Ultimate_Gifts",
-    section: "seasons",
-    collection: "sanctuary",
-  },
-  {
-    id: 410,
-    order: 1700,
-    guid: "wGQSuhVWXD",
-    name: "Prophecy Ultimate Drum",
-    type: "Prop",
-    group: "Ultimate",
-    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/1c/Icon_instrument_prophecy_drum.png",
-    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Prophecy_Guide#Ultimate_Gifts",
-    section: "seasons",
-    collection: "prophecy",
-  },
-  {
-    id: 438,
-    order: 1900,
-    guid: "B59f4_ru60",
-    name: "Assembly Ultimate Bugle",
-    type: "Prop",
-    group: "Ultimate",
-    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/8/83/Icon_instrument_assembly_bugle.png",
-    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Assembly_Guide#Ultimate_Gifts",
-    section: "seasons",
-    collection: "assembly",
-  },
-  {
     id: 637,
     order: 3900,
     guid: "W-3Nh_yWGv",
@@ -257,9 +221,6 @@ const verifiedHeldPropZh = Object.fromEntries(
 );
 const verifiedUltimateZh: Record<string, string> = {
   "Lightseekers Ultimate Umbrella": "追光季畢業禮雨傘",
-  "Sanctuary Ultimate Handpan": "聖島季畢業禮手碟",
-  "Prophecy Ultimate Drum": "預言季畢業禮鼓",
-  "Assembly Ultimate Bugle": "重組季畢業禮號角",
   "Moments Ultimate Camera": "拾光季畢業禮相機",
   "Moomin Ultimate Umbrella": "姆明季畢業禮雨傘",
 };
@@ -492,6 +453,16 @@ export const sourceKind = (x: WikiItem) => {
   }
   return x.section === "base" ? "基礎" : "國服限定";
 };
+export const sourceCollectionName = (x: WikiItem) =>
+  x.section === "seasons"
+    ? seasonZh[x.collection] || x.collection
+    : x.section === "events"
+      ? eventZh[x.collection] || x.collection
+      : x.section === "realms"
+        ? realmZh[x.collection] || "常駐地圖"
+        : x.section === "store"
+          ? storeSource(x)
+          : sourceKind(x);
 const eventOrder = new Map(
   Object.keys(eventZh).map((collection, index) => [collection, index]),
 );
@@ -514,17 +485,11 @@ export const showcaseClusterOrder = (item: WikiItem) => {
   return 8000;
 };
 export const source = (x: WikiItem) =>
-  x.section === "seasons"
-    ? `季節 · ${seasonZh[x.collection] || x.collection}`
-    : x.section === "events"
-      ? `${sourceKind(x)} · ${eventZh[x.collection] || x.collection}`
-      : x.section === "realms"
-        ? `常駐地圖 · ${realmZh[x.collection] || x.collection}`
-        : x.section === "store"
-          ? `${sourceKind(x)} · ${storeSource(x)}`
-          : x.section === "base"
-            ? "基礎 · 初始裝扮與動作"
-            : `${sourceKind(x)} · ${x.collection}`;
+  x.section === "base"
+    ? "基礎 · 初始裝扮與動作"
+    : x.section === "realms" || x.section === "other"
+      ? `${sourceKind(x)} · ${realmZh[x.collection] || x.collection}`
+      : `${sourceKind(x)} · ${sourceCollectionName(x)}`;
 const exactZh: Record<string, string> = {
   "Little Prince Ultimate Rose": "小王子畢業玫瑰",
   "Sword Outfit": "劍士服",

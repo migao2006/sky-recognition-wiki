@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import ts from "typescript";
-
-const moduleUrl = (source) =>
-  `data:text/javascript,${encodeURIComponent(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText)}`;
+import { asModuleUrl } from "./helpers/transpile.mjs";
 const sources = await Promise.all(
   [
     "account-config.ts",
@@ -16,27 +13,27 @@ const sources = await Promise.all(
 );
 const [config, calibration, items, bands, analysis] = sources;
 const loaded = await import(
-  moduleUrl(
+  asModuleUrl(
     analysis
       .replace(
         /import \{([\s\S]*?)\} from "\.\/account-config";/,
         (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(moduleUrl(config))});`,
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(config))});`,
       )
       .replace(
         /import \{([\s\S]*?)\} from "\.\/valuation-calibration";/,
         (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(moduleUrl(calibration))});`,
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(calibration))});`,
       )
       .replace(
         /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
         (_, names) =>
-          `const {${names}} = await import(${JSON.stringify(moduleUrl(items))});`,
+          `const {${names}} = await import(${JSON.stringify(asModuleUrl(items))});`,
       )
       .replace(
         /import \{([\s\S]*?)\} from "\.\/valuation-season-bands";/,
         (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(moduleUrl(bands))});`,
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(bands))});`,
       ),
   )
 );

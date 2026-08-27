@@ -35,7 +35,6 @@ import {
   allClosetTypeSet,
   closetGroups,
   getNextClosetSub,
-  eventZh,
   graduationSeasonSlugs,
   heldClosetOrder,
   isLimitedItem,
@@ -45,7 +44,6 @@ import {
   matchesSourceFilter,
   matchesSub,
   ongoingSeasonSlugs,
-  realmZh,
   searchIndex,
   seasonGraduationItems,
   seasonUltimateItems,
@@ -55,15 +53,16 @@ import {
   showcaseClusterOrder,
   sortSeasonSlugs,
   source,
+  sourceCollectionName,
   sourceFilters,
   sourceKind,
-  storeSource,
   typeOrder,
   type ClosetSubRoute,
   uniqueByGuid,
   wikiItems,
   zhItemName,
 } from "./catalog-domain";
+import { orderShowcaseItems } from "./showcase-order";
 import {
   isGraduationGift,
   isChinaOnlyItem,
@@ -151,51 +150,16 @@ const showcasePresetDescriptions: Record<ShowcasePreset, string> = {
   video: "重點物品",
   collection: "全部物品",
 };
-const showcaseClusterName = (item: WikiItem) =>
-  item.section === "seasons"
-    ? seasonZh[item.collection] || item.collection
-    : item.section === "events"
-      ? eventZh[item.collection] || item.collection
-      : item.section === "realms"
-        ? realmZh[item.collection] || "常駐地圖"
-        : item.section === "store"
-          ? storeSource(item)
-          : sourceKind(item);
-const orderShowcaseItems = (items: WikiItem[]) =>
-  [...items].sort((a, b) => {
-    const groupRank = (item: WikiItem) =>
-      isSeasonUltimate(item)
-        ? 0
-        : isPaidItem(item) || isLimitedItem(item)
-          ? 1
-          : 2;
-    const rankA = groupRank(a);
-    const rankB = groupRank(b);
-    const group = rankA - rankB;
-    if (group) return group;
-    const cluster =
-      rankA === 2
-        ? (typeOrder.get(a.type) ?? 999) - (typeOrder.get(b.type) ?? 999) ||
-          (labels[a.type] || a.type).localeCompare(
-            labels[b.type] || b.type,
-            "zh-Hant",
-          )
-        : showcaseClusterOrder(a) - showcaseClusterOrder(b) ||
-          showcaseClusterName(a).localeCompare(
-            showcaseClusterName(b),
-            "zh-Hant",
-          );
-    if (cluster) return cluster;
-    return (
-      (isSeasonUltimate(a)
-        ? Number(isSeasonPendant(b)) - Number(isSeasonPendant(a))
-        : (typeOrder.get(a.type) ?? 999) -
-          (typeOrder.get(b.type) ?? 999)) ||
-      a.order - b.order ||
-      a.id - b.id ||
-      a.guid.localeCompare(b.guid)
-    );
-  });
+const showcaseOrderOptions = (items: WikiItem[]) => ({
+  items,
+  isUltimate: isSeasonUltimate,
+  isLimited: (item: WikiItem) => isPaidItem(item) || isLimitedItem(item),
+  isPendant: isSeasonPendant,
+  getClusterName: sourceCollectionName,
+  getClusterOrder: showcaseClusterOrder,
+  getItemTypeName: (item: WikiItem) => labels[item.type] || item.type,
+  getItemTypeOrder: (item: WikiItem) => typeOrder.get(item.type) ?? 999,
+});
 const emptyAccount = (): AccountInfo => ({
   name: "",
   accountType: "有翼",
@@ -552,15 +516,7 @@ export default function AccountOrganizer() {
         group: item.group,
         wiki: item.wiki,
         sourceName:
-          isChinaOnlyItem(item)
-            ? "國服限定"
-            : item.section === "seasons"
-            ? seasonZh[item.collection] || item.collection
-            : item.section === "events"
-              ? eventZh[item.collection] || item.collection
-              : item.section === "store"
-                ? storeSource(item)
-                : sourceKind(item),
+          isChinaOnlyItem(item) ? "國服限定" : sourceCollectionName(item),
         order: item.order,
       })),
     };
@@ -657,7 +613,7 @@ export default function AccountOrganizer() {
     try {
       const { renderShowcaseImage } = await import("./export-showcase");
       const blob = await renderShowcaseImage({
-        items: exportItems,
+        ...showcaseOrderOptions(exportItems),
         preset: showcasePreset,
         valuation: {
           midpoint: valuationEstimate?.midpoint ?? null,
@@ -673,13 +629,6 @@ export default function AccountOrganizer() {
                 .map((row) => localizeValuationLabel(row.label))
             : [],
         },
-        isUltimate: isSeasonUltimate,
-        isLimited: (item) => isPaidItem(item) || isLimitedItem(item),
-        isPendant: isSeasonPendant,
-        getClusterName: showcaseClusterName,
-        getClusterOrder: showcaseClusterOrder,
-        getItemTypeName: (item) => labels[item.type] || item.type,
-        getItemTypeOrder: (item) => typeOrder.get(item.type) ?? 999,
       });
       downloadBlob(
         blob,
@@ -697,7 +646,9 @@ export default function AccountOrganizer() {
   const hasBindingIssue = changedBindings.some(
     (key) => bindings[key] === "issue",
   );
-  const previewItems = orderShowcaseItems(getShowcaseItems(showcasePreset));
+  const previewItems = orderShowcaseItems(
+    showcaseOrderOptions(getShowcaseItems(showcasePreset)),
+  );
   const previewLimit = showcasePreset === "collection" ? 24 : 16;
   return (
     <main className="app-shell">

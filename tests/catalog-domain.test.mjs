@@ -1,17 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import ts from "typescript";
-
-const asModuleUrl = (source) =>
-  `data:text/javascript,${encodeURIComponent(
-    ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.ESNext,
-        target: ts.ScriptTarget.ES2022,
-      },
-    }).outputText,
-  )}`;
+import { asModuleUrl } from "./helpers/transpile.mjs";
 
 const loadCatalogDomain = async () => {
   const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
@@ -61,6 +51,7 @@ const {
   seasonGraduationItems,
   searchIndex,
   showcaseClusterOrder,
+  sourceCollectionName,
   sourceKind,
   wikiItems,
   zhItemName,
@@ -383,6 +374,25 @@ test("classifies representative catalog sources", () => {
   assert.equal(
     sourceKind(item({ section: "store", wiki: "https://example.com/PlayStation" })),
     "平台限定",
+  );
+});
+
+test("uses one display name mapping for showcase and sale sources", () => {
+  assert.equal(
+    sourceCollectionName(item({ section: "seasons", collection: "lightseekers" })),
+    "追光季",
+  );
+  assert.equal(
+    sourceCollectionName(item({ section: "events", collection: "event-cinnamoroll" })),
+    "大耳狗聯動",
+  );
+  assert.equal(
+    sourceCollectionName(item({ section: "realms", collection: "hidden-forest" })),
+    "雨林",
+  );
+  assert.equal(
+    sourceCollectionName(item({ section: "store", wiki: "https://example.com/Nintendo" })),
+    "Nintendo Switch 專屬",
   );
 });
 

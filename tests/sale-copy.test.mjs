@@ -1,20 +1,20 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import ts from "typescript";
+import { asModuleUrl } from "./helpers/transpile.mjs";
 
-const source = await readFile(
-  new URL("../app/sale-copy.ts", import.meta.url),
-  "utf8",
+const [source, configSource] = await Promise.all(
+  ["sale-copy.ts", "account-config.ts"].map((file) =>
+    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
+  ),
 );
-const moduleUrl = `data:text/javascript,${encodeURIComponent(
-  ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.ESNext,
-      target: ts.ScriptTarget.ES2022,
-    },
-  }).outputText,
-)}`;
+const moduleUrl = asModuleUrl(
+  source.replace(
+    /import \{([\s\S]*?)\} from "\.\/account-config";/,
+    (_, names) =>
+      `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(configSource))});`,
+  ),
+);
 const { buildSaleCopy, buildShareSummary } = await import(moduleUrl);
 
 const season = (slug, name, owned = 0, total = 3) => ({

@@ -33,12 +33,16 @@ export const bindingNames: Record<BindingKey, string> = {
 
 export const bindingKeys = Object.keys(bindingNames) as BindingKey[];
 
-export const bindingOptions: { key: BindingStatus; name: string }[] = [
-  { key: "none", name: "無綁" },
-  { key: "transfer", name: "出" },
-  { key: "keep", name: "不出" },
-  { key: "issue", name: "遺失／異常" },
-];
+export const bindingStatusNames: Record<BindingStatus, string> = {
+  none: "無綁",
+  transfer: "出",
+  keep: "不出",
+  issue: "遺失／異常",
+};
+
+export const bindingOptions = (
+  Object.entries(bindingStatusNames) as [BindingStatus, string][]
+).map(([key, name]) => ({ key, name }));
 
 export const emptyBindings = () =>
   Object.fromEntries(bindingKeys.map((key) => [key, "none"])) as Record<

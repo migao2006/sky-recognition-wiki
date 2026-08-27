@@ -1,21 +1,27 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import ts from "typescript";
+import { asModuleUrl } from "./helpers/transpile.mjs";
 
-const asModuleUrl = (source) =>
-  `data:text/javascript,${encodeURIComponent(
-    ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.ESNext,
-        target: ts.ScriptTarget.ES2022,
-      },
-    }).outputText,
-  )}`;
-
-const showcaseSource = (
-  await readFile(new URL("../app/export-showcase.ts", import.meta.url), "utf8")
-).replace('import type { WikiItem } from "./wiki-data";', "");
+const [rawShowcaseSource, rawOrderSource] = await Promise.all(
+  ["export-showcase.ts", "showcase-order.ts"].map((file) =>
+    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
+  ),
+);
+const orderModuleUrl = asModuleUrl(
+  rawOrderSource.replace('import type { WikiItem } from "./wiki-data";', ""),
+);
+const { orderShowcaseItems } = await import(orderModuleUrl);
+const showcaseSource = rawShowcaseSource
+  .replace('import type { WikiItem } from "./wiki-data";', "")
+  .replace(
+    /import \{[\s\S]*?\} from "\.\/showcase-order";/,
+    `import { buildShowcaseGroups } from ${JSON.stringify(orderModuleUrl)};`,
+  )
+  .replace(
+    'export { buildShowcaseGroups } from "./showcase-order";',
+    `export { buildShowcaseGroups } from ${JSON.stringify(orderModuleUrl)};`,
+  );
 const {
   buildShowcaseGroups,
   measureShowcaseCanvas,
@@ -82,16 +88,15 @@ test("places a season pendant before its graduation gifts", () => {
 });
 
 test("uses fixed cluster and wardrobe type ordering", () => {
-  const groups = buildShowcaseGroups(
-    options([
-      item({ guid: "prop", type: "Prop" }),
-      item({ guid: "platform", group: "Limited", section: "store", collection: "platform", order: 30 }),
-      item({ guid: "cape", type: "Cape" }),
-      item({ guid: "season-collab", group: "Limited", section: "seasons", collection: "aurora" }),
-      item({ guid: "outfit", type: "Outfit" }),
-      item({ guid: "event-collab", group: "Limited", section: "events", collection: "event-collab", order: 20 }),
-    ]),
-  );
+  const settings = options([
+    item({ guid: "prop", type: "Prop" }),
+    item({ guid: "platform", group: "Limited", section: "store", collection: "platform", order: 30 }),
+    item({ guid: "cape", type: "Cape" }),
+    item({ guid: "season-collab", group: "Limited", section: "seasons", collection: "aurora" }),
+    item({ guid: "outfit", type: "Outfit" }),
+    item({ guid: "event-collab", group: "Limited", section: "events", collection: "event-collab", order: 20 }),
+  ]);
+  const groups = buildShowcaseGroups(settings);
   const limited = groups.find((group) => group.key === "limited");
   const other = groups.find((group) => group.key === "other");
   assert.deepEqual(
@@ -101,6 +106,34 @@ test("uses fixed cluster and wardrobe type ordering", () => {
   assert.deepEqual(
     other.clusters.map((cluster) => cluster.name),
     ["Outfit", "Cape", "Prop"],
+  );
+  assert.deepEqual(
+    orderShowcaseItems(settings).map((entry) => entry.guid),
+    groups.flatMap((group) =>
+      group.clusters.flatMap((cluster) =>
+        cluster.items.map((entry) => entry.guid),
+      ),
+    ),
+  );
+});
+
+test("keeps store items with different displayed sources in separate clusters", () => {
+  const settings = {
+    ...options([
+      item({ guid: "regular", group: "Limited", section: "store", collection: "store", wiki: "regular" }),
+      item({ guid: "nintendo", group: "Limited", section: "store", collection: "store", wiki: "nintendo" }),
+      item({ guid: "playstation", group: "Limited", section: "store", collection: "store", wiki: "playstation" }),
+    ]),
+    getClusterName: (entry) => entry.wiki,
+    getClusterOrder: (entry) =>
+      entry.wiki === "regular" ? 5000 : 3000,
+  };
+  const limited = buildShowcaseGroups(settings).find(
+    (group) => group.key === "limited",
+  );
+  assert.deepEqual(
+    limited.clusters.map((cluster) => cluster.name),
+    ["nintendo", "playstation", "regular"],
   );
 });
 

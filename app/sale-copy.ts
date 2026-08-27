@@ -1,4 +1,8 @@
-import type { BindingKey, BindingStatus } from "./account-config";
+import {
+  bindingStatusNames,
+  type BindingKey,
+  type BindingStatus,
+} from "./account-config";
 
 export type SaleSeasonProgress = {
   name: string;
@@ -40,12 +44,6 @@ const platformNames: Record<BindingKey, string> = {
   steam: "Steam",
   twitch: "Twitch",
   playstation: "PSN",
-};
-const bindingStatusNames: Record<BindingStatus, string> = {
-  none: "無綁",
-  transfer: "出",
-  keep: "不出",
-  issue: "遺失／異常",
 };
 const bindingKeys = Object.keys(platformNames) as BindingKey[];
 

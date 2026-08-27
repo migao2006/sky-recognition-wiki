@@ -1,17 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import ts from "typescript";
-
-const asModuleUrl = (source) =>
-  `data:text/javascript,${encodeURIComponent(
-    ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.ESNext,
-        target: ts.ScriptTarget.ES2022,
-      },
-    }).outputText,
-  )}`;
+import { asModuleUrl } from "./helpers/transpile.mjs";
 
 const loadAccountBackup = async () => {
   const [configSource, backupSource] = await Promise.all(
