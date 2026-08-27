@@ -142,9 +142,14 @@ const emptySelectedGuids = new Set<string>();
 type FocusMode = "all" | "video" | "ultimate" | "limited";
 type ShowcasePreset = "valuation" | "video" | "collection";
 const showcasePresetNames: Record<ShowcasePreset, string> = {
-  valuation: "專業估價",
-  video: "影片核對",
-  collection: "純圖片收藏",
+  valuation: "估價重點",
+  video: "快速核對",
+  collection: "完整衣櫃",
+};
+const showcasePresetDescriptions: Record<ShowcasePreset, string> = {
+  valuation: "含估價資訊",
+  video: "重點物品",
+  collection: "全部物品",
 };
 const showcaseClusterName = (item: WikiItem) =>
   item.section === "seasons"
@@ -1083,17 +1088,24 @@ export default function AccountOrganizer() {
           </div>
           <div className="showcase-presets" aria-label="整理圖片版型">
             {(Object.entries(showcasePresetNames) as [ShowcasePreset, string][]).map(
-              ([key, name]) => (
-                <button
-                  type="button"
-                  key={key}
-                  className={showcasePreset === key ? "active" : ""}
-                  aria-pressed={showcasePreset === key}
-                  onClick={() => setShowcasePreset(key)}
-                >
-                  {name}
-                </button>
-              ),
+              ([key, name]) => {
+                const itemCount = getShowcaseItems(key).length;
+                return (
+                  <button
+                    type="button"
+                    key={key}
+                    className={showcasePreset === key ? "active" : ""}
+                    aria-pressed={showcasePreset === key}
+                    onClick={() => setShowcasePreset(key)}
+                  >
+                    <strong>{name}</strong>
+                    <small>
+                      {itemCount.toLocaleString()} 件 ·{" "}
+                      {showcasePresetDescriptions[key]}
+                    </small>
+                  </button>
+                );
+              },
             )}
           </div>
           <div className={`showcase-preview preset-${showcasePreset}`}>
@@ -1437,7 +1449,7 @@ export default function AccountOrganizer() {
           <div className="focus-shortcuts" aria-label="快速辨識篩選">
             {(
               [
-                ["video", "影片核對"],
+                ["video", "快速核對"],
                 ["ultimate", "季節畢業"],
                 ["limited", "禮包限定"],
               ] as const
@@ -1562,7 +1574,7 @@ export default function AccountOrganizer() {
                 : season !== "全部季節"
                   ? seasonZh[season]
                   : focusMode === "video"
-                    ? "影片核對"
+                    ? "快速核對"
                     : focusMode === "ultimate"
                       ? "季節畢業"
                       : focusMode === "limited"

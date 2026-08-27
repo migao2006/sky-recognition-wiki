@@ -349,7 +349,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.textAlign = "left";
     ctx.fillStyle = "#9fc8ff";
     ctx.font = "800 20px system-ui";
-    ctx.fillText("專業估價", pad + 28, pad + 38);
+    ctx.fillText("估價重點", pad + 28, pad + 38);
     ctx.fillStyle = "#f3f8f7";
     ctx.font = "900 48px system-ui";
     ctx.fillText(

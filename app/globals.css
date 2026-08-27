@@ -1143,19 +1143,34 @@ a:focus-visible {
   margin: 16px 0 12px;
 }
 .showcase-presets button {
-  min-height: 42px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 58px;
+  padding: 7px 6px;
   border: 1px solid #a9cfff24;
   border-radius: 12px;
   background: #060a11;
   color: #9facbd;
-  font-size: 12px;
-  font-weight: 800;
   cursor: pointer;
+}
+.showcase-presets button strong {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 850;
+}
+.showcase-presets button small {
+  color: #77869a;
+  font-size: 9px;
+  font-weight: 700;
 }
 .showcase-presets button.active {
   border-color: #8fc7ff6e;
   background: #789dcc1d;
   color: #edf6ff;
+}
+.showcase-presets button.active small {
+  color: #a9cfff;
 }
 .showcase-preview {
   min-height: 210px;
@@ -1949,9 +1964,14 @@ footer {
     gap: 6px;
   }
   .showcase-presets button {
-    min-height: 40px;
-    padding: 0 5px;
-    font-size: 10px;
+    min-height: 56px;
+    padding: 6px 3px;
+  }
+  .showcase-presets button strong {
+    font-size: 11px;
+  }
+  .showcase-presets button small {
+    font-size: 8px;
   }
   .showcase-preview {
     min-height: 190px;
