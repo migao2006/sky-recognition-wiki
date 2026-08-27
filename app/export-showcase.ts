@@ -1,7 +1,20 @@
 import type { WikiItem } from "./wiki-data";
 
-type ExportShowcaseOptions = {
+export type ExportShowcasePreset = "valuation" | "video" | "collection";
+
+export type ExportValuationSummary = {
+  midpoint: number | null;
+  range: { low: number; high: number } | null;
+  confidence: string;
+  completeness: number;
+  itemCount: number;
+  highlights: string[];
+};
+
+export type ExportShowcaseOptions = {
   items: WikiItem[];
+  preset?: ExportShowcasePreset;
+  valuation?: ExportValuationSummary;
   isUltimate: (item: WikiItem) => boolean;
   isLimited: (item: WikiItem) => boolean;
   isPendant: (item: WikiItem) => boolean;
@@ -151,7 +164,20 @@ const showcaseMetrics = {
 } as const;
 
 export const EXPORT_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
-const exportImageQualities = [0.94, 0.9, 0.86, 0.82, 0.76, 0.68] as const;
+const exportImageQualities = [
+  0.94, 0.9, 0.86, 0.82, 0.76, 0.68, 0.58, 0.48, 0.4,
+] as const;
+
+export const encodeImageWithinLimit = async (
+  encode: (quality: number) => Promise<Blob>,
+  maxBytes = EXPORT_IMAGE_MAX_BYTES,
+) => {
+  for (const quality of exportImageQualities) {
+    const blob = await encode(quality);
+    if (blob.size <= maxBytes) return blob;
+  }
+  throw new Error("image-too-large");
+};
 
 const canvasToJpeg = (canvas: HTMLCanvasElement, quality: number) =>
   new Promise<Blob>((resolve, reject) => {
@@ -241,11 +267,13 @@ const buildShowcaseLayout = (
 
 export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
   const { height } = buildShowcaseLayout(buildShowcaseGroups(options));
-  return { width: showcaseMetrics.width, height };
+  const summaryHeight =
+    options.preset === "valuation" && options.valuation ? 236 : 0;
+  return { width: showcaseMetrics.width, height: height + summaryHeight };
 };
 
 export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
-  const { items } = options;
+  const { items, preset = "collection", valuation } = options;
   const groups = buildShowcaseGroups(options);
   const {
     width,
@@ -260,10 +288,11 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     sectionGap,
   } = showcaseMetrics;
   const { height, panelHeight, renderGroups } = buildShowcaseLayout(groups);
+  const summaryHeight = preset === "valuation" && valuation ? 236 : 0;
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
-  canvas.height = height;
+  canvas.height = height + summaryHeight;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas-unavailable");
 
@@ -272,7 +301,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
   background.addColorStop(0.52, "#0a1020");
   background.addColorStop(1, "#11152a");
   ctx.fillStyle = background;
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, width, canvas.height);
 
   const aura = ctx.createRadialGradient(
     width * 0.72,
@@ -285,7 +314,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
   aura.addColorStop(0, "rgba(111,158,232,.24)");
   aura.addColorStop(1, "rgba(4,6,12,0)");
   ctx.fillStyle = aura;
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, width, canvas.height);
 
   const roundRect = (
     x: number,
@@ -307,8 +336,51 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     }
   };
 
+  if (summaryHeight && valuation) {
+    roundRect(
+      pad,
+      pad,
+      width - pad * 2,
+      summaryHeight - sectionGap,
+      20,
+      "rgba(7,11,20,.86)",
+      "rgba(169,207,255,.2)",
+    );
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#9fc8ff";
+    ctx.font = "800 20px system-ui";
+    ctx.fillText("專業估價", pad + 28, pad + 38);
+    ctx.fillStyle = "#f3f8f7";
+    ctx.font = "900 48px system-ui";
+    ctx.fillText(
+      valuation.midpoint === null
+        ? "NT$ —"
+        : `NT$ ${valuation.midpoint.toLocaleString("zh-TW")}`,
+      pad + 28,
+      pad + 96,
+    );
+    ctx.fillStyle = "#b7c8dd";
+    ctx.font = "700 18px system-ui";
+    const range = valuation.range
+      ? `合理區間 NT$ ${valuation.range.low.toLocaleString("zh-TW")}～NT$ ${valuation.range.high.toLocaleString("zh-TW")}`
+      : "尚無足夠估價重點";
+    ctx.fillText(range, pad + 28, pad + 132);
+    ctx.fillText(
+      `完整度 ${valuation.completeness}% · ${valuation.confidence} · 估價重點 ${valuation.itemCount} 件`,
+      pad + 28,
+      pad + 164,
+    );
+    ctx.fillStyle = "#8fa6c2";
+    ctx.font = "600 15px system-ui";
+    ctx.fillText(
+      valuation.highlights.slice(0, 5).join("　") || "尚未選取估價重點",
+      pad + 28,
+      pad + 196,
+    );
+  }
+
   const icons = await loadIcons(items);
-  let y = pad;
+  let y = pad + summaryHeight;
   renderGroups.forEach((group) => {
     const boxHeight = panelHeight(group.layout.height);
     roundRect(
@@ -392,12 +464,5 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     y += boxHeight + sectionGap;
   });
 
-  let smallestBlob: Blob | undefined;
-  for (const quality of exportImageQualities) {
-    const blob = await canvasToJpeg(canvas, quality);
-    smallestBlob = blob;
-    if (blob.size <= EXPORT_IMAGE_MAX_BYTES) return blob;
-  }
-  if (smallestBlob) return smallestBlob;
-  throw new Error("image-export-failed");
+  return encodeImageWithinLimit((quality) => canvasToJpeg(canvas, quality));
 };

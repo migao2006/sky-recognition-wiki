@@ -136,6 +136,59 @@ const bundlePresetItems = new Map(
   ]),
 );
 const validItemGuids = new Set(wikiItems.map((item) => item.guid));
+const emptySelectedGuids = new Set<string>();
+type FocusMode = "all" | "video" | "ultimate" | "limited";
+type ShowcasePreset = "valuation" | "video" | "collection";
+const showcasePresetNames: Record<ShowcasePreset, string> = {
+  valuation: "專業估價",
+  video: "影片核對",
+  collection: "純圖片收藏",
+};
+const showcaseClusterName = (item: WikiItem) =>
+  item.section === "seasons"
+    ? seasonZh[item.collection] || item.collection
+    : item.section === "events"
+      ? eventZh[item.collection] || item.collection
+      : item.section === "realms"
+        ? realmZh[item.collection] || "常駐地圖"
+        : item.section === "store"
+          ? storeSource(item)
+          : sourceKind(item);
+const orderShowcaseItems = (items: WikiItem[]) =>
+  [...items].sort((a, b) => {
+    const groupRank = (item: WikiItem) =>
+      isSeasonUltimate(item)
+        ? 0
+        : isPaidItem(item) || isLimitedItem(item)
+          ? 1
+          : 2;
+    const rankA = groupRank(a);
+    const rankB = groupRank(b);
+    const group = rankA - rankB;
+    if (group) return group;
+    const cluster =
+      rankA === 2
+        ? (typeOrder.get(a.type) ?? 999) - (typeOrder.get(b.type) ?? 999) ||
+          (labels[a.type] || a.type).localeCompare(
+            labels[b.type] || b.type,
+            "zh-Hant",
+          )
+        : showcaseClusterOrder(a) - showcaseClusterOrder(b) ||
+          showcaseClusterName(a).localeCompare(
+            showcaseClusterName(b),
+            "zh-Hant",
+          );
+    if (cluster) return cluster;
+    return (
+      (isSeasonUltimate(a)
+        ? Number(isSeasonPendant(b)) - Number(isSeasonPendant(a))
+        : (typeOrder.get(a.type) ?? 999) -
+          (typeOrder.get(b.type) ?? 999)) ||
+      a.order - b.order ||
+      a.id - b.id ||
+      a.guid.localeCompare(b.guid)
+    );
+  });
 const emptyAccount = (): AccountInfo => ({
   name: "",
   accountType: "有翼",
@@ -187,6 +240,9 @@ const CatalogItemCard = memo(function CatalogItemCard({
           </span>
         )}
         <span className="source-badge">{sourceKind(item)}</span>
+        <span className={`type type-${item.type} type-badge`}>
+          {labels[item.type] || item.type}
+        </span>
         {/* External catalog icons must keep their source URL and referrer policy. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -197,11 +253,6 @@ const CatalogItemCard = memo(function CatalogItemCard({
         />
       </div>
       <div className="card-body">
-        <div>
-          <span className={`type type-${item.type}`}>
-            {labels[item.type] || item.type}
-          </span>
-        </div>
         <h2>{zhName(item.name)}</h2>
       </div>
     </button>
@@ -213,12 +264,12 @@ export default function AccountOrganizer() {
   const [visibleCount, setVisibleCount] = useState(80);
   const [closet, setCloset] = useState("outfit"),
     [sub, setSub] = useState("all"),
-    [season, setSeason] = useState("全部季節"),
-    [onlyDiscontinued, setOnlyDiscontinued] = useState(false);
+    [season, setSeason] = useState("全部季節");
   const [query, setQuery] = useState(""),
-    [sourceFilter, setSourceFilter] = useState("all"),
-    [valuationMode, setValuationMode] = useState(false),
-    [videoMode, setVideoMode] = useState(false);
+    [sourceFilter, setSourceFilter] = useState("all");
+  const [focusMode, setFocusMode] = useState<FocusMode>("all");
+  const [showcasePreset, setShowcasePreset] =
+    useState<ShowcasePreset>("valuation");
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
@@ -309,12 +360,13 @@ export default function AccountOrganizer() {
   }, [account, bindings, draftAvailable, draftReady, owned]);
   const activeCloset =
     closetGroups.find((x) => x.key === closet) || closetGroups[0];
+  const valuationOwned = activeStep === 3 ? owned : emptySelectedGuids;
   const chosen = useMemo(
     () =>
       wikiItems.filter(
-        (x) => owned.has(x.guid) && allClosetTypeSet.has(x.type),
+        (x) => valuationOwned.has(x.guid) && allClosetTypeSet.has(x.type),
       ),
-    [owned],
+    [valuationOwned],
   );
   const valuationAnalysis = useMemo(
     () =>
@@ -358,9 +410,9 @@ export default function AccountOrganizer() {
           (sourceFilter !== "seasons" ||
             season === "全部季節" ||
             x.collection === season) &&
-          (!onlyDiscontinued || isSeasonUltimate(x)) &&
-          (!valuationMode || isValuationFocus(x)) &&
-          (!videoMode || isProfessionalVideoFocus(x)) &&
+          (focusMode !== "ultimate" || isSeasonUltimate(x)) &&
+          (focusMode !== "limited" || isPaidItem(x) || isLimitedItem(x)) &&
+          (focusMode !== "video" || isProfessionalVideoFocus(x)) &&
           (!q || searchIndex.get(x.guid)?.includes(q)),
       )
       .sort((a, b) =>
@@ -374,12 +426,10 @@ export default function AccountOrganizer() {
   }, [
     sub,
     season,
-    onlyDiscontinued,
     activeCloset,
     deferredQuery,
     sourceFilter,
-    valuationMode,
-    videoMode,
+    focusMode,
   ]);
   const visibleItems = filtered.slice(0, visibleCount);
   const resetVisibleItems = () => setVisibleCount(80);
@@ -394,17 +444,13 @@ export default function AccountOrganizer() {
   const resetAdvancedFilters = () => {
     setSourceFilter("all");
     setSeason("全部季節");
-    setOnlyDiscontinued(false);
-    setValuationMode(false);
-    setVideoMode(false);
+    setFocusMode("all");
     resetVisibleItems();
   };
   const activeFilterCount = [
     sourceFilter !== "all",
     season !== "全部季節",
-    valuationMode,
-    videoMode,
-    onlyDiscontinued,
+    focusMode !== "all",
   ].filter(Boolean).length;
   const toggleOwned = useCallback((guid: string) =>
     setOwned((prev) => {
@@ -629,39 +675,79 @@ export default function AccountOrganizer() {
       }
     }
   };
+  const getShowcaseItems = (preset: ShowcasePreset) => {
+    if (preset === "collection") return chosen;
+    if (preset === "video") {
+      const videoItems = chosen.filter(isProfessionalVideoFocus);
+      return videoItems.length
+        ? videoItems
+        : chosen.filter(isValuationFocus);
+    }
+    return valuationAnalysis.valuationItems.length
+      ? valuationAnalysis.valuationItems
+      : chosen;
+  };
   const exportShowcaseImage = async () => {
     if (!chosen.length) {
       setNotice("尚未選取物品");
+      return;
+    }
+    const exportItems = getShowcaseItems(showcasePreset);
+    if (!exportItems.length) {
+      setNotice("這個版型沒有可匯出的物品");
       return;
     }
     setNotice("正在產生圖片…");
     try {
       const { renderShowcaseImage } = await import("./export-showcase");
       const blob = await renderShowcaseImage({
-        items: chosen,
+        items: exportItems,
+        preset: showcasePreset,
+        valuation: {
+          midpoint: valuationEstimate?.midpoint ?? null,
+          range: valuationEstimate?.range ?? null,
+          confidence: valuationEstimate
+            ? confidenceNames[valuationEstimate.confidence]
+            : "資料不足",
+          completeness: valuationAnalysis.completeness,
+          itemCount: valuationAnalysis.valuationItems.length,
+          highlights: valuationEstimate
+            ? valuationEstimate.contributions
+                .slice(0, 5)
+                .map((row) => localizeValuationLabel(row.label))
+            : [],
+        },
         isUltimate: isSeasonUltimate,
         isLimited: (item) => isPaidItem(item) || isLimitedItem(item),
         isPendant: isSeasonPendant,
-        getClusterName: (item) =>
-          item.section === "seasons"
-            ? seasonZh[item.collection] || item.collection
-            : item.section === "events"
-              ? eventZh[item.collection] || item.collection
-              : item.section === "realms"
-                ? realmZh[item.collection] || "常駐地圖"
-                : item.section === "store"
-                  ? storeSource(item)
-                  : sourceKind(item),
+        getClusterName: showcaseClusterName,
         getClusterOrder: showcaseClusterOrder,
         getItemTypeName: (item) => labels[item.type] || item.type,
         getItemTypeOrder: (item) => typeOrder.get(item.type) ?? 999,
       });
-      downloadBlob(blob, `光遇帳號_${safeFileName(account.name)}_整理圖片.jpg`);
+      downloadBlob(
+        blob,
+        `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}.jpg`,
+      );
       setNotice("整理圖片已下載");
     } catch {
       setNotice("圖片產生失敗");
     }
   };
+  const changedBindings = bindingKeys.filter((key) => bindings[key] !== "none");
+  const bindingSummary = changedBindings.length
+    ? `${changedBindings
+        .map(
+          (key) =>
+            `${shortBindingName(key)} ${bindingStatusName[bindings[key]]}`,
+        )
+        .join("｜")}｜其餘 ${bindingKeys.length - changedBindings.length} 項未綁定`
+    : `全部 ${bindingKeys.length} 項未綁定`;
+  const hasBindingIssue = changedBindings.some(
+    (key) => bindings[key] === "issue",
+  );
+  const previewItems = orderShowcaseItems(getShowcaseItems(showcasePreset));
+  const previewLimit = showcasePreset === "collection" ? 24 : 16;
   return (
     <main className="app-shell">
       <nav className="workflow-steps" aria-label="帳號整理步驟">
@@ -682,15 +768,17 @@ export default function AccountOrganizer() {
           </button>
         ))}
       </nav>
-      <section className="account-panel" hidden={activeStep === 2}>
-        <div className="account-intro" hidden={activeStep !== 1}>
+      {activeStep !== 2 && (
+      <section className="account-panel">
+        {activeStep === 1 && <>
+        <div className="account-intro">
           <div>
             <span className="step-kicker">步驟 1／3</span>
             <h1>帳號資料</h1>
             <p>先填基本資料；其餘欄位可稍後補上。</p>
           </div>
         </div>
-        <div className="account-form" hidden={activeStep !== 1}>
+        <div className="account-form">
           <div className="form-section-title">
             <b>交易資訊</b>
           </div>
@@ -714,57 +802,82 @@ export default function AccountOrganizer() {
               <option>無翼</option>
             </select>
           </label>
-          <div className="form-section-title">
-            <b>帳號資源</b>
-          </div>
-          <label>
-            白蠟燭
-            <input
-              inputMode="numeric"
-              value={account.candles}
-              onChange={(e) =>
-                setAccount({ ...account, candles: e.target.value })
-              }
-              placeholder="0"
-            />
-          </label>
-          <label>
-            愛心
-            <input
-              inputMode="numeric"
-              value={account.hearts}
-              onChange={(e) =>
-                setAccount({ ...account, hearts: e.target.value })
-              }
-              placeholder="0"
-            />
-          </label>
-          <label>
-            昇華蠟燭
-            <input
-              inputMode="numeric"
-              value={account.ascended}
-              onChange={(e) =>
-                setAccount({ ...account, ascended: e.target.value })
-              }
-              placeholder="0"
-            />
-          </label>
-          <label>
-            季卡副卡
-            <input
-              inputMode="numeric"
-              value={account.passes}
-              onChange={(e) =>
-                setAccount({ ...account, passes: e.target.value })
-              }
-              placeholder="0"
-            />
-          </label>
-          <div className="binding-section">
-            <div className="form-section-title">
-              <b>登入綁定</b>
+          <details className="account-extra">
+            <summary>
+              <span>
+                <b>補充資料</b>
+                <small>資源數量與其他備註</small>
+              </span>
+              <i aria-hidden="true">⌄</i>
+            </summary>
+            <div className="account-extra-grid">
+              <label>
+                白蠟燭
+                <input
+                  inputMode="numeric"
+                  value={account.candles}
+                  onChange={(e) =>
+                    setAccount({ ...account, candles: e.target.value })
+                  }
+                  placeholder="0"
+                />
+              </label>
+              <label>
+                愛心
+                <input
+                  inputMode="numeric"
+                  value={account.hearts}
+                  onChange={(e) =>
+                    setAccount({ ...account, hearts: e.target.value })
+                  }
+                  placeholder="0"
+                />
+              </label>
+              <label>
+                昇華蠟燭
+                <input
+                  inputMode="numeric"
+                  value={account.ascended}
+                  onChange={(e) =>
+                    setAccount({ ...account, ascended: e.target.value })
+                  }
+                  placeholder="0"
+                />
+              </label>
+              <label>
+                季卡副卡
+                <input
+                  inputMode="numeric"
+                  value={account.passes}
+                  onChange={(e) =>
+                    setAccount({ ...account, passes: e.target.value })
+                  }
+                  placeholder="0"
+                />
+              </label>
+              <label className="account-notes">
+                其他備註
+                <input
+                  value={account.notes}
+                  onChange={(e) =>
+                    setAccount({ ...account, notes: e.target.value })
+                  }
+                  placeholder="帳號狀態、缺少資料等"
+                />
+              </label>
             </div>
+          </details>
+          <details
+            className={`binding-section${hasBindingIssue ? " has-issue" : ""}`}
+          >
+            <summary>
+              <span>
+                <b>登入綁定</b>
+                <small>{bindingSummary}</small>
+              </span>
+              <i aria-hidden="true">⌄</i>
+            </summary>
+            <div className="binding-content">
             <div className="binding-grid">
               {bindingKeys.map((key) => (
                 <label
@@ -791,29 +904,20 @@ export default function AccountOrganizer() {
                 </label>
               ))}
             </div>
-          </div>
-          <label className="account-notes">
-            綁定補充
-            <input
-              value={account.bindingNote}
-              onChange={(e) =>
-                setAccount({ ...account, bindingNote: e.target.value })
-              }
-              placeholder="例如：GC 前號不出、GG 私用、FB 遺失"
-            />
-          </label>
-          <label className="account-notes">
-            其他備註
-            <input
-              value={account.notes}
-              onChange={(e) =>
-                setAccount({ ...account, notes: e.target.value })
-              }
-              placeholder="帳號狀態、缺少資料等"
-            />
-          </label>
+              <label className="account-notes">
+                綁定補充
+                <input
+                  value={account.bindingNote}
+                  onChange={(e) =>
+                    setAccount({ ...account, bindingNote: e.target.value })
+                  }
+                  placeholder="例如：GC 前號不出、GG 私用、FB 遺失"
+                />
+              </label>
+            </div>
+          </details>
         </div>
-        <details className="season-picker" hidden={activeStep !== 1}>
+        <details className="season-picker">
           <summary>
             <b>季節／畢業禮</b>
             <i aria-hidden="true">⌄</i>
@@ -870,7 +974,7 @@ export default function AccountOrganizer() {
             </div>
           </div>
         </details>
-        <details className="quick-select" hidden={activeStep !== 1}>
+        <details className="quick-select">
           <summary>
             <b>常用套組</b>
             <i aria-hidden="true">⌄</i>
@@ -915,7 +1019,7 @@ export default function AccountOrganizer() {
             </section>
           </div>
         </details>
-        <div className="step-actions" hidden={activeStep !== 1}>
+        <div className="step-actions">
           <span>
             {draftAvailable
               ? "草稿會自動儲存在此裝置 30 天。"
@@ -925,7 +1029,9 @@ export default function AccountOrganizer() {
             下一步：選擇物品
           </button>
         </div>
-        <div className="summary-intro" hidden={activeStep !== 3}>
+        </>}
+        {activeStep === 3 && <>
+        <div className="summary-intro">
           <div>
             <span className="step-kicker">步驟 3／3</span>
             <h1>估價與匯出</h1>
@@ -935,11 +1041,76 @@ export default function AccountOrganizer() {
             返回衣櫃
           </button>
         </div>
-        <section
-          className="valuation-report"
-          aria-labelledby="valuation-title"
-          hidden={activeStep !== 3}
-        >
+        <section className="showcase-builder" aria-labelledby="showcase-title">
+          <div className="showcase-builder-head">
+            <div>
+              <span className="step-kicker">整理圖片</span>
+              <h2 id="showcase-title">先看成品，再一鍵下載</h2>
+            </div>
+            <button
+              type="button"
+              className="showcase-download"
+              onClick={exportShowcaseImage}
+              disabled={!previewItems.length}
+            >
+              下載圖片
+            </button>
+          </div>
+          <div className="showcase-presets" aria-label="整理圖片版型">
+            {(Object.entries(showcasePresetNames) as [ShowcasePreset, string][]).map(
+              ([key, name]) => (
+                <button
+                  type="button"
+                  key={key}
+                  className={showcasePreset === key ? "active" : ""}
+                  aria-pressed={showcasePreset === key}
+                  onClick={() => setShowcasePreset(key)}
+                >
+                  {name}
+                </button>
+              ),
+            )}
+          </div>
+          <div className={`showcase-preview preset-${showcasePreset}`}>
+            <header>
+              <span>{showcasePresetNames[showcasePreset]}</span>
+              <b>{previewItems.length} 件</b>
+            </header>
+            {showcasePreset === "valuation" && (
+              <div className="showcase-price">
+                <span>參考中位價</span>
+                <strong>
+                  {valuationEstimate
+                    ? formatTwd(valuationEstimate.midpoint)
+                    : "NT$ —"}
+                </strong>
+                <small>
+                  {valuationEstimate
+                    ? `合理區間 ${formatTwd(valuationEstimate.range.low)}～${formatTwd(valuationEstimate.range.high)}`
+                    : "選取估價重點後顯示金額"}
+                </small>
+              </div>
+            )}
+            <div className="showcase-preview-icons">
+              {previewItems.slice(0, previewLimit).map((item) => (
+                <span key={item.guid} title={zhName(item.name)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.icon}
+                    alt={zhName(item.name)}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
+                </span>
+              ))}
+              {previewItems.length > previewLimit && (
+                <i>+{previewItems.length - previewLimit}</i>
+              )}
+            </div>
+            {!previewItems.length && <p>尚未選取此版型需要的物品。</p>}
+          </div>
+        </section>
+        <section className="valuation-report" aria-labelledby="valuation-title">
           <div className="valuation-report-head">
             <h2 id="valuation-title">估價分析</h2>
             <div
@@ -1135,7 +1306,7 @@ export default function AccountOrganizer() {
             。另以 {valuationSampleSummary.secondaryMarketRows} 筆中國服資料作趨勢校驗，不直接混入台幣價格；刊登價格不等於成交價，結果僅供市場參考。
           </p>
         </section>
-        <div className="account-actions" hidden={activeStep !== 3}>
+        <div className="account-actions">
           <div className="account-danger">
             <button
               className="clear-owned"
@@ -1152,19 +1323,24 @@ export default function AccountOrganizer() {
               清除全部資料
             </button>
           </div>
-          <div className="export-tools" aria-label="帳號匯入與匯出">
-            <button onClick={exportAccount}>匯出文字</button>
-            <button onClick={exportJson}>匯出 JSON</button>
-            <button onClick={() => importRef.current?.click()}>
-              匯入 JSON
-            </button>
-            <button onClick={exportShowcaseImage}>匯出整理圖片</button>
-            <button onClick={exportValuable}>匯出付費物品與畢業禮</button>
-            <button onClick={exportBySeason}>依季節匯出</button>
-            <button className="export-account" onClick={shareSummary}>
-              分享摘要
-            </button>
-          </div>
+          <details className="more-exports">
+            <summary>
+              <b>更多匯出方式</b>
+              <i aria-hidden="true">⌄</i>
+            </summary>
+            <div className="export-tools" aria-label="帳號匯入與匯出">
+              <button onClick={exportAccount}>匯出文字</button>
+              <button onClick={exportJson}>匯出 JSON</button>
+              <button onClick={() => importRef.current?.click()}>
+                匯入 JSON
+              </button>
+              <button onClick={exportValuable}>匯出付費物品與畢業禮</button>
+              <button onClick={exportBySeason}>依季節匯出</button>
+              <button className="export-account" onClick={shareSummary}>
+                分享摘要
+              </button>
+            </div>
+          </details>
           <input
             ref={importRef}
             className="file-input"
@@ -1173,8 +1349,11 @@ export default function AccountOrganizer() {
             onChange={importJson}
           />
         </div>
+        </>}
       </section>
-      <section className="catalog" id="top" hidden={activeStep !== 2}>
+      )}
+      {activeStep === 2 && (
+      <section className="catalog" id="top">
         <div className="catalog-intro">
           <div>
             <span className="step-kicker">步驟 2／3</span>
@@ -1230,6 +1409,28 @@ export default function AccountOrganizer() {
               <i aria-hidden="true">⌄</i>
             </button>
           </div>
+          <div className="focus-shortcuts" aria-label="快速辨識篩選">
+            {(
+              [
+                ["video", "影片核對"],
+                ["ultimate", "季節畢業"],
+                ["limited", "禮包限定"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                type="button"
+                key={key}
+                className={focusMode === key ? "active" : ""}
+                aria-pressed={focusMode === key}
+                onClick={() => {
+                  setFocusMode((current) => (current === key ? "all" : key));
+                  resetVisibleItems();
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div
             className="filter-panel"
             id="advanced-filters"
@@ -1274,55 +1475,6 @@ export default function AccountOrganizer() {
                 </select>
               </label>
             )}
-            <button
-              type="button"
-              className={`filter-toggle${valuationMode ? " active" : ""}`}
-              onClick={() => {
-                const next = !valuationMode;
-                setValuationMode(next);
-                if (next) setVideoMode(false);
-                resetVisibleItems();
-              }}
-              aria-pressed={valuationMode}
-            >
-              <i aria-hidden="true">{valuationMode ? "✓" : ""}</i>
-              <span>
-                <b>估價重點</b>
-                <small>只看影響估價的物品</small>
-              </span>
-            </button>
-            <button
-              type="button"
-              className={`filter-toggle video-toggle${videoMode ? " active" : ""}`}
-              onClick={() => {
-                const next = !videoMode;
-                setVideoMode(next);
-                if (next) setValuationMode(false);
-                resetVisibleItems();
-              }}
-              aria-pressed={videoMode}
-            >
-              <i aria-hidden="true">{videoMode ? "✓" : ""}</i>
-              <span>
-                <b>影片核對</b>
-                <small>畢業禮、聯動、禮包與熱門物品</small>
-              </span>
-            </button>
-            <button
-              type="button"
-              className={`filter-toggle discontinued-toggle${onlyDiscontinued ? " active" : ""}`}
-              onClick={() => {
-                setOnlyDiscontinued((x) => !x);
-                resetVisibleItems();
-              }}
-              aria-pressed={onlyDiscontinued}
-            >
-              <i aria-hidden="true">{onlyDiscontinued ? "✓" : ""}</i>
-              <span>
-                <b>季卡／畢業禮</b>
-                <small>只看季卡項鍊與畢業禮</small>
-              </span>
-            </button>
             <button
               type="button"
               className="clear-filters"
@@ -1387,11 +1539,13 @@ export default function AccountOrganizer() {
               ? `「${deferredQuery.trim()}」搜尋結果`
                 : season !== "全部季節"
                   ? seasonZh[season]
-                  : videoMode
+                  : focusMode === "video"
                     ? "影片核對"
-                  : valuationMode
-                    ? "估價重點"
-                  : activeCloset.name}{" "}
+                    : focusMode === "ultimate"
+                      ? "季節畢業"
+                      : focusMode === "limited"
+                        ? "禮包限定"
+                        : activeCloset.name}{" "}
             · {filtered.length.toLocaleString()} 件
           </h2>
           {searchPending && <small role="status">搜尋中…</small>}
@@ -1435,6 +1589,7 @@ export default function AccountOrganizer() {
           </button>
         </div>
       </section>
+      )}
       {notice && (
         <div className="notice" role="status">
           {notice}

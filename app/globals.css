@@ -186,6 +186,27 @@ a:focus-visible {
   grid-template-columns: minmax(280px, 1fr) 190px;
   gap: 10px;
 }
+.focus-shortcuts {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+}
+.focus-shortcuts button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #a9cfff26;
+  border-radius: 12px;
+  background: #080d16;
+  color: #aebaca;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.focus-shortcuts button.active {
+  border-color: #86b6ee78;
+  background: #789dcc20;
+  color: #edf6ff;
+}
 .catalog-search,
 .source-select {
   min-width: 0;
@@ -642,6 +663,17 @@ a:focus-visible {
   font-size: 10px;
   font-weight: 800;
 }
+.type-badge {
+  position: absolute;
+  z-index: 3;
+  right: 5px;
+  bottom: 5px;
+  max-width: 58%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
 .type-Hair,
 .type-HairAccessory,
 .type-HeadAccessory {
@@ -688,7 +720,7 @@ a:focus-visible {
   left: 5px;
 }
 .grid .card-body {
-  min-height: 64px;
+  min-height: 36px;
   padding: 7px;
 }
 .grid .card-body > div {
@@ -704,6 +736,8 @@ a:focus-visible {
   margin: 6px 0 0;
   font-size: 9px;
   line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .grid .owned-check {
   left: 5px;
@@ -803,10 +837,65 @@ a:focus-visible {
 }
 .binding-section {
   grid-column: 1/-1;
-  padding: 3px 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #070b138c;
 }
-.binding-section > .form-section-title {
-  padding-bottom: 9px;
+.binding-section summary,
+.account-extra summary {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 15px;
+  cursor: pointer;
+  list-style: none;
+}
+.binding-section summary::-webkit-details-marker,
+.account-extra summary::-webkit-details-marker {
+  display: none;
+}
+.binding-section summary span,
+.account-extra summary span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.binding-section summary b,
+.account-extra summary b {
+  color: #f1f6fc;
+  font-size: 14px;
+}
+.binding-section summary small,
+.account-extra summary small {
+  overflow: hidden;
+  color: #8f9daf;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.binding-section summary i,
+.account-extra summary i,
+.more-exports summary i {
+  color: #8eb5e3;
+  font-style: normal;
+  transition: transform 0.12s;
+}
+.binding-section[open] summary i,
+.account-extra[open] summary i,
+.more-exports[open] summary i {
+  transform: rotate(180deg);
+}
+.binding-section.has-issue {
+  border-color: #e7929f55;
+}
+.binding-section.has-issue summary small {
+  color: #e2a5af;
+}
+.binding-content {
+  padding: 0 14px 14px;
 }
 .binding-grid {
   display: grid;
@@ -840,6 +929,22 @@ a:focus-visible {
 .binding-card.status-issue {
   border-color: #e7929f55 !important;
   background: #e7929f0c !important;
+}
+.account-extra {
+  grid-column: 1/-1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #080d16;
+}
+.account-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+.account-extra-grid .account-notes {
+  grid-column: 1/-1;
 }
 .quick-select {
   border-inline: 1px solid var(--line);
@@ -981,6 +1086,121 @@ a:focus-visible {
   background: #8fc7ff21;
   color: #d3e4f8;
   font-weight: 900;
+}
+.showcase-builder {
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: #080d16;
+}
+.showcase-builder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.showcase-builder-head h2 {
+  margin: 5px 0 0;
+  color: #f4f7fb;
+  font-size: 20px;
+}
+.showcase-download {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid #8fc7ff66;
+  border-radius: 13px;
+  background: #789dcc24;
+  color: #eff7ff;
+  font-weight: 850;
+  cursor: pointer;
+}
+.showcase-download:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.showcase-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 12px;
+}
+.showcase-presets button {
+  min-height: 42px;
+  border: 1px solid #a9cfff24;
+  border-radius: 12px;
+  background: #060a11;
+  color: #9facbd;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.showcase-presets button.active {
+  border-color: #8fc7ff6e;
+  background: #789dcc1d;
+  color: #edf6ff;
+}
+.showcase-preview {
+  min-height: 210px;
+  padding: 18px;
+  border: 1px solid #a9cfff26;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 80% 0, #31508342, transparent 42%),
+    linear-gradient(145deg, #050910, #0d1422);
+  box-shadow: inset 0 0 0 1px #ffffff05;
+}
+.showcase-preview > header {
+  display: flex;
+  justify-content: space-between;
+  color: #a9cfff;
+  font-size: 11px;
+  font-weight: 850;
+}
+.showcase-price {
+  display: grid;
+  gap: 3px;
+  margin: 16px 0;
+}
+.showcase-price span,
+.showcase-price small {
+  color: #899bb2;
+  font-size: 10px;
+}
+.showcase-price strong {
+  color: #f3f7fc;
+  font-size: 28px;
+}
+.showcase-preview-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 16px;
+}
+.showcase-preview-icons span,
+.showcase-preview-icons i {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #a9cfff20;
+  border-radius: 10px;
+  background: #111a29;
+}
+.showcase-preview-icons img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+}
+.showcase-preview-icons i {
+  color: #a9cfff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 850;
+}
+.showcase-preview > p {
+  margin: 42px 0 0;
+  color: #8291a4;
+  font-size: 12px;
+  text-align: center;
 }
 .valuation-report {
   padding: 22px;
@@ -1251,6 +1471,25 @@ a:focus-visible {
   flex-wrap: wrap;
   gap: 8px;
 }
+.more-exports {
+  min-width: min(620px, 100%);
+}
+.more-exports summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  color: #b8c6d7;
+  cursor: pointer;
+  list-style: none;
+}
+.more-exports summary::-webkit-details-marker {
+  display: none;
+}
+.more-exports[open] summary {
+  margin-bottom: 8px;
+}
 .export-tools {
   display: flex;
   justify-content: flex-end;
@@ -1478,6 +1717,17 @@ footer {
   .filter-trigger > i {
     right: 9px;
   }
+  .focus-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .focus-shortcuts button {
+    min-height: 38px;
+    padding: 0 5px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
   .filter-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
@@ -1559,11 +1809,11 @@ footer {
     left: 5px;
   }
   .grid .card-body {
-    min-height: 54px;
+    min-height: 34px;
     padding: 5px;
   }
   .grid .card-body h2 {
-    min-height: 30px;
+    min-height: auto;
     font-size: 11px;
   }
   .account-panel {
@@ -1601,6 +1851,23 @@ footer {
   .binding-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
+  }
+  .account-extra-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 10px 10px;
+  }
+  .binding-section summary,
+  .account-extra summary {
+    min-height: 58px;
+    padding: 10px 12px;
+  }
+  .binding-section summary small,
+  .account-extra summary small {
+    max-width: 260px;
+  }
+  .binding-content {
+    padding: 0 10px 10px;
   }
   .account-form .binding-card {
     padding: 9px;
@@ -1645,6 +1912,39 @@ footer {
   }
   .preset-grid button small {
     font-size: 9px;
+  }
+  .showcase-builder {
+    padding: 14px 12px;
+  }
+  .showcase-builder-head {
+    align-items: flex-start;
+  }
+  .showcase-builder-head h2 {
+    font-size: 17px;
+  }
+  .showcase-download {
+    min-height: 42px;
+    padding: 0 13px;
+  }
+  .showcase-presets {
+    gap: 6px;
+  }
+  .showcase-presets button {
+    min-height: 40px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+  .showcase-preview {
+    min-height: 190px;
+    padding: 14px;
+  }
+  .showcase-price strong {
+    font-size: 24px;
+  }
+  .showcase-preview-icons span,
+  .showcase-preview-icons i {
+    width: 39px;
+    height: 39px;
   }
   .valuation-report {
     padding: 16px 12px;
@@ -1715,6 +2015,13 @@ footer {
   }
   .account-danger .clear-owned {
     width: 100%;
+  }
+  .more-exports {
+    width: 100%;
+    min-width: 0;
+  }
+  .more-exports summary {
+    justify-content: space-between;
   }
   .export-tools {
     width: 100%;

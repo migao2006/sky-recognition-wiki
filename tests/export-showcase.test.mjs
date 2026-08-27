@@ -20,6 +20,7 @@ const {
   buildShowcaseGroups,
   measureShowcaseCanvas,
   EXPORT_IMAGE_MAX_BYTES,
+  encodeImageWithinLimit,
 } = await import(
   asModuleUrl(showcaseSource)
 );
@@ -102,6 +103,47 @@ test("uses fixed cluster and wardrobe type ordering", () => {
   assert.deepEqual(
     other.clusters.map((cluster) => cluster.name),
     ["Outfit", "Cape", "Prop"],
+  );
+});
+
+test("adds a compact valuation summary without changing collection layout", () => {
+  const entries = [item({ guid: "cape", type: "Cape" })];
+  const collection = measureShowcaseCanvas({
+    ...options(entries),
+    preset: "collection",
+  });
+  const valuation = measureShowcaseCanvas({
+    ...options(entries),
+    preset: "valuation",
+    valuation: {
+      midpoint: 35000,
+      range: { low: 32000, high: 38000 },
+      confidence: "高信心",
+      completeness: 100,
+      itemCount: 1,
+      highlights: ["追光季"],
+    },
+  });
+  assert.equal(collection.width, 1600);
+  assert.equal(valuation.width, collection.width);
+  assert.equal(valuation.height, collection.height + 236);
+});
+
+test("never returns an encoded image above the byte limit", async () => {
+  const attempts = [];
+  const result = await encodeImageWithinLimit(async (quality) => {
+    attempts.push(quality);
+    return new Blob([new Uint8Array(quality > 0.58 ? 120 : 80)]);
+  }, 100);
+  assert.equal(result.size, 80);
+  assert.ok(attempts.length > 1);
+
+  await assert.rejects(
+    encodeImageWithinLimit(
+      async () => new Blob([new Uint8Array(120)]),
+      100,
+    ),
+    /image-too-large/,
   );
 });
 
