@@ -34,6 +34,7 @@ import {
   closetGroups,
   eventZh,
   graduationSeasonSlugs,
+  heldClosetOrder,
   isLimitedItem,
   isProfessionalVideoFocus,
   isValuationFocus,
@@ -363,7 +364,10 @@ export default function AccountOrganizer() {
           (!q || searchIndex.get(x.guid)?.includes(q)),
       )
       .sort((a, b) =>
-        a.type === b.type
+        sub === "held"
+          ? (heldClosetOrder.get(a.name) ?? 999) -
+              (heldClosetOrder.get(b.name) ?? 999)
+          : a.type === b.type
           ? a.order - b.order || a.name.localeCompare(b.name)
           : (typeOrder.get(a.type) ?? 99) - (typeOrder.get(b.type) ?? 99),
       );

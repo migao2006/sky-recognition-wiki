@@ -80,6 +80,26 @@ test("paid instruments retain their market classification", () => {
   );
 });
 
+test("paid held props retain their market classification", () => {
+  assert.equal(
+    isPaidItem(item({ name: "Bloom Lilypad Umbrella", type: "HeldProp" })),
+    true,
+  );
+  assert.equal(
+    isPaidItem(item({ name: "Tournament Torch", type: "HeldProp" })),
+    false,
+  );
+  const cinemaWiki =
+    "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary/2025#Anniversary_Cinema_Set";
+  const popcorn = item({ name: "Anniversary Popcorn Prop", wiki: cinemaWiki });
+  const glasses = item({
+    name: "Anniversary Cinema 3D Glasses",
+    wiki: cinemaWiki,
+  });
+  assert.equal(isPaidItem(glasses), true);
+  assert.equal(canonicalPackageKey(popcorn), canonicalPackageKey(glasses));
+});
+
 test("canonicalizes real pack anchors without merging separate sets", () => {
   const journey = item({
     name: "Journey Cape",

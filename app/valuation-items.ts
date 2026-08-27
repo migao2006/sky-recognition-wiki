@@ -45,6 +45,17 @@ const paidMarketNames = new Set([
   "Vessel Flute",
   "Triumph Violin",
   "Fledgling Upright Piano",
+  "Days of Fortune Enchanted Umbrella",
+  "Days of Fortune Hand Fan",
+  "Days of Love Serendipitous Scepter",
+  "Bloom Lilypad Umbrella",
+  "Bloom Sunflower Umbrella",
+  "Lantern",
+  "Summer Parasol",
+  "Mischief Withered Broom",
+  "Fortune Plush Mount",
+  "Anniversary Popcorn Prop",
+  "Anniversary Cinema 3D Glasses",
 ]);
 
 export const isSeasonUltimate = (item: WikiItem) =>

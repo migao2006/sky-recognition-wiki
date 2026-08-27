@@ -13,7 +13,7 @@ const verifiedUltimateItems: WikiItem[] = [
     order: 3800,
     guid: "2o3CEU9QhM",
     name: "Lightseekers Ultimate Umbrella",
-    type: "Prop",
+    type: "HeldProp",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/7f/Icon_prop_lightseekers_large_umbrella.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Lightseekers_Guide#Ultimate_Gifts",
@@ -61,7 +61,7 @@ const verifiedUltimateItems: WikiItem[] = [
     order: 3900,
     guid: "W-3Nh_yWGv",
     name: "Moments Ultimate Camera",
-    type: "Prop",
+    type: "HeldProp",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4f/Moments-Guide-Prop-Ultimate-Camera-icon-Credit-Morybel.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Moments_Guide#Ultimate_Gifts",
@@ -73,7 +73,7 @@ const verifiedUltimateItems: WikiItem[] = [
     order: 4100,
     guid: "dkfdFCaemY",
     name: "Moomin Ultimate Umbrella",
-    type: "Prop",
+    type: "HeldProp",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/dc/Moomin-Ultimate-Umbrella-Prop-icon.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/The_Moomin_Storybook#Moomin_Ultimate_Umbrella",
@@ -155,15 +155,102 @@ const instrumentItems: WikiItem[] = instrumentSeeds.map((item, index) => ({
   collection: item.collection,
 }));
 
+type HeldPropSeed = {
+  name: string;
+  zh: string;
+  icon: string;
+  wiki: string;
+  section: string;
+  collection: string;
+  group?: string;
+};
+
+const heldPropSeeds: readonly HeldPropSeed[] = [
+  { name: "Dark Horn", zh: "黑暗號角", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/14/SOShattering-Dark-Horn-Icon-Morybel-0146.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Ancient_Darkness#Prop", section: "seasons", collection: "shattering", group: "SeasonPass" },
+  { name: "Fireworks Staff", zh: "煙花杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c3/SalutingCaptain-3.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Saluting_Captain#Prop", section: "realms", collection: "golden-wasteland" },
+  { name: "Blue Umbrella", zh: "追光季藍傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d5/Mimi-4117_03_laidback_pioneer_item.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Laidback_Pioneer#Prop", section: "seasons", collection: "lightseekers", group: "SeasonPass" },
+  { name: "Festival Scepter", zh: "慶典權杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/38/Festival-Scepter-prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fireworks#Festival_Scepter", section: "events", collection: "days-of-fireworks" },
+  { name: "Camera", zh: "相機", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/23/Moments-Guide-Prop-Camera-icon-Credit-Morybel.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Moments_Guide#Camera_Prop", section: "seasons", collection: "moments" },
+  { name: "Manatee Staff", zh: "海牛手杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ef/Stern-Shepherd-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Stern_Shepherd#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
+  { name: "Manatee Toy", zh: "海牛玩偶", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/40/Tender-Toymaker-Manatee-Figurine-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tender_Toymaker#Prop", section: "seasons", collection: "two-embers-part-1" },
+  { name: "Sentry Spear", zh: "哨兵長矛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4d/Scarred-Sentry-Spear-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
+  { name: "Sentry Shield", zh: "哨兵盾牌", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bf/Scarred-Sentry-Shield-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Prop", section: "seasons", collection: "two-embers-part-1" },
+  { name: "Days of Fortune Enchanted Umbrella", zh: "福瑞魔法傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/50/Prosperous-Party-Parasol-icon-Morybel-0146.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune#Enchanted_Umbrella", section: "events", collection: "days-of-fortune" },
+  { name: "Days of Fortune Hand Fan", zh: "福瑞手持扇", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f2/Days-of-Fortune-Hand-Fan-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune#Fortune_Hand_Fan", section: "events", collection: "days-of-fortune" },
+  { name: "Days of Love Serendipitous Scepter", zh: "愛之日邂逅權杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/32/Days-of-Love-Wand-Icon-Morybel-0146.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love#Serendipitous_Scepter", section: "events", collection: "days-of-love" },
+  { name: "Bloom Lilypad Umbrella", zh: "花憩節睡蓮傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/93/Bloom-Lilypad-Umbrella-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom#Bloom_Lilypad_Umbrella", section: "events", collection: "days-of-bloom" },
+  { name: "Bloom Sunflower Umbrella", zh: "花憩節向日葵傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3b/Bloom-Sunflower-Umbrella-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom#Bloom_Sunflower_Umbrella", section: "events", collection: "days-of-bloom" },
+  { name: "SkyFest Jenova Fan", zh: "SkyFest Jenova 紀念扇", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/92/SkyFest-Jenova-Fan-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary/2024#SkyFest_Jenova_Fan", section: "events", collection: "event-sky-anniversary" },
+  { name: "Anniversary Clapboard", zh: "週年慶場記板", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2e/SkyFest-Movie-Clapboard-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary#Anniversary_Clapboard", section: "events", collection: "event-sky-anniversary" },
+  { name: "Tournament Torch", zh: "錦標賽火炬", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/fe/Tournament-Torch-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tournament_of_Triumph#Tournament_Torch", section: "events", collection: "event-tournament" },
+  { name: "Tournament Ice Snowboard", zh: "錦標賽冰雪板", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/a5/Tournament-Snowboard-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tournament_of_Triumph#Tournament_Snowboard", section: "events", collection: "event-tournament" },
+  { name: "Lantern", zh: "月光燈籠", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/47/Icon_prop_days_of_summer_lantern.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight#Moonlight_Lantern_Pack", section: "events", collection: "days-of-moonlight" },
+  { name: "Summer Parasol", zh: "夏日陽傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/a/aa/Icon_prop_summer_umbrella.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight#Summer_Parasol", section: "events", collection: "days-of-sunlight" },
+  { name: "Mischief Withered Broom", zh: "惡作劇枯萎掃帚", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/21/Mischief-Withered-Broom-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief#Mischief_Withered_Broom", section: "events", collection: "days-of-mischief" },
+  { name: "Treasure Shovel", zh: "尋寶鏟", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/52/Days-of-Treasure-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Treasure#Treasure_Shovel", section: "events", collection: "days-of-treasure" },
+  { name: "Fortune Plush Mount", zh: "福瑞絨偶坐騎", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/1/14/Fortune-Plush-Mount-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune#Fortune_Plush_Mount", section: "events", collection: "days-of-fortune" },
+  { name: "Company-Issued Laptop", zh: "公司配發筆電", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/44/Anniversary-Company-Issued-Laptop-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary#Company-Issued_Laptop", section: "events", collection: "event-sky-anniversary" },
+  { name: "Anniversary Popcorn Prop", zh: "週年爆米花道具", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/40/SkyFest-popcorn-prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary/2025#Anniversary_Cinema_Set", section: "events", collection: "event-sky-anniversary" },
+  { name: "Winter Feast Snowboard", zh: "冬宴滑雪板", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d8/Winter-Feast-Snowboard-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast#Winter_Feast_Snowboard", section: "events", collection: "days-of-feast" },
+];
+
+const heldPropItems: WikiItem[] = heldPropSeeds.map((item, index) => ({
+  ...item,
+  id: 5100 + index,
+  order: index + 1,
+  guid: `held-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+  type: "HeldProp",
+  group: item.group ?? "",
+}));
+
+const heldClosetNames = [
+  "Harp", "Fledgling Harp", "Contrabass", "Piano Keyboard", "Horn",
+  "Small Bell", "Large Bell", "Flute", "Panflute", "Guitar",
+  "Rhythm Guitar", "Ukulele", "Xylophone", "Winter Piano",
+  "Sanctuary Handpan", "Triumph Handpan", "Prophecy Drum", "Lute", "Bugle",
+  "Kalimba", "Electric Guitar", "Blue Electric Guitar", "Dark Horn",
+  "Voice of AURORA", "Manta Ocarina", "Cello", "Duets Cello", "Harmonica",
+  "Cymbals", "Vessel Flute", "Drum", "Triumph Violin", "Triumph Saxophone",
+  "Fortune Drum", "Fireworks Staff", "Blue Umbrella", "Festival Scepter",
+  "Lightseekers Ultimate Umbrella", "Moments Ultimate Camera", "Camera",
+  "Moomin Ultimate Umbrella", "Manatee Staff", "Manatee Toy", "Sentry Spear",
+  "Sentry Shield", "Transverse Flute", "Days of Fortune Enchanted Umbrella",
+  "Days of Fortune Hand Fan", "Days of Love Serendipitous Scepter",
+  "Bloom Lilypad Umbrella", "Bloom Sunflower Umbrella", "SkyFest Jenova Fan",
+  "Anniversary Clapboard", "Tournament Torch", "Tournament Ice Snowboard",
+  "Lantern", "Summer Parasol", "Mischief Withered Broom", "Treasure Shovel",
+  "Fortune Plush Mount", "Company-Issued Laptop", "Anniversary Popcorn Prop",
+  "Winter Feast Snowboard",
+] as const;
+export const heldClosetOrder = new Map<string, number>(
+  heldClosetNames.map((name, index) => [name, index]),
+);
+
+const normalizePlaceableProp = (item: WikiItem): WikiItem => {
+  if (item.type === "Prop") return { ...item, type: "SmallProp" };
+  if (item.type === "Furniture")
+    return {
+      ...item,
+      type: item.guid === "sZRjoCGw_u" ? "SmallProp" : "LargeProp",
+    };
+  return item;
+};
+
 export const wikiItems: WikiItem[] = [
-  ...baseWikiItems.filter((item) => !replacedInstrumentNames.has(item.name)),
+  ...baseWikiItems
+    .filter((item) => !replacedInstrumentNames.has(item.name))
+    .map(normalizePlaceableProp),
   ...verifiedUltimateItems.filter(
     (item) => !replacedInstrumentNames.has(item.name),
   ),
   ...instrumentItems,
+  ...heldPropItems,
 ];
 const verifiedInstrumentZh = Object.fromEntries(
   instrumentSeeds.map((item) => [item.name, item.zh]),
+);
+const verifiedHeldPropZh = Object.fromEntries(
+  heldPropSeeds.map((item) => [item.name, item.zh]),
 );
 const verifiedUltimateZh: Record<string, string> = {
   "Lightseekers Ultimate Umbrella": "追光季畢業禮雨傘",
@@ -186,8 +273,9 @@ export const labels: Record<string, string> = {
   OutfitShoes: "連身服裝",
   Shoes: "鞋子",
   Instrument: "樂器",
-  Prop: "手持／背負道具",
-  Furniture: "家具／擺設",
+  HeldProp: "手持道具",
+  LargeProp: "大型可放置道具",
+  SmallProp: "小型可放置道具",
   Emote: "動作",
   Stance: "站姿",
   Call: "叫聲",
@@ -237,42 +325,32 @@ export const closetGroups = [
     key: "props",
     order: "05",
     name: "道具衣櫃",
-    types: ["Instrument", "Prop", "Furniture"],
+    types: ["Instrument", "HeldProp", "LargeProp", "SmallProp"],
     subs: [
-      { key: "held", name: "手持道具", types: ["Instrument", "Prop"] },
-      { key: "large", name: "大型可放置道具", types: ["Furniture", "Instrument"] },
-      { key: "small", name: "小型可放置道具", types: ["Prop", "Furniture", "Instrument"] },
+      { key: "held", name: "手持道具", types: ["Instrument", "HeldProp"] },
+      { key: "large", name: "大型可放置道具", types: ["LargeProp", "Instrument"] },
+      { key: "small", name: "小型可放置道具", types: ["SmallProp", "Instrument"] },
     ],
   },
 ];
-// The source catalog maps to Sky's three prop tabs, with these verified exceptions.
-const heldPropGuids = new Set(["2o3CEU9QhM", "W-3Nh_yWGv", "dkfdFCaemY"]);
 const largeInstrumentGuids = new Set(["WMNr4yo_35"]);
 const smallInstrumentGuids = new Set([
   "WuZeLoUATs",
   "O9jSph-v7e",
   "10Ol7H9jKg",
 ]);
-const smallFurnitureGuids = new Set(["sZRjoCGw_u"]);
 export const matchesSub = (x: WikiItem, sub: string) => {
   if (sub === "held")
     return (
       (x.type === "Instrument" &&
         !largeInstrumentGuids.has(x.guid) &&
         !smallInstrumentGuids.has(x.guid)) ||
-      heldPropGuids.has(x.guid)
+      x.type === "HeldProp"
     );
   if (sub === "large")
-    return (
-      largeInstrumentGuids.has(x.guid) ||
-      (x.type === "Furniture" && !smallFurnitureGuids.has(x.guid))
-    );
+    return largeInstrumentGuids.has(x.guid) || x.type === "LargeProp";
   if (sub === "small")
-    return (
-      smallInstrumentGuids.has(x.guid) ||
-      (x.type === "Prop" && !heldPropGuids.has(x.guid)) ||
-      smallFurnitureGuids.has(x.guid)
-    );
+    return smallInstrumentGuids.has(x.guid) || x.type === "SmallProp";
   return x.type === sub;
 };
 export const seasonZh: Record<string, string> = {
@@ -310,6 +388,7 @@ export const seasonZh: Record<string, string> = {
 export const eventZh: Record<string, string> = {
   "days-of-bloom": "花憩日",
   "days-of-feast": "宴會節",
+  "days-of-fireworks": "煙火節",
   "days-of-fortune": "福瑞日",
   "days-of-healing": "療癒日",
   "days-of-love": "愛之日",
@@ -1483,6 +1562,7 @@ const communityZh: Record<string, string> = {
 };
 export const zhName = (name: string) => {
   if (verifiedInstrumentZh[name]) return verifiedInstrumentZh[name];
+  if (verifiedHeldPropZh[name]) return verifiedHeldPropZh[name];
   if (verifiedUltimateZh[name]) return verifiedUltimateZh[name];
   if (verifiedZh[name]) return verifiedZh[name];
   if (exactZh[name]) return exactZh[name];

@@ -39,6 +39,7 @@ const loadCatalogDomain = async () => {
 const {
   closetGroups,
   graduationSeasonSlugs,
+  heldClosetOrder,
   isProfessionalVideoFocus,
   matchesSub,
   matchesSourceFilter,
@@ -70,6 +71,7 @@ test("translates verified and tokenized catalog names", () => {
   );
   assert.equal(zhName("Rainbow Cape"), "彩虹斗篷");
   assert.equal(zhName("Transverse Flute"), "橫笛");
+  assert.equal(zhName("Sentry Shield"), "哨兵盾牌");
 });
 
 test("matches the three in-game prop closet tabs", () => {
@@ -135,17 +137,46 @@ test("matches the three in-game prop closet tabs", () => {
 test("uses verified game placement categories for representative props", () => {
   const byName = (name) => wikiItems.find((entry) => entry.name === name);
   const held = byName("Lightseekers Ultimate Umbrella");
+  const heldFromScreenshot = byName("Company-Issued Laptop");
   const large = byName("Challenge Bounce Pad Level 3");
   const small = byName("Tournament Skyball Set");
-  assert.ok(held && large && small);
+  assert.ok(held && heldFromScreenshot && large && small);
   assert.equal(matchesSub(held, "held"), true);
   assert.equal(matchesSub(held, "small"), false);
+  assert.equal(matchesSub(heldFromScreenshot, "held"), true);
   assert.equal(matchesSub(large, "large"), true);
   assert.equal(matchesSub(large, "small"), false);
   assert.equal(matchesSub(small, "small"), true);
   assert.equal(matchesSub(small, "large"), false);
 
-  const propTypes = new Set(["Instrument", "Prop", "Furniture"]);
+  const propTypes = new Set([
+    "Instrument",
+    "HeldProp",
+    "LargeProp",
+    "SmallProp",
+  ]);
+  assert.equal(
+    wikiItems.filter((entry) => matchesSub(entry, "held")).length,
+    63,
+  );
+  const heldItems = wikiItems
+    .filter((entry) => matchesSub(entry, "held"))
+    .sort(
+      (a, b) =>
+        heldClosetOrder.get(a.name) - heldClosetOrder.get(b.name),
+    );
+  assert.deepEqual(
+    heldItems.map((entry) => entry.name),
+    [...heldClosetOrder.keys()],
+  );
+  for (const name of [
+    "Dark Horn",
+    "Blue Umbrella",
+    "Manatee Staff",
+    "Sentry Spear",
+  ]) {
+    assert.equal(byName(name)?.group, "SeasonPass");
+  }
   for (const entry of wikiItems.filter((item) => propTypes.has(item.type))) {
     assert.equal(
       ["held", "large", "small"].filter((tab) => matchesSub(entry, tab))
