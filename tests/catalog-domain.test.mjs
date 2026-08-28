@@ -226,9 +226,45 @@ test("reviewed Wiki snapshot contains only catalog guids and complete Chinese na
 
 test("every visible wardrobe item has a Chinese display name", () => {
   const wardrobeItems = wikiItems.filter((entry) => allClosetTypeSet.has(entry.type));
-  assert.equal(wardrobeItems.length, 1164);
+  assert.equal(wardrobeItems.length, 1169);
   for (const entry of wardrobeItems) {
     assert.match(zhItemName(entry), /[\u3400-\u9fff]/, entry.name);
+  }
+});
+
+test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {
+  const expected = new Map([
+    ["7a1iYLeV94", ["Feathery Lash Mask", "Mask", "羽睫面具"]],
+    ["0ymZWXcz6Z", ["Yellow Tent Wall", "LargeProp", "黃色帳篷牆"]],
+    ["PR2IFFsW_m", ["Yellow Tent Top", "LargeProp", "黃色帳篷頂"]],
+    ["8KuMwTpL5V", ["Yellow Tent Window", "LargeProp", "黃色帳篷窗"]],
+    ["jIwqjwvKnG", ["Yellow Tent Door", "LargeProp", "黃色帳篷門"]],
+  ]);
+  for (const [guid, [name, type, displayName]] of expected) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(entry.name, name);
+    assert.equal(entry.type, type);
+    assert.equal(entry.collection, "summer-camping");
+    assert.equal(sourceKind(entry), "年度活動");
+    assert.equal(sourceCollectionName(entry), "夏日露營");
+    assert.equal(zhItemName(entry), displayName);
+    if (guid === "7a1iYLeV94") assert.equal(entry.group, "");
+  }
+  const nonWardrobeGuids = [
+    "UDK1UEXKdq",
+    "zBMQsKfMDz",
+    "uXHVKE2AgG",
+    "LJpSY8FZdb",
+    "COauF66x9N",
+    "9I3_qKrP4G",
+    "8HjnDXpnAJ",
+    "GHuKao8XDH",
+    "CCupxwATul",
+    "9o-zXr9Zkk",
+  ];
+  for (const guid of nonWardrobeGuids) {
+    assert.equal(wikiItems.some((entry) => entry.guid === guid), false, guid);
   }
 });
 

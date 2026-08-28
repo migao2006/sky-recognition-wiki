@@ -58,6 +58,7 @@ test("renders the account organizer", async () => {
   assert.doesNotMatch(html, /搜尋名稱、季節或 ID/);
   assert.doesNotMatch(html, /先看成品，再一鍵下載/);
   assert.match(html, /資料來源：SkyGame-Data/);
+  assert.match(html, /SkyGame-Data 1\.3\.10/);
   assert.match(html, /常用套組/);
   assert.match(html, /草稿保留在此裝置 30 天/);
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);

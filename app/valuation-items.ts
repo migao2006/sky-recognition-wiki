@@ -2,6 +2,7 @@ import type { WikiItem } from "./wiki-data";
 import { marketCollectibleProfile } from "./market-collectibles";
 
 const paidMarketNames = new Set([
+  "Feathery Lash Mask",
   "Spooky Bat Cape",
   "Cat Cape",
   "Cat Mask",
@@ -106,7 +107,7 @@ export const limitedItemKind = (item: WikiItem) => {
   if (/nintendo|playstation|steam|twitch/i.test(source)) return "platform" as const;
   if (/kizuna|aurora|little prince|moomin|cinnamoroll|journey|nine-colored/i.test(source))
     return "permanent" as const;
-  if (/days of|anniversary|mischief|feast|fortune|love|bloom|rainbow/i.test(source))
+  if (/days of|anniversary|mischief|feast|fortune|love|bloom|rainbow|summer[_ -]?camping/i.test(source))
     return "annual" as const;
   return "limited" as const;
 };

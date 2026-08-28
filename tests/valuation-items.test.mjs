@@ -14,6 +14,7 @@ const {
   isChinaOnlyItem,
   isGraduationGift,
   isPaidItem,
+  limitedItemKind,
   isSeasonPendant,
   isSeasonUltimate,
 } = await import(
@@ -96,6 +97,14 @@ test("explicit packs and verified standalone IAPs are treated as paid", () => {
     true,
   );
   assert.equal(isPaidItem(item({ name: "Spooky Bat Cape" })), true);
+  const campingMask = item({
+    name: "Feathery Lash Mask",
+    type: "Mask",
+    wiki: "https://example.com/Summer_Camping#Feathery_Lash_Mask",
+    collection: "summer-camping",
+  });
+  assert.equal(isPaidItem(campingMask), true);
+  assert.equal(limitedItemKind(campingMask), "annual");
 });
 
 test("paid instruments retain their market classification", () => {

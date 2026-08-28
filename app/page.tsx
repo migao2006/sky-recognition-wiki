@@ -192,8 +192,8 @@ export default function AccountOrganizer() {
       )}
       <footer>
         <span>
-          資料來源：SkyGame-Data 1.3.8、SkyGame-Planner、Sky Wiki／BWiki（核對於
-          2026-08-25）
+          資料來源：SkyGame-Data 1.3.10、SkyGame-Planner、Sky Wiki／BWiki（核對於
+          2026-08-29）
         </span>
       </footer>
     </main>

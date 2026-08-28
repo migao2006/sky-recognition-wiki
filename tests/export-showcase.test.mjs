@@ -238,7 +238,7 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
     getItemTypeName: (entry) => catalog.labels[entry.type] || entry.type,
     getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
   });
-  assert.equal(selected.length, 1164);
+  assert.equal(selected.length, 1169);
   assert.equal(size.width, 1600);
   assert.ok(size.height <= 16384);
   assert.ok(size.width * size.height <= 16777216);

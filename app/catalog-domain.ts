@@ -49,6 +49,69 @@ const verifiedUltimateItems: WikiItem[] = [
     collection: "moomin",
   },
 ];
+// Upstream overlay: SkyGame-Data v1.3.10 (base snapshot remains compact).
+const skyGameDataUpdates: WikiItem[] = [
+  {
+    id: 3277,
+    order: 10975,
+    guid: "7a1iYLeV94",
+    name: "Feathery Lash Mask",
+    type: "Mask",
+    group: "",
+    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/c/c0/Feathery-Lash-Mask-icon.png",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Summer_Camping/2026#Feathery_Lash_Mask",
+    section: "events",
+    collection: "summer-camping",
+  },
+  {
+    id: 3278,
+    order: 5320,
+    guid: "0ymZWXcz6Z",
+    name: "Yellow Tent Wall",
+    type: "Furniture",
+    group: "",
+    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2e/Spring-Camping-Shared-Space-Prop-4-Icon.png",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Summer_Camping/2024#Yellow_Tent_Wall",
+    section: "events",
+    collection: "summer-camping",
+  },
+  {
+    id: 3279,
+    order: 5380,
+    guid: "PR2IFFsW_m",
+    name: "Yellow Tent Top",
+    type: "Furniture",
+    group: "",
+    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/0/0e/Spring-Camping-Shared-Space-Prop-2-Icon.png",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Summer_Camping/2024#Yellow_Tent_Top",
+    section: "events",
+    collection: "summer-camping",
+  },
+  {
+    id: 3280,
+    order: 5360,
+    guid: "8KuMwTpL5V",
+    name: "Yellow Tent Window",
+    type: "Furniture",
+    group: "",
+    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3f/Spring-Camping-Shared-Space-Prop-1-Icon.png",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Summer_Camping/2024#Yellow_Tent_Window",
+    section: "events",
+    collection: "summer-camping",
+  },
+  {
+    id: 3281,
+    order: 5340,
+    guid: "jIwqjwvKnG",
+    name: "Yellow Tent Door",
+    type: "Furniture",
+    group: "",
+    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3e/Spring-Camping-Shared-Space-Prop-3-Icon.png",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Summer_Camping/2024#Yellow_Tent_Door",
+    section: "events",
+    collection: "summer-camping",
+  },
+];
 type InstrumentSeed = {
   name: string;
   zh: string;
@@ -208,6 +271,7 @@ export const wikiItems: WikiItem[] = [
   ...baseWikiItems
     .filter((item) => !replacedInstrumentNames.has(item.name))
     .map(normalizePlaceableProp),
+  ...skyGameDataUpdates.map(normalizePlaceableProp),
   ...verifiedUltimateItems.filter(
     (item) => !replacedInstrumentNames.has(item.name),
   ),
@@ -386,6 +450,7 @@ export const eventZh: Record<string, string> = {
   "days-of-style": "時尚日",
   "days-of-summer": "夏日／慵懶日",
   "days-of-sunlight": "陽光日",
+  "summer-camping": "夏日露營",
   "days-of-treasure": "寶藏日",
   "event-aviary-firework-festival": "雲巢煙火節",
   "event-cinnamoroll": "大耳狗聯動",
@@ -504,6 +569,11 @@ export const source = (x: WikiItem) =>
       ? `${sourceKind(x)} · ${realmZh[x.collection] || x.collection}`
       : `${sourceKind(x)} · ${sourceCollectionName(x)}`;
 const exactZh: Record<string, string> = {
+  "Feathery Lash Mask": "羽睫面具",
+  "Yellow Tent Wall": "黃色帳篷牆",
+  "Yellow Tent Top": "黃色帳篷頂",
+  "Yellow Tent Window": "黃色帳篷窗",
+  "Yellow Tent Door": "黃色帳篷門",
   "Little Prince Ultimate Rose": "小王子畢業玫瑰",
   "Sword Outfit": "劍士服",
   "Anubis Mask": "阿努比斯面具",
