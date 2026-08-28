@@ -95,6 +95,9 @@ test("renders the account organizer", async () => {
   assert.doesNotMatch(source, /localStorage|搜尋物品|估價分析/);
   assert.match(draftSource, /localStorage/);
   assert.match(cardSource, /decoding="async"/);
+  assert.match(cardSource, /aria-label=.*取消選取/);
+  assert.match(cssSource, /item-card\.selectable\.owned\s*\{[\s\S]*?border:\s*2px solid #8fc7ff/);
+  assert.doesNotMatch(catalogStepSource, /只看已選/);
   assert.match(cssSource, /content-visibility:\s*auto/);
   assert.doesNotMatch(html, /正在載入衣櫃/);
   assert.doesNotMatch(

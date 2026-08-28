@@ -27,6 +27,7 @@ export const CatalogItemCard = memo(function CatalogItemCard({
       className={`item-card selectable ${selected ? "owned" : ""}`}
       onClick={() => onToggle(item.guid)}
       aria-pressed={selected}
+      aria-label={`${selected ? "取消選取" : "選取"}：${displayName}`}
     >
       <div className="image-wrap">
         <span className="owned-check">{selected ? "✓" : "＋"}</span>

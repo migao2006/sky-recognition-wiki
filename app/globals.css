@@ -1584,16 +1584,23 @@ a:focus-visible {
   position: relative;
 }
 .item-card.selectable.owned {
-  border-color: #789dcc99;
-  box-shadow: inset 0 0 0 1px #789dcc3d;
+  border: 2px solid #8fc7ff;
+  box-shadow: inset 0 0 0 1px #8fc7ff38;
 }
 .item-card.selectable.owned .image-wrap {
   background: radial-gradient(
     circle at 50% 40%,
-    #234065 0,
-    #101827 64%,
+    #294f7b 0,
+    #14243a 64%,
     #070c14 100%
   );
+}
+.item-card.selectable.owned .card-body {
+  border-top-color: #8fc7ff52;
+  background: #111d2e;
+}
+.item-card.selectable.owned .card-body h2 {
+  color: #ffffff;
 }
 .owned-check {
   position: absolute;
@@ -1604,17 +1611,27 @@ a:focus-visible {
   height: 28px;
   display: grid;
   place-items: center;
-  border: 1px solid #a9cfff77;
+  border: 1px solid #a9cfff4d;
   border-radius: 10px;
-  background: #050910db;
-  color: #a9cfff;
+  background: #050910b8;
+  color: #9fb5d0;
   font-size: 15px;
   font-weight: 900;
+  opacity: 0.58;
+  transform: scale(0.88);
+  transition:
+    background-color 0.1s,
+    border-color 0.1s,
+    color 0.1s,
+    opacity 0.1s,
+    transform 0.1s;
 }
 .item-card.owned .owned-check {
-  border-color: #789dcc;
-  background: #789dcc;
-  color: #08111e;
+  border-color: #8fc7ff;
+  background: #8fc7ff;
+  color: #07101d;
+  opacity: 1;
+  transform: scale(1);
 }
 .item-card.selectable:active {
   transform: scale(0.98);
@@ -2143,6 +2160,7 @@ footer {
   * {
     scroll-behavior: auto !important;
     transition: none !important;
+    animation: none !important;
   }
 }
 
