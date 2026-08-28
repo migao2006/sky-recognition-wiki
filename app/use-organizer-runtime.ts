@@ -51,7 +51,9 @@ const emptyValuationSampleSummary = {
 export const useOrganizerRuntime = (
   setOwned: Dispatch<SetStateAction<Set<string>>>,
 ) => {
-  const [catalogDomain, setCatalogDomain] = useState<CatalogDomain | null>(null);
+  const [catalogDomain, setCatalogDomain] = useState<CatalogDomain | null>(
+    null,
+  );
   const [valuationRuntime, setValuationRuntime] =
     useState<ValuationRuntime | null>(null);
   const [catalogLoadError, setCatalogLoadError] = useState(false);
@@ -63,22 +65,24 @@ export const useOrganizerRuntime = (
   const loadCatalog = useCallback(() => {
     if (!catalogPromise.current) {
       setCatalogLoadError(false);
-      catalogPromise.current = import("./catalog-domain").then((module) => {
-        const validGuids = new Set(module.wikiItems.map((item) => item.guid));
-        catalogValidGuids.current = validGuids;
-        setOwned((previous) => {
-          const filtered = new Set(
-            [...previous].filter((guid) => validGuids.has(guid)),
-          );
-          return filtered.size === previous.size ? previous : filtered;
+      catalogPromise.current = import("./catalog-domain")
+        .then((module) => {
+          const validGuids = new Set(module.wikiItems.map((item) => item.guid));
+          catalogValidGuids.current = validGuids;
+          setOwned((previous) => {
+            const filtered = new Set(
+              [...previous].filter((guid) => validGuids.has(guid)),
+            );
+            return filtered.size === previous.size ? previous : filtered;
+          });
+          setCatalogDomain(module);
+          return module;
+        })
+        .catch((error: unknown) => {
+          catalogPromise.current = null;
+          setCatalogLoadError(true);
+          throw error;
         });
-        setCatalogDomain(module);
-        return module;
-      }).catch((error: unknown) => {
-        catalogPromise.current = null;
-        setCatalogLoadError(true);
-        throw error;
-      });
     }
     return catalogPromise.current;
   }, [setOwned]);
@@ -89,15 +93,17 @@ export const useOrganizerRuntime = (
       valuationPromise.current = Promise.all([
         import("./valuation-analysis"),
         import("./valuation-season-bands"),
-      ]).then(([analysis, bands]) => {
-        const runtime = { analysis, bands };
-        setValuationRuntime(runtime);
-        return runtime;
-      }).catch((error: unknown) => {
-        valuationPromise.current = null;
-        setValuationLoadError(true);
-        throw error;
-      });
+      ])
+        .then(([analysis, bands]) => {
+          const runtime = { analysis, bands };
+          setValuationRuntime(runtime);
+          return runtime;
+        })
+        .catch((error: unknown) => {
+          valuationPromise.current = null;
+          setValuationLoadError(true);
+          throw error;
+        });
     }
     return valuationPromise.current;
   }, []);
@@ -113,14 +119,15 @@ export const useOrganizerRuntime = (
     catalogDomain?.isProfessionalVideoFocus ?? alwaysFalse;
   const isValuationFocus = catalogDomain?.isValuationFocus ?? alwaysFalse;
   const labels = catalogDomain?.labels ?? emptyLabels;
-  const matchesSourceFilter =
-    catalogDomain?.matchesSourceFilter ?? alwaysTrue;
+  const matchesSourceFilter = catalogDomain?.matchesSourceFilter ?? alwaysTrue;
   const matchesSub = catalogDomain?.matchesSub ?? alwaysFalse;
-  const ongoingSeasonSlugs = catalogDomain?.ongoingSeasonSlugs ?? emptyStringSet;
+  const ongoingSeasonSlugs =
+    catalogDomain?.ongoingSeasonSlugs ?? emptyStringSet;
   const searchIndex = catalogDomain?.searchIndex ?? emptyStringMap;
   const seasonGraduationItems =
     catalogDomain?.seasonGraduationItems ?? emptyItemMap;
-  const seasonUltimateItems = catalogDomain?.seasonUltimateItems ?? emptyItemMap;
+  const seasonUltimateItems =
+    catalogDomain?.seasonUltimateItems ?? emptyItemMap;
   const seasonUltimateSlugs =
     catalogDomain?.seasonUltimateSlugs ?? emptyStringList;
   const seasonZh = catalogDomain?.seasonZh ?? emptyLabels;
@@ -137,8 +144,7 @@ export const useOrganizerRuntime = (
     ((items: WikiItem[]) => [
       ...new Map(items.map((item) => [item.guid, item])).values(),
     ]);
-  const getNextClosetSub =
-    catalogDomain?.getNextClosetSub ?? (() => null);
+  const getNextClosetSub = catalogDomain?.getNextClosetSub ?? (() => null);
   const validItemGuids = useMemo(
     () => new Set(wikiItems.map((item) => item.guid)),
     [wikiItems],
@@ -175,7 +181,8 @@ export const useOrganizerRuntime = (
       ongoingSeasonSlugs,
       graduationSeasonSlugs,
       seasonGraduationItems,
-      sortSeasonSlugs: catalogDomain?.sortSeasonSlugs ?? ((slugs) => [...slugs]),
+      sortSeasonSlugs:
+        catalogDomain?.sortSeasonSlugs ?? ((slugs) => [...slugs]),
       getZhName: zhItemName,
     }),
     [
@@ -246,3 +253,5 @@ export const useOrganizerRuntime = (
       emptyValuationSampleSummary,
   };
 };
+
+export type OrganizerRuntime = ReturnType<typeof useOrganizerRuntime>;

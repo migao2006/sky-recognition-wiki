@@ -3,21 +3,41 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("renders the account organizer", async () => {
-  const [html, source, runtimeSource, configSource, cardSource, cssSource] =
-    await Promise.all([
-      readFile(
-        new URL("../.next/server/app/index.html", import.meta.url),
-        "utf8",
-      ),
-      readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-      readFile(
-        new URL("../app/use-organizer-runtime.ts", import.meta.url),
-        "utf8",
-      ),
-      readFile(new URL("../app/account-config.ts", import.meta.url), "utf8"),
-      readFile(new URL("../app/catalog-item-card.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
-    ]);
+  const [
+    html,
+    source,
+    runtimeSource,
+    configSource,
+    cardSource,
+    cssSource,
+    accountStepSource,
+    catalogStepSource,
+    valuationStepSource,
+    draftSource,
+  ] = await Promise.all([
+    readFile(
+      new URL("../.next/server/app/index.html", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/use-organizer-runtime.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../app/account-config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/catalog-item-card.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/account-step.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/catalog-step.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/valuation-step.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/use-account-draft.ts", import.meta.url), "utf8"),
+  ]);
+  const componentSource = [
+    source,
+    accountStepSource,
+    catalogStepSource,
+    valuationStepSource,
+  ].join("\n");
   assert.match(html, /<title>光遇帳號整理｜衣櫃與估價<\/title>/i);
   assert.match(html, /帳號資料/);
   assert.match(html, /帳號整理步驟/);
@@ -41,33 +61,49 @@ test("renders the account organizer", async () => {
   assert.match(html, /常用套組/);
   assert.match(html, /草稿保留在此裝置 30 天/);
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
-  assert.doesNotMatch(source, /依季節匯出|匯出付費物品與畢業禮/);
-  assert.match(source, /出售文案/);
-  assert.match(source, /saleCopyPresetGuids\.has\(item\.guid\)/);
-  assert.match(source, /key === "nintendo" && option\.key === "transfer"/);
-  assert.match(source, /匯出 JSON/);
-  assert.match(source, /匯入 JSON/);
-  assert.match(source, /分享摘要/);
+  assert.doesNotMatch(componentSource, /依季節匯出|匯出付費物品與畢業禮/);
+  assert.match(valuationStepSource, /出售文案/);
+  assert.match(valuationStepSource, /saleCopyPresetGuids\.has\(item\.guid\)/);
+  assert.match(
+    accountStepSource,
+    /key === "nintendo" && option\.key === "transfer"/,
+  );
+  assert.match(valuationStepSource, /匯出 JSON/);
+  assert.match(valuationStepSource, /匯入 JSON/);
+  assert.match(valuationStepSource, /分享摘要/);
   assert.match(runtimeSource, /import\("\.\/catalog-domain"\)/);
   assert.match(runtimeSource, /import\("\.\/valuation-analysis"\)/);
   assert.match(runtimeSource, /catalogPromise\.current = null/);
   assert.match(runtimeSource, /valuationPromise\.current = null/);
-  assert.match(source, /INITIAL_VISIBLE_ITEMS = 40/);
-  assert.match(source, /new IntersectionObserver/);
-  assert.match(source, /seasonPickerOpen &&/);
-  assert.match(source, /quickSelectOpen &&/);
-  assert.match(source, /setSeasonPickerOpen\(false\)/);
-  assert.match(source, /setQuickSelectOpen\(false\)/);
+  assert.match(catalogStepSource, /INITIAL_VISIBLE_ITEMS = 40/);
+  assert.match(catalogStepSource, /useCatalogStepState/);
+  assert.match(source, /state=\{catalogStepState\}/);
+  assert.match(valuationStepSource, /useValuationStepState/);
+  assert.match(source, /state=\{valuationStepState\}/);
+  assert.match(
+    valuationStepSource,
+    /includeCompletion \? "季節基準" : "快售～刊登"/,
+  );
+  assert.match(catalogStepSource, /new IntersectionObserver/);
+  assert.match(accountStepSource, /seasonPickerOpen &&/);
+  assert.match(accountStepSource, /quickSelectOpen &&/);
+  assert.match(source, /<AccountStep/);
+  assert.match(source, /<CatalogStep/);
+  assert.match(source, /<ValuationStep/);
+  assert.match(source, /useAccountDraft/);
+  assert.doesNotMatch(source, /localStorage|搜尋物品|估價分析/);
+  assert.match(draftSource, /localStorage/);
   assert.match(cardSource, /decoding="async"/);
   assert.match(cssSource, /content-visibility:\s*auto/);
   assert.doesNotMatch(html, /正在載入衣櫃/);
   assert.doesNotMatch(
-    source,
+    componentSource,
     /import\s*\{[\s\S]*?wikiItems[\s\S]*?\}\s*from\s*"\.\/catalog-domain"/,
   );
   assert.doesNotMatch(html, /Sunlight Snorkel/);
-  const initialChunkPaths = [...html.matchAll(/src="\/_next\/(static\/chunks\/[^"]+\.js)"/g)]
-    .map((match) => match[1]);
+  const initialChunkPaths = [
+    ...html.matchAll(/src="\/_next\/(static\/chunks\/[^"]+\.js)"/g),
+  ].map((match) => match[1]);
   const initialCode = (
     await Promise.all(
       initialChunkPaths.map((path) =>
