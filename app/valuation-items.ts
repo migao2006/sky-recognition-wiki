@@ -1,4 +1,5 @@
 import type { WikiItem } from "./wiki-data";
+import { marketCollectibleProfile } from "./market-collectibles";
 
 const paidMarketNames = new Set([
   "Spooky Bat Cape",
@@ -70,10 +71,14 @@ export const isGraduationGift = (item: WikiItem) =>
   isSeasonUltimate(item) && !isSeasonPendant(item);
 
 export const isPaidItem = (item: WikiItem) =>
-  /Pack/i.test(item.wiki) || paidMarketNames.has(item.name);
+  marketCollectibleProfile(item.name) !== null ||
+  /Pack/i.test(item.wiki) ||
+  paidMarketNames.has(item.name);
 
 export const canonicalPackageKey = (item: WikiItem) => {
   if (!isPaidItem(item)) return null;
+  const profileKey = marketCollectibleProfile(item.name)?.packageKey;
+  if (profileKey) return `verified:${profileKey}`;
   try {
     const url = new URL(item.wiki);
     const path = url.pathname.replace(/\/$/, "").toLocaleLowerCase();
@@ -87,11 +92,15 @@ export const canonicalPackageKey = (item: WikiItem) => {
 };
 
 export const isChinaOnlyItem = (item: WikiItem) =>
+  marketCollectibleProfile(item.name)?.availability === "china" ||
   /\b(?:china|cn|guo?fu|netease)\b|國服|国服/i.test(
     `${item.name} ${item.wiki} ${item.collection} ${item.group}`,
   );
 
 export const limitedItemKind = (item: WikiItem) => {
+  const profile = marketCollectibleProfile(item.name);
+  if (profile?.availability === "platform") return "platform" as const;
+  if (profile && profile.valuationMultiplier >= 1.5) return "permanent" as const;
   const source = `${item.name} ${item.wiki} ${item.collection} ${item.group}`;
   if (isChinaOnlyItem(item)) return "china" as const;
   if (/nintendo|playstation|steam|twitch/i.test(source)) return "platform" as const;
@@ -102,7 +111,22 @@ export const limitedItemKind = (item: WikiItem) => {
   return "limited" as const;
 };
 
+export const packageValuationMultiplier = (item: WikiItem) => {
+  const verified = marketCollectibleProfile(item.name)?.valuationMultiplier;
+  if (verified !== undefined) return verified;
+  const kind = limitedItemKind(item);
+  return kind === "permanent"
+    ? 1.5
+    : kind === "platform"
+      ? 1.25
+      : kind === "annual"
+        ? 0.9
+        : 0.75;
+};
+
 export const platformBindingForItem = (item: WikiItem) => {
+  const profilePlatform = marketCollectibleProfile(item.name)?.platform;
+  if (profilePlatform) return profilePlatform;
   const source = `${item.name} ${item.wiki} ${item.collection} ${item.group}`;
   if (/nintendo/i.test(source)) return "nintendo";
   if (/playstation/i.test(source)) return "playstation";

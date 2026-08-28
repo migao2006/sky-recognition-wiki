@@ -1,13 +1,29 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
-import {
+import { asModuleUrl } from "./helpers/transpile.mjs";
+
+const [valuationSource, marketSource] = await Promise.all(
+  ["valuation-items.ts", "market-collectibles.ts"].map((file) =>
+    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
+  ),
+);
+const marketUrl = asModuleUrl(marketSource);
+const {
   canonicalPackageKey,
   isChinaOnlyItem,
   isGraduationGift,
   isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
-} from "../app/valuation-items.ts";
+} = await import(
+  asModuleUrl(
+    valuationSource.replace(
+      'import { marketCollectibleProfile } from "./market-collectibles";',
+      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+    ),
+  )
+);
 
 const item = (overrides = {}) => ({
   id: 1,
@@ -128,4 +144,31 @@ test("canonicalizes real pack anchors without merging separate sets", () => {
   });
   assert.equal(canonicalPackageKey(journey), canonicalPackageKey(journeyMask));
   assert.notEqual(canonicalPackageKey(journey), canonicalPackageKey(transcendent));
+});
+
+test("deduplicates verified multi-item collaboration packs", () => {
+  const ears = item({ name: "Cinnamoroll Ears" });
+  const hair = item({ name: "Cinnamoroll Swirled Hair" });
+  const cape = item({ name: "Cinnamoroll Cloud Cape" });
+  const bowtie = item({ name: "Cinnamoroll Bowtie" });
+  assert.equal(canonicalPackageKey(ears), canonicalPackageKey(hair));
+  assert.equal(canonicalPackageKey(cape), canonicalPackageKey(bowtie));
+  assert.notEqual(canonicalPackageKey(ears), canonicalPackageKey(cape));
+
+  const kizuna = ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"].map(
+    (name) => canonicalPackageKey(item({ name })),
+  );
+  const deer = [
+    "Gift of the Nine-Colored Deer Antlers",
+    "Gift of the Nine-Colored Deer Mask",
+  ].map((name) => canonicalPackageKey(item({ name })));
+  const nintendo = [
+    "Nintendo Elf Hair",
+    "Nintendo Red Switch Cape",
+    "Nintendo Blue Switch Cape",
+    "Vessel Flute",
+  ].map((name) => canonicalPackageKey(item({ name })));
+  assert.equal(new Set(kizuna).size, 1);
+  assert.equal(new Set(deer).size, 1);
+  assert.equal(new Set(nintendo).size, 1);
 });

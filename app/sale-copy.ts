@@ -3,6 +3,7 @@ import {
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
+import { marketCollectibleProfile } from "./market-collectibles";
 
 export type SaleSeasonProgress = {
   name: string;
@@ -101,8 +102,24 @@ const itemSearchText = (item: SaleCopyItem) =>
     item.collection,
     item.sourceName,
   ].join(" ");
-const collaborationOf = (item: SaleCopyItem) =>
-  collaborationSeries.find((series) => series.pattern.test(itemSearchText(item)));
+const collaborationOf = (item: SaleCopyItem) => {
+  const verified = marketCollectibleProfile(item.name);
+  if (verified?.saleCopy && verified.saleSection === "collaboration") {
+    const rank = collaborationSeries.findIndex(
+      (series) => series.name === verified.series,
+    );
+    return {
+      name: verified.series,
+      rank: rank >= 0 ? rank : collaborationSeries.length,
+    };
+  }
+  const rank = collaborationSeries.findIndex((series) =>
+    series.pattern.test(itemSearchText(item)),
+  );
+  return rank >= 0
+    ? { name: collaborationSeries[rank].name, rank }
+    : null;
+};
 
 const tidyItemName = (series: string, name: string) => {
   if (series === "Nintendo")
@@ -209,12 +226,11 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
 
       const collaboration = collaborationOf(item);
       if (collaboration) {
-        const rank = collaborationSeries.indexOf(collaboration);
         appendUnique(
           limited,
           collaboration.name,
           collaboration.name,
-          rank,
+          collaboration.rank,
           tidyItemName(collaboration.name, item.displayName),
         );
         return;

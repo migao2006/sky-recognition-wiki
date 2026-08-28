@@ -169,14 +169,24 @@ test("uses the shared valuation wording in image summaries", () => {
 });
 
 test("keeps the complete catalog export within mobile canvas limits", async () => {
-  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
+  const [wikiSource, valuationSource, marketSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "market-collectibles.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
-  const valuationUrl = asModuleUrl(valuationSource);
+  const marketUrl = asModuleUrl(marketSource);
+  const valuationUrl = asModuleUrl(
+    valuationSource.replace(
+      'import { marketCollectibleProfile } from "./market-collectibles";',
+      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+    ),
+  );
   const catalogUrl = asModuleUrl(
     catalogSource
+      .replace(
+        'import { marketCollectibleProfile } from "./market-collectibles";',
+        `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+      )
       .replace(
         'import playerHairNames from "./player-hair-names.json";',
         `const playerHairNames = ${playerHairSource};`,

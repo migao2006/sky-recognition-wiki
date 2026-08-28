@@ -1091,6 +1091,25 @@ a:focus-visible {
   color: #f4f7fb;
   font-size: 20px;
 }
+.showcase-primary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.showcase-primary-actions > button {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid #a9cfff2b;
+  border-radius: 13px;
+  background: #0d1522;
+  color: #dce8f7;
+  font-weight: 800;
+  cursor: pointer;
+}
+.showcase-primary-actions > button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .showcase-download {
   min-height: 44px;
   padding: 0 18px;
@@ -1316,9 +1335,35 @@ a:focus-visible {
 }
 .valuation-method {
   margin: 14px 2px 0;
+  overflow: hidden;
+  border: 1px solid #a9cfff22;
+  border-radius: 13px;
+  background: #070c14;
   color: #98a5b6;
   font-size: 10px;
   line-height: 1.65;
+}
+.valuation-method summary {
+  min-height: 44px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #dce8f7;
+  cursor: pointer;
+  list-style: none;
+}
+.valuation-method summary::-webkit-details-marker {
+  display: none;
+}
+.valuation-method summary span {
+  color: #8295ad;
+  font-size: 10px;
+}
+.valuation-method p {
+  margin: 0;
+  padding: 0 12px 12px;
 }
 .valuation-method a {
   color: #82a8d8;
@@ -1922,11 +1967,17 @@ footer {
   }
   .showcase-builder-head {
     align-items: flex-start;
+    flex-direction: column;
   }
   .showcase-builder-head h2 {
     font-size: 17px;
   }
+  .showcase-primary-actions {
+    width: 100%;
+  }
+  .showcase-primary-actions > button,
   .showcase-download {
+    flex: 1;
     min-height: 42px;
     padding: 0 13px;
   }

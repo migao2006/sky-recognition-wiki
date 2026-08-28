@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("keeps the complete lean wiki catalog", async () => {
+test("keeps the complete wardrobe catalog without unused expressions", async () => {
   const source = await readFile(
     new URL("../app/wiki-data.ts", import.meta.url),
     "utf8",
@@ -26,7 +26,7 @@ test("keeps the complete lean wiki catalog", async () => {
     "collection",
   ];
 
-  assert.equal(items.length, 1640);
+  assert.equal(items.length, 1101);
   assert.equal(new Set(items.map((item) => item.guid)).size, items.length);
   assert.equal(new Set(items.map((item) => item.id)).size, items.length);
   assert.ok(
@@ -49,4 +49,8 @@ test("keeps the complete lean wiki catalog", async () => {
     ),
   );
   assert.ok(items.every((item) => !("previewUrl" in item)));
+  assert.ok(
+    items.every((item) => !["Emote", "Call", "Stance"].includes(item.type)),
+    "non-wardrobe expressions must not return to the client catalog",
+  );
 });

@@ -9,6 +9,7 @@ import {
   isSeasonPendant,
   isSeasonUltimate,
 } from "./valuation-items";
+import { marketCollectibleProfile } from "./market-collectibles";
 
 const verifiedUltimateItems: WikiItem[] = [
   {
@@ -409,7 +410,13 @@ export const seasonOrder = new Map(seasons.map(([slug], index) => [slug, index])
 export const ongoingSeasonSlugs = new Set(["dear-van-gogh"]);
 export const storeSource = (x: WikiItem) => {
   const url = x.wiki;
-  return /Secret_Area|Founder/.test(url)
+  const verified = marketCollectibleProfile(x.name);
+  return verified?.availability === "global" &&
+    verified.saleSection === "collaboration"
+    ? `${verified.series}聯動`
+    : x.collection === "nintendo"
+    ? "Nintendo Switch 專屬"
+    : /Secret_Area|Founder/.test(url)
     ? "辦公室／秘密區域"
     : /PlayStation/.test(url)
       ? "PlayStation 專屬"
@@ -428,6 +435,12 @@ export const storeSource = (x: WikiItem) => {
                   : "常駐商店";
 };
 export const sourceKind = (x: WikiItem) => {
+  const verified = marketCollectibleProfile(x.name);
+  if (
+    verified?.availability === "global" &&
+    verified.saleSection === "collaboration"
+  )
+    return "聯動";
   if (x.section === "seasons") return "季節";
   if (x.section === "events") {
     if (["event-cinnamoroll", "event-kizuna-ai"].includes(x.collection))

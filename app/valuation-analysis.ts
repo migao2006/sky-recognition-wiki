@@ -7,6 +7,7 @@ import {
   isPaidItem,
   isSeasonPendant,
   limitedItemKind,
+  packageValuationMultiplier,
   platformBindingForItem,
 } from "./valuation-items";
 import {
@@ -302,15 +303,7 @@ export const estimateValuation = ({
     ? packageTier.premium / packageMap.size
     : 0;
   for (const item of packageMap.values()) {
-    const kind = limitedItemKind(item);
-    const multiplier =
-      kind === "permanent"
-        ? 1.5
-        : kind === "platform"
-          ? 1.25
-          : kind === "annual"
-            ? 0.9
-            : 0.75;
+    const multiplier = packageValuationMultiplier(item);
     const base = packageUnit * multiplier;
     contributions.push({
       group: "package",

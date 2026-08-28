@@ -6,12 +6,20 @@ const sources = await Promise.all(
   [
     "account-config.ts",
     "valuation-calibration.ts",
+    "market-collectibles.ts",
     "valuation-items.ts",
     "valuation-season-bands.ts",
     "valuation-analysis.ts",
   ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
 );
-const [config, calibration, items, bands, analysis] = sources;
+const [config, calibration, market, items, bands, analysis] = sources;
+const marketUrl = asModuleUrl(market);
+const itemsUrl = asModuleUrl(
+  items.replace(
+    'import { marketCollectibleProfile } from "./market-collectibles";',
+    `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+  ),
+);
 const loaded = await import(
   asModuleUrl(
     analysis
@@ -28,7 +36,7 @@ const loaded = await import(
       .replace(
         /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
         (_, names) =>
-          `const {${names}} = await import(${JSON.stringify(asModuleUrl(items))});`,
+          `const {${names}} = await import(${JSON.stringify(itemsUrl)});`,
       )
       .replace(
         /import \{([\s\S]*?)\} from "\.\/valuation-season-bands";/,
@@ -149,6 +157,22 @@ test("a canonical pack is counted once and China-only content is excluded", () =
     1,
   );
   assert.ok(result.warnings.some((warning) => warning.includes("國服限定")));
+});
+
+test("verified collaboration combos contribute once per real package", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({ name: "Cinnamoroll Ears" }),
+      item({ name: "Cinnamoroll Swirled Hair" }),
+      item({ name: "Cinnamoroll Cloud Cape" }),
+      item({ name: "Cinnamoroll Bowtie" }),
+    ]),
+  });
+  assert.ok(result);
+  assert.equal(
+    result.contributions.filter((row) => row.group === "package").length,
+    2,
+  );
 });
 
 test("valuation contribution labels use the catalog Chinese name", () => {

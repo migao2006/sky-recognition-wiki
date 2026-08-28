@@ -4,12 +4,23 @@ import test from "node:test";
 import { asModuleUrl } from "./helpers/transpile.mjs";
 
 const loadCatalogDomain = async () => {
-  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
+  const [wikiSource, valuationSource, marketSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "market-collectibles.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
+  const marketUrl = asModuleUrl(marketSource);
+  const valuationUrl = asModuleUrl(
+    valuationSource.replace(
+      'import { marketCollectibleProfile } from "./market-collectibles";',
+      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+    ),
+  );
   const catalogModule = catalogSource
+    .replace(
+      'import { marketCollectibleProfile } from "./market-collectibles";',
+      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+    )
     .replace(
       'import playerHairNames from "./player-hair-names.json";',
       `const playerHairNames = ${playerHairSource};`,
@@ -32,7 +43,7 @@ const loadCatalogDomain = async () => {
       /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
       (_, imports) =>
         `const {${imports}} = await import(${JSON.stringify(
-          asModuleUrl(valuationSource),
+          valuationUrl,
         )});`,
     );
   return import(asModuleUrl(catalogModule));
@@ -394,6 +405,13 @@ test("uses one display name mapping for showcase and sale sources", () => {
     sourceCollectionName(item({ section: "store", wiki: "https://example.com/Nintendo" })),
     "Nintendo Switch 專屬",
   );
+  for (const name of ["Journey Hair", "Journey Cape", "Journey Mask"]) {
+    const journey = wikiItems.find((entry) => entry.name === name);
+    assert.equal(sourceKind(journey), "聯動", name);
+    assert.equal(sourceCollectionName(journey), "風之旅人聯動", name);
+    assert.equal(matchesSourceFilter(journey, "platform"), false, name);
+    assert.equal(matchesSourceFilter(journey, "collab"), true, name);
+  }
 });
 
 test("filters catalog items by source category", () => {

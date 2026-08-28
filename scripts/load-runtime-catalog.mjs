@@ -15,7 +15,12 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
   const stubs = new Set(stubJsonFiles);
   const directory = await mkdtemp(join(tmpdir(), "sky-runtime-catalog-"));
   try {
-    for (const name of ["wiki-data", "valuation-items", "catalog-domain"]) {
+    for (const name of [
+      "wiki-data",
+      "market-collectibles",
+      "valuation-items",
+      "catalog-domain",
+    ]) {
       let source = await readFile(join(ROOT, "app", `${name}.ts`), "utf8");
       for (const [variable, file] of jsonImports) {
         const statement = `import ${variable} from "./${file}";`;
@@ -33,6 +38,10 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
           },
         })
         .outputText.replaceAll('from "./wiki-data"', 'from "./wiki-data.js"')
+        .replaceAll(
+          'from "./market-collectibles"',
+          'from "./market-collectibles.js"',
+        )
         .replaceAll(
           'from "./valuation-items"',
           'from "./valuation-items.js"',

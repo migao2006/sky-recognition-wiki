@@ -3,17 +3,23 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { asModuleUrl } from "./helpers/transpile.mjs";
 
-const [source, configSource] = await Promise.all(
-  ["sale-copy.ts", "account-config.ts"].map((file) =>
+const [source, configSource, marketSource] = await Promise.all(
+  ["sale-copy.ts", "account-config.ts", "market-collectibles.ts"].map((file) =>
     readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
   ),
 );
+const marketUrl = asModuleUrl(marketSource);
 const moduleUrl = asModuleUrl(
-  source.replace(
-    /import \{([\s\S]*?)\} from "\.\/account-config";/,
-    (_, names) =>
-      `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(configSource))});`,
-  ),
+  source
+    .replace(
+      /import \{([\s\S]*?)\} from "\.\/account-config";/,
+      (_, names) =>
+        `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(configSource))});`,
+    )
+    .replace(
+      'import { marketCollectibleProfile } from "./market-collectibles";',
+      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+    ),
 );
 const { buildSaleCopy, buildShareSummary } = await import(moduleUrl);
 

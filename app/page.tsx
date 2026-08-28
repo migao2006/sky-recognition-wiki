@@ -337,6 +337,25 @@ export default function AccountOrganizer() {
     activeCloset.subs.find((entry) => entry.key === sub) ||
     activeCloset.subs[0];
   const nextClosetSub = getNextClosetSub(activeCloset.key, activeSub.key);
+  useEffect(() => {
+    if (activeStep !== 2 || !nextClosetSub) return;
+    const connection = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection;
+    if (connection?.saveData) return;
+    const nextIcons = wikiItems
+      .filter((item) => matchesSub(item, nextClosetSub.subKey))
+      .slice(0, 12)
+      .map((item) => item.icon);
+    const timer = window.setTimeout(() => {
+      nextIcons.forEach((src) => {
+        const image = new Image();
+        image.referrerPolicy = "no-referrer";
+        image.src = src;
+      });
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [activeStep, nextClosetSub]);
   const valuationOwned = activeStep === 3 ? owned : emptySelectedGuids;
   const chosen = useMemo(
     () =>
@@ -525,6 +544,17 @@ export default function AccountOrganizer() {
     const { buildSaleCopy } = await import("./sale-copy");
     const lines = buildSaleCopy(saleCopyData());
     downloadText(lines, "出售文案");
+  };
+  const copySaleCopy = async () => {
+    const { buildSaleCopy } = await import("./sale-copy");
+    const text = buildSaleCopy(saleCopyData()).join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setNotice("出售文案已複製");
+    } catch {
+      downloadText([text], "出售文案");
+      setNotice("無法複製，已改為下載文案");
+    }
   };
   const exportJson = () => {
     const backup = createAccountBackup({
@@ -965,14 +995,23 @@ export default function AccountOrganizer() {
               <span className="step-kicker">整理圖片</span>
               <h2 id="showcase-title">預覽後直接下載</h2>
             </div>
-            <button
-              type="button"
-              className="showcase-download"
-              onClick={exportShowcaseImage}
-              disabled={!previewItems.length}
-            >
-              下載圖片
-            </button>
+            <div className="showcase-primary-actions">
+              <button
+                type="button"
+                onClick={copySaleCopy}
+                disabled={!chosen.length && !account.bindingsConfirmed}
+              >
+                複製出售文案
+              </button>
+              <button
+                type="button"
+                className="showcase-download"
+                onClick={exportShowcaseImage}
+                disabled={!previewItems.length}
+              >
+                下載圖片
+              </button>
+            </div>
           </div>
           <div className="showcase-presets" aria-label="整理圖片版型">
             {(Object.entries(showcasePresetNames) as [ShowcasePreset, string][]).map(
@@ -1103,7 +1142,7 @@ export default function AccountOrganizer() {
           </div>
           {valuationEstimate && (
             <div className="valuation-details">
-              <details open>
+              <details>
                 <summary>
                   <b>加減分明細</b>
                   <span>{valuationEstimate.contributions.length} 項</span>
@@ -1201,35 +1240,41 @@ export default function AccountOrganizer() {
               )}
             </div>
           )}
-          <p className="valuation-method">
-            參考中位價與價格區間依季節完成度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
-            <br />
-            核對資料：{valuationSampleSummary.sourceRows.toLocaleString("zh-TW")} 筆帳號樣本，其中 {valuationSampleSummary.eligibleRows} 筆國際服台幣中高證據樣本納入推斷（資料日期 {valuationSampleSummary.asOf}）。
-            <a
-              href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
-              target="_blank"
-              rel="noreferrer"
-            >
-              雲端市場樣本
-            </a>
-            、
-            <a
-              href="https://m.kejinshou.com/report/high/d_28268174"
-              target="_blank"
-              rel="noreferrer"
-            >
-              中國估價案例
-            </a>
-            、
-            <a
-              href="https://skygj.cn/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              SKY 估價平台
-            </a>
-            。另以 {valuationSampleSummary.secondaryMarketRows} 筆中國服資料作趨勢校驗，不直接混入台幣價格；刊登價格不等於成交價，結果僅供市場參考。
-          </p>
+          <details className="valuation-method">
+            <summary>
+              <b>估價依據</b>
+              <span>樣本、權重與資料日期</span>
+            </summary>
+            <p>
+              參考中位價與價格區間依季節完成度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
+              <br />
+              核對資料：{valuationSampleSummary.sourceRows.toLocaleString("zh-TW")} 筆帳號樣本，其中 {valuationSampleSummary.eligibleRows} 筆國際服台幣中高證據樣本納入推斷（資料日期 {valuationSampleSummary.asOf}）。
+              <a
+                href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
+                target="_blank"
+                rel="noreferrer"
+              >
+                雲端市場樣本
+              </a>
+              、
+              <a
+                href="https://m.kejinshou.com/report/high/d_28268174"
+                target="_blank"
+                rel="noreferrer"
+              >
+                中國估價案例
+              </a>
+              、
+              <a
+                href="https://skygj.cn/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                SKY 估價平台
+              </a>
+              。另以 {valuationSampleSummary.secondaryMarketRows} 筆中國服資料作趨勢校驗，不直接混入台幣價格；刊登價格不等於成交價，結果僅供市場參考。
+            </p>
+          </details>
         </section>
         <div className="account-actions">
           <div className="account-danger">
