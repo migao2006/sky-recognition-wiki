@@ -77,9 +77,9 @@ export const createAccountDraft = ({
   owned: [...owned],
 });
 
-export const parseAccountBackup = (
+const parseAccountData = (
   value: unknown,
-  validGuids: ReadonlySet<string>,
+  validGuids?: ReadonlySet<string>,
 ) => {
   const backup = asRecord(value);
   const rawAccount = asRecord(backup?.account);
@@ -121,15 +121,21 @@ export const parseAccountBackup = (
     notes: String(rawAccount.notes || ""),
   };
   const owned = rawOwned.filter(
-    (guid): guid is string => typeof guid === "string" && validGuids.has(guid),
+    (guid): guid is string =>
+      typeof guid === "string" && (!validGuids || validGuids.has(guid)),
   );
 
   return { account, bindings, owned };
 };
 
-export const parseAccountDraft = (
+export const parseAccountBackup = (
   value: unknown,
   validGuids: ReadonlySet<string>,
+) => parseAccountData(value, validGuids);
+
+export const parseAccountDraft = (
+  value: unknown,
+  validGuids: ReadonlySet<string> | undefined = undefined,
   now = new Date(),
 ) => {
   const draft = asRecord(value);
@@ -141,5 +147,5 @@ export const parseAccountDraft = (
   ) {
     throw new Error("Expired account draft");
   }
-  return parseAccountBackup(value, validGuids);
+  return parseAccountData(value, validGuids);
 };

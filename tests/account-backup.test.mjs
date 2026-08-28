@@ -193,6 +193,33 @@ test("creates and restores a compact account draft", () => {
   );
 });
 
+test("restores draft ids before the wardrobe catalog finishes loading", () => {
+  const savedAt = new Date("2026-08-26T00:00:00.000Z");
+  const draft = createAccountDraft({
+    account,
+    bindings: {
+      google: "none",
+      nintendo: "none",
+      gameCenter: "none",
+      facebook: "none",
+      steam: "none",
+      twitch: "none",
+      playstation: "none",
+    },
+    owned: ["valid-guid", "stale-guid"],
+    savedAt,
+  });
+
+  assert.deepEqual(parseAccountDraft(draft, undefined, savedAt).owned, [
+    "valid-guid",
+    "stale-guid",
+  ]);
+  assert.deepEqual(
+    parseAccountDraft(draft, new Set(["valid-guid"]), savedAt).owned,
+    ["valid-guid"],
+  );
+});
+
 test("preserves an explicit unconfirmed binding state", () => {
   const savedAt = new Date("2026-08-26T00:00:00.000Z");
   const draft = createAccountDraft({

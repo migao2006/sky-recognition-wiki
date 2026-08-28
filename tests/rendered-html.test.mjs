@@ -3,22 +3,29 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("renders the account organizer", async () => {
-  const [html, source] = await Promise.all([
+  const [html, source, runtimeSource, configSource] = await Promise.all([
     readFile(new URL("../.next/server/app/index.html", import.meta.url), "utf8"),
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/use-organizer-runtime.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../app/account-config.ts", import.meta.url), "utf8"),
   ]);
   assert.match(html, /<title>光遇帳號整理｜衣櫃與估價<\/title>/i);
   assert.match(html, /帳號資料/);
   assert.match(html, /帳號整理步驟/);
   assert.match(html, /選擇物品/);
   assert.match(html, /估價與匯出/);
-  assert.match(html, /姆明耳尾兩件套/);
-  assert.match(html, /貓咪三件套/);
-  assert.match(html, /貓咪耳尾兩件套/);
-  assert.match(html, /海牛耳尾兩件套/);
-  assert.match(html, /冥龍角尾兩件套/);
-  assert.match(html, /飛蛾兩件套/);
-  assert.match(html, /麻雀兩件套/);
+  [
+    "姆明耳尾兩件套",
+    "貓咪三件套",
+    "貓咪耳尾兩件套",
+    "海牛耳尾兩件套",
+    "冥龍角尾兩件套",
+    "飛蛾兩件套",
+    "麻雀兩件套",
+  ].forEach((name) => assert.match(configSource, new RegExp(name)));
   assert.match(html, /下一步：選擇物品/);
   assert.match(html, /資源／備註/);
   assert.match(html, /無綁/);
@@ -35,4 +42,24 @@ test("renders the account organizer", async () => {
   assert.match(source, /匯出 JSON/);
   assert.match(source, /匯入 JSON/);
   assert.match(source, /分享摘要/);
+  assert.match(runtimeSource, /import\("\.\/catalog-domain"\)/);
+  assert.match(runtimeSource, /import\("\.\/valuation-analysis"\)/);
+  assert.match(runtimeSource, /catalogPromise\.current = null/);
+  assert.match(runtimeSource, /valuationPromise\.current = null/);
+  assert.doesNotMatch(
+    source,
+    /import\s*\{[\s\S]*?wikiItems[\s\S]*?\}\s*from\s*"\.\/catalog-domain"/,
+  );
+  assert.doesNotMatch(html, /Sunlight Snorkel/);
+  const initialChunkPaths = [...html.matchAll(/src="\/_next\/(static\/chunks\/[^"]+\.js)"/g)]
+    .map((match) => match[1]);
+  const initialCode = (
+    await Promise.all(
+      initialChunkPaths.map((path) =>
+        readFile(new URL(`../.next/${path}`, import.meta.url), "utf8"),
+      ),
+    )
+  ).join("\n");
+  assert.doesNotMatch(initialCode, /Sunlight Snorkel/);
+  assert.doesNotMatch(initialCode, /sourceRows:1022/);
 });

@@ -31,38 +31,9 @@ import {
   parseAccountDraft,
 } from "./account-backup";
 import type { WikiItem } from "./wiki-data";
-import {
-  allClosetTypeSet,
-  closetGroups,
-  getNextClosetSub,
-  graduationSeasonSlugs,
-  heldClosetOrder,
-  isLimitedItem,
-  isProfessionalVideoFocus,
-  isValuationFocus,
-  labels,
-  matchesSourceFilter,
-  matchesSub,
-  ongoingSeasonSlugs,
-  searchIndex,
-  seasonGraduationItems,
-  seasonUltimateItems,
-  seasonUltimateSlugs,
-  seasonZh,
-  seasons,
-  showcaseClusterOrder,
-  sortSeasonSlugs,
-  source,
-  sourceCollectionName,
-  sourceFilters,
-  sourceKind,
-  typeOrder,
-  type ClosetSubRoute,
-  uniqueByGuid,
-  wikiItems,
-  zhItemName,
-} from "./catalog-domain";
+import type { ClosetSubRoute } from "./catalog-domain";
 import { orderShowcaseItems } from "./showcase-order";
+import { useOrganizerRuntime } from "./use-organizer-runtime";
 import {
   isGraduationGift,
   isChinaOnlyItem,
@@ -70,16 +41,10 @@ import {
   isSeasonPendant,
   isSeasonUltimate,
 } from "./valuation-items";
-import {
-  analyzeValuation,
-  estimateValuation,
-  type ValuationDomain,
+import type {
+  ValuationAnalysis,
 } from "./valuation-analysis";
-import {
-  seasonPriceBands,
-  valuationSampleSummary,
-  type SeasonConfidence,
-} from "./valuation-season-bands";
+import type { SeasonConfidence } from "./valuation-season-bands";
 
 const safeFileName = (name: string) =>
   name.replace(/[\\/:*?"<>|]/g, "-").trim() || "未命名";
@@ -96,10 +61,6 @@ const confidenceNames: Record<SeasonConfidence, string> = {
   low: "低可信",
   inferred: "推估",
 };
-const localizeValuationLabel = (label: string) => {
-  const match = Object.entries(seasonZh).find(([slug]) => label.includes(slug));
-  return match ? label.replace(match[0], match[1]) : label;
-};
 const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -110,34 +71,22 @@ const downloadBlob = (blob: Blob, fileName: string) => {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
-const valuationDomain: ValuationDomain = {
-  isValuationFocus,
-  isLimitedItem,
-  ongoingSeasonSlugs,
-  graduationSeasonSlugs,
-  seasonGraduationItems,
-  sortSeasonSlugs,
-  getZhName: zhItemName,
-};
-const bundlePresetItems = new Map(
-  bundlePresets.map((preset) => [
-    preset.key,
-    wikiItems.filter(
-      (item) =>
-        allClosetTypeSet.has(item.type) &&
-        ("collection" in preset
-          ? item.collection === preset.collection
-          : preset.names.includes(item.name as never)),
-    ),
-  ]),
-);
-const saleCopyPresetGuids = new Set(
-  [...bundlePresetItems.values()].flatMap((items) =>
-    items.map((item) => item.guid),
-  ),
-);
-const validItemGuids = new Set(wikiItems.map((item) => item.guid));
 const emptySelectedGuids = new Set<string>();
+const itemEnglishName = (item: WikiItem) => item.name;
+const emptyValuationAnalysis: ValuationAnalysis = {
+  valuationItems: [],
+  ultimates: [],
+  pendants: [],
+  packages: [],
+  limited: [],
+  startSeasonSlug: null,
+  seasonCompletion: new Map(),
+  completeness: 0,
+  issueCount: 0,
+  keepCount: 0,
+  bindings: {},
+  getZhName: itemEnglishName,
+};
 type FocusMode = "all" | "video" | "ultimate" | "limited";
 type ShowcasePreset = "valuation" | "video" | "collection";
 const showcasePresetNames: Record<ShowcasePreset, string> = {
@@ -150,16 +99,6 @@ const showcasePresetDescriptions: Record<ShowcasePreset, string> = {
   video: "重點物品",
   collection: "全部物品",
 };
-const showcaseOrderOptions = (items: WikiItem[]) => ({
-  items,
-  isUltimate: isSeasonUltimate,
-  isLimited: (item: WikiItem) => isPaidItem(item) || isLimitedItem(item),
-  isPendant: isSeasonPendant,
-  getClusterName: sourceCollectionName,
-  getClusterOrder: showcaseClusterOrder,
-  getItemTypeName: (item: WikiItem) => labels[item.type] || item.type,
-  getItemTypeOrder: (item: WikiItem) => typeOrder.get(item.type) ?? 999,
-});
 const emptyAccount = (): AccountInfo => ({
   name: "",
   accountType: "有翼",
@@ -194,10 +133,20 @@ const CatalogItemCard = memo(function CatalogItemCard({
   item,
   selected,
   onToggle,
+  displayName,
+  sourceLabel,
+  typeLabel,
+  ultimate,
+  pendant,
 }: {
   item: WikiItem;
   selected: boolean;
   onToggle: (guid: string) => void;
+  displayName: string;
+  sourceLabel: string;
+  typeLabel: string;
+  ultimate: boolean;
+  pendant: boolean;
 }) {
   return (
     <button
@@ -207,14 +156,14 @@ const CatalogItemCard = memo(function CatalogItemCard({
     >
       <div className="image-wrap">
         <span className="owned-check">{selected ? "✓" : "＋"}</span>
-        {isSeasonUltimate(item) && (
+        {ultimate && (
           <span className="discontinued-badge">
-            {isSeasonPendant(item) ? "季卡" : "畢業"}
+            {pendant ? "季卡" : "畢業"}
           </span>
         )}
-        <span className="source-badge">{sourceKind(item)}</span>
+        <span className="source-badge">{sourceLabel}</span>
         <span className={`type type-${item.type} type-badge`}>
-          {labels[item.type] || item.type}
+          {typeLabel}
         </span>
         {/* External catalog icons must keep their source URL and referrer policy. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -226,7 +175,7 @@ const CatalogItemCard = memo(function CatalogItemCard({
         />
       </div>
       <div className="card-body">
-        <h2>{zhItemName(item)}</h2>
+        <h2>{displayName}</h2>
       </div>
     </button>
   );
@@ -235,8 +184,8 @@ const CatalogItemCard = memo(function CatalogItemCard({
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [visibleCount, setVisibleCount] = useState(80);
-  const [closet, setCloset] = useState(closetGroups[0].key),
-    [sub, setSub] = useState(closetGroups[0].subs[0].key),
+  const [closet, setCloset] = useState("outfit"),
+    [sub, setSub] = useState("Outfit"),
     [season, setSeason] = useState("全部季節");
   const [query, setQuery] = useState(""),
     [sourceFilter, setSourceFilter] = useState("all");
@@ -255,6 +204,62 @@ export default function AccountOrganizer() {
   const [draftAvailable, setDraftAvailable] = useState(true);
   const importRef = useRef<HTMLInputElement>(null);
   const skipNextDraftSave = useRef(false);
+  const {
+    catalogDomain,
+    valuationRuntime,
+    catalogLoadError,
+    valuationLoadError,
+    catalogValidGuids,
+    loadCatalog,
+    loadValuation,
+    wikiItems,
+    closetGroups,
+    allClosetTypeSet,
+    isValuationFocus,
+    heldClosetOrder,
+    isLimitedItem,
+    isProfessionalVideoFocus,
+    labels,
+    matchesSourceFilter,
+    matchesSub,
+    searchIndex,
+    ongoingSeasonSlugs,
+    seasonGraduationItems,
+    seasonUltimateItems,
+    seasonUltimateSlugs,
+    seasonZh,
+    seasons,
+    source,
+    sourceCollectionName,
+    sourceFilters,
+    sourceKind,
+    typeOrder,
+    uniqueByGuid,
+    zhItemName,
+    getNextClosetSub,
+    validItemGuids,
+    bundlePresetItems,
+    saleCopyPresetGuids,
+    valuationDomain,
+    showcaseOrderOptions,
+    seasonPriceBands,
+    valuationSampleSummary,
+  } = useOrganizerRuntime(setOwned);
+  const safelyLoadCatalog = useCallback(() => {
+    void loadCatalog().catch(() => undefined);
+  }, [loadCatalog]);
+  const safelyLoadValuation = useCallback(() => {
+    void loadValuation().catch(() => undefined);
+  }, [loadValuation]);
+  const localizeValuationLabel = useCallback(
+    (label: string) => {
+      const match = Object.entries(seasonZh).find(([slug]) =>
+        label.includes(slug),
+      );
+      return match ? label.replace(match[0], match[1]) : label;
+    },
+    [seasonZh],
+  );
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 2600);
@@ -268,7 +273,10 @@ export default function AccountOrganizer() {
       try {
         const stored = localStorage.getItem(ACCOUNT_DRAFT_STORAGE_KEY);
         if (stored) {
-          restored = parseAccountDraft(JSON.parse(stored), validItemGuids);
+          restored = parseAccountDraft(
+            JSON.parse(stored),
+            catalogValidGuids.current,
+          );
         }
       } catch {
         try {
@@ -301,7 +309,7 @@ export default function AccountOrganizer() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, []);
+  }, [catalogValidGuids]);
   useEffect(() => {
     if (!draftReady || !draftAvailable) return;
     if (skipNextDraftSave.current) {
@@ -355,28 +363,28 @@ export default function AccountOrganizer() {
       });
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [activeStep, nextClosetSub]);
+  }, [activeStep, matchesSub, nextClosetSub, wikiItems]);
   const valuationOwned = activeStep === 3 ? owned : emptySelectedGuids;
   const chosen = useMemo(
     () =>
       wikiItems.filter(
         (x) => valuationOwned.has(x.guid) && allClosetTypeSet.has(x.type),
       ),
-    [valuationOwned],
+    [allClosetTypeSet, valuationOwned, wikiItems],
   );
   const valuationAnalysis = useMemo(
     () =>
-      analyzeValuation({
+      valuationRuntime?.analysis.analyzeValuation({
         chosen,
         bindings,
         bindingNote: account.bindingNote,
         domain: valuationDomain,
-      }),
-    [chosen, bindings, account.bindingNote],
+      }) ?? emptyValuationAnalysis,
+    [account.bindingNote, bindings, chosen, valuationDomain, valuationRuntime],
   );
   const valuationEstimate = useMemo(
     () =>
-      estimateValuation({
+      valuationRuntime?.analysis.estimateValuation({
         analysis: valuationAnalysis,
         resources: {
           candles: account.candles,
@@ -391,6 +399,7 @@ export default function AccountOrganizer() {
       account.hearts,
       account.passes,
       valuationAnalysis,
+      valuationRuntime,
     ],
   );
   const filtered = useMemo(() => {
@@ -426,6 +435,15 @@ export default function AccountOrganizer() {
     deferredQuery,
     sourceFilter,
     focusMode,
+    allClosetTypeSet,
+    heldClosetOrder,
+    isLimitedItem,
+    isProfessionalVideoFocus,
+    matchesSourceFilter,
+    matchesSub,
+    searchIndex,
+    typeOrder,
+    wikiItems,
   ]);
   const visibleItems = filtered.slice(0, visibleCount);
   const resetVisibleItems = () => setVisibleCount(80);
@@ -450,11 +468,16 @@ export default function AccountOrganizer() {
   };
   const goToStep = (step: 1 | 2 | 3) => {
     if (step === activeStep) return;
+    if (step !== 1) safelyLoadCatalog();
+    if (step === 3) safelyLoadValuation();
     setActiveStep(step);
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? "auto"
       : "smooth";
     window.scrollTo({ top: 0, behavior });
+  };
+  const loadCatalogWhenOpened = (open: boolean) => {
+    if (open) safelyLoadCatalog();
   };
   const resetAdvancedFilters = () => {
     setSourceFilter("all");
@@ -700,7 +723,33 @@ export default function AccountOrganizer() {
           </button>
         ))}
       </nav>
-      {activeStep !== 2 && (
+      {activeStep !== 1 &&
+        (!catalogDomain || (activeStep === 3 && !valuationRuntime)) && (
+        <section className="account-panel" aria-live="polite">
+          <div className="empty">
+            {catalogLoadError || valuationLoadError ? (
+              <>
+                <b>資料載入失敗</b>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!catalogDomain) safelyLoadCatalog();
+                    if (activeStep === 3 && !valuationRuntime) {
+                      safelyLoadValuation();
+                    }
+                  }}
+                >
+                  重新載入
+                </button>
+              </>
+            ) : (
+              <b>正在載入資料…</b>
+            )}
+          </div>
+        </section>
+      )}
+      {(activeStep === 1 ||
+        (activeStep === 3 && catalogDomain && valuationRuntime)) && (
       <section className="account-panel">
         {activeStep === 1 && <>
         <div className="account-intro">
@@ -865,12 +914,25 @@ export default function AccountOrganizer() {
             </div>
           </details>
         </div>
-        <details className="season-picker">
+        <details
+          className="season-picker"
+          onToggle={(event) => loadCatalogWhenOpened(event.currentTarget.open)}
+        >
           <summary>
             <b>季節／畢業禮</b>
             <i aria-hidden="true">⌄</i>
           </summary>
           <div className="season-picker-body">
+            {!catalogDomain && (
+              <div className="runtime-loading">
+                <b>{catalogLoadError ? "衣櫃載入失敗" : "正在載入衣櫃…"}</b>
+                {catalogLoadError && (
+                  <button type="button" onClick={safelyLoadCatalog}>
+                    重新載入
+                  </button>
+                )}
+              </div>
+            )}
             <div className="season-ultimate-grid">
               {seasonUltimateSlugs.map((slug) => {
                 const items = seasonUltimateItems.get(slug) || [],
@@ -922,13 +984,26 @@ export default function AccountOrganizer() {
             </div>
           </div>
         </details>
-        <details className="quick-select">
+        <details
+          className="quick-select"
+          onToggle={(event) => loadCatalogWhenOpened(event.currentTarget.open)}
+        >
           <summary>
             <b>常用套組</b>
             <i aria-hidden="true">⌄</i>
           </summary>
           <div className="quick-select-body">
-            <section>
+            {!catalogDomain && (
+              <div className="runtime-loading">
+                <b>{catalogLoadError ? "衣櫃載入失敗" : "正在載入衣櫃…"}</b>
+                {catalogLoadError && (
+                  <button type="button" onClick={safelyLoadCatalog}>
+                    重新載入
+                  </button>
+                )}
+              </div>
+            )}
+            {catalogDomain && <section>
               <div className="preset-grid">
                 {bundlePresets.map((preset) => {
                   const items = bundlePresetItems.get(preset.key) || [],
@@ -964,7 +1039,7 @@ export default function AccountOrganizer() {
                   );
                 })}
               </div>
-            </section>
+            </section>}
           </div>
         </details>
         <div className="step-actions">
@@ -1320,7 +1395,7 @@ export default function AccountOrganizer() {
         </>}
       </section>
       )}
-      {activeStep === 2 && (
+      {activeStep === 2 && catalogDomain && (
       <section className="catalog" id="top">
         <div className="catalog-intro">
           <div>
@@ -1523,6 +1598,11 @@ export default function AccountOrganizer() {
                 item={item}
                 selected={owned.has(item.guid)}
                 onToggle={toggleOwned}
+                displayName={zhItemName(item)}
+                sourceLabel={sourceKind(item)}
+                typeLabel={labels[item.type] || item.type}
+                ultimate={isSeasonUltimate(item)}
+                pendant={isSeasonPendant(item)}
               />
             ))}
           </div>

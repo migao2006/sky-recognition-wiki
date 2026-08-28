@@ -722,6 +722,14 @@ a:focus-visible {
   gap: 8px;
   color: #929fb1;
 }
+.runtime-loading {
+  min-height: 88px;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  text-align: center;
+  color: #929fb1;
+}
 
 /* 帳號整理 */
 .account-panel {
