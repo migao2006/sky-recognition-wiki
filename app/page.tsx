@@ -99,25 +99,6 @@ export default function AccountOrganizer() {
 
   return (
     <main className="app-shell">
-      <nav className="workflow-steps" aria-label="帳號整理步驟">
-        {[
-          [1, "帳號資料"],
-          [2, "選擇物品"],
-          [3, "估價與匯出"],
-        ].map(([step, label]) => (
-          <button
-            type="button"
-            className={activeStep === step ? "active" : ""}
-            aria-current={activeStep === step ? "step" : undefined}
-            key={step}
-            onClick={() => goToStep(step as 1 | 2 | 3)}
-          >
-            <i>{step}</i>
-            <span>{label}</span>
-          </button>
-        ))}
-      </nav>
-
       {runtimeMissing && (
         <section className="account-panel" aria-live="polite">
           <div className="empty">

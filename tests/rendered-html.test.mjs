@@ -40,9 +40,10 @@ test("renders the account organizer", async () => {
   ].join("\n");
   assert.match(html, /<title>光遇帳號整理｜衣櫃與估價<\/title>/i);
   assert.match(html, /帳號資料/);
-  assert.match(html, /帳號整理步驟/);
-  assert.match(html, /選擇物品/);
-  assert.match(html, /估價與匯出/);
+  assert.doesNotMatch(html, /帳號整理步驟/);
+  assert.doesNotMatch(source, /workflow-steps/);
+  assert.match(catalogStepSource, /選擇物品/);
+  assert.match(valuationStepSource, /估價與匯出/);
   [
     "姆明耳尾兩件套",
     "貓咪三件套",

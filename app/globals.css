@@ -95,47 +95,6 @@ a:focus-visible {
   white-space: nowrap !important;
 }
 
-.workflow-steps {
-  width: min(720px, calc(100% - 32px));
-  margin: 14px auto 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-.workflow-steps button {
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(16px) saturate(115%);
-  backdrop-filter: blur(16px) saturate(115%);
-  color: #a9b4c4;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.workflow-steps button.active {
-  border-color: #8fc7ff7a;
-  background: #18233a;
-  color: #f7f9fc;
-  box-shadow: inset 0 -2px #6f9ee8;
-}
-.workflow-steps i {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: #ffffff0b;
-  color: var(--accent);
-  font-size: 10px;
-  font-style: normal;
-}
-
 /* 主要工作區 */
 .catalog {
   width: min(1240px, 100%);
@@ -1681,22 +1640,6 @@ footer {
       radial-gradient(circle at 100% 42%, #31244780 0, transparent 29%),
       linear-gradient(160deg, #04060c, #0a1020 62%, #050811);
   }
-  .workflow-steps {
-    width: calc(100% - 20px);
-    margin-top: 9px;
-    gap: 6px;
-  }
-  .workflow-steps button {
-    min-height: 48px;
-    gap: 6px;
-    padding: 0 7px;
-    border-radius: 14px;
-    font-size: 11px;
-  }
-  .workflow-steps i {
-    width: 22px;
-    height: 22px;
-  }
   .catalog {
     padding: 20px 12px 40px;
   }
@@ -2111,7 +2054,6 @@ footer {
     --glass: #09111df5;
     --glass-soft: #111b2af0;
   }
-  .workflow-steps button,
   .discovery-tools,
   .closet-subs,
   .step-actions,
