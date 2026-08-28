@@ -3,15 +3,21 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("renders the account organizer", async () => {
-  const [html, source, runtimeSource, configSource] = await Promise.all([
-    readFile(new URL("../.next/server/app/index.html", import.meta.url), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(
-      new URL("../app/use-organizer-runtime.ts", import.meta.url),
-      "utf8",
-    ),
-    readFile(new URL("../app/account-config.ts", import.meta.url), "utf8"),
-  ]);
+  const [html, source, runtimeSource, configSource, cardSource, cssSource] =
+    await Promise.all([
+      readFile(
+        new URL("../.next/server/app/index.html", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+      readFile(
+        new URL("../app/use-organizer-runtime.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../app/account-config.ts", import.meta.url), "utf8"),
+      readFile(new URL("../app/catalog-item-card.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    ]);
   assert.match(html, /<title>光遇帳號整理｜衣櫃與估價<\/title>/i);
   assert.match(html, /帳號資料/);
   assert.match(html, /帳號整理步驟/);
@@ -46,6 +52,15 @@ test("renders the account organizer", async () => {
   assert.match(runtimeSource, /import\("\.\/valuation-analysis"\)/);
   assert.match(runtimeSource, /catalogPromise\.current = null/);
   assert.match(runtimeSource, /valuationPromise\.current = null/);
+  assert.match(source, /INITIAL_VISIBLE_ITEMS = 40/);
+  assert.match(source, /new IntersectionObserver/);
+  assert.match(source, /seasonPickerOpen &&/);
+  assert.match(source, /quickSelectOpen &&/);
+  assert.match(source, /setSeasonPickerOpen\(false\)/);
+  assert.match(source, /setQuickSelectOpen\(false\)/);
+  assert.match(cardSource, /decoding="async"/);
+  assert.match(cssSource, /content-visibility:\s*auto/);
+  assert.doesNotMatch(html, /正在載入衣櫃/);
   assert.doesNotMatch(
     source,
     /import\s*\{[\s\S]*?wikiItems[\s\S]*?\}\s*from\s*"\.\/catalog-domain"/,

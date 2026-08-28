@@ -1,6 +1,5 @@
 "use client";
 import {
-  memo,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -32,6 +31,7 @@ import {
 } from "./account-backup";
 import type { WikiItem } from "./wiki-data";
 import type { ClosetSubRoute } from "./catalog-domain";
+import { CatalogItemCard } from "./catalog-item-card";
 import { orderShowcaseItems } from "./showcase-order";
 import { useOrganizerRuntime } from "./use-organizer-runtime";
 import {
@@ -129,61 +129,12 @@ const hasAccountData = (
   ].some((value) => value.trim()) ||
   Object.values(bindings).some((value) => value !== "none");
 
-const CatalogItemCard = memo(function CatalogItemCard({
-  item,
-  selected,
-  onToggle,
-  displayName,
-  sourceLabel,
-  typeLabel,
-  ultimate,
-  pendant,
-}: {
-  item: WikiItem;
-  selected: boolean;
-  onToggle: (guid: string) => void;
-  displayName: string;
-  sourceLabel: string;
-  typeLabel: string;
-  ultimate: boolean;
-  pendant: boolean;
-}) {
-  return (
-    <button
-      className={`item-card selectable ${selected ? "owned" : ""}`}
-      onClick={() => onToggle(item.guid)}
-      aria-pressed={selected}
-    >
-      <div className="image-wrap">
-        <span className="owned-check">{selected ? "✓" : "＋"}</span>
-        {ultimate && (
-          <span className="discontinued-badge">
-            {pendant ? "季卡" : "畢業"}
-          </span>
-        )}
-        <span className="source-badge">{sourceLabel}</span>
-        <span className={`type type-${item.type} type-badge`}>
-          {typeLabel}
-        </span>
-        {/* External catalog icons must keep their source URL and referrer policy. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.icon}
-          alt=""
-          loading="lazy"
-          referrerPolicy="no-referrer"
-        />
-      </div>
-      <div className="card-body">
-        <h2>{displayName}</h2>
-      </div>
-    </button>
-  );
-});
+const INITIAL_VISIBLE_ITEMS = 40;
+const VISIBLE_ITEM_BATCH = 40;
 
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
-  const [visibleCount, setVisibleCount] = useState(80);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
   const [closet, setCloset] = useState("outfit"),
     [sub, setSub] = useState("Outfit"),
     [season, setSeason] = useState("全部季節");
@@ -193,6 +144,8 @@ export default function AccountOrganizer() {
   const [showcasePreset, setShowcasePreset] =
     useState<ShowcasePreset>("valuation");
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [seasonPickerOpen, setSeasonPickerOpen] = useState(false);
+  const [quickSelectOpen, setQuickSelectOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
   const [owned, setOwned] = useState<Set<string>>(new Set());
@@ -203,6 +156,7 @@ export default function AccountOrganizer() {
   const [draftReady, setDraftReady] = useState(false);
   const [draftAvailable, setDraftAvailable] = useState(true);
   const importRef = useRef<HTMLInputElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const skipNextDraftSave = useRef(false);
   const {
     catalogDomain,
@@ -445,8 +399,43 @@ export default function AccountOrganizer() {
     typeOrder,
     wikiItems,
   ]);
-  const visibleItems = filtered.slice(0, visibleCount);
-  const resetVisibleItems = () => setVisibleCount(80);
+  const visibleItems = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount],
+  );
+  const visibleCards = useMemo(
+    () =>
+      visibleItems.map((item) => ({
+        item,
+        displayName: zhItemName(item),
+        sourceLabel: sourceKind(item),
+        typeLabel: labels[item.type] || item.type,
+        ultimate: isSeasonUltimate(item),
+        pendant: isSeasonPendant(item),
+      })),
+    [labels, sourceKind, visibleItems, zhItemName],
+  );
+  const hasMoreItems = visibleCount < filtered.length;
+  useEffect(() => {
+    if (
+      activeStep !== 2 ||
+      !hasMoreItems ||
+      !loadMoreRef.current ||
+      !("IntersectionObserver" in window)
+    ) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setVisibleCount((count) =>
+          Math.min(count + VISIBLE_ITEM_BATCH, filtered.length),
+        );
+      },
+      { rootMargin: "700px 0px" },
+    );
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [activeStep, filtered.length, hasMoreItems]);
+  const resetVisibleItems = () => setVisibleCount(INITIAL_VISIBLE_ITEMS);
   const selectClosetSub = (
     route: ClosetSubRoute,
     scrollToResults = false,
@@ -470,6 +459,10 @@ export default function AccountOrganizer() {
     if (step === activeStep) return;
     if (step !== 1) safelyLoadCatalog();
     if (step === 3) safelyLoadValuation();
+    if (step !== 1) {
+      setSeasonPickerOpen(false);
+      setQuickSelectOpen(false);
+    }
     setActiveStep(step);
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ? "auto"
@@ -916,13 +909,18 @@ export default function AccountOrganizer() {
         </div>
         <details
           className="season-picker"
-          onToggle={(event) => loadCatalogWhenOpened(event.currentTarget.open)}
+          onToggle={(event) => {
+            const open = event.currentTarget.open;
+            setSeasonPickerOpen(open);
+            loadCatalogWhenOpened(open);
+          }}
         >
           <summary>
             <b>季節／畢業禮</b>
             <i aria-hidden="true">⌄</i>
           </summary>
-          <div className="season-picker-body">
+          {seasonPickerOpen && (
+            <div className="season-picker-body">
             {!catalogDomain && (
               <div className="runtime-loading">
                 <b>{catalogLoadError ? "衣櫃載入失敗" : "正在載入衣櫃…"}</b>
@@ -970,7 +968,14 @@ export default function AccountOrganizer() {
                             <span className="season-ultimate-icon">
                               {/* External catalog icons must keep their source URL and referrer policy. */}
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={item.icon} alt="" loading="lazy" />
+                              <img
+                                src={item.icon}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                draggable={false}
+                                referrerPolicy="no-referrer"
+                              />
                               <i aria-hidden="true">{selected ? "✓" : ""}</i>
                             </span>
                             <small>{name}</small>
@@ -982,17 +987,23 @@ export default function AccountOrganizer() {
                 );
               })}
             </div>
-          </div>
+            </div>
+          )}
         </details>
         <details
           className="quick-select"
-          onToggle={(event) => loadCatalogWhenOpened(event.currentTarget.open)}
+          onToggle={(event) => {
+            const open = event.currentTarget.open;
+            setQuickSelectOpen(open);
+            loadCatalogWhenOpened(open);
+          }}
         >
           <summary>
             <b>常用套組</b>
             <i aria-hidden="true">⌄</i>
           </summary>
-          <div className="quick-select-body">
+          {quickSelectOpen && (
+            <div className="quick-select-body">
             {!catalogDomain && (
               <div className="runtime-loading">
                 <b>{catalogLoadError ? "衣櫃載入失敗" : "正在載入衣櫃…"}</b>
@@ -1040,7 +1051,8 @@ export default function AccountOrganizer() {
                 })}
               </div>
             </section>}
-          </div>
+            </div>
+          )}
         </details>
         <div className="step-actions">
           <span>
@@ -1138,6 +1150,8 @@ export default function AccountOrganizer() {
                     src={item.icon}
                     alt={zhItemName(item)}
                     loading="lazy"
+                    decoding="async"
+                    draggable={false}
                     referrerPolicy="no-referrer"
                   />
                 </span>
@@ -1592,17 +1606,17 @@ export default function AccountOrganizer() {
         </div>
         {filtered.length ? (
           <div className="grid" aria-busy={searchPending}>
-            {visibleItems.map((item) => (
+            {visibleCards.map((card) => (
               <CatalogItemCard
-                key={item.guid}
-                item={item}
-                selected={owned.has(item.guid)}
+                key={card.item.guid}
+                item={card.item}
+                selected={owned.has(card.item.guid)}
                 onToggle={toggleOwned}
-                displayName={zhItemName(item)}
-                sourceLabel={sourceKind(item)}
-                typeLabel={labels[item.type] || item.type}
-                ultimate={isSeasonUltimate(item)}
-                pendant={isSeasonPendant(item)}
+                displayName={card.displayName}
+                sourceLabel={card.sourceLabel}
+                typeLabel={card.typeLabel}
+                ultimate={card.ultimate}
+                pendant={card.pendant}
               />
             ))}
           </div>
@@ -1611,15 +1625,19 @@ export default function AccountOrganizer() {
             <b>找不到符合條件的物品</b>
           </div>
         )}
-        {visibleCount < filtered.length && (
-          <div className="load-more">
+        {hasMoreItems && (
+          <div className="load-more" ref={loadMoreRef}>
             <span>
               已顯示 {visibleItems.length.toLocaleString()}／
               {filtered.length.toLocaleString()} 件
             </span>
             <button
               type="button"
-              onClick={() => setVisibleCount((count) => count + 80)}
+              onClick={() =>
+                setVisibleCount((count) =>
+                  Math.min(count + VISIBLE_ITEM_BATCH, filtered.length),
+                )
+              }
             >
               顯示更多
             </button>

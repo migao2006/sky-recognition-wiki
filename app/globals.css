@@ -673,6 +673,8 @@ a:focus-visible {
 }
 .grid .item-card {
   border-radius: 13px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 210px;
 }
 .grid .source-badge,
 .grid .discontinued-badge {
