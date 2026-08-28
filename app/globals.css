@@ -9,6 +9,10 @@
   --accent-blue: #79a8ea;
   --shadow: 0 18px 46px #00000066;
   --soft-shadow: 0 8px 22px #00000052;
+  --glass: #09111dcc;
+  --glass-soft: #101a294d;
+  --glass-line: #b8d8ff2b;
+  --glass-shadow: 0 16px 38px #00000052;
 }
 * {
   box-sizing: border-box;
@@ -81,6 +85,15 @@ a:focus-visible {
   outline: 2px solid #b7d6ff !important;
   outline-offset: 3px !important;
 }
+.visually-hidden {
+  width: 1px !important;
+  height: 1px !important;
+  position: absolute !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
 
 .workflow-steps {
   width: min(720px, calc(100% - 32px));
@@ -97,7 +110,9 @@ a:focus-visible {
   gap: 9px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #0c111dcc;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
   color: #a9b4c4;
   font-size: 13px;
   font-weight: 800;
@@ -133,36 +148,18 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 15px;
-  padding: 19px 22px;
-  border: 1px solid #a9cfff29;
-  border-radius: 22px;
-  background: #0d1421e8;
-  box-shadow: 0 12px 28px #00000052;
+  margin-bottom: 12px;
+  padding: 4px 2px;
 }
 .catalog-intro h1,
 .summary-intro h1 {
   margin: 2px 0 4px;
   font-size: 25px;
 }
-.catalog-intro p,
-.summary-intro p,
-.account-intro p {
-  margin: 0;
-  color: #aeb8c6;
-  font-size: 13px;
-}
-.step-kicker {
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.07em;
-}
 .catalog-intro > button,
 .summary-intro > button,
 .step-actions button,
-.load-more button,
-.catalog-sub-next button {
+.load-more button {
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid #8fc7ff70;
@@ -178,9 +175,10 @@ a:focus-visible {
   padding: 12px;
   border: 1px solid #a9cfff23;
   border-radius: 25px;
-  background: #0b111ce8;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 14px 34px #00000066;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  box-shadow: var(--glass-shadow);
 }
 .discovery-primary {
   display: grid;
@@ -197,7 +195,7 @@ a:focus-visible {
   padding: 0 16px;
   border: 1px solid #a9cfff26;
   border-radius: 12px;
-  background: #080d16;
+  background: var(--glass-soft);
   color: #aebaca;
   font-size: 12px;
   font-weight: 800;
@@ -217,7 +215,7 @@ a:focus-visible {
   padding: 9px 13px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #080d16;
+  background: #070d17b8;
   box-shadow: inset 0 1px #ffffff08;
 }
 .catalog-search > span,
@@ -281,7 +279,7 @@ a:focus-visible {
   padding: 9px 38px 9px 15px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #080d16;
+  background: #070d17b8;
   color: #dce5f1;
   text-align: left;
   cursor: pointer;
@@ -305,10 +303,6 @@ a:focus-visible {
   font-size: 10px;
   font-style: normal;
   font-weight: 900;
-}
-.filter-trigger small {
-  color: #8f9cae;
-  font-size: 10px;
 }
 .filter-trigger > i {
   position: absolute;
@@ -369,7 +363,7 @@ a:focus-visible {
   padding: 11px 13px;
   border: 1px solid #a9cfff1f;
   border-radius: 19px;
-  background: #0b111c;
+  background: #0b1421b8;
   color: #bbc5d2;
   text-align: left;
   cursor: pointer;
@@ -420,7 +414,9 @@ a:focus-visible {
   padding: 7px 9px;
   border: 1px solid var(--line);
   border-radius: 17px;
-  background: #080c14;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  backdrop-filter: blur(14px) saturate(115%);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -484,24 +480,6 @@ a:focus-visible {
   color: #a6b1c0;
   font-size: 12px;
 }
-.catalog-sub-next {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 28px;
-  padding: 16px 18px;
-  border: 1px solid #a9cfff24;
-  border-radius: 18px;
-  background: #080d16;
-}
-.catalog-sub-next small {
-  color: #8f9daf;
-  font-size: 11px;
-}
-.catalog-sub-next button {
-  min-width: 230px;
-}
 .step-actions {
   display: flex;
   align-items: center;
@@ -509,8 +487,10 @@ a:focus-visible {
   gap: 14px;
   padding: 16px 20px;
   border: 1px solid var(--line);
-  border-radius: 0 0 25px 25px;
-  background: #080c14;
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
   color: #a9b4c4;
   font-size: 12px;
 }
@@ -522,6 +502,9 @@ a:focus-visible {
 .catalog-next {
   margin-top: 28px;
   border-radius: 20px;
+}
+.quick-select + .step-actions {
+  margin-top: 10px;
 }
 .grid {
   display: grid;
@@ -536,7 +519,7 @@ a:focus-visible {
   border: 1px solid #a9cfff21;
   border-radius: 21px;
   overflow: hidden;
-  background: #0b111b;
+  background: #0b1421d9;
   text-align: left;
   cursor: pointer;
   box-shadow: 0 7px 20px #0000004a;
@@ -594,7 +577,6 @@ a:focus-visible {
   border-radius: 9px;
   background: #080d16e8;
   color: #c0d6f0;
-  backdrop-filter: blur(9px);
   font-size: 9px;
   font-weight: 800;
   white-space: nowrap;
@@ -614,7 +596,7 @@ a:focus-visible {
   min-height: 132px;
   padding: 12px 13px 14px;
   border-top: 1px solid var(--line);
-  background: #0d1320;
+  background: #0d1725d9;
 }
 .card-body > div {
   display: flex;
@@ -640,7 +622,6 @@ a:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  backdrop-filter: blur(8px);
 }
 .type-Hair,
 .type-HairAccessory,
@@ -744,26 +725,23 @@ a:focus-visible {
   align-items: end;
   justify-content: space-between;
   gap: 20px;
-  padding: 22px 24px;
-  border: 1px solid #a9cfff29;
-  border-radius: 25px 25px 0 0;
-  background: #101725;
-  box-shadow: 0 14px 34px #00000068;
+  padding: 4px 2px 12px;
 }
 .account-intro h1 {
   margin: 0;
   font-size: 28px;
-}
-.account-intro > div:first-child {
-  min-width: 0;
 }
 .account-form {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   padding: 22px;
-  border-inline: 1px solid var(--line);
-  background: #0a101a;
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  box-shadow: var(--glass-shadow);
 }
 .account-form label {
   display: grid;
@@ -798,27 +776,13 @@ a:focus-visible {
 .account-notes {
   grid-column: 1/-1;
 }
-.form-section-title {
-  grid-column: 1/-1;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-top: 9px;
-  padding: 5px 1px;
-}
-.form-section-title:first-child {
-  margin-top: 0;
-}
-.form-section-title b {
-  color: #f4f7fb;
-  font-size: 15px;
-}
 .binding-section {
   grid-column: 1/-1;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #070b138c;
+  border: 0;
+  border-top: 1px solid var(--glass-line);
+  border-radius: 0;
+  background: transparent;
 }
 .binding-section summary,
 .account-extra summary {
@@ -885,7 +849,7 @@ a:focus-visible {
   padding: 11px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: #070b138c;
+  background: var(--glass-soft);
 }
 .binding-card > span {
   color: #bec8d4;
@@ -924,9 +888,10 @@ a:focus-visible {
 .account-extra {
   grid-column: 1/-1;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #080d16;
+  border: 0;
+  border-top: 1px solid var(--glass-line);
+  border-radius: 0;
+  background: transparent;
 }
 .account-extra-grid {
   display: grid;
@@ -939,8 +904,13 @@ a:focus-visible {
 }
 .quick-select,
 .season-picker {
-  border-inline: 1px solid var(--line);
-  background: #0a101a;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
 }
 .quick-select summary,
 .season-picker summary {
@@ -950,7 +920,6 @@ a:focus-visible {
   justify-content: space-between;
   gap: 16px;
   padding: 14px 22px;
-  border-top: 1px solid var(--line);
   cursor: pointer;
   list-style: none;
   user-select: none;
@@ -986,13 +955,6 @@ a:focus-visible {
 .season-picker-body {
   padding: 2px 22px 22px;
 }
-.quick-select-body > section {
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #080c14;
-}
 .preset-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1007,7 +969,7 @@ a:focus-visible {
   padding: 10px 11px 10px 39px;
   border: 1px solid #a9cfff25;
   border-radius: 13px;
-  background: #101724;
+  background: var(--glass-soft);
   color: #d9e6f5;
   text-align: left;
   cursor: pointer;
@@ -1086,9 +1048,14 @@ a:focus-visible {
   font-weight: 900;
 }
 .showcase-builder {
+  margin-bottom: 12px;
   padding: 20px;
-  border: 1px solid var(--line);
-  background: #080d16;
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  box-shadow: var(--glass-shadow);
 }
 .showcase-builder-head {
   display: flex;
@@ -1097,7 +1064,7 @@ a:focus-visible {
   gap: 16px;
 }
 .showcase-builder-head h2 {
-  margin: 5px 0 0;
+  margin: 0;
   color: #f4f7fb;
   font-size: 20px;
 }
@@ -1111,7 +1078,7 @@ a:focus-visible {
   padding: 0 15px;
   border: 1px solid #a9cfff2b;
   border-radius: 13px;
-  background: #0d1522;
+  background: var(--glass-soft);
   color: #dce8f7;
   font-weight: 800;
   cursor: pointer;
@@ -1148,7 +1115,7 @@ a:focus-visible {
   padding: 7px 6px;
   border: 1px solid #a9cfff24;
   border-radius: 12px;
-  background: #060a11;
+  background: var(--glass-soft);
   color: #9facbd;
   cursor: pointer;
 }
@@ -1236,9 +1203,12 @@ a:focus-visible {
 }
 .valuation-report {
   padding: 22px;
-  border-inline: 1px solid var(--line);
-  border-top: 1px solid var(--line);
-  background: #080d16;
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  box-shadow: var(--glass-shadow);
 }
 .valuation-report-head {
   display: flex;
@@ -1276,15 +1246,16 @@ a:focus-visible {
 }
 .valuation-verdict,
 .valuation-metrics article {
-  border: 1px solid #a9cfff25;
-  background: #080d16;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-soft);
 }
 .valuation-verdict {
   min-height: 166px;
   padding: 18px;
-  border-color: #8fc7ff52;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #141d2e, #080c14);
+  border: 0;
+  border-right: 1px solid var(--glass-line);
+  border-radius: 0;
+  background: transparent;
 }
 .valuation-verdict > span {
   color: #8aafd9;
@@ -1348,7 +1319,7 @@ a:focus-visible {
   overflow: hidden;
   border: 1px solid #a9cfff22;
   border-radius: 13px;
-  background: #070c14;
+  background: var(--glass-soft);
   color: #98a5b6;
   font-size: 10px;
   line-height: 1.65;
@@ -1366,10 +1337,6 @@ a:focus-visible {
 }
 .valuation-method summary::-webkit-details-marker {
   display: none;
-}
-.valuation-method summary span {
-  color: #8295ad;
-  font-size: 10px;
 }
 .valuation-method p {
   margin: 0;
@@ -1401,7 +1368,7 @@ a:focus-visible {
   overflow: hidden;
   border: 1px solid #a9cfff22;
   border-radius: 14px;
-  background: #070c14;
+  background: var(--glass-soft);
 }
 .valuation-details summary {
   min-height: 48px;
@@ -1511,10 +1478,12 @@ a:focus-visible {
   align-items: center;
   gap: 12px;
   padding: 15px 20px;
-  border: 1px solid var(--line);
-  border-top: 0;
-  border-radius: 0 0 25px 25px;
-  background: #0a101a;
+  margin-top: 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
 }
 .account-actions button {
   min-height: 44px;
@@ -1691,6 +1660,11 @@ footer {
   .valuation-summary {
     grid-template-columns: 1fr;
   }
+  .valuation-verdict {
+    padding-bottom: 18px;
+    border-right: 0;
+    border-bottom: 1px solid var(--glass-line);
+  }
   .account-actions {
     align-items: flex-start;
     flex-direction: column;
@@ -1728,20 +1702,14 @@ footer {
   }
   .catalog-intro,
   .summary-intro {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-    border-radius: 19px;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    padding: 2px;
   }
   .catalog-intro h1,
   .summary-intro h1 {
     font-size: 22px;
-  }
-  .catalog-intro p,
-  .summary-intro p,
-  .account-intro p {
-    font-size: 12px;
   }
   .discovery-tools {
     margin-bottom: 12px;
@@ -1782,9 +1750,6 @@ footer {
   }
   .filter-trigger b {
     font-size: 13px;
-  }
-  .filter-trigger small {
-    font-size: 9px;
   }
   .filter-trigger > i {
     right: 9px;
@@ -1892,8 +1857,7 @@ footer {
   }
   .account-intro {
     align-items: center;
-    padding: 18px 16px;
-    border-radius: 20px 20px 0 0;
+    padding: 2px 2px 10px;
   }
   .account-intro h1 {
     font-size: 24px;
@@ -1909,14 +1873,6 @@ footer {
   .account-form input,
   .account-form select {
     height: 44px;
-    font-size: 14px;
-  }
-  .form-section-title {
-    display: grid;
-    gap: 4px;
-    margin-top: 9px;
-  }
-  .form-section-title b {
     font-size: 14px;
   }
   .binding-grid {
@@ -1965,10 +1921,6 @@ footer {
   }
   .quick-select-body {
     gap: 12px;
-  }
-  .quick-select-body > section {
-    padding: 12px;
-    border-radius: 15px;
   }
   .preset-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2088,7 +2040,7 @@ footer {
   }
   .account-actions {
     padding: 12px;
-    border-radius: 0 0 20px 20px;
+    border-radius: 18px;
   }
   .account-actions button {
     min-height: 44px;
@@ -2138,16 +2090,6 @@ footer {
     display: grid;
     grid-template-columns: 1fr 1.25fr;
   }
-  .catalog-sub-next {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 9px;
-    padding: 14px;
-  }
-  .catalog-sub-next button {
-    width: 100%;
-    min-width: 0;
-  }
   .catalog-next button {
     padding: 0 9px;
   }
@@ -2164,6 +2106,26 @@ footer {
   }
 }
 
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: #09111df5;
+    --glass-soft: #111b2af0;
+  }
+  .workflow-steps button,
+  .discovery-tools,
+  .closet-subs,
+  .step-actions,
+  .account-form,
+  .quick-select,
+  .season-picker,
+  .showcase-builder,
+  .valuation-report,
+  .account-actions {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 /* 季節項鍊與畢業禮逐件選擇 */
 .season-ultimate-grid {
   display: grid;
@@ -2175,7 +2137,7 @@ footer {
   padding: 11px;
   border: 1px solid #a9cfff24;
   border-radius: 14px;
-  background: #080c14;
+  background: var(--glass-soft);
   transition:
     border-color 0.18s,
     background-color 0.18s;

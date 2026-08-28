@@ -251,19 +251,15 @@ export function CatalogStep({
   return (
     <section className="catalog" id="top">
       <div className="catalog-intro">
-        <div>
-          <span className="step-kicker">步驟 2／3</span>
-          <h1>選擇物品</h1>
-          <p>搜尋或選分類，點一下即可加入。</p>
-        </div>
+        <h1>選擇物品</h1>
         <button type="button" onClick={onNext}>
-          前往估價 · {owned.size} 件
+          估價 · {owned.size} 件
         </button>
       </div>
       <div className="discovery-tools">
         <div className="discovery-primary">
           <label className="catalog-search">
-            <span>搜尋物品</span>
+            <span className="visually-hidden">搜尋物品</span>
             <div>
               <i>⌕</i>
               <input
@@ -301,7 +297,6 @@ export function CatalogStep({
               <b>篩選</b>
               {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
             </span>
-            <small>{activeFilterCount ? "已套用條件" : "更多條件"}</small>
             <i aria-hidden="true">⌄</i>
           </button>
         </div>
@@ -482,32 +477,25 @@ export function CatalogStep({
           </button>
         </div>
       )}
-      {!query.trim() && (
-        <div className="catalog-sub-next">
-          <small>
-            {activeCloset.name} · {activeSub.name}
-          </small>
-          <button
-            type="button"
-            onClick={() => {
-              if (nextClosetSub) selectClosetSub(nextClosetSub, true);
-              else onNext();
-            }}
-          >
-            {nextClosetSub
-              ? nextClosetSub.closetKey === activeCloset.key
-                ? `下一類：${nextClosetSub.subName}`
-                : `下一衣櫃：${nextClosetSub.closetName} · ${nextClosetSub.subName}`
-              : "下一步：估價與匯出"}
-          </button>
-        </div>
-      )}
       <div className="step-actions catalog-next">
         <button type="button" className="secondary" onClick={onBack}>
           返回帳號資料
         </button>
-        <button type="button" onClick={onNext}>
-          下一步：估價與匯出
+        <button
+          type="button"
+          onClick={() => {
+            if (!query.trim() && nextClosetSub) {
+              selectClosetSub(nextClosetSub, true);
+            } else {
+              onNext();
+            }
+          }}
+        >
+          {!query.trim() && nextClosetSub
+            ? nextClosetSub.closetKey === activeCloset.key
+              ? `下一類：${nextClosetSub.subName}`
+              : `下一衣櫃：${nextClosetSub.closetName} · ${nextClosetSub.subName}`
+            : "估價與匯出"}
         </button>
       </div>
     </section>

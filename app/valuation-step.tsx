@@ -65,11 +65,6 @@ const showcasePresetNames: Record<ShowcasePreset, string> = {
   video: "快速核對",
   collection: "完整衣櫃",
 };
-const showcasePresetDescriptions: Record<ShowcasePreset, string> = {
-  valuation: "含參考價格",
-  video: "重點物品",
-  collection: "全部物品",
-};
 const emptyValuationAnalysis: ValuationAnalysis = {
   valuationItems: [],
   ultimates: [],
@@ -329,21 +324,14 @@ export function ValuationStep({
   return (
     <section className="account-panel">
       <div className="summary-intro">
-        <div>
-          <span className="step-kicker">步驟 3／3</span>
-          <h1>估價與匯出</h1>
-          <p>核對參考價格，再整理圖片或刊登文案。</p>
-        </div>
+        <h1>估價與匯出</h1>
         <button type="button" onClick={onBack}>
           返回衣櫃
         </button>
       </div>
       <section className="showcase-builder" aria-labelledby="showcase-title">
         <div className="showcase-builder-head">
-          <div>
-            <span className="step-kicker">整理圖片</span>
-            <h2 id="showcase-title">預覽後直接下載</h2>
-          </div>
+          <h2 id="showcase-title">整理圖片</h2>
           <div className="showcase-primary-actions">
             <button
               type="button"
@@ -376,10 +364,7 @@ export function ValuationStep({
                 onClick={() => setShowcasePreset(key)}
               >
                 <strong>{name}</strong>
-                <small>
-                  {itemCount.toLocaleString()} 件 ·{" "}
-                  {showcasePresetDescriptions[key]}
-                </small>
+                <small>{itemCount.toLocaleString()} 件</small>
               </button>
             );
           })}
@@ -459,13 +444,13 @@ export function ValuationStep({
                 {formatTwd(valuationEstimate.range.high)}
               </div>
             )}
-            <p>
-              {valuationAnalysis.valuationItems.length
-                ? "以中位價為主，展開可查看各項加減分。"
-                : chosen.length
+            {!valuationAnalysis.valuationItems.length && (
+              <p>
+                {chosen.length
                   ? "目前選取的物品不在估價範圍內。"
-                  : "選取估價物品後顯示參考價格。"}
-            </p>
+                  : "選取物品後顯示價格。"}
+              </p>
+            )}
             <button type="button" onClick={onBack}>
               {valuationAnalysis.valuationItems.length
                 ? "繼續核對衣櫃"
@@ -565,17 +550,18 @@ export function ValuationStep({
         <details className="valuation-method">
           <summary>
             <b>估價依據</b>
-            <span>樣本、權重與資料日期</span>
           </summary>
           <p>
-            參考中位價與價格區間依季節完成度、去重禮包、限定稀缺性、平台綁定與帳號資源加權；資源採小額封頂，季卡項鍊只代表持有季卡，不代表畢業。
+            依季節完成度、禮包、限定、綁定與資源加權；刊登價不等於成交價。
             <br />
-            核對資料：
+            資源採小額封頂，季卡項鍊不代表畢業；國服資料不混入台幣價格，結果僅供參考。
+            <br />
+            資料：
             {runtime.valuationSampleSummary.sourceRows.toLocaleString(
               "zh-TW",
             )}{" "}
             筆帳號樣本，其中 {runtime.valuationSampleSummary.eligibleRows}{" "}
-            筆國際服台幣中高證據樣本納入推斷（資料日期{" "}
+            筆台幣樣本納入推斷（
             {runtime.valuationSampleSummary.asOf}）。
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
@@ -596,8 +582,8 @@ export function ValuationStep({
             <a href="https://skygj.cn/" target="_blank" rel="noreferrer">
               SKY 估價平台
             </a>
-            。另以 {runtime.valuationSampleSummary.secondaryMarketRows}{" "}
-            筆中國服資料作趨勢校驗，不直接混入台幣價格；刊登價格不等於成交價，結果僅供市場參考。
+            ；另以 {runtime.valuationSampleSummary.secondaryMarketRows}{" "}
+            筆國服資料校驗趨勢。
           </p>
         </details>
       </section>

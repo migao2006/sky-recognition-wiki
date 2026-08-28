@@ -60,7 +60,7 @@ test("renders the account organizer", async () => {
   assert.match(html, /資料來源：SkyGame-Data/);
   assert.match(html, /SkyGame-Data 1\.3\.10/);
   assert.match(html, /常用套組/);
-  assert.match(html, /草稿保留在此裝置 30 天/);
+  assert.match(html, /草稿保存 30 天/);
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
   assert.doesNotMatch(componentSource, /依季節匯出|匯出付費物品與畢業禮/);
   assert.match(valuationStepSource, /出售文案/);
@@ -98,6 +98,23 @@ test("renders the account organizer", async () => {
   assert.match(cardSource, /aria-label=.*取消選取/);
   assert.match(cssSource, /item-card\.selectable\.owned\s*\{[\s\S]*?border:\s*2px solid #8fc7ff/);
   assert.doesNotMatch(catalogStepSource, /只看已選/);
+  assert.doesNotMatch(
+    componentSource,
+    /步驟 [123]／3|先填帳號類型|搜尋或選分類|核對參考價格|預覽後直接下載|更多條件|白蠟、愛心、副卡/,
+  );
+  assert.doesNotMatch(catalogStepSource, /catalog-sub-next/);
+  assert.match(catalogStepSource, /if \(!query\.trim\(\) && nextClosetSub\)/);
+  assert.match(catalogStepSource, /selectClosetSub\(nextClosetSub, true\)/);
+  assert.match(catalogStepSource, /else \{\s*onNext\(\)/);
+  assert.match(valuationStepSource, /資源採小額封頂，季卡項鍊不代表畢業/);
+  assert.match(valuationStepSource, /國服資料不混入台幣價格/);
+  assert.match(cssSource, /--glass:\s*#09111dcc/);
+  assert.match(cssSource, /backdrop-filter:\s*blur\(16px\)/);
+  assert.doesNotMatch(
+    cssSource,
+    /\.source-badge,\s*\.discontinued-badge\s*\{[^}]*backdrop-filter/,
+  );
+  assert.doesNotMatch(cssSource, /\.type-badge\s*\{[^}]*backdrop-filter/);
   assert.match(cssSource, /content-visibility:\s*auto/);
   assert.doesNotMatch(html, /正在載入衣櫃/);
   assert.doesNotMatch(

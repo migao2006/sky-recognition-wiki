@@ -106,16 +106,9 @@ export function AccountStep({
   return (
     <section className="account-panel">
       <div className="account-intro">
-        <div>
-          <span className="step-kicker">步驟 1／3</span>
-          <h1>帳號資料</h1>
-          <p>先填帳號類型與綁定，其餘可後補。</p>
-        </div>
+        <h1>帳號資料</h1>
       </div>
       <div className="account-form">
-        <div className="form-section-title">
-          <b>帳號資訊</b>
-        </div>
         <label className="account-name">
           帳號名稱
           <input
@@ -142,7 +135,6 @@ export function AccountStep({
           <summary>
             <span>
               <b>資源／備註</b>
-              <small>白蠟、愛心、副卡與其他說明</small>
             </span>
             <i aria-hidden="true">⌄</i>
           </summary>
@@ -377,52 +369,48 @@ export function AccountStep({
               </div>
             )}
             {catalogDomain && (
-              <section>
-                <div className="preset-grid">
-                  {bundlePresets.map((preset) => {
-                    const items = bundlePresetItems.get(preset.key) || [];
-                    const state = quickPresetState(items);
-                    return (
-                      <button
-                        type="button"
-                        className={
-                          state.complete
-                            ? "selected"
+              <div className="preset-grid">
+                {bundlePresets.map((preset) => {
+                  const items = bundlePresetItems.get(preset.key) || [];
+                  const state = quickPresetState(items);
+                  return (
+                    <button
+                      type="button"
+                      className={
+                        state.complete
+                          ? "selected"
+                          : state.partial
+                            ? "partial"
+                            : ""
+                      }
+                      aria-pressed={state.complete}
+                      key={preset.key}
+                      onClick={() => toggleQuickPreset(preset.name, items)}
+                    >
+                      <i className="preset-check" aria-hidden="true">
+                        {state.complete ? "✓" : state.partial ? "–" : ""}
+                      </i>
+                      <span>
+                        <b>{preset.name}</b>
+                        <small>
+                          {state.complete
+                            ? "已選"
                             : state.partial
-                              ? "partial"
-                              : ""
-                        }
-                        aria-pressed={state.complete}
-                        key={preset.key}
-                        onClick={() => toggleQuickPreset(preset.name, items)}
-                      >
-                        <i className="preset-check" aria-hidden="true">
-                          {state.complete ? "✓" : state.partial ? "–" : ""}
-                        </i>
-                        <span>
-                          <b>{preset.name}</b>
-                          <small>
-                            {state.complete
-                              ? "已選"
-                              : state.partial
-                                ? `${state.selected}/${items.length}`
-                                : `${items.length} 件`}
-                          </small>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
+                              ? `${state.selected}/${items.length}`
+                              : `${items.length} 件`}
+                        </small>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
       </details>
       <div className="step-actions">
         <span>
-          {draftAvailable
-            ? "草稿保留在此裝置 30 天。"
-            : "此瀏覽器無法保存草稿。"}
+          {draftAvailable ? "草稿保存 30 天" : "草稿未保存"}
         </span>
         <button type="button" onClick={onNext}>
           下一步：選擇物品
