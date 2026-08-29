@@ -101,6 +101,14 @@ test("renders the account organizer", async () => {
   assert.doesNotMatch(catalogStepSource, /entry\.order/);
   assert.doesNotMatch(cssSource, /\.closet-nav\s+b\s*\{/);
   assert.match(cssSource, /\.closet-nav button\s*\{[\s\S]*?min-height:\s*46px/);
+  assert.match(catalogStepSource, /className="filter-backdrop"/);
+  assert.match(catalogStepSource, /aria-modal=\{mobileFilters \|\| undefined\}/);
+  assert.match(catalogStepSource, /document\.body\.style\.overflow = "hidden"/);
+  assert.match(catalogStepSource, /event\.key !== "Tab"/);
+  assert.match(catalogStepSource, /前往估價/);
+  assert.match(catalogStepSource, /已選 \{owned\.size\.toLocaleString\(\)\}/);
+  assert.match(cssSource, /\.discovery-primary\s*\{[\s\S]*?position:\s*sticky/);
+  assert.match(cssSource, /\.filter-panel\s*\{[\s\S]*?position:\s*fixed/);
   assert.match(cssSource, /item-card\.selectable\.owned\s*\{[\s\S]*?border:\s*2px solid #8fc7ff/);
   assert.doesNotMatch(catalogStepSource, /只看已選/);
   assert.doesNotMatch(

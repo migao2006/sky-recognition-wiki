@@ -88,6 +88,8 @@ export function CatalogStep({
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const filterPanelRef = useRef<HTMLDivElement>(null);
+  const [mobileFilters, setMobileFilters] = useState(false);
   const {
     wikiItems,
     closetGroups,
@@ -112,6 +114,65 @@ export function CatalogStep({
     activeCloset.subs.find((entry) => entry.key === sub) ||
     activeCloset.subs[0];
   const nextClosetSub = getNextClosetSub(activeCloset.key, activeSub.key);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 700px)");
+    const updateMobileFilters = () => setMobileFilters(media.matches);
+    updateMobileFilters();
+    media.addEventListener("change", updateMobileFilters);
+    return () => media.removeEventListener("change", updateMobileFilters);
+  }, []);
+
+  useEffect(() => {
+    if (!filterPanelOpen) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    if (mobileFilters) document.body.style.overflow = "hidden";
+    const focusFrame = mobileFilters
+      ? window.requestAnimationFrame(() => {
+          filterPanelRef.current
+            ?.querySelector<HTMLElement>("button, select")
+            ?.focus();
+        })
+      : 0;
+    const handleDialogKeys = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setFilterPanelOpen(false);
+        return;
+      }
+      if (
+        !mobileFilters ||
+        event.key !== "Tab" ||
+        !filterPanelRef.current
+      )
+        return;
+      const focusable = Array.from(
+        filterPanelRef.current.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), select:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleDialogKeys);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleDialogKeys);
+      if (mobileFilters) document.body.style.overflow = previousOverflow;
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+        previousFocus.focus();
+      }
+    };
+  }, [filterPanelOpen, mobileFilters, setFilterPanelOpen]);
 
   useEffect(() => {
     if (!nextClosetSub) return;
@@ -251,7 +312,7 @@ export function CatalogStep({
       <div className="catalog-intro">
         <h1>選擇物品</h1>
         <button type="button" onClick={onNext}>
-          估價 · {owned.size} 件
+          前往估價
         </button>
       </div>
       <div className="discovery-tools">
@@ -320,11 +381,29 @@ export function CatalogStep({
             </button>
           ))}
         </div>
+        {filterPanelOpen && (
+          <button
+            type="button"
+            className="filter-backdrop"
+            aria-label="關閉篩選"
+            onClick={() => setFilterPanelOpen(false)}
+          />
+        )}
         <div
           className="filter-panel"
           id="advanced-filters"
+          ref={filterPanelRef}
+          role={mobileFilters ? "dialog" : "region"}
+          aria-modal={mobileFilters || undefined}
+          aria-labelledby="filter-panel-title"
           hidden={!filterPanelOpen}
         >
+          <div className="filter-panel-head">
+            <b id="filter-panel-title">篩選物品</b>
+            <button type="button" onClick={() => setFilterPanelOpen(false)}>
+              完成
+            </button>
+          </div>
           <label className="source-select">
             <span>來源</span>
             <select
@@ -383,12 +462,15 @@ export function CatalogStep({
             aria-pressed={closet === entry.key}
             onClick={() => {
               const firstSub = entry.subs[0];
-              selectClosetSub({
-                closetKey: entry.key,
-                closetName: entry.name,
-                subKey: firstSub.key,
-                subName: firstSub.name,
-              });
+              selectClosetSub(
+                {
+                  closetKey: entry.key,
+                  closetName: entry.name,
+                  subKey: firstSub.key,
+                  subName: firstSub.name,
+                },
+                true,
+              );
             }}
           >
             <span>{entry.name}</span>
@@ -404,12 +486,15 @@ export function CatalogStep({
               className={sub === entry.key ? "selected" : ""}
               aria-pressed={sub === entry.key}
               onClick={() => {
-                selectClosetSub({
-                  closetKey: activeCloset.key,
-                  closetName: activeCloset.name,
-                  subKey: entry.key,
-                  subName: entry.name,
-                });
+                selectClosetSub(
+                  {
+                    closetKey: activeCloset.key,
+                    closetName: activeCloset.name,
+                    subKey: entry.key,
+                    subName: entry.name,
+                  },
+                  true,
+                );
               }}
             >
               <i>{index + 1}</i>
@@ -433,7 +518,10 @@ export function CatalogStep({
                     : `${activeCloset.name}／${activeSub.name}`}{" "}
           · {filtered.length.toLocaleString()} 件
         </h2>
-        {searchPending && <small role="status">搜尋中…</small>}
+        <div className="result-status">
+          <b>已選 {owned.size.toLocaleString()}</b>
+          {searchPending && <small role="status">搜尋中…</small>}
+        </div>
       </div>
       {filtered.length ? (
         <div className="grid" aria-busy={searchPending}>

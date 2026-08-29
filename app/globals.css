@@ -291,6 +291,10 @@ a:focus-visible {
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
+.filter-panel-head,
+.filter-backdrop {
+  display: none;
+}
 .clear-filters {
   min-height: 52px;
   padding: 0 13px;
@@ -411,6 +415,21 @@ a:focus-visible {
   margin: 0;
   font-size: 24px;
   letter-spacing: -0.025em;
+}
+.result-status {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9eabbc;
+  font-size: 11px;
+}
+.result-status b {
+  padding: 5px 9px;
+  border: 1px solid #8fc7ff3d;
+  border-radius: 999px;
+  background: #8fc7ff14;
+  color: #c9ddf5;
 }
 .load-more {
   display: grid;
@@ -1591,15 +1610,22 @@ footer {
     font-size: 22px;
   }
   .discovery-tools {
-    margin-bottom: 12px;
-    padding: 10px;
-    border-radius: 20px;
-    position: static;
-    box-shadow: 0 10px 24px #00000066;
+    display: contents;
   }
   .discovery-primary {
+    position: sticky;
+    z-index: 30;
+    top: 8px;
     grid-template-columns: minmax(0, 1fr) 108px;
     gap: 8px;
+    margin: 0 -4px 8px;
+    padding: 7px;
+    border: 1px solid #a9cfff2b;
+    border-radius: 17px;
+    background: #09111de8;
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(18px) saturate(120%);
+    box-shadow: 0 10px 24px #00000066;
   }
   .catalog-search {
     padding: 9px 11px;
@@ -1634,19 +1660,69 @@ footer {
     right: 9px;
   }
   .focus-shortcuts {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
     gap: 6px;
+    margin: 0 -12px 9px;
+    padding: 0 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   .focus-shortcuts button {
-    min-height: 38px;
-    padding: 0 5px;
-    border-radius: 10px;
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
     font-size: 11px;
   }
+  .filter-backdrop {
+    display: block;
+    position: fixed;
+    z-index: 48;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #02050ab8;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
   .filter-panel {
+    position: fixed;
+    z-index: 50;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 10px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
+    max-height: min(72vh, 520px);
+    margin: 0;
+    padding: 14px;
+    border: 1px solid #a9cfff38;
+    border-radius: 22px;
+    background: #09111df5;
+    -webkit-backdrop-filter: blur(22px) saturate(120%);
+    backdrop-filter: blur(22px) saturate(120%);
+    box-shadow: 0 24px 70px #000c;
+    overflow-y: auto;
+  }
+  .filter-panel-head {
+    grid-column: 1/-1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 36px;
+    color: #f4f7fb;
+  }
+  .filter-panel-head button {
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid #8fc7ff5c;
+    border-radius: 10px;
+    background: #8fc7ff1c;
+    font-size: 11px;
+    font-weight: 800;
   }
   .filter-panel:not(:has(.season-select)) .source-select {
     grid-column: 1/-1;
@@ -1655,10 +1731,18 @@ footer {
     grid-column: 1/-1;
   }
   .closet-nav {
+    position: sticky;
+    z-index: 24;
+    top: 78px;
     display: flex;
     gap: 8px;
     margin: 0 -12px;
-    padding: 0 12px;
+    padding: 6px 12px;
+    border-top: 1px solid #a9cfff1f;
+    border-bottom: 1px solid #a9cfff1f;
+    background: #07101de8;
+    -webkit-backdrop-filter: blur(18px) saturate(115%);
+    backdrop-filter: blur(18px) saturate(115%);
     overflow-x: auto;
     scrollbar-width: none;
     mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 34px), transparent 100%);
@@ -1685,12 +1769,14 @@ footer {
     font-size: 11px;
   }
   .result-head {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 11px;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 14px;
+    scroll-margin-top: 136px;
   }
   .result-head h2 {
+    min-width: 0;
+    flex: 1;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1988,6 +2074,10 @@ footer {
     --glass-soft: #111b2af0;
   }
   .discovery-tools,
+  .discovery-primary,
+  .filter-backdrop,
+  .filter-panel,
+  .closet-nav,
   .closet-subs,
   .step-actions,
   .account-form,
@@ -1998,6 +2088,9 @@ footer {
   .account-actions {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+  .filter-backdrop {
+    background: #02050af2;
   }
 }
 
