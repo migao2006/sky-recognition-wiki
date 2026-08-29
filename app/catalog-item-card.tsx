@@ -9,7 +9,6 @@ export const CatalogItemCard = memo(function CatalogItemCard({
   onToggle,
   displayName,
   sourceLabel,
-  typeLabel,
   ultimate,
   pendant,
 }: {
@@ -18,7 +17,6 @@ export const CatalogItemCard = memo(function CatalogItemCard({
   onToggle: (guid: string) => void;
   displayName: string;
   sourceLabel: string;
-  typeLabel: string;
   ultimate: boolean;
   pendant: boolean;
 }) {
@@ -37,9 +35,6 @@ export const CatalogItemCard = memo(function CatalogItemCard({
           </span>
         )}
         <span className="source-badge">{sourceLabel}</span>
-        <span className={`type type-${item.type} type-badge`}>
-          {typeLabel}
-        </span>
         {/* External catalog icons must keep their source URL and referrer policy. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

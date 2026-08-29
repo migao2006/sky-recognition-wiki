@@ -97,6 +97,10 @@ test("renders the account organizer", async () => {
   assert.match(draftSource, /localStorage/);
   assert.match(cardSource, /decoding="async"/);
   assert.match(cardSource, /aria-label=.*取消選取/);
+  assert.doesNotMatch(cardSource, /typeLabel|type-badge/);
+  assert.doesNotMatch(catalogStepSource, /entry\.order/);
+  assert.doesNotMatch(cssSource, /\.closet-nav\s+b\s*\{/);
+  assert.match(cssSource, /\.closet-nav button\s*\{[\s\S]*?min-height:\s*46px/);
   assert.match(cssSource, /item-card\.selectable\.owned\s*\{[\s\S]*?border:\s*2px solid #8fc7ff/);
   assert.doesNotMatch(catalogStepSource, /只看已選/);
   assert.doesNotMatch(

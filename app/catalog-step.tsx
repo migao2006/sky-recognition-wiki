@@ -95,7 +95,6 @@ export function CatalogStep({
     heldClosetOrder,
     isLimitedItem,
     isProfessionalVideoFocus,
-    labels,
     matchesSourceFilter,
     matchesSub,
     searchIndex,
@@ -191,11 +190,10 @@ export function CatalogStep({
         item,
         displayName: zhItemName(item),
         sourceLabel: sourceKind(item),
-        typeLabel: labels[item.type] || item.type,
         ultimate: isSeasonUltimate(item),
         pendant: isSeasonPendant(item),
       })),
-    [labels, sourceKind, visibleItems, zhItemName],
+    [sourceKind, visibleItems, zhItemName],
   );
   const hasMoreItems = visibleCount < filtered.length;
 
@@ -393,7 +391,6 @@ export function CatalogStep({
               });
             }}
           >
-            {entry.order && <b>{entry.order}</b>}
             <span>{entry.name}</span>
           </button>
         ))}
@@ -448,7 +445,6 @@ export function CatalogStep({
               onToggle={onToggleOwned}
               displayName={card.displayName}
               sourceLabel={card.sourceLabel}
-              typeLabel={card.typeLabel}
               ultimate={card.ultimate}
               pendant={card.pendant}
             />
