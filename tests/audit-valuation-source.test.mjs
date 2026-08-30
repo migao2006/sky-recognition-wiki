@@ -45,12 +45,13 @@ test("deduplicates hashes and excludes foreign, China, and invalid records", asy
     { post_hash: "same", published_at: recent, price_twd: 10000, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },
     { post_hash: "same", published_at: recent, price_twd: 90000, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },
     { post_hash: "cn", price_twd: 12000, evidence_kind: "ask", evidence_quality: "high", region: "國服", season_progress: { aurora: "畢" } },
+    { post_hash: "china", price_twd: 12000, evidence_kind: "ask", evidence_quality: "high", region: "china", season_progress: { aurora: "畢" } },
     { post_hash: "usd", price_twd: 12000, evidence_kind: "ask", evidence_quality: "high", currency: "USD", season_progress: { aurora: "畢" } },
     { post_hash: "bad", price_twd: null, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },
   ]);
-  assert.deepEqual([result.eligibleRows, result.excludedRows, result.duplicateRows], [1, 3, 1]);
+  assert.deepEqual([result.eligibleRows, result.excludedRows, result.duplicateRows], [1, 4, 1]);
   assert.equal(result.seasons.aurora.sampleCount, 1);
-  assert.deepEqual([result.seasons.aurora.excludedCount, result.seasons.aurora.duplicateCount], [3, 1]);
+  assert.deepEqual([result.seasons.aurora.excludedCount, result.seasons.aurora.duplicateCount], [4, 1]);
 });
 
 test("keeps old listing text and account features compatible without leaking them", async () => {

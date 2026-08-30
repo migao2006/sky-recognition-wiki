@@ -86,10 +86,11 @@ test("hashes are stable for the same salt and rotate with a new salt", async () 
 test("keeps only standardized exclusion reasons for China, foreign currency, and missing price", async () => {
   const rows = await prepare([
     JSON.stringify({ post_id: "cn", group_id: "g", account_id: "a", region: "國服", price_twd: 4000, exclusion_reason: "作者寫了私人備註" }),
+    JSON.stringify({ post_id: "china", group_id: "g", account_id: "a2", region: "china", price_twd: 4000 }),
     JSON.stringify({ post_id: "usd", group_id: "g", account_id: "b", currency: "USD", price_twd: 100, exclusion_reason: "USD price" }),
     JSON.stringify({ post_id: "none", group_id: "g", account_id: "c", exclusion_reason: "請私訊王小明" }),
   ]);
-  assert.deepEqual(rows.map((row) => row.exclusion_reason), ["china", "foreign_currency", "missing_price"]);
+  assert.deepEqual(rows.map((row) => row.exclusion_reason), ["china", "china", "foreign_currency", "missing_price"]);
   assert.equal(JSON.stringify(rows).includes("王小明"), false);
 });
 

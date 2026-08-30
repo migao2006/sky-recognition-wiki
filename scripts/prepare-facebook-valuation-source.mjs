@@ -98,7 +98,7 @@ const seasons = (value) => {
 const standardizedExclusionReason = (row) => {
   const declared = String(row.exclusion_reason ?? "").trim();
   const context = `${row.region ?? ""} ${row.currency ?? ""} ${declared}`.toLowerCase();
-  if (/國服|中國服|陸服|\bcn\b/.test(context)) return "china";
+  if (/國服|中國服|陸服|\b(?:cn|china)\b/.test(context)) return "china";
   if (/人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/.test(context)) return "foreign_currency";
   const hasPrice = [row.price_twd, row.price_twd_low, row.price_twd_high]
     .map(finiteNumber)
