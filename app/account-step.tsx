@@ -5,11 +5,11 @@ import {
   bindingKeys,
   bindingNames,
   bindingOptions,
-  bundlePresets,
   type AccountInfo,
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
+import { bundlePresets } from "./bundle-presets";
 import { formatMarketBindings, formatMarketPlatform } from "./market-copy";
 import { isSeasonPendant } from "./valuation-items";
 import type { OrganizerRuntime } from "./use-organizer-runtime";

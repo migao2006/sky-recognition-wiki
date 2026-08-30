@@ -105,6 +105,9 @@ test("explicit packs and verified standalone IAPs are treated as paid", () => {
   });
   assert.equal(isPaidItem(campingMask), true);
   assert.equal(limitedItemKind(campingMask), "annual");
+  assert.equal(isPaidItem(item({ name: "Days of Healing Poppy" })), true);
+  assert.equal(isPaidItem(item({ name: "AURORA Runaway Hair" })), false);
+  assert.equal(isPaidItem(item({ name: "Skyfest Wireframe Cape" })), false);
 });
 
 test("paid instruments retain their market classification", () => {
@@ -180,4 +183,9 @@ test("deduplicates verified multi-item collaboration packs", () => {
   assert.equal(new Set(kizuna).size, 1);
   assert.equal(new Set(deer).size, 1);
   assert.equal(new Set(nintendo).size, 1);
+
+  assert.equal(
+    canonicalPackageKey(item({ name: "Cat Cape" })),
+    canonicalPackageKey(item({ name: "Cat Mask" })),
+  );
 });

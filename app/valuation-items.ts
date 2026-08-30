@@ -1,65 +1,6 @@
 import type { WikiItem } from "./wiki-data";
 import { marketCollectibleProfile } from "./market-collectibles";
 
-const paidMarketNames = new Set([
-  "Feathery Lash Mask",
-  "Spooky Bat Cape",
-  "Cat Cape",
-  "Cat Mask",
-  "Mischief Witch Hair",
-  "Mischief Witch Hat",
-  "Mischief Withered Antlers",
-  "Mischief Withered Cape",
-  "Snowflake Cape",
-  "Winter Feast Snowglobe",
-  "Days of Feast Horns",
-  "Rainbow Headphones",
-  "Little Prince Asteroid Jacket",
-  "Little Prince Scarf Cape",
-  "Little Prince Fox",
-  "Wings of AURORA",
-  "Giving In Cape",
-  "To The Love Outfit",
-  "Kizuna AI Cape",
-  "Kizuna AI Hair",
-  "Kizuna AI Bow",
-  "Radiance of the Nine-Colored Deer Cape",
-  "Gift of the Nine-Colored Deer Antlers",
-  "Gift of the Nine-Colored Deer Mask",
-  "Moominmamma's Masterpiece Cape",
-  "Moomintroll Ears",
-  "Moomintroll Tail",
-  "Hattifattener Shoulder Buddy",
-  "Pointed Snufkin Hat",
-  "Roving Snufkin Robe",
-  "Roving Snufkin Scarf",
-  "Cinnamoroll Plushie",
-  "Cinnamoroll Ears",
-  "Cinnamoroll Swirled Hair",
-  "Cinnamoroll Cloud Cape",
-  "Cinnamoroll Bowtie",
-  "Cinnamoroll Mini Companion",
-  "Fledgling Harp",
-  "Rhythm Guitar",
-  "Triumph Handpan",
-  "Blue Electric Guitar",
-  "Voice of AURORA",
-  "Vessel Flute",
-  "Triumph Violin",
-  "Fledgling Upright Piano",
-  "Days of Fortune Enchanted Umbrella",
-  "Days of Fortune Hand Fan",
-  "Days of Love Serendipitous Scepter",
-  "Bloom Lilypad Umbrella",
-  "Bloom Sunflower Umbrella",
-  "Lantern",
-  "Summer Parasol",
-  "Mischief Withered Broom",
-  "Fortune Plush Mount",
-  "Anniversary Popcorn Prop",
-  "Anniversary Cinema 3D Glasses",
-]);
-
 export const isSeasonUltimate = (item: WikiItem) =>
   item.section === "seasons" && item.group === "Ultimate";
 
@@ -72,9 +13,7 @@ export const isGraduationGift = (item: WikiItem) =>
   isSeasonUltimate(item) && !isSeasonPendant(item);
 
 export const isPaidItem = (item: WikiItem) =>
-  marketCollectibleProfile(item.name) !== null ||
-  /Pack/i.test(item.wiki) ||
-  paidMarketNames.has(item.name);
+  marketCollectibleProfile(item.name)?.paid === true || /Pack/i.test(item.wiki);
 
 export const canonicalPackageKey = (item: WikiItem) => {
   if (!isPaidItem(item)) return null;

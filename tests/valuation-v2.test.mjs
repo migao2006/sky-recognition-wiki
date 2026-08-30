@@ -8,13 +8,22 @@ import {
 test("season bands contain all thirty ordered seasons with valid price ranges", () => {
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
-    sourceRows: 1022,
-    eligibleRows: 133,
+    sourceRows: 1038,
+    eligibleRows: 147,
+    facebookRows: 16,
+    facebookEligibleRows: 14,
     secondaryMarketRows: 74,
-    asOf: "2026-08-16",
+    asOf: "2026-08-30",
   });
   for (const [index, band] of seasonPriceBands.entries()) {
-    assert.ok(band.low > 0 && band.high >= band.low);
+    assert.ok(
+      band.low > 0 && band.median >= band.low && band.high >= band.median,
+    );
+    assert.ok(band.effectiveWeight >= 0);
+    assert.equal(
+      band.evidenceBreakdown.directSale,
+      band.sampleCount,
+    );
     assert.ok(
       band.contributionLow > 0 && band.contributionHigh >= band.contributionLow,
     );
@@ -32,7 +41,7 @@ test("sample confidence reflects direct eligible mentions", () => {
     [
       ["gratitude", 0, "inferred"],
       ["rhythm", 5, "medium"],
-      ["enchantment", 16, "high"],
+      ["enchantment", 19, "high"],
       ["carnival", 15, "high"],
     ],
   );

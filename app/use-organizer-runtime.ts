@@ -8,7 +8,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { bundlePresets } from "./account-config";
+import { bundlePresets } from "./bundle-presets";
 import type { WikiItem } from "./wiki-data";
 import type { ValuationDomain } from "./valuation-analysis";
 import {
@@ -44,6 +44,8 @@ const fallbackCloset = {
 const emptyValuationSampleSummary = {
   sourceRows: 0,
   eligibleRows: 0,
+  facebookRows: 0,
+  facebookEligibleRows: 0,
   secondaryMarketRows: 0,
   asOf: "",
 };

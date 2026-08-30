@@ -563,6 +563,8 @@ export function ValuationStep({
             筆帳號樣本，其中 {runtime.valuationSampleSummary.eligibleRows}{" "}
             筆台幣樣本納入推斷（
             {runtime.valuationSampleSummary.asOf}）。
+            本次社團搜尋新增 {runtime.valuationSampleSummary.facebookEligibleRows}{" "}
+            筆有效刊登價；無日期或資訊較少的貼文已降低權重。
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"
@@ -635,11 +637,18 @@ export function ValuationStep({
 type SeasonRow = {
   slug: string;
   low: number;
+  median: number;
   high: number;
   contributionLow: number;
   contributionHigh: number;
   confidence: SeasonConfidence;
   sampleCount: number;
+  effectiveWeight: number;
+  evidenceBreakdown: {
+    directSale: number;
+    professionalEstimate: number;
+    commentSignal: number;
+  };
   completion?: number;
 };
 
@@ -661,9 +670,9 @@ function SeasonRows({
           <tr>
             <th>季節</th>
             {includeCompletion && <th>完成</th>}
-            <th>{includeCompletion ? "季節基準" : "快售～刊登"}</th>
-            <th>單季貢獻</th>
-            <th>{includeCompletion ? "信心" : "樣本"}</th>
+            <th>起季帳號</th>
+            <th>單季加價</th>
+            <th>證據</th>
           </tr>
         </thead>
         <tbody>
@@ -675,13 +684,14 @@ function SeasonRows({
               )}
               <td>
                 {formatTwd(row.low)}～{formatTwd(row.high)}
+                <small>中位 {formatTwd(row.median)}</small>
               </td>
               <td>
                 {formatTwd(row.contributionLow)}～
                 {formatTwd(row.contributionHigh)}
               </td>
               <td>
-                {names[row.confidence]} · {row.sampleCount}
+                刊登 {row.evidenceBreakdown.directSale} · {names[row.confidence]}
               </td>
             </tr>
           ))}

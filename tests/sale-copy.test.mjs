@@ -115,6 +115,26 @@ test("groups collaborations, anniversaries, and special collections", () => {
       order: 3,
     }),
     item({
+      guid: "healing-poppy",
+      name: "Days of Healing Poppy",
+      displayName: "療癒罌粟花",
+      section: "events",
+      collection: "days-of-healing",
+      group: "Limited",
+      sourceName: "療癒日",
+      order: 4,
+    }),
+    item({
+      guid: "skyfest-wireframe",
+      name: "Skyfest Wireframe Cape",
+      displayName: "天空慶典線框斗篷",
+      section: "events",
+      collection: "event-sky-anniversary",
+      group: "Limited",
+      sourceName: "光遇週年慶",
+      order: 5,
+    }),
+    item({
       guid: "sixth-hat",
       name: "6th Anniversary Hat",
       displayName: "6週年帽",
@@ -178,16 +198,47 @@ test("groups collaborations, anniversaries, and special collections", () => {
   ];
   const copy = buildSaleCopy(input({ items: [...items, items[0]] })).join("\n");
   assert.match(copy, /✦ 限定聯動\n九色鹿｜鹿角・九色鹿面具\nNintendo｜精靈髮型/);
+  assert.match(copy, /✦ 重要禮包\n小白花・SkyFest 線框斗篷/);
   assert.match(copy, /✦ 週年收藏\n6th｜週年帽\n5th｜週年T恤\n其他｜茶杯頭飾/);
   assert.match(copy, /✦ 特殊限定/);
   assert.match(copy, /女巫髮型/);
-  assert.match(copy, /春日幸運草嫩芽/);
+  assert.doesNotMatch(copy, /春日幸運草嫩芽/);
   assert.doesNotMatch(copy, /惡作劇之日｜|國服限定｜/);
   assert.match(copy, /✦ 其他收藏\n新手鋼琴/);
   assert.doesNotMatch(copy, /常駐商店｜/);
   assert.equal(copy.match(/鹿角/g)?.length, 1);
   assert.equal(copy.match(/精靈髮型/g)?.length, 1);
-  assert.equal(copy.match(/╶────── ✦ ──────╴/g)?.length, 5);
+  assert.equal(copy.match(/╶────── ✦ ──────╴/g)?.length, 6);
+});
+
+test("uses player names and keeps every selected item in only one section", () => {
+  const copy = buildSaleCopy(
+    input({
+      items: [
+        item({
+          guid: "runaway-hair",
+          name: "AURORA Runaway Hair",
+          displayName: "AURORA 逃跑髮型",
+          section: "seasons",
+          collection: "aurora",
+          group: "Limited",
+          sourceName: "AURORA 季",
+        }),
+        item({
+          guid: "bat-cape",
+          name: "Spooky Bat Cape",
+          displayName: "惡作劇蝙蝠斗篷",
+          section: "events",
+          collection: "days-of-mischief",
+          sourceName: "惡作劇之日",
+        }),
+      ],
+    }),
+  ).join("\n");
+  assert.match(copy, /AURORA｜逃跑髮型/);
+  assert.match(copy, /✦ 重要禮包\n蝙蝠斗篷/);
+  assert.equal(copy.match(/逃跑髮型/g)?.length, 1);
+  assert.equal(copy.match(/蝙蝠斗篷/g)?.length, 1);
 });
 
 test("omits empty optional sections and never adds the removed market copy", () => {

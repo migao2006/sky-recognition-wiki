@@ -1374,6 +1374,12 @@ a:focus-visible {
   color: #e1eaf5;
   font-weight: 750;
 }
+.valuation-season-table td small {
+  display: block;
+  margin-top: 3px;
+  color: #8297b1;
+  font-size: 9px;
+}
 .valuation-warnings {
   padding: 9px 12px;
   border: 1px solid #d79aa232;

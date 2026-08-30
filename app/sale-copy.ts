@@ -102,6 +102,9 @@ const itemSearchText = (item: SaleCopyItem) =>
     item.collection,
     item.sourceName,
   ].join(" ");
+const isChinaOnlySaleItem = (item: SaleCopyItem) =>
+  marketCollectibleProfile(item.name)?.availability === "china" ||
+  /\b(?:china|cn|guo?fu|netease)\b|國服|国服/i.test(itemSearchText(item));
 const collaborationOf = (item: SaleCopyItem) => {
   const verified = marketCollectibleProfile(item.name);
   if (verified?.saleCopy && verified.saleSection === "collaboration") {
@@ -175,6 +178,7 @@ const appendGroup = (
 
 const groupCollectibles = (items: SaleCopyItem[]) => {
   const limited = new Map<string, CopyGroup>();
+  const important = new Map<string, CopyGroup>();
   const anniversaries = new Map<string, CopyGroup>();
   const special = new Map<string, CopyGroup>();
   const other = new Map<string, CopyGroup>();
@@ -187,13 +191,15 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
     item.group === "Limited" ||
     item.sourceName.includes("限定");
   const categoryRank = (item: SaleCopyItem) =>
-    item.collection === "event-sky-anniversary"
+    collaborationOf(item)
       ? 0
-      : collaborationOf(item)
+      : marketCollectibleProfile(item.name)?.saleSection === "important"
         ? 1
-        : isSpecialItem(item)
+        : item.collection === "event-sky-anniversary"
           ? 2
-          : 3;
+          : isSpecialItem(item)
+            ? 3
+            : 4;
   const appendUnique = (
     groups: Map<string, CopyGroup>,
     key: string,
@@ -207,10 +213,39 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
   };
 
   [...items]
+    .filter((item) => !isChinaOnlySaleItem(item))
     .sort((a, b) => categoryRank(a) - categoryRank(b) || a.order - b.order)
     .forEach((item) => {
       if (seen.has(item.guid)) return;
       seen.add(item.guid);
+      const collaboration = collaborationOf(item);
+      if (collaboration) {
+        const profile = marketCollectibleProfile(item.name);
+        appendUnique(
+          limited,
+          collaboration.name,
+          collaboration.name,
+          collaboration.rank,
+          tidyItemName(
+            collaboration.name,
+            profile?.playerName ?? item.displayName,
+          ),
+        );
+        return;
+      }
+
+      const profile = marketCollectibleProfile(item.name);
+      if (profile?.saleCopy && profile.saleSection === "important") {
+        appendUnique(
+          important,
+          item.name,
+          profile.playerName,
+          profile.salePriority,
+          profile.playerName,
+        );
+        return;
+      }
+
       if (item.collection === "event-sky-anniversary") {
         const number = anniversaryNumber(item);
         const key = number ? String(number) : "other";
@@ -220,18 +255,6 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           number ? ordinalLabel(number) : "其他",
           number ? -number : 999,
           tidyAnniversaryName(item.displayName),
-        );
-        return;
-      }
-
-      const collaboration = collaborationOf(item);
-      if (collaboration) {
-        appendUnique(
-          limited,
-          collaboration.name,
-          collaboration.name,
-          collaboration.rank,
-          tidyItemName(collaboration.name, item.displayName),
         );
         return;
       }
@@ -261,6 +284,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
   };
   return {
     limited: format(limited),
+    important: directItems(important),
     anniversaries: format(anniversaries),
     special: directItems(special),
     other: directItems(other),
@@ -281,6 +305,7 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     section("季節進度", wrapSeasonProgress(data.seasons)),
     section("綁定狀態", binding ? [binding] : []),
     section("限定聯動", groups.limited),
+    section("重要禮包", groups.important),
     section("週年收藏", groups.anniversaries),
     section("特殊限定", groups.special),
     section("其他收藏", groups.other),

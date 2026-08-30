@@ -7,7 +7,7 @@ test("renders the account organizer", async () => {
     html,
     source,
     runtimeSource,
-    configSource,
+    bundleSource,
     cardSource,
     cssSource,
     accountStepSource,
@@ -24,7 +24,7 @@ test("renders the account organizer", async () => {
       new URL("../app/use-organizer-runtime.ts", import.meta.url),
       "utf8",
     ),
-    readFile(new URL("../app/account-config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/bundle-presets.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/catalog-item-card.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/account-step.tsx", import.meta.url), "utf8"),
@@ -52,7 +52,7 @@ test("renders the account organizer", async () => {
     "冥龍角尾兩件套",
     "飛蛾兩件套",
     "麻雀兩件套",
-  ].forEach((name) => assert.match(configSource, new RegExp(name)));
+  ].forEach((name) => assert.match(bundleSource, new RegExp(name)));
   assert.match(html, /下一步：選擇物品/);
   assert.match(html, /資源／備註/);
   assert.match(html, /無綁/);
@@ -82,10 +82,8 @@ test("renders the account organizer", async () => {
   assert.match(source, /state=\{catalogStepState\}/);
   assert.match(valuationStepSource, /useValuationStepState/);
   assert.match(source, /state=\{valuationStepState\}/);
-  assert.match(
-    valuationStepSource,
-    /includeCompletion \? "季節基準" : "快售～刊登"/,
-  );
+  assert.match(valuationStepSource, /<th>起季帳號<\/th>/);
+  assert.match(valuationStepSource, /中位 \{formatTwd\(row\.median\)\}/);
   assert.match(catalogStepSource, /new IntersectionObserver/);
   assert.match(accountStepSource, /seasonPickerOpen &&/);
   assert.match(accountStepSource, /quickSelectOpen &&/);
