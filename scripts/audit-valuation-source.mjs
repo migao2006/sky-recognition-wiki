@@ -543,6 +543,17 @@ for (const key of packageTiers) {
   );
   packageFloor = rawPackageModifiers[key].multiplier;
 }
+const packageModifierCaps = { few: 1, medium: 1.08, many: 1.15, hundred: 1.21 };
+let cappedPackageFloor = 0;
+for (const key of packageTiers) {
+  rawPackageModifiers[key].multiplier = Number(
+    Math.max(
+      cappedPackageFloor,
+      Math.min(packageModifierCaps[key], rawPackageModifiers[key].multiplier),
+    ).toFixed(3),
+  );
+  cappedPackageFloor = rawPackageModifiers[key].multiplier;
+}
 const modifiers = {
   breakClass: rawBreakModifiers,
   packageTier: rawPackageModifiers,

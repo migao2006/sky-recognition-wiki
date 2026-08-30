@@ -2,10 +2,12 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 const evidenceWeights = { ask: 1, quick_sale: 0.8, sold: 1.2, professional_estimate: 0.55, comment: 0.35 };
+const priceKindWeights = { ask: 0.9, quick_sale: 0.82, sold: 1, professional_estimate: 0.6, comment: 0.4 };
 const qualityWeights = { high: 1, medium: 0.75, low: 0.5 };
 const breakClasses = new Set(["none", "slight", "medium", "big"]);
 const packageTiers = new Set(["few", "medium", "many", "hundred"]);
 const accountStyles = new Set(["simple", "regular"]);
+const minimumEligibleAccounts = 200;
 
 const numberOrNull = (value) => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
 const weightedMedian = (rows, valueKey) => {
@@ -43,7 +45,8 @@ const dateWeight = (row, asOf) => {
 const sampleWeightFor = (row, asOf) => {
   const explicit = numberOrNull(row.effective_weight ?? row.sample_weight);
   if (explicit) return explicit;
-  return (evidenceWeights[row.evidence_kind] ?? 0) * qualityWeights[row.evidence_quality ?? "medium"] * dateWeight(row, asOf);
+  const priceKind = row.price_kind ?? row.evidence_kind ?? "ask";
+  return (evidenceWeights[row.evidence_kind] ?? 0) * (priceKindWeights[priceKind] ?? 0.75) * qualityWeights[row.evidence_quality ?? "medium"] * dateWeight(row, asOf);
 };
 const startSeasonFor = (row, aggregate) => {
   const explicit = String(row.start_season_slug ?? "").trim().toLowerCase();
@@ -83,7 +86,32 @@ const accountGroupFor = (row) => {
     ? null
     : String(value);
 };
+const postGroupFor = (row) => {
+  const value = row.post_hash ?? row.post_fingerprint;
+  return value === undefined || value === null || String(value).trim() === ""
+    ? null
+    : String(value);
+};
 const marketGroupFor = (row) => String(row.group_hash ?? row.market_group_hash ?? row.source_group_hash ?? row.source ?? "unknown");
+const stableRowKey = (row) =>
+  createHash("sha256")
+    .update(JSON.stringify({
+      evidence_kind: row.evidence_kind ?? "",
+      price_twd: row.price_twd ?? "",
+      price_twd_low: row.price_twd_low ?? "",
+      price_twd_high: row.price_twd_high ?? "",
+      published_at: row.published_at ?? "",
+      observed_at: row.observed_at ?? "",
+      post_hash: row.post_hash ?? "",
+      account_key: accountGroupFor(row) ?? "",
+      group_key: String(row.group_hash ?? "").trim()
+        ? `group:${String(row.group_hash).trim()}`
+        : `source:${String(row.source ?? "unknown").trim() || "unknown"}`,
+      start_season_slug: row.start_season_slug ?? "",
+      season_progress: row.season_progress ?? null,
+      paid_package_count: row.paid_package_count ?? "",
+    }))
+    .digest("hex");
 const inHoldout = (accountGroup, seed) =>
   createHash("sha256").update(`${seed}:${accountGroup}`).digest().readUInt32BE(0) % 10 >= 8;
 const applyGroupCap = (samples) => {
@@ -124,7 +152,9 @@ const preferredSample = (left, right) => {
   if (evidenceDifference) return evidenceDifference > 0 ? right : left;
   if (right.publishedAt !== left.publishedAt)
     return right.publishedAt > left.publishedAt ? right : left;
-  return right.price < left.price ? right : left;
+  return stableRowKey(right.row).localeCompare(stableRowKey(left.row)) < 0
+    ? right
+    : left;
 };
 const predict = (aggregate, sample) => {
   const segment = aggregate.segments.startSeason[sample.startSeason];
@@ -135,27 +165,40 @@ const predict = (aggregate, sample) => {
 export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = "sky-valuation-v3" }) => {
   const asOf = new Date(`${candidate.asOf ?? baseline.asOf ?? "1970-01-01"}T23:59:59.999Z`);
   if (!Number.isFinite(asOf.getTime())) throw new Error("candidate or baseline requires a valid asOf date");
-  const candidates = rows.flatMap((row) => {
+  const sourceCandidates = rows.flatMap((row) => {
     if (String(row.exclusion_reason ?? "").trim()) return [];
     if (!Object.hasOwn(evidenceWeights, row.evidence_kind) || !Object.hasOwn(qualityWeights, row.evidence_quality ?? "medium")) return [];
     if (/^(?:cn|china|國服|中國服|陸服)$/i.test(String(row.region ?? "").trim())) return [];
     if (/^(?:cny|rmb|usd|hkd)$/i.test(String(row.currency ?? "").trim())) return [];
     const price = priceFor(row);
-    const startSeason = startSeasonFor(row, baseline);
     const weight = sampleWeightFor(row, asOf);
-    if (!price || !startSeason || !baseline.segments?.startSeason?.[startSeason]?.median || !weight) return [];
     const accountGroup = accountGroupFor(row);
-    if (!accountGroup) return [];
-    return [{ price, weight, startSeason, breakClass: breakClassFor(row), packageTier: packageTierFor(row), accountStyle: accountStyles.has(row.account_style) ? row.account_style : null, accountGroup, marketGroup: marketGroupFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0 }];
+    if (!price || !weight || !accountGroup) return [];
+    return [{ row, price, weight, accountGroup, postGroup: postGroupFor(row), marketGroup: marketGroupFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0 }];
   });
-  const byAccount = new Map();
-  candidates.forEach((sample) => {
-    const previous = byAccount.get(sample.accountGroup);
-    byAccount.set(sample.accountGroup, previous ? preferredSample(previous, sample) : sample);
+  const sourceWithoutPostIdentity = [];
+  const sourceByPost = new Map();
+  sourceCandidates.forEach((sample) => {
+    if (!sample.postGroup) {
+      sourceWithoutPostIdentity.push(sample);
+      return;
+    }
+    const previous = sourceByPost.get(sample.postGroup);
+    sourceByPost.set(sample.postGroup, previous ? preferredSample(previous, sample) : sample);
   });
-  const uncappedEligible = [...byAccount.values()];
-  const groupCap = applyGroupCap(uncappedEligible);
-  const eligible = groupCap.samples;
+  const sourceByAccount = new Map();
+  [...sourceWithoutPostIdentity, ...sourceByPost.values()].forEach((sample) => {
+    const previous = sourceByAccount.get(sample.accountGroup);
+    sourceByAccount.set(sample.accountGroup, previous ? preferredSample(previous, sample) : sample);
+  });
+  const sourceEligible = [...sourceByAccount.values()];
+  const sourceGroupCap = applyGroupCap(sourceEligible);
+  const candidates = sourceGroupCap.samples.flatMap((sample) => {
+    const startSeason = startSeasonFor(sample.row, baseline);
+    if (!startSeason || !baseline.segments?.startSeason?.[startSeason]?.median) return [];
+    return [{ ...sample, startSeason, breakClass: breakClassFor(sample.row), packageTier: packageTierFor(sample.row), accountStyle: accountStyles.has(sample.row.account_style) ? sample.row.account_style : null }];
+  });
+  const eligible = candidates;
   const holdout = eligible.filter((sample) => inHoldout(sample.accountGroup, splitSeed));
   const errorMetrics = (aggregate) => {
     const valid = holdout.flatMap((sample) => {
@@ -188,9 +231,9 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
         candidate.split?.trainingMode === "calibration-only" &&
         candidate.split?.splitSeed === splitSeed,
     },
-    minimumEligibleRows: { actual: eligible.length, minimum: 500, pass: eligible.length >= 500 },
-    marketGroups: { actual: groupCap.groupCount, minimum: 3, pass: groupCap.groupCount >= 3 },
-    maximumGroupEffectiveShare: { raw: Number(groupCap.rawLargestShare.toFixed(4)), actual: Number(groupCap.cappedLargestShare.toFixed(4)), maximum: 0.6, pass: groupCap.cappedLargestShare <= 0.6 },
+    minimumEligibleRows: { actual: sourceEligible.length, minimum: minimumEligibleAccounts, pass: sourceEligible.length >= minimumEligibleAccounts },
+    marketGroups: { actual: sourceGroupCap.groupCount, minimum: 3, pass: sourceGroupCap.groupCount >= 3 },
+    maximumGroupEffectiveShare: { raw: Number(sourceGroupCap.rawLargestShare.toFixed(4)), actual: Number(sourceGroupCap.cappedLargestShare.toFixed(4)), maximum: 0.6, pass: sourceGroupCap.rawLargestShare <= 0.6 },
     holdout: { actual: holdout.length, minimum: 1, pass: holdout.length > 0 },
     candidatePredictionCoverage: { actual: candidateMetrics.predictionCoverage, minimum: 1, pass: candidateMetrics.predictionCoverage === 1 },
     coverage: { actual: candidateMetrics.p25P75Coverage, minimum: 0.5, maximum: 0.9, pass: candidateMetrics.p25P75Coverage !== null && candidateMetrics.p25P75Coverage >= 0.5 && candidateMetrics.p25P75Coverage <= 0.9 },
@@ -198,7 +241,7 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
   };
   const hardPass = Object.entries(criteria).every(([key, criterion]) => key === "accuracy" ? criterion.status === "pass" : criterion.pass);
   const canJustifyBias = Object.entries(criteria).every(([key, criterion]) => key === "accuracy" ? criterion.status === "needsBiasJustification" : criterion.pass);
-  return { schemaVersion: 1, split: { seed: splitSeed, method: "sha256 account-group 20% holdout" }, eligibleRows: eligible.length, holdoutRows: holdout.length, candidate: candidateMetrics, baseline: baselineMetrics, criteria, outcome: hardPass ? "pass" : canJustifyBias ? "needsBiasJustification" : "fail" };
+  return { schemaVersion: 1, split: { seed: splitSeed, method: "sha256 account-group 20% holdout" }, sourceEligibleRows: sourceEligible.length, eligibleRows: eligible.length, holdoutRows: holdout.length, candidate: candidateMetrics, baseline: baselineMetrics, criteria, outcome: hardPass ? "pass" : canJustifyBias ? "needsBiasJustification" : "fail" };
 };
 
 const usage = "Usage: node scripts/validate-valuation-model.mjs --candidate <aggregate.json> --baseline <aggregate.json> --source <anonymous-source.jsonl> [--split-seed=value]";

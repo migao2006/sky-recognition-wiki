@@ -577,8 +577,8 @@ export const estimateValuation = ({
       percent: 3,
     });
   }
-  low = roundHundred(Math.max(300, low * risk));
-  high = roundHundred(Math.max(low, high * risk));
+  low = roundHundred(Math.max(300, low));
+  high = roundHundred(Math.max(low, high));
   const startEvidence = analysis.startSeasonSlug
     ? valuationMarketAggregate.segments.startSeason[
         analysis.startSeasonSlug as keyof typeof valuationMarketAggregate.segments.startSeason
@@ -589,7 +589,21 @@ export const estimateValuation = ({
     startBand?.confidence ?? "inferred",
     evidenceProfile,
   );
-  const summary = summarizeValuationRange(low, high, confidence);
+  const marketSummary = summarizeValuationRange(low, high, confidence);
+  const riskLow = roundHundred(Math.max(300, marketSummary.low * risk));
+  const riskHigh = roundHundred(
+    Math.max(riskLow, marketSummary.high * risk),
+  );
+  const summary = risk < 1
+    ? {
+        low: riskLow,
+        high: riskHigh,
+        midpoint: Math.min(
+          riskHigh,
+          Math.max(riskLow, roundFiveHundred(marketSummary.midpoint * risk)),
+        ),
+      }
+    : marketSummary;
   if (!analysis.startSeasonSlug)
     warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
   return {

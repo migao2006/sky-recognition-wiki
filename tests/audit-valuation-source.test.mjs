@@ -139,6 +139,14 @@ test("aggregates price ranges and objective market classifications", async () =>
   assert.equal(result.segments.breakClass.slight.sampleCount, 1);
   assert.equal(result.segments.packageTier.many.sampleCount, 1);
   assert.equal(result.segments.accountStyle.regular.sampleCount, 1);
+  const packageModifiers = result.modifiers.packageTier;
+  assert.ok(packageModifiers.few.multiplier <= packageModifiers.medium.multiplier);
+  assert.ok(packageModifiers.medium.multiplier <= packageModifiers.many.multiplier);
+  assert.ok(packageModifiers.many.multiplier <= packageModifiers.hundred.multiplier);
+  assert.ok(packageModifiers.few.multiplier <= 1);
+  assert.ok(packageModifiers.medium.multiplier <= 1.08);
+  assert.ok(packageModifiers.many.multiplier <= 1.15);
+  assert.ok(packageModifiers.hundred.multiplier <= 1.21);
 });
 
 test("reduces inferred and structured start-season evidence weight", async () => {

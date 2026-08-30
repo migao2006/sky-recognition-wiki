@@ -24,6 +24,7 @@ const rows = Array.from({ length: 500 }, (_, index) => ({
 test("passes a deterministic anonymous holdout when candidate materially improves error", () => {
   const report = validateValuationModel({ candidate: aggregate(100), baseline: aggregate(80), rows, splitSeed: "fixture" });
   assert.equal(report.outcome, "pass");
+  assert.equal(report.sourceEligibleRows, 500);
   assert.equal(report.eligibleRows, 500);
   assert.equal(report.criteria.marketGroups.actual, 3);
   assert.ok(report.candidate.p25P75Coverage >= 0.5);
@@ -46,6 +47,65 @@ test("fails safety gates for concentrated or undersized samples", () => {
   assert.equal(report.criteria.maximumGroupEffectiveShare.pass, false);
 });
 
+test("counts valid unique accounts toward the sample gate even without comparable season data", () => {
+  const sparseRows = rows.slice(0, 200).map((row, index) => ({
+    ...row,
+    start_season_slug: index < 120 ? "assembly" : null,
+  }));
+  const report = validateValuationModel({
+    candidate: aggregate(100),
+    baseline: aggregate(80),
+    rows: sparseRows,
+    splitSeed: "fixture",
+  });
+  assert.equal(report.sourceEligibleRows, 200);
+  assert.equal(report.eligibleRows, 120);
+  assert.equal(report.criteria.minimumEligibleRows.pass, true);
+});
+
+test("checks source concentration before excluding accounts without comparable seasons", () => {
+  const concentratedSource = rows.slice(0, 200).map((row, index) => ({
+    ...row,
+    group_hash: index < 140 ? "dominant" : index < 170 ? "second" : "third",
+    start_season_slug: index < 140 ? null : "assembly",
+  }));
+  const report = validateValuationModel({
+    candidate: aggregate(100),
+    baseline: aggregate(80),
+    rows: concentratedSource,
+    splitSeed: "fixture",
+  });
+  assert.equal(report.eligibleRows, 60);
+  assert.equal(report.criteria.maximumGroupEffectiveShare.raw, 0.7);
+  assert.equal(report.criteria.maximumGroupEffectiveShare.pass, false);
+});
+
+test("does not let a duplicated post with conflicting account hashes inflate the sample gate", () => {
+  const duplicated = rows.slice(0, 200).map((row, index) => ({
+    ...row,
+    post_hash: `post-${index}`,
+  }));
+  duplicated.push({
+    ...duplicated[0],
+    account_group_hash: "conflicting-account-hash",
+  });
+  const report = validateValuationModel({
+    candidate: aggregate(100),
+    baseline: aggregate(80),
+    rows: duplicated,
+    splitSeed: "fixture",
+  });
+  assert.equal(report.sourceEligibleRows, 200);
+  assert.equal(report.criteria.minimumEligibleRows.actual, 200);
+  const reversed = validateValuationModel({
+    candidate: aggregate(100),
+    baseline: aggregate(80),
+    rows: [...duplicated].reverse(),
+    splitSeed: "fixture",
+  });
+  assert.deepEqual(reversed, report);
+});
+
 test("applies the same sixty-percent group cap used by calibration", () => {
   const concentrated = rows.map((row, index) => ({
     ...row,
@@ -59,7 +119,8 @@ test("applies the same sixty-percent group cap used by calibration", () => {
   });
   assert.equal(report.criteria.maximumGroupEffectiveShare.raw, 0.7);
   assert.equal(report.criteria.maximumGroupEffectiveShare.actual, 0.6);
-  assert.equal(report.criteria.maximumGroupEffectiveShare.pass, true);
+  assert.equal(report.criteria.maximumGroupEffectiveShare.pass, false);
+  assert.equal(report.outcome, "fail");
 });
 
 test("normalizes reversed price ranges like calibration", () => {
