@@ -8,11 +8,18 @@ const sources = await Promise.all(
     "valuation-calibration.ts",
     "market-collectibles.ts",
     "valuation-items.ts",
+    "valuation-market.ts",
     "valuation-season-bands.ts",
     "valuation-analysis.ts",
   ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
 );
-const [config, calibration, market, items, bands, analysis] = sources;
+const [config, calibration, market, items, valuationMarket, bands, analysis] = sources;
+const marketAggregate = JSON.parse(
+  await readFile(
+    new URL("../app/valuation-market-aggregate.json", import.meta.url),
+    "utf8",
+  ),
+);
 const marketUrl = asModuleUrl(market);
 const itemsUrl = asModuleUrl(
   items.replace(
@@ -20,28 +27,45 @@ const itemsUrl = asModuleUrl(
     `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
   ),
 );
+const valuationMarketUrl = asModuleUrl(
+  valuationMarket.replace(
+    /import marketAggregate[\s\S]*?;\n/,
+    `const marketAggregate = ${JSON.stringify(marketAggregate)};\n`,
+  ),
+);
+const bandsUrl = asModuleUrl(
+  bands.replace(
+    /import valuationMarketAggregate[\s\S]*?;\n/,
+    `const valuationMarketAggregate = ${JSON.stringify(marketAggregate)};\n`,
+  ),
+);
 const loaded = await import(
   asModuleUrl(
     analysis
       .replace(
-        /import \{([\s\S]*?)\} from "\.\/account-config";/,
+        /import \{([^;]*?)\} from "\.\/valuation-market";/,
+        (_, names) =>
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(valuationMarketUrl)});`,
+      )
+      .replace(
+        /import \{([^;]*?)\} from "\.\/account-config";/,
         (_, names) =>
           `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(config))});`,
       )
       .replace(
-        /import \{([\s\S]*?)\} from "\.\/valuation-calibration";/,
+        /import \{([^;]*?)\} from "\.\/valuation-calibration";/,
         (_, names) =>
           `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(calibration))});`,
       )
       .replace(
-        /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
+        /import \{([^;]*?)\} from "\.\/valuation-items";/,
         (_, names) =>
           `const {${names}} = await import(${JSON.stringify(itemsUrl)});`,
       )
       .replace(
-        /import \{([\s\S]*?)\} from "\.\/valuation-season-bands";/,
+        /import \{([^;]*?)\} from "\.\/valuation-season-bands";/,
         (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(bands))});`,
+          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(bandsUrl)});`,
       ),
   )
 );
@@ -125,7 +149,7 @@ test("v2 returns a price range and does not treat a pendant as graduation", () =
   assert.equal(result.seasonRows[0].selected, 1);
   assert.ok(
     result.contributions.some((row) =>
-      row.label.includes("sanctuary 畢業禮完成 0%"),
+      row.group === "market" && row.label.includes("季未完整"),
     ),
   );
 });
@@ -295,7 +319,9 @@ test("a partial starting season is deducted and kept platform content is exclude
   });
   assert.ok(result);
   assert.ok(
-    result.contributions.some((row) => row.group === "season" && row.low < 0),
+    result.contributions.some(
+      (row) => row.group === "market" && (row.percent ?? 0) < 0,
+    ),
   );
   assert.equal(
     result.contributions.some((row) => row.group === "package"),

@@ -29,7 +29,13 @@ test("weights structured seasonal samples by evidence and quality", async () => 
   const rhythm = result.seasons.rhythm;
   assert.equal(rhythm.sampleCount, 3);
   assert.equal(rhythm.effectiveWeight, 1.813);
-  assert.deepEqual(rhythm.evidenceBreakdown, { ask: 1, professional_estimate: 1, comment: 1 });
+  assert.deepEqual(rhythm.evidenceBreakdown, {
+    ask: 1,
+    quick_sale: 0,
+    sold: 0,
+    professional_estimate: 1,
+    comment: 1,
+  });
   assert.deepEqual([rhythm.p25, rhythm.median, rhythm.p75], [10000, 10000, 20000]);
 });
 
@@ -62,4 +68,28 @@ test("does not mistake collection time for publication recency", async () => {
     season_progress: { moomin: "start" },
   }]);
   assert.equal(result.seasons.moomin.effectiveWeight, 0.45);
+});
+
+test("aggregates price ranges and objective market classifications", async () => {
+  const result = await audit([
+    {
+      post_hash: "structured",
+      published_at: recent,
+      price_twd_low: 4800,
+      price_twd_high: 5200,
+      price_kind: "ask",
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "assembly",
+      missing_season_count: 2,
+      completion_ratio: 0.9,
+      paid_package_count: 42,
+      account_style: "regular",
+    },
+  ]);
+  assert.equal(result.eligibleRows, 1);
+  assert.equal(result.segments.startSeason.assembly.median, 5032);
+  assert.equal(result.segments.breakClass.slight.sampleCount, 1);
+  assert.equal(result.segments.packageTier.many.sampleCount, 1);
+  assert.equal(result.segments.accountStyle.regular.sampleCount, 1);
 });

@@ -1,0 +1,640 @@
+{
+  "schemaVersion": 2,
+  "asOf": "2026-08-30",
+  "sourceRows": 128,
+  "eligibleRows": 126,
+  "excludedRows": 2,
+  "duplicateRows": 0,
+  "sourceBreakdown": {
+    "facebook": 14,
+    "google_drive": 112
+  },
+  "segments": {
+    "startSeason": {
+      "gratitude": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "lightseekers": {
+        "sampleCount": 2,
+        "effectiveWeight": 1.8,
+        "p25": 132900,
+        "median": 132900,
+        "p75": 185000,
+        "evidenceBreakdown": {
+          "ask": 2,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "belonging": {
+        "sampleCount": 5,
+        "effectiveWeight": 4.5,
+        "p25": 35000,
+        "median": 74000,
+        "p75": 100000,
+        "evidenceBreakdown": {
+          "ask": 5,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "rhythm": {
+        "sampleCount": 12,
+        "effectiveWeight": 10.8,
+        "p25": 56160,
+        "median": 73000,
+        "p75": 85000,
+        "evidenceBreakdown": {
+          "ask": 12,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "enchantment": {
+        "sampleCount": 20,
+        "effectiveWeight": 16.49,
+        "p25": 18400,
+        "median": 22000,
+        "p75": 30000,
+        "evidenceBreakdown": {
+          "ask": 20,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "sanctuary": {
+        "sampleCount": 3,
+        "effectiveWeight": 2.7,
+        "p25": 6750,
+        "median": 9900,
+        "p75": 13500,
+        "evidenceBreakdown": {
+          "ask": 3,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "prophecy": {
+        "sampleCount": 9,
+        "effectiveWeight": 7.65,
+        "p25": 6000,
+        "median": 7700,
+        "p75": 8900,
+        "evidenceBreakdown": {
+          "ask": 9,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "dreams": {
+        "sampleCount": 1,
+        "effectiveWeight": 0.9,
+        "p25": 4400,
+        "median": 4400,
+        "p75": 4400,
+        "evidenceBreakdown": {
+          "ask": 1,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "assembly": {
+        "sampleCount": 10,
+        "effectiveWeight": 8.438,
+        "p25": 4916,
+        "median": 5290,
+        "p75": 7000,
+        "evidenceBreakdown": {
+          "ask": 10,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "the-little-prince": {
+        "sampleCount": 11,
+        "effectiveWeight": 8.325,
+        "p25": 4500,
+        "median": 6000,
+        "p75": 8200,
+        "evidenceBreakdown": {
+          "ask": 11,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "flight": {
+        "sampleCount": 8,
+        "effectiveWeight": 6.638,
+        "p25": 4100,
+        "median": 4900,
+        "p75": 8000,
+        "evidenceBreakdown": {
+          "ask": 8,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "abyss": {
+        "sampleCount": 4,
+        "effectiveWeight": 3.15,
+        "p25": 4900,
+        "median": 5500,
+        "p75": 8400,
+        "evidenceBreakdown": {
+          "ask": 4,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "performance": {
+        "sampleCount": 11,
+        "effectiveWeight": 9.37,
+        "p25": 4500,
+        "median": 5700,
+        "p75": 6760,
+        "evidenceBreakdown": {
+          "ask": 11,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "shattering": {
+        "sampleCount": 1,
+        "effectiveWeight": 0.82,
+        "p25": 3900,
+        "median": 3900,
+        "p75": 3900,
+        "evidenceBreakdown": {
+          "ask": 1,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "aurora": {
+        "sampleCount": 5,
+        "effectiveWeight": 4.05,
+        "p25": 2300,
+        "median": 3300,
+        "p75": 3500,
+        "evidenceBreakdown": {
+          "ask": 5,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "remembrance": {
+        "sampleCount": 1,
+        "effectiveWeight": 0.9,
+        "p25": 1100,
+        "median": 1100,
+        "p75": 1100,
+        "evidenceBreakdown": {
+          "ask": 1,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "passage": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "moments": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "revival": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "nine-colored-deer": {
+        "sampleCount": 1,
+        "effectiveWeight": 0.9,
+        "p25": 2200,
+        "median": 2200,
+        "p75": 2200,
+        "evidenceBreakdown": {
+          "ask": 1,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "nesting": {
+        "sampleCount": 1,
+        "effectiveWeight": 0.45,
+        "p25": 2500,
+        "median": 2500,
+        "p75": 2500,
+        "evidenceBreakdown": {
+          "ask": 1,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "duets": {
+        "sampleCount": 2,
+        "effectiveWeight": 1.8,
+        "p25": 1275,
+        "median": 1275,
+        "p75": 3000,
+        "evidenceBreakdown": {
+          "ask": 2,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "moomin": {
+        "sampleCount": 6,
+        "effectiveWeight": 4.95,
+        "p25": 1640,
+        "median": 2540,
+        "p75": 3000,
+        "evidenceBreakdown": {
+          "ask": 6,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "radiance": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "blue-bird": {
+        "sampleCount": 4,
+        "effectiveWeight": 3.6,
+        "p25": 1500,
+        "median": 1800,
+        "p75": 2400,
+        "evidenceBreakdown": {
+          "ask": 4,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "two-embers-part-1": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "migration": {
+        "sampleCount": 0,
+        "effectiveWeight": 0,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "evidenceBreakdown": {
+          "ask": 0,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "lightmending": {
+        "sampleCount": 3,
+        "effectiveWeight": 2.7,
+        "p25": 900,
+        "median": 1650,
+        "p75": 1700,
+        "evidenceBreakdown": {
+          "ask": 3,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "carnival": {
+        "sampleCount": 2,
+        "effectiveWeight": 1.575,
+        "p25": 500,
+        "median": 2440,
+        "p75": 2440,
+        "evidenceBreakdown": {
+          "ask": 2,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "dear-van-gogh": {
+        "sampleCount": 1,
+        "effectiveWeight": 0.9,
+        "p25": 1400,
+        "median": 1400,
+        "p75": 1400,
+        "evidenceBreakdown": {
+          "ask": 1,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      }
+    },
+    "breakClass": {
+      "none": {
+        "sampleCount": 12,
+        "effectiveWeight": 9.9,
+        "p25": 1700,
+        "median": 2440,
+        "p75": 24855,
+        "evidenceBreakdown": {
+          "ask": 12,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "slight": {
+        "sampleCount": 23,
+        "effectiveWeight": 20.7,
+        "p25": 7000,
+        "median": 9500,
+        "p75": 74000,
+        "evidenceBreakdown": {
+          "ask": 23,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "medium": {
+        "sampleCount": 44,
+        "effectiveWeight": 39.36,
+        "p25": 4500,
+        "median": 6800,
+        "p75": 29000,
+        "evidenceBreakdown": {
+          "ask": 44,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "big": {
+        "sampleCount": 33,
+        "effectiveWeight": 29.62,
+        "p25": 3100,
+        "median": 4900,
+        "p75": 9500,
+        "evidenceBreakdown": {
+          "ask": 33,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      }
+    },
+    "packageTier": {
+      "few": {
+        "sampleCount": 37,
+        "effectiveWeight": 32.77,
+        "p25": 1675,
+        "median": 3000,
+        "p75": 6500,
+        "evidenceBreakdown": {
+          "ask": 37,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "medium": {
+        "sampleCount": 38,
+        "effectiveWeight": 33.895,
+        "p25": 4500,
+        "median": 5700,
+        "p75": 15000,
+        "evidenceBreakdown": {
+          "ask": 38,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "many": {
+        "sampleCount": 26,
+        "effectiveWeight": 23.015,
+        "p25": 8200,
+        "median": 19960,
+        "p75": 56160,
+        "evidenceBreakdown": {
+          "ask": 26,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "hundred": {
+        "sampleCount": 11,
+        "effectiveWeight": 9.9,
+        "p25": 35500,
+        "median": 74000,
+        "p75": 100000,
+        "evidenceBreakdown": {
+          "ask": 11,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      }
+    },
+    "accountStyle": {
+      "simple": {
+        "sampleCount": 8,
+        "effectiveWeight": 6.975,
+        "p25": 1500,
+        "median": 1700,
+        "p75": 5930,
+        "evidenceBreakdown": {
+          "ask": 8,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      },
+      "regular": {
+        "sampleCount": 104,
+        "effectiveWeight": 92.605,
+        "p25": 4400,
+        "median": 7500,
+        "p75": 27000,
+        "evidenceBreakdown": {
+          "ask": 104,
+          "quick_sale": 0,
+          "sold": 0,
+          "professional_estimate": 0,
+          "comment": 0
+        }
+      }
+    }
+  },
+  "modifiers": {
+    "breakClass": {
+      "none": {
+        "multiplier": 1,
+        "sampleCount": 9,
+        "effectiveWeight": 7.875
+      },
+      "slight": {
+        "multiplier": 0.97,
+        "sampleCount": 23,
+        "effectiveWeight": 20.7
+      },
+      "medium": {
+        "multiplier": 0.9,
+        "sampleCount": 44,
+        "effectiveWeight": 39.36
+      },
+      "big": {
+        "multiplier": 0.75,
+        "sampleCount": 33,
+        "effectiveWeight": 29.62
+      }
+    },
+    "packageTier": {
+      "few": {
+        "multiplier": 0.973,
+        "sampleCount": 36,
+        "effectiveWeight": 32.095
+      },
+      "medium": {
+        "multiplier": 1,
+        "sampleCount": 37,
+        "effectiveWeight": 33.22
+      },
+      "many": {
+        "multiplier": 1.128,
+        "sampleCount": 25,
+        "effectiveWeight": 22.34
+      },
+      "hundred": {
+        "multiplier": 1.247,
+        "sampleCount": 11,
+        "effectiveWeight": 9.9
+      }
+    },
+    "accountStyle": {
+      "simple": {
+        "multiplier": 0.853,
+        "sampleCount": 8,
+        "effectiveWeight": 6.975
+      },
+      "regular": {
+        "multiplier": 1,
+        "sampleCount": 101,
+        "effectiveWeight": 90.58
+      }
+    }
+  }
+}

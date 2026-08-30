@@ -19,6 +19,10 @@ import {
   isPaidItem,
 } from "./valuation-items";
 import type { ValuationAnalysis } from "./valuation-analysis";
+import {
+  marketAccountStyleNames,
+  marketBreakClassNames,
+} from "./valuation-market";
 import type { SeasonConfidence } from "./valuation-season-bands";
 
 type ShowcasePreset = "valuation" | "video" | "collection";
@@ -60,6 +64,12 @@ const confidenceNames: Record<SeasonConfidence, string> = {
   low: "低可信",
   inferred: "推估",
 };
+const packageTierNames = {
+  few: "少禮",
+  medium: "中禮",
+  many: "多禮",
+  hundred: "百禮",
+} as const;
 const showcasePresetNames: Record<ShowcasePreset, string> = {
   valuation: "專業估價",
   video: "快速核對",
@@ -495,6 +505,7 @@ export function ValuationStep({
                             limited: "限定",
                             binding: "綁定",
                             resource: "資源",
+                            market: "市場",
                           }[row.group]
                         }
                       </i>
@@ -552,6 +563,27 @@ export function ValuationStep({
             <b>估價依據</b>
           </summary>
           <p>
+            {valuationEstimate && (
+              <>
+                本號分類：
+                {valuationAnalysis.startSeasonSlug
+                  ? `${runtime.seasonZh[valuationAnalysis.startSeasonSlug] || valuationAnalysis.startSeasonSlug}起季 · `
+                  : "未辨識起季 · "}
+                {
+                  marketBreakClassNames[
+                    valuationEstimate.marketProfile.breakClass
+                  ]
+                }{" "}
+                · {packageTierNames[valuationEstimate.marketProfile.packageTier]} ·{" "}
+                {
+                  marketAccountStyleNames[
+                    valuationEstimate.marketProfile.accountStyle
+                  ]
+                }
+                ；同起季有效樣本 {valuationEstimate.marketProfile.effectiveSample} 筆。
+                <br />
+              </>
+            )}
             依季節完成度、禮包、限定、綁定與資源加權；刊登價不等於成交價。
             <br />
             資源採小額封頂，季卡項鍊不代表畢業；國服資料不混入台幣價格，結果僅供參考。
@@ -563,8 +595,10 @@ export function ValuationStep({
             筆帳號樣本，其中 {runtime.valuationSampleSummary.eligibleRows}{" "}
             筆台幣樣本納入推斷（
             {runtime.valuationSampleSummary.asOf}）。
-            本次社團搜尋新增 {runtime.valuationSampleSummary.facebookEligibleRows}{" "}
-            筆有效刊登價；無日期或資訊較少的貼文已降低權重。
+            本次納入 {runtime.valuationSampleSummary.driveEligibleRows} 筆雲端市場文案與
+            {" "}
+            {runtime.valuationSampleSummary.facebookEligibleRows} 筆社團刊登價；
+            直出價、秒價與資訊較少的樣本已分開降權。
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"

@@ -1,6 +1,16 @@
 import { type BindingKey, type BindingStatus } from "./account-config";
 import { classifyPackageTier } from "./valuation-calibration";
 import {
+  classifyAccountStyle,
+  classifyBreakClass,
+  marketAccountStyleMultiplier,
+  marketBreakMultiplier,
+  marketPackageMultiplier,
+  valuationMarketAggregate,
+  type MarketAccountStyle,
+  type MarketBreakClass,
+} from "./valuation-market";
+import {
   canonicalPackageKey,
   isChinaOnlyItem,
   isGraduationGift,
@@ -33,7 +43,7 @@ export type ValuationResources = {
   passes?: string | number;
 };
 export type ValuationContribution = {
-  group: "season" | "package" | "limited" | "binding" | "resource";
+  group: "season" | "package" | "limited" | "binding" | "resource" | "market";
   label: string;
   low: number;
   high: number;
@@ -51,6 +61,14 @@ export type ValuationEstimate = {
   contributions: ValuationContribution[];
   warnings: string[];
   seasonRows: ValuationSeasonRow[];
+  marketProfile: {
+    breakClass: MarketBreakClass;
+    packageTier: "few" | "medium" | "many" | "hundred";
+    accountStyle: MarketAccountStyle;
+    missingSeasons: number;
+    completionRatio: number;
+    effectiveSample: number;
+  };
 };
 export type ValuationAnalysis = {
   valuationItems: WikiItem[];
@@ -238,6 +256,14 @@ export const estimateValuation = ({
       contributions: [],
       warnings: ["國服限定物品不列入國際服參考價格。"],
       seasonRows: [],
+      marketProfile: {
+        breakClass: "big",
+        packageTier: "few",
+        accountStyle: "simple",
+        missingSeasons: 0,
+        completionRatio: 0,
+        effectiveSample: 0,
+      },
     };
   }
   const warnings: string[] = [];
@@ -273,20 +299,18 @@ export const estimateValuation = ({
     });
   } else if (analysis.startSeasonSlug)
     warnings.push("最早畢業季不在目前的市場樣本範圍，已使用保守基準。");
-  for (const row of seasonRows) {
-    if (row.completion >= 1) continue;
-    const absent = 1 - row.completion;
-    const deductionLow = roundHundred(row.contributionHigh * absent);
-    const deductionHigh = roundHundred(row.contributionLow * absent);
-    low -= deductionLow;
-    high -= deductionHigh;
+  const breakProfile = classifyBreakClass(analysis.seasonCompletion);
+  const breakMultiplier = marketBreakMultiplier(breakProfile.key);
+  low *= breakMultiplier;
+  high *= breakMultiplier;
+  if (breakMultiplier !== 1)
     contributions.push({
-      group: "season",
-      label: `${row.slug} 畢業禮完成 ${Math.round(row.completion * 100)}%`,
-      low: -deductionLow,
-      high: -deductionHigh,
+      group: "market",
+      label: `${breakProfile.missingSeasons} 季未完整`,
+      low: 0,
+      high: 0,
+      percent: Math.round((breakMultiplier - 1) * 100),
     });
-  }
   const packageMap = new Map<string, WikiItem>();
   analysis.packages.forEach((item) => {
     if (isChinaOnlyItem(item)) {
@@ -299,12 +323,13 @@ export const estimateValuation = ({
     if (key) packageMap.set(key, item);
   });
   const packageTier = classifyPackageTier(packageMap.size);
+  const packageMarketMultiplier = marketPackageMultiplier(packageTier.key);
   const packageUnit = packageMap.size
     ? packageTier.premium / packageMap.size
     : 0;
   for (const item of packageMap.values()) {
     const multiplier = packageValuationMultiplier(item);
-    const base = packageUnit * multiplier;
+    const base = packageUnit * multiplier * packageMarketMultiplier;
     contributions.push({
       group: "package",
       label: analysis.getZhName(item),
@@ -370,6 +395,22 @@ export const estimateValuation = ({
     contributions.push({ group: "resource", label: "帳號資源", ...resource });
   low += resource.low;
   high += resource.high;
+  const accountStyle = classifyAccountStyle({
+    packageCount: packageMap.size,
+    graduationCount: analysis.ultimates.length,
+    seasonCount: analysis.seasonCompletion.size,
+  });
+  const accountStyleMultiplier = marketAccountStyleMultiplier(accountStyle);
+  low *= accountStyleMultiplier;
+  high *= accountStyleMultiplier;
+  if (accountStyleMultiplier !== 1)
+    contributions.push({
+      group: "market",
+      label: "簡號市場區間",
+      low: 0,
+      high: 0,
+      percent: Math.round((accountStyleMultiplier - 1) * 100),
+    });
   const risk =
     Math.max(0.7, 1 - analysis.issueCount * 0.1) *
     Math.max(0.84, 1 - analysis.keepCount * 0.04);
@@ -401,6 +442,11 @@ export const estimateValuation = ({
   const summary = summarizeValuationRange(low, high, confidence);
   if (!analysis.startSeasonSlug)
     warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
+  const startEvidence = analysis.startSeasonSlug
+    ? valuationMarketAggregate.segments.startSeason[
+        analysis.startSeasonSlug as keyof typeof valuationMarketAggregate.segments.startSeason
+      ]
+    : undefined;
   return {
     range: { low: summary.low, high: summary.high, currency: "TWD" },
     midpoint: summary.midpoint,
@@ -408,5 +454,13 @@ export const estimateValuation = ({
     contributions,
     warnings: [...new Set(warnings)],
     seasonRows,
+    marketProfile: {
+      breakClass: breakProfile.key,
+      packageTier: packageTier.key,
+      accountStyle,
+      missingSeasons: breakProfile.missingSeasons,
+      completionRatio: breakProfile.completionRatio,
+      effectiveSample: startEvidence?.sampleCount ?? 0,
+    },
   };
 };
