@@ -1,5 +1,9 @@
 import { type BindingKey, type BindingStatus } from "./account-config";
-import { classifyPackageTier } from "./valuation-calibration";
+import {
+  classifyPackageTier,
+  limitedValueCap,
+  packageValueCap,
+} from "./valuation-calibration";
 import {
   classifyAccountStyle,
   classifyBreakClass,
@@ -247,7 +251,12 @@ const isPlatformTransferable = (
   label: string,
 ) => {
   const platform = platformBindingForItem(item);
-  if (!platform || bindings[platform] === "transfer") return true;
+  if (
+    !platform ||
+    bindings[platform] === "none" ||
+    bindings[platform] === "transfer"
+  )
+    return true;
   warnings.push(`${platform} 未標示可出或綁定異常，該平台${label}不列入參考價格。`);
   return false;
 };
@@ -411,30 +420,37 @@ export const estimateValuation = ({
   const packageMap = new Map<string, WikiItem>();
   // Market samples describe the account's paid-item total, while the actual
   // price contribution below remains deduplicated to one row per real pack.
-  const paidItemCount = analysis.packages.length;
-  analysis.packages.forEach((item) => {
+  const transferablePaidItems = analysis.packages.filter((item) => {
     if (isChinaOnlyItem(item)) {
       warnings.push("國服限定物品不列入國際服參考價格。");
-      return;
+      return false;
     }
     if (!isPlatformTransferable(item, analysis.bindings, warnings, "物品"))
-      return;
+      return false;
+    return true;
+  });
+  const paidItemCount = transferablePaidItems.length;
+  transferablePaidItems.forEach((item) => {
     const key = canonicalPackageKey(item);
     if (key) packageMap.set(key, item);
   });
   const packageTier = classifyPackageTier(paidItemCount);
   const packageMarketMultiplier = marketPackageMultiplier(packageTier.key);
-  const packageUnit = packageMap.size
-    ? packageTier.premium / packageMap.size
-    : 0;
+  const packageWeightTotal = [...packageMap.values()].reduce(
+    (sum, item) => sum + packageValuationMultiplier(item),
+    0,
+  );
   for (const item of packageMap.values()) {
     const multiplier = packageValuationMultiplier(item);
-    const base = packageUnit * multiplier * packageMarketMultiplier;
+    const base = packageWeightTotal
+      ? (packageTier.premium * packageMarketMultiplier * multiplier) /
+        packageWeightTotal
+      : 0;
     contributions.push({
       group: "package",
       label: analysis.getZhName(item),
-      low: roundHundred(base * 0.7),
-      high: roundHundred(base * 1.15),
+      low: Math.round(base * 0.7),
+      high: Math.round(base * 1.15),
     });
   }
   const packageKeys = new Set(packageMap.keys());
@@ -449,7 +465,11 @@ export const estimateValuation = ({
     const kind = limitedItemKind(item);
     if (!isPlatformTransferable(item, analysis.bindings, warnings, "限定"))
       continue;
-    const key = `${kind}:${item.collection || item.name}`;
+    // A collection is an event series, not a single collectible. For example,
+    // the 4th, 5th and 6th anniversary rewards share one collection but are
+    // separate limited items. Real paid bundles were already deduplicated by
+    // canonicalPackageKey above, so only collapse duplicate catalog records here.
+    const key = `${kind}:${item.guid || item.name}`;
     if (limitedKeys.has(key)) continue;
     limitedKeys.add(key);
     const [itemLow, itemHigh] =
@@ -467,27 +487,48 @@ export const estimateValuation = ({
       high: itemHigh,
     });
   }
-  const extras = contributions.filter(
-    (row) => row.group === "package" || row.group === "limited",
-  );
-  const rawExtraLow = extras.reduce(
+  const packageRows = contributions.filter((row) => row.group === "package");
+  const limitedRows = contributions.filter((row) => row.group === "limited");
+  const rawPackageLow = packageRows.reduce(
     (sum, row) => sum + Math.max(0, row.low),
     0,
   );
-  const rawExtraHigh = extras.reduce(
+  const rawPackageHigh = packageRows.reduce(
     (sum, row) => sum + Math.max(0, row.high),
     0,
   );
-  const extraLow = Math.min(rawExtraLow, 8000);
-  const extraHigh = Math.min(rawExtraHigh, 12000);
+  const rawLimitedLow = limitedRows.reduce(
+    (sum, row) => sum + Math.max(0, row.low),
+    0,
+  );
+  const rawLimitedHigh = limitedRows.reduce(
+    (sum, row) => sum + Math.max(0, row.high),
+    0,
+  );
+  const packageCap = packageValueCap(paidItemCount);
+  const limitedCap = limitedValueCap(limitedKeys.size);
+  const packageLow = Math.min(rawPackageLow, packageCap.low);
+  const packageHigh = Math.min(rawPackageHigh, packageCap.high);
+  const limitedLow = Math.min(rawLimitedLow, limitedCap.low);
+  const limitedHigh = Math.min(rawLimitedHigh, limitedCap.high);
+  const extraLow = packageLow + limitedLow;
+  const extraHigh = packageHigh + limitedHigh;
   low += extraLow;
   high += extraHigh;
-  if (rawExtraLow > extraLow || rawExtraHigh > extraHigh) {
+  if (rawPackageLow > packageLow || rawPackageHigh > packageHigh) {
+    contributions.push({
+      group: "package",
+      label: "禮包加值上限",
+      low: packageLow - rawPackageLow,
+      high: packageHigh - rawPackageHigh,
+    });
+  }
+  if (rawLimitedLow > limitedLow || rawLimitedHigh > limitedHigh) {
     contributions.push({
       group: "limited",
-      label: "禮包／限定加值上限",
-      low: extraLow - rawExtraLow,
-      high: extraHigh - rawExtraHigh,
+      label: "限定加值上限",
+      low: limitedLow - rawLimitedLow,
+      high: limitedHigh - rawLimitedHigh,
     });
   }
   const resource = resourceValue(resources);

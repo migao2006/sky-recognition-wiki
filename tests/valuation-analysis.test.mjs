@@ -15,6 +15,7 @@ const sources = await Promise.all(
   ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
 );
 const [config, calibration, items, valuationMarket, bands, analysis] = sources;
+const calibrationLoaded = await import(asModuleUrl(calibration));
 const marketAggregate = JSON.parse(
   await readFile(
     new URL("../app/valuation-market-aggregate.json", import.meta.url),
@@ -205,6 +206,31 @@ test("verified collaboration combos contribute once per real package", () => {
   );
 });
 
+test("distinct anniversary rewards in one event collection are all retained", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({ name: "4th Anniversary Hat", guid: "anniversary-4", group: "Limited" }),
+      item({ name: "5th Anniversary Headband", guid: "anniversary-5", group: "Limited" }),
+      item({ name: "6th Anniversary Hat", guid: "anniversary-6", group: "Limited" }),
+    ]),
+  });
+  assert.ok(result);
+  const labels = result.contributions
+    .filter((row) => row.group === "limited")
+    .map((row) => row.label);
+  assert.ok(labels.includes("4th Anniversary Hat"));
+  assert.ok(labels.includes("5th Anniversary Headband"));
+  assert.ok(labels.includes("6th Anniversary Hat"));
+  const netLimitedLow = result.contributions
+    .filter((row) => row.group === "limited")
+    .reduce((sum, row) => sum + row.low, 0);
+  const netLimitedHigh = result.contributions
+    .filter((row) => row.group === "limited")
+    .reduce((sum, row) => sum + row.high, 0);
+  assert.ok(netLimitedLow > 0);
+  assert.ok(netLimitedHigh > 0);
+});
+
 test("valuation contribution labels use the catalog Chinese name", () => {
   const translatedAnalysis = analyzeValuation({
     chosen: [item({ name: "Kizuna AI Cape", wiki: "https://wiki.test/Kizuna_AI_Pack" })],
@@ -252,7 +278,7 @@ test("binding penalties are capped and platform issues remove platform value", (
   );
   assert.equal(
     unbound.contributions.filter((row) => row.group === "package").length,
-    0,
+    1,
   );
 });
 
@@ -404,6 +430,44 @@ test("market package tier uses paid item count while package value stays dedupli
   );
 });
 
+test("modern multi-pack accounts use diminishing bundled resale value", () => {
+  const paid = Array.from({ length: 48 }, (_, index) =>
+    item({
+      name: `Modern Pack ${index}`,
+      wiki: `https://wiki.test/Modern_Pack_${index}`,
+    }),
+  );
+  const result = estimateValuation({ analysis: analyze(paid) });
+  assert.ok(result);
+  assert.equal(result.marketProfile.packageTier, "many");
+  const packageTotal = result.contributions
+    .filter((row) => row.group === "package" && row.low > 0)
+    .reduce((sum, row) => sum + row.low, 0);
+  assert.ok(packageTotal >= 500);
+  assert.ok(packageTotal <= 2000);
+});
+
+test("package calibration stays monotonic across tier boundaries", () => {
+  const { classifyPackageTier, packageValueCap } = calibrationLoaded;
+  for (const [before, after] of [[14, 15], [39, 40], [99, 100]]) {
+    const priorTier = classifyPackageTier(before);
+    const nextTier = classifyPackageTier(after);
+    const priorCap = packageValueCap(before);
+    const nextCap = packageValueCap(after);
+    const priorSignal =
+      priorTier.premium *
+      marketAggregate.modifiers.packageTier[priorTier.key].multiplier;
+    const nextSignal =
+      nextTier.premium *
+      marketAggregate.modifiers.packageTier[nextTier.key].multiplier;
+    assert.ok(nextSignal >= priorSignal);
+    assert.ok(nextSignal <= priorSignal * 1.15);
+    assert.ok(nextCap.low >= priorCap.low);
+    assert.ok(nextCap.high >= priorCap.high);
+    assert.ok(nextCap.high <= priorCap.high * 1.15);
+  }
+});
+
 test("confirmed all-none bindings count as complete account information", () => {
   const unconfirmed = analyze([item({ wiki: "https://wiki.test/Pack" })]);
   const confirmed = analyze([item({ wiki: "https://wiki.test/Pack" })], bindings(), true);
@@ -449,7 +513,7 @@ test("listing-only evidence can never produce the highest confidence", () => {
   assert.notEqual(result.confidence, "high");
 });
 
-test("untransferable paid items count toward the market tier but not pack value", () => {
+test("unbound platform items count while unavailable paid items do not", () => {
   const transferable = Array.from({ length: 14 }, (_, index) =>
     item({
       name: `Pack ${index}`,
@@ -473,15 +537,19 @@ test("untransferable paid items count toward the market tier but not pack value"
 
   assert.ok(baseline && mixed);
   assert.equal(baseline.marketProfile.paidItemCount, 14);
-  assert.equal(mixed.marketProfile.paidItemCount, 16);
+  assert.equal(mixed.marketProfile.paidItemCount, 15);
   assert.equal(baseline.marketProfile.packageTier, "few");
   assert.equal(mixed.marketProfile.packageTier, "medium");
-  assert.deepEqual(
-    mixed.contributions
-      .filter((row) => row.group === "package")
-      .map((row) => row.label),
-    baseline.contributions
-      .filter((row) => row.group === "package")
-      .map((row) => row.label),
-  );
+  const mixedPackageLabels = mixed.contributions
+    .filter((row) => row.group === "package")
+    .map((row) => row.label);
+  assert.ok(mixedPackageLabels.includes("Nintendo Pack"));
+  assert.equal(mixedPackageLabels.includes("國服限定 Pack"), false);
+
+  const unavailable = estimateValuation({
+    analysis: analyze([...transferable, ...excluded], bindings({ nintendo: "keep" })),
+  });
+  assert.ok(unavailable);
+  assert.equal(unavailable.marketProfile.paidItemCount, 14);
+  assert.equal(unavailable.marketProfile.packageTier, "few");
 });
