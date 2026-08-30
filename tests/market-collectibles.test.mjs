@@ -66,12 +66,18 @@ test("keeps major collaboration series and Nintendo source coverage", () => {
     ["大耳狗", 6],
     ["Nintendo", 4],
     ["風之旅人", 3],
+    ["PlayStation", 3],
   ]) {
     assert.ok((counts.get(series) ?? 0) >= minimum, series);
   }
   const flute = catalog.wikiItems.find((item) => item.name === "Vessel Flute");
   assert.equal(catalog.sourceKind(flute), "平台限定");
   assert.equal(catalog.sourceCollectionName(flute), "Nintendo Switch 專屬");
+  const playstationCape = importantMarketCollectibles.find(
+    (profile) => profile.name === "Transcendent Journey Cape",
+  );
+  assert.equal(playstationCape?.platform, "playstation");
+  assert.equal(playstationCape?.packageKey, "transcendent-journey-pack");
 });
 
 test("separates important visibility from paid valuation", () => {

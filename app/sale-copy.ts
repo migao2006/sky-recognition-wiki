@@ -231,6 +231,10 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
             profile?.playerName ?? item.displayName,
           ),
         );
+        if (profile) {
+          seenNames.add(tidyItemName(collaboration.name, item.displayName));
+          profile.aliases.forEach((alias) => seenNames.add(alias));
+        }
         return;
       }
 
@@ -266,7 +270,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
         sourceName,
         sourceName,
         100,
-        item.displayName,
+        profile?.saleCopy ? profile.playerName : item.displayName,
       );
     });
 

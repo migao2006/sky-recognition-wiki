@@ -48,6 +48,8 @@ const emptyValuationSampleSummary = {
   facebookEligibleRows: 0,
   driveRows: 0,
   driveEligibleRows: 0,
+  marketplaceRows: 0,
+  marketplaceEligibleRows: 0,
   secondaryMarketRows: 0,
   asOf: "",
 };

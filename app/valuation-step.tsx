@@ -59,9 +59,9 @@ const formatContribution = (low: number, high: number) => {
   return low === high ? signed(low) : `${signed(low)}～${signed(high)}`;
 };
 const confidenceNames: Record<SeasonConfidence, string> = {
-  high: "高可信",
-  medium: "中可信",
-  low: "低可信",
+  high: "高信心",
+  medium: "中信心",
+  low: "低信心",
   inferred: "推估",
 };
 const packageTierNames = {
@@ -71,7 +71,7 @@ const packageTierNames = {
   hundred: "百禮",
 } as const;
 const showcasePresetNames: Record<ShowcasePreset, string> = {
-  valuation: "專業估價",
+  valuation: "市場估算",
   video: "快速核對",
   collection: "完整衣櫃",
 };
@@ -386,7 +386,7 @@ export function ValuationStep({
           </header>
           {showcasePreset === "valuation" && (
             <div className="showcase-price">
-              <span>參考中位價</span>
+              <span>市場中位估算</span>
               <strong>
                 {valuationEstimate
                   ? formatTwd(valuationEstimate.midpoint)
@@ -425,7 +425,7 @@ export function ValuationStep({
           <h2 id="valuation-title">估價分析</h2>
           <div
             className="completion-ring"
-            aria-label={`估價完整度 ${valuationAnalysis.completeness}%`}
+            aria-label={`資料完整度 ${valuationAnalysis.completeness}%`}
             style={
               {
                 "--completion": `${valuationAnalysis.completeness * 3.6}deg`,
@@ -438,7 +438,7 @@ export function ValuationStep({
         <div className="valuation-summary">
           <article className="valuation-verdict">
             <span>
-              參考中位價
+              市場中位估算
               {valuationEstimate
                 ? ` · ${confidenceNames[valuationEstimate.confidence]}`
                 : ""}
@@ -565,10 +565,10 @@ export function ValuationStep({
           <p>
             {valuationEstimate && (
               <>
-                本號分類：
+                估價分類：
                 {valuationAnalysis.startSeasonSlug
-                  ? `${runtime.seasonZh[valuationAnalysis.startSeasonSlug] || valuationAnalysis.startSeasonSlug}起季 · `
-                  : "未辨識起季 · "}
+                  ? `起始畢業 ${runtime.seasonZh[valuationAnalysis.startSeasonSlug] || valuationAnalysis.startSeasonSlug} · `
+                  : "未辨識起始畢業季 · "}
                 {
                   marketBreakClassNames[
                     valuationEstimate.marketProfile.breakClass
@@ -580,11 +580,14 @@ export function ValuationStep({
                     valuationEstimate.marketProfile.accountStyle
                   ]
                 }
-                ；同起季有效樣本 {valuationEstimate.marketProfile.effectiveSample} 筆。
+                ；同起始畢業季樣本 {valuationEstimate.marketProfile.effectiveSample} 筆。
+                {valuationEstimate.marketProfile.partialSeasons > 0
+                  ? `另有 ${valuationEstimate.marketProfile.partialSeasons} 季部分畢業，不視為斷季。`
+                  : ""}
                 <br />
               </>
             )}
-            依季節完成度、禮包、限定、綁定與資源加權；刊登價不等於成交價。
+            依季節完成度、禮包、限定、綁定與資源加權；價格以近期台幣刊登與成交資訊推估，實際成交可能不同。
             <br />
             資源採小額封頂，季卡項鍊不代表畢業；國服資料不混入台幣價格，結果僅供參考。
             <br />
@@ -595,10 +598,10 @@ export function ValuationStep({
             筆帳號樣本，其中 {runtime.valuationSampleSummary.eligibleRows}{" "}
             筆台幣樣本納入推斷（
             {runtime.valuationSampleSummary.asOf}）。
-            本次納入 {runtime.valuationSampleSummary.driveEligibleRows} 筆雲端市場文案與
-            {" "}
-            {runtime.valuationSampleSummary.facebookEligibleRows} 筆社團刊登價；
-            直出價、秒價與資訊較少的樣本已分開降權。
+            本次納入 {runtime.valuationSampleSummary.driveEligibleRows} 筆雲端市場文案、
+            {runtime.valuationSampleSummary.facebookEligibleRows} 筆社團刊登價與
+            {runtime.valuationSampleSummary.marketplaceEligibleRows} 筆公開交易平台刊登；
+            成交、秒價、一般刊登與低資訊樣本採不同權重。
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"

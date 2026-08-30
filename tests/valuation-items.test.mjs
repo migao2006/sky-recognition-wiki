@@ -188,4 +188,14 @@ test("deduplicates verified multi-item collaboration packs", () => {
     canonicalPackageKey(item({ name: "Cat Cape" })),
     canonicalPackageKey(item({ name: "Cat Mask" })),
   );
+
+  for (const names of [
+    ["Transcendent Journey Hair", "Transcendent Journey Mask", "Transcendent Journey Cape"],
+    ["Charming Creature Outfit", "Charming Creature Head Accessory"],
+    ["Fortune Fish Accessory", "Fortune Fish Hood", "Fortune Fish Cape"],
+    ["Moth Cape", "Moth Antennae"],
+  ]) {
+    const keys = names.map((name) => canonicalPackageKey(item({ name })));
+    assert.equal(new Set(keys).size, 1, names.join(", "));
+  }
 });

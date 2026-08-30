@@ -1,10 +1,12 @@
 import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
 
-const sourcePaths = process.argv.slice(2);
+const args = process.argv.slice(2);
+const asOfArg = args.find((value) => value.startsWith("--as-of="));
+const sourcePaths = args.filter((value) => !value.startsWith("--as-of="));
 if (!sourcePaths.length)
   throw new Error(
-    "Usage: node scripts/audit-valuation-source.mjs <source.jsonl> [...more.jsonl]",
+    "Usage: node scripts/audit-valuation-source.mjs [--as-of=YYYY-MM-DD] <source.jsonl> [...more.jsonl]",
   );
 
 const patterns = new Map([
@@ -18,20 +20,20 @@ const patterns = new Map([
   ["dreams", "夢想季|夢想畢|鳳凰"],
   ["assembly", "重組季|集結|重組畢|號角"],
   ["the-little-prince", "小王子季|王子畢|小王子畢"],
-  ["flight", "飛行季|風行|飛行畢"],
-  ["abyss", "潛海季|深淵|潛海畢"],
+  ["flight", "飛行季|飛翔季|風行季|風行|飛行畢|飛翔畢"],
+  ["abyss", "潛海季|深淵季|潛海畢|深淵畢"],
   ["performance", "表演季|表演畢"],
-  ["shattering", "破碎季|破碎畢"],
-  ["aurora", "極光季|極光畢|歐若拉畢"],
+  ["shattering", "破碎季|破曉季|破碎畢|破曉畢"],
+  ["aurora", "極光季|AURORA季|歐若拉季|極光畢|AURORA畢|歐若拉畢"],
   ["remembrance", "緬懷季|追憶|緬懷畢"],
   ["passage", "夜行季|夜行畢"],
   ["moments", "拾光季|拾光畢"],
   ["revival", "歸巢季|歸巢畢"],
   ["nine-colored-deer", "九色鹿季|九色鹿畢"],
   ["nesting", "築巢季|築巢畢"],
-  ["duets", "協奏季|協奏畢"],
+  ["duets", "協奏季|二重奏季|協奏畢|二重奏畢"],
   ["moomin", "姆明季|姆明畢"],
-  ["radiance", "染色季|染色畢"],
+  ["radiance", "染色季|彩染季|染色畢|彩染畢"],
   ["blue-bird", "青鳥季|青鳥畢"],
   ["two-embers-part-1", "暮星季|雙星|暮星畢"],
   ["migration", "遷徙季|遷徙畢"],
@@ -60,13 +62,14 @@ const packageTiers = ["few", "medium", "many", "hundred"];
 const accountStyles = ["simple", "regular"];
 const emptyBreakdown = () => ({ ask: 0, quick_sale: 0, sold: 0, professional_estimate: 0, comment: 0 });
 
+let referenceDate = null;
 const dateFor = (row) => {
   const date = new Date(row.published_at ?? "");
   return Number.isFinite(date.getTime()) ? date : null;
 };
 const timeWeight = (date) => {
   if (!date) return 0.45;
-  const age = (Date.now() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+  const age = ((referenceDate?.getTime() ?? Date.now()) - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
   if (age <= 2) return 1;
   if (age <= 3) return 0.7;
   if (age <= 4) return 0.45;
@@ -103,6 +106,15 @@ const seasonSlugsFor = (row) => {
   const text = `${row.listing_text ?? ""} ${row.account_features ?? ""}`;
   for (const [slug, pattern] of patterns) if (new RegExp(pattern, "i").test(text)) slugs.add(slug);
   return [...slugs];
+};
+const startSeasonFactorFor = (row) => {
+  if (!patterns.has(String(row.start_season_slug ?? "").trim().toLowerCase()))
+    return 0;
+  const confidence = String(row.start_season_confidence ?? "").toLowerCase();
+  if (confidence === "unknown") return 0;
+  if (confidence === "inferred") return 0.45;
+  if (confidence === "structured") return 0.8;
+  return 1;
 };
 const breakClassFor = (row) => {
   if (breakClasses.includes(row.computed_break_class)) return row.computed_break_class;
@@ -180,6 +192,17 @@ for (const sourcePath of sourcePaths)
             : "unknown",
       });
 
+const referenceCandidates = rows.flatMap((row) =>
+  [row.observed_at, row.published_at]
+    .map((value) => new Date(value ?? ""))
+    .filter((date) => Number.isFinite(date.getTime())),
+);
+referenceDate = asOfArg
+  ? new Date(`${asOfArg.slice("--as-of=".length)}T23:59:59.999Z`)
+  : referenceCandidates.sort((a, b) => b.getTime() - a.getTime())[0] ?? new Date();
+if (!Number.isFinite(referenceDate.getTime()))
+  throw new Error("Invalid --as-of date; expected YYYY-MM-DD");
+
 const seasonMetrics = Object.fromEntries([...patterns.keys()].map((slug) => [slug, { samples: [], excludedCount: 0, duplicateCount: 0 }]));
 const eligible = [];
 const seenHashes = new Set();
@@ -210,6 +233,7 @@ for (const row of rows) {
     kind,
     source: String(row.source ?? row.__sourceHint ?? "unknown"),
     startSeason: slugs.length === 1 ? slugs[0] : null,
+    startSeasonFactor: startSeasonFactorFor(row),
     breakClass: breakClassFor(row),
     packageTier: packageTierFor(row),
     accountStyle: accountStyleFor(row),
@@ -224,7 +248,9 @@ const seasons = Object.fromEntries([...patterns.keys()].map((slug) => {
 }));
 const segmentFor = (key, values) => Object.fromEntries(values.map((value) => [value, summarize(eligible.filter((sample) => sample[key] === value))]));
 const segments = {
-  startSeason: Object.fromEntries([...patterns.keys()].map((slug) => [slug, summarize(eligible.filter((sample) => sample.startSeason === slug))])),
+  startSeason: Object.fromEntries([...patterns.keys()].map((slug) => [slug, summarize(eligible
+    .filter((sample) => sample.startSeason === slug && sample.startSeasonFactor > 0)
+    .map((sample) => ({ ...sample, weight: sample.weight * sample.startSeasonFactor })))])),
   breakClass: segmentFor("breakClass", breakClasses),
   packageTier: segmentFor("packageTier", packageTiers),
   accountStyle: segmentFor("accountStyle", accountStyles),
@@ -233,7 +259,9 @@ const segments = {
 const startMedians = new Map(Object.entries(segments.startSeason).filter(([, metric]) => metric.median).map(([slug, metric]) => [slug, metric.median]));
 const normalized = eligible.flatMap((sample) => {
   const baseline = startMedians.get(sample.startSeason);
-  return baseline ? [{ ...sample, logRatio: Math.log(sample.price / baseline) }] : [];
+  return baseline && sample.startSeasonFactor > 0
+    ? [{ ...sample, weight: sample.weight * sample.startSeasonFactor, logRatio: Math.log(sample.price / baseline) }]
+    : [];
 });
 const modifierFor = (key, values, priorStrength = 12, priors = {}) => Object.fromEntries(values.map((value) => {
   const samples = normalized.filter((sample) => sample[key] === value).map((sample) => ({ ...sample, price: sample.logRatio }));
@@ -286,13 +314,25 @@ const modifiers = {
   }),
 };
 const sourceBreakdown = Object.fromEntries([...new Set(eligible.map((sample) => sample.source))].sort().map((source) => [source, eligible.filter((sample) => sample.source === source).length]));
+const sourceRowsBySource = Object.fromEntries(
+  [...new Set(rows.map((row) => String(row.source ?? row.__sourceHint ?? "unknown")))]
+    .sort()
+    .map((source) => [
+      source,
+      rows.filter(
+        (row) => String(row.source ?? row.__sourceHint ?? "unknown") === source,
+      ).length,
+    ]),
+);
 
 console.log(JSON.stringify({
   schemaVersion: 2,
+  asOf: referenceDate.toISOString().slice(0, 10),
   sourceRows: rows.length,
   eligibleRows: eligible.length,
   excludedRows,
   duplicateRows,
+  sourceRowsBySource,
   sourceBreakdown,
   seasons,
   segments,

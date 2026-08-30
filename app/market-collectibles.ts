@@ -130,7 +130,7 @@ const collaborationProfiles = [
   ...permanentCollaboration(
     "Nintendo",
     [
-      ["Nintendo Elf Hair", "Nintendo 精靈髮型", "nintendo-pack", ["林克髮型"]],
+      ["Nintendo Elf Hair", "林克髮型", "nintendo-pack", ["Nintendo 精靈髮型"]],
       ["Nintendo Red Switch Cape", "Nintendo 紅斗篷", "nintendo-pack"],
       ["Nintendo Blue Switch Cape", "Nintendo 藍斗篷", "nintendo-pack"],
       ["Vessel Flute", "陶笛", "nintendo-pack"],
@@ -142,6 +142,15 @@ const collaborationProfiles = [
     ["Journey Cape", "風之旅人斗篷", "journey-pack"],
     ["Journey Mask", "風之旅人面具", "journey-pack"],
   ]),
+  ...permanentCollaboration(
+    "PlayStation",
+    [
+      ["Transcendent Journey Hair", "超越之旅髮型", "transcendent-journey-pack"],
+      ["Transcendent Journey Mask", "超越之旅面具", "transcendent-journey-pack"],
+      ["Transcendent Journey Cape", "超越之旅斗篷", "transcendent-journey-pack"],
+    ],
+    { availability: "platform", platform: "playstation", valuationMultiplier: 1.25 },
+  ),
 ];
 
 const importantPackageProfiles = defineProfiles(
@@ -173,6 +182,11 @@ const importantPackageProfiles = defineProfiles(
     ["Days of Love Swing", "雙人鞦韆"],
     ["Days of Love Seesaw", "雙人翹翹板"],
     ["Days of Love Gondola", "愛之小船"],
+    ["Moth Cape", "萌新斗篷", "moth-appreciation-pack"],
+    ["Moth Antennae", "萌新觸角", "moth-appreciation-pack"],
+    ["Sparrow Mask", "麻雀面具", "sparrow-appreciation-pack"],
+    ["Sparrow Cape", "麻雀斗篷", "sparrow-appreciation-pack"],
+    ["Orange Cape", "首發橘斗篷", "starter-pack"],
   ],
 );
 
@@ -222,6 +236,22 @@ const standardPaidProfiles = defineProfiles(
     ["Fortune Plush Mount", "福瑞絨偶坐騎"],
     ["Anniversary Popcorn Prop", "週年爆米花", "anniversary-cinema-set"],
     ["Anniversary Cinema 3D Glasses", "週年電影院 3D 眼鏡", "anniversary-cinema-set"],
+    ["Feast Hat", "宴會毛帽", "feast-hat-pack"],
+    ["Fortune Fish Accessory", "福瑞魚頭飾", "fortune-fish-pack"],
+    ["Fortune Fish Hood", "福瑞魚頭套", "fortune-fish-pack"],
+    ["Fortune Fish Cape", "福瑞魚斗篷", "fortune-fish-pack"],
+    ["Fortune Bun Hair", "福瑞包子頭", "fortune-bun-pack"],
+    ["Fortune Blushing Mask", "福瑞腮紅面具", "fortune-bun-pack"],
+    ["Fortune Cape", "福瑞斗篷", "fortune-bun-pack"],
+    ["Dark Rainbow Earrings", "暗彩虹耳環", "dark-rainbow-pack"],
+    ["Double Rainbow Flower", "雙彩虹花飾", "double-rainbow-pack"],
+    ["Rainbow Hair Flower", "彩虹花飾", "rainbow-flower-pack"],
+    ["Nature Turtle Buddy", "海龜肩飾", "nature-turtle-pack"],
+    ["Nature Glasses", "自然日眼鏡", "nature-glasses-pack"],
+    ["Nature Wave Cape", "自然浪花斗篷", "nature-wave-pack"],
+    ["Ocean Veil", "海洋面紗", "ocean-veil-pack"],
+    ["Charming Creature Outfit", "迷人小生物服裝", "charming-creature-pack"],
+    ["Charming Creature Head Accessory", "迷人小生物頭飾", "charming-creature-pack"],
   ],
 );
 

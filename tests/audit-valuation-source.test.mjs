@@ -93,3 +93,21 @@ test("aggregates price ranges and objective market classifications", async () =>
   assert.equal(result.segments.packageTier.many.sampleCount, 1);
   assert.equal(result.segments.accountStyle.regular.sampleCount, 1);
 });
+
+test("reduces inferred and structured start-season evidence weight", async () => {
+  const base = {
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+  };
+  const result = await audit([
+    { ...base, post_hash: "explicit", start_season_confidence: "explicit" },
+    { ...base, post_hash: "structured", start_season_confidence: "structured" },
+    { ...base, post_hash: "inferred", start_season_confidence: "inferred" },
+    { ...base, post_hash: "unknown", start_season_confidence: "unknown" },
+  ]);
+  assert.equal(result.segments.startSeason.assembly.sampleCount, 3);
+  assert.equal(result.segments.startSeason.assembly.effectiveWeight, 2.25);
+});

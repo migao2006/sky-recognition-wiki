@@ -25,10 +25,14 @@ export const classifyBreakClass = (
     return {
       key: "big" as MarketBreakClass,
       missingSeasons: 0,
+      partialSeasons: 0,
       completionRatio: 0,
     };
   const missingSeasons = rows.filter(
-    (row) => row.selected < row.expected,
+    (row) => row.selected === 0,
+  ).length;
+  const partialSeasons = rows.filter(
+    (row) => row.selected > 0 && row.selected < row.expected,
   ).length;
   const completionRatio =
     rows.reduce(
@@ -43,7 +47,7 @@ export const classifyBreakClass = (
         : missingSeasons <= 5 || completionRatio >= 0.5
           ? "medium"
           : "big";
-  return { key, missingSeasons, completionRatio };
+  return { key, missingSeasons, partialSeasons, completionRatio };
 };
 
 export const classifyAccountStyle = ({

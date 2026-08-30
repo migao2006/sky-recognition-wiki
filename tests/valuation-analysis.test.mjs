@@ -149,7 +149,7 @@ test("v2 returns a price range and does not treat a pendant as graduation", () =
   assert.equal(result.seasonRows[0].selected, 1);
   assert.ok(
     result.contributions.some((row) =>
-      row.group === "market" && row.label.includes("季未完整"),
+      row.group === "market" && row.label.includes("季缺少畢業禮"),
     ),
   );
 });
@@ -301,7 +301,7 @@ test("empty resources add no value", () => {
   );
 });
 
-test("a partial starting season is deducted and kept platform content is excluded", () => {
+test("a partial season is not treated as a break and kept platform content is excluded", () => {
   const partial = item({
     name: "Enchantment Ultimate",
     group: "Ultimate",
@@ -314,14 +314,26 @@ test("a partial starting season is deducted and kept platform content is exclude
     group: "Limited",
     collection: "collab",
   });
+  const completeNextSeason = item({
+    name: "Sanctuary Ultimate",
+    group: "Ultimate",
+    section: "seasons",
+    collection: "sanctuary",
+  });
   const result = estimateValuation({
-    analysis: analyze([partial, platform], bindings({ playstation: "keep" })),
+    analysis: analyze(
+      [partial, completeNextSeason, platform],
+      bindings({ playstation: "keep" }),
+    ),
   });
   assert.ok(result);
-  assert.ok(
+  assert.equal(result.marketProfile.breakClass, "none");
+  assert.equal(result.marketProfile.partialSeasons, 1);
+  assert.equal(
     result.contributions.some(
-      (row) => row.group === "market" && (row.percent ?? 0) < 0,
+      (row) => row.group === "market" && row.label.includes("缺少畢業禮"),
     ),
+    false,
   );
   assert.equal(
     result.contributions.some((row) => row.group === "package"),

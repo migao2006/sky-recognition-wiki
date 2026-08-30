@@ -25,14 +25,22 @@ export type SeasonPriceBand = {
 };
 
 export const valuationSampleSummary = {
-  sourceRows: 1150,
-  eligibleRows: 259,
-  facebookRows: 16,
-  facebookEligibleRows: 14,
-  driveRows: 112,
-  driveEligibleRows: 112,
+  sourceRows: 1022 + valuationMarketAggregate.sourceRows,
+  eligibleRows: 133 + valuationMarketAggregate.eligibleRows,
+  facebookRows: valuationMarketAggregate.sourceRowsBySource.facebook ?? 0,
+  facebookEligibleRows: valuationMarketAggregate.sourceBreakdown.facebook ?? 0,
+  driveRows: valuationMarketAggregate.sourceRowsBySource.google_drive ?? 0,
+  driveEligibleRows: valuationMarketAggregate.sourceBreakdown.google_drive ?? 0,
+  marketplaceRows:
+    (valuationMarketAggregate.sourceRowsBySource["8591_hk"] ?? 0) +
+    (valuationMarketAggregate.sourceRowsBySource["8591_tw"] ?? 0) +
+    (valuationMarketAggregate.sourceRowsBySource.carousell_tw ?? 0),
+  marketplaceEligibleRows:
+    (valuationMarketAggregate.sourceBreakdown["8591_hk"] ?? 0) +
+    (valuationMarketAggregate.sourceBreakdown["8591_tw"] ?? 0) +
+    (valuationMarketAggregate.sourceBreakdown.carousell_tw ?? 0),
   secondaryMarketRows: 74,
-  asOf: "2026-08-30",
+  asOf: valuationMarketAggregate.asOf,
 } as const;
 
 type SeasonSeed = {
@@ -45,8 +53,8 @@ type SeasonSeed = {
 
 // Only anonymous aggregates reach the client. Raw post text, authors and URLs
 // stay in the ignored research workspace. The first dataset contains 1,022
-// seller-side records. The anonymous aggregate adds 112 Drive listings and
-// 14 manually checked Facebook listings without shipping post text or URLs.
+// seller-side records. The anonymous aggregate adds Drive, Facebook and
+// public marketplace listings without shipping post text, authors or URLs.
 const seed: readonly SeasonSeed[] = [
   { slug: "gratitude", prior: 180000, sampleCount: 0 },
   { slug: "lightseekers", prior: 140000, sampleCount: 2, p25: 1800, p75: 5200 },
@@ -81,8 +89,14 @@ const seed: readonly SeasonSeed[] = [
 ];
 
 const roundHundred = (value: number) => Math.round(value / 100) * 100;
-const confidenceFor = (sampleCount: number): SeasonConfidence =>
-  sampleCount >= 12 ? "high" : sampleCount >= 5 ? "medium" : sampleCount > 0 ? "low" : "inferred";
+const confidenceFor = (effectiveWeight: number): SeasonConfidence =>
+  effectiveWeight >= 12
+    ? "high"
+    : effectiveWeight >= 5
+      ? "medium"
+      : effectiveWeight > 0
+        ? "low"
+        : "inferred";
 
 const logBlend = (left: number, right: number, rightWeight: number) =>
   Math.exp(Math.log(left) * (1 - rightWeight) + Math.log(right) * rightWeight);
@@ -155,7 +169,7 @@ export const seasonPriceBands: readonly SeasonPriceBand[] = seed.map((row, index
       professionalEstimate: 0,
       commentSignal: 0,
     },
-    confidence: confidenceFor(sampleCount),
+    confidence: confidenceFor(effectiveWeight),
     asOf: valuationSampleSummary.asOf,
   };
 });

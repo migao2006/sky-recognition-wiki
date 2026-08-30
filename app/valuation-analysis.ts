@@ -66,6 +66,7 @@ export type ValuationEstimate = {
     packageTier: "few" | "medium" | "many" | "hundred";
     accountStyle: MarketAccountStyle;
     missingSeasons: number;
+    partialSeasons: number;
     completionRatio: number;
     effectiveSample: number;
   };
@@ -236,7 +237,7 @@ const isPlatformTransferable = (
 ) => {
   const platform = platformBindingForItem(item);
   if (!platform || bindings[platform] === "transfer") return true;
-  warnings.push(`${platform} 無綁或無法交易，該平台${label}不列入參考價格。`);
+  warnings.push(`${platform} 未標示可出或綁定異常，該平台${label}不列入參考價格。`);
   return false;
 };
 
@@ -261,6 +262,7 @@ export const estimateValuation = ({
         packageTier: "few",
         accountStyle: "simple",
         missingSeasons: 0,
+        partialSeasons: 0,
         completionRatio: 0,
         effectiveSample: 0,
       },
@@ -293,7 +295,7 @@ export const estimateValuation = ({
     high = startBand.high;
     contributions.push({
       group: "season",
-      label: `最早畢業季 ${analysis.startSeasonSlug}`,
+      label: "起始畢業季基準",
       low,
       high,
     });
@@ -306,7 +308,7 @@ export const estimateValuation = ({
   if (breakMultiplier !== 1)
     contributions.push({
       group: "market",
-      label: `${breakProfile.missingSeasons} 季未完整`,
+      label: `${breakProfile.missingSeasons} 季缺少畢業禮`,
       low: 0,
       high: 0,
       percent: Math.round((breakMultiplier - 1) * 100),
@@ -417,7 +419,7 @@ export const estimateValuation = ({
   if (risk < 1)
     contributions.push({
       group: "binding",
-      label: "綁定風險",
+      label: "綁定限制",
       low: 0,
       high: 0,
       percent: Math.round((risk - 1) * 100),
@@ -459,6 +461,7 @@ export const estimateValuation = ({
       packageTier: packageTier.key,
       accountStyle,
       missingSeasons: breakProfile.missingSeasons,
+      partialSeasons: breakProfile.partialSeasons,
       completionRatio: breakProfile.completionRatio,
       effectiveSample: startEvidence?.sampleCount ?? 0,
     },

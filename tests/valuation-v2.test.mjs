@@ -16,12 +16,14 @@ const marketAggregate = JSON.parse(
 test("season bands contain all thirty ordered seasons with valid price ranges", () => {
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
-    sourceRows: 1150,
-    eligibleRows: 259,
+    sourceRows: 1186,
+    eligibleRows: 295,
     facebookRows: 16,
     facebookEligibleRows: 14,
     driveRows: 112,
     driveEligibleRows: 112,
+    marketplaceRows: 36,
+    marketplaceEligibleRows: 36,
     secondaryMarketRows: 74,
     asOf: "2026-08-30",
   });
@@ -50,11 +52,13 @@ test("sample confidence reflects direct eligible mentions", () => {
     }),
     [
       ["gratitude", 0, "inferred"],
-      ["rhythm", 17, "high"],
-      ["enchantment", 36, "high"],
-      ["carnival", 17, "high"],
+      ["rhythm", 18, "high"],
+      ["enchantment", 35, "high"],
+      ["carnival", 16, "high"],
     ],
   );
+  assert.equal(bySlug.get("sanctuary")?.sampleCount, 10);
+  assert.equal(bySlug.get("sanctuary")?.confidence, "low");
 });
 
 test("sparse Lightseekers mentions do not erase early-season scarcity", () => {
@@ -73,11 +77,21 @@ test("client summary contains no raw listing text", () => {
   assert.equal(/listing|description|seller|title/i.test(serialized), false);
 });
 
-test("anonymous market aggregate covers more than one hundred accounts", () => {
-  assert.equal(marketAggregate.sourceRows, 128);
-  assert.equal(marketAggregate.eligibleRows, 126);
+test("anonymous market aggregate covers more than one hundred and fifty accounts", () => {
+  assert.equal(marketAggregate.sourceRows, 164);
+  assert.equal(marketAggregate.eligibleRows, 162);
   assert.deepEqual(marketAggregate.sourceBreakdown, {
+    "8591_hk": 33,
+    "8591_tw": 1,
+    carousell_tw: 2,
     facebook: 14,
+    google_drive: 112,
+  });
+  assert.deepEqual(marketAggregate.sourceRowsBySource, {
+    "8591_hk": 33,
+    "8591_tw": 1,
+    carousell_tw: 2,
+    facebook: 16,
     google_drive: 112,
   });
   assert.deepEqual(
@@ -86,7 +100,7 @@ test("anonymous market aggregate covers more than one hundred accounts", () => {
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { none: 12, slight: 23, medium: 44, big: 33 },
+    { none: 13, slight: 28, medium: 54, big: 52 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -94,8 +108,9 @@ test("anonymous market aggregate covers more than one hundred accounts", () => {
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 37, medium: 38, many: 26, hundred: 11 },
+    { few: 47, medium: 53, many: 28, hundred: 12 },
   );
+  assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 15);
 });
 
 test("learned market modifiers remain monotonic and anonymous", () => {
