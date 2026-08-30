@@ -10,12 +10,13 @@ import test from "node:test";
 const exec = promisify(execFile);
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
-const audit = async (rows) => {
+const audit = async (rows, { splitSeed } = {}) => {
   const directory = await mkdtemp(join(tmpdir(), "sky-valuation-audit-"));
   const source = join(directory, "source.jsonl");
   try {
     await writeFile(source, `${rows.map(JSON.stringify).join("\n")}\n`);
-    const { stdout } = await exec(process.execPath, [fileURLToPath(script), source]);
+    const options = splitSeed ? [`--split-seed=${splitSeed}`] : [];
+    const { stdout } = await exec(process.execPath, [fileURLToPath(script), ...options, source]);
     return JSON.parse(stdout);
   } finally { await rm(directory, { recursive: true, force: true }); }
 };
@@ -173,4 +174,244 @@ test("aggregate is stable when source rows arrive in a different order", async (
   const first = await audit(rows);
   const second = await audit([...rows].reverse());
   assert.deepEqual(first, second);
+});
+
+test("keeps the strongest evidence when the same account is relisted", async () => {
+  const result = await audit([
+    {
+      post_hash: "first-listing",
+      account_hash: "relist-0",
+      published_at: "2025-01-01T00:00:00.000Z",
+      price_twd: 11000,
+      evidence_kind: "sold",
+      evidence_quality: "high",
+      start_season_slug: "aurora",
+    },
+    {
+      post_hash: "later-asking-price",
+      account_fingerprint: "relist-0",
+      published_at: "2025-06-01T00:00:00.000Z",
+      price_twd: 24000,
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "aurora",
+    },
+    {
+      post_hash: "newest-sold-price",
+      account_hash: "relist-0",
+      published_at: "2025-07-01T00:00:00.000Z",
+      price_twd: 13000,
+      evidence_kind: "sold",
+      evidence_quality: "high",
+      start_season_slug: "aurora",
+    },
+  ]);
+  assert.deepEqual(
+    [result.eligibleRows, result.uniqueAccountRows, result.relistedAccountRows],
+    [1, 1, 2],
+  );
+  assert.equal(result.seasons.aurora.median, 13000);
+});
+
+test("splits identified accounts as deterministic whole groups while anonymous rows stay in calibration", async () => {
+  const rows = Array.from({ length: 20 }, (_, index) => ([
+    {
+      post_hash: `account-${index}-old`,
+      account_hash: `account-${index}`,
+      published_at: "2025-01-01T00:00:00.000Z",
+      price_twd: 5000 + index,
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "assembly",
+    },
+    {
+      post_hash: `account-${index}-new`,
+      account_fingerprint: `account-${index}`,
+      published_at: "2025-02-01T00:00:00.000Z",
+      price_twd: 6000 + index,
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "assembly",
+    },
+  ])).flat();
+  rows.push({
+    post_hash: "anonymous",
+    published_at: recent,
+    price_twd: 7000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+  });
+  const first = await audit(rows, { splitSeed: "stable-split" });
+  const second = await audit([...rows].reverse(), { splitSeed: "stable-split" });
+  assert.deepEqual(first, second);
+  assert.equal(first.relistedAccountRows, 20);
+  assert.equal(first.uniqueAccountRows, 20);
+  assert.equal(first.anonymousEligibleRows, 1);
+  assert.equal(first.split.calibrationRows + first.split.holdoutRows, 21);
+  assert.equal(first.split.anonymousCalibrationRows, 1);
+});
+
+test("uses the same account identity aliases as model validation", async () => {
+  const result = await audit(
+    Array.from({ length: 30 }, (_, index) => ({
+      post_hash: `post-${index}`,
+      account_group_hash: `account-${index}`,
+      published_at: recent,
+      price_twd: 5000 + index,
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "assembly",
+    })),
+    { splitSeed: "fixture" },
+  );
+  assert.equal(result.uniqueAccountRows, 30);
+  assert.equal(result.anonymousEligibleRows, 0);
+  assert.ok(result.split.holdoutRows > 0);
+  assert.equal(
+    result.split.calibrationRows + result.split.holdoutRows,
+    result.uniqueAccountRows,
+  );
+});
+
+test("caps unlinked legacy rows to ten percent once identified accounts exist", async () => {
+  const identified = Array.from({ length: 20 }, (_, index) => ({
+    post_hash: `identified-${index}`,
+    account_fingerprint: `account-${index}`,
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+  }));
+  const anonymous = Array.from({ length: 100 }, (_, index) => ({
+    post_hash: `anonymous-${index}`,
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+  }));
+  const result = await audit([...identified, ...anonymous], {
+    splitSeed: "fixture",
+  });
+  assert.equal(result.uniqueAccountRows, 20);
+  assert.equal(result.anonymousEligibleRows, 100);
+  assert.equal(result.anonymousCalibration.capped, true);
+  assert.ok(result.anonymousCalibration.effectiveShare <= 0.1);
+});
+
+test("keeps anonymous rows at ten percent after a conflicting group cap", async () => {
+  const identified = Array.from({ length: 100 }, (_, index) => ({
+    post_hash: `identified-conflict-${index}`,
+    account_fingerprint: `conflict-account-${index}`,
+    group_hash: "identified-group",
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+  }));
+  const anonymous = Array.from({ length: 10 }, (_, index) => ({
+    post_hash: `anonymous-conflict-${index}`,
+    group_hash: "anonymous-group",
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+  }));
+  const result = await audit([...identified, ...anonymous], {
+    splitSeed: "fixture",
+    includeHoldout: true,
+  });
+  assert.deepEqual(result.groupConcentration, {
+    groupCount: 1,
+    largestEffectiveShare: 1,
+    cap: 0.6,
+    capped: false,
+    sampleScope: "identified-accounts",
+  });
+  assert.equal(result.anonymousCalibration.capped, true);
+  assert.ok(result.anonymousCalibration.effectiveShare <= 0.1);
+});
+
+test("caps a dominant source group at sixty percent of calibration weight", async () => {
+  const rows = Array.from({ length: 9 }, (_, index) => ({
+    post_hash: `dominant-${index}`,
+    group_hash: "dominant-private-group",
+    published_at: recent,
+    price_twd: 10000 + index,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "duets",
+  }));
+  rows.push({
+    post_hash: "other-group",
+    group_hash: "other-private-group",
+    published_at: recent,
+    price_twd: 20000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "duets",
+  });
+  const result = await audit(rows);
+  assert.deepEqual(result.groupConcentration, {
+    groupCount: 2,
+    largestEffectiveShare: 0.6,
+    cap: 0.6,
+    capped: true,
+    sampleScope: "legacy-anonymous",
+  });
+  assert.equal(result.segments.startSeason.duets.effectiveWeight, 2.5);
+});
+
+test("keeps identical market rows distinct while applying group weights", async () => {
+  const rows = [
+    ["account-a", "group-a"],
+    ["account-b", "group-a"],
+    ["account-c", "group-b"],
+  ].map(([account, group]) => ({
+    account_fingerprint: account,
+    group_hash: group,
+    published_at: recent,
+    price_twd: 10000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "duets",
+  }));
+  const result = await audit(rows, { includeHoldout: true });
+  assert.equal(result.seasons.duets.effectiveWeight, 2.5);
+  assert.equal(result.segments.startSeason.duets.effectiveWeight, 2.5);
+  assert.equal(result.split.trainingEffectiveWeight, 2.5);
+  assert.equal(
+    result.split.calibrationEffectiveWeight + result.split.holdoutEffectiveWeight,
+    3,
+  );
+});
+
+test("does not emit raw post, account, group, text, URL, or author fields", async () => {
+  const result = await audit([{
+    post_hash: "private-post-hash",
+    account_hash: "private-account-hash",
+    group_hash: "private-group-hash",
+    author: "private-author",
+    url: "https://example.test/private",
+    listing_text: "private listing text",
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "moomin",
+  }]);
+  const output = JSON.stringify(result);
+  for (const value of [
+    "private-post-hash",
+    "private-account-hash",
+    "private-group-hash",
+    "private-author",
+    "example.test",
+    "private listing text",
+  ]) assert.equal(output.includes(value), false);
+  assert.equal(result.schemaVersion, 3);
 });

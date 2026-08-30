@@ -1,12 +1,21 @@
 import { createReadStream } from "node:fs";
+import { createHash } from "node:crypto";
 import { createInterface } from "node:readline";
 
 const args = process.argv.slice(2);
 const asOfArg = args.find((value) => value.startsWith("--as-of="));
-const sourcePaths = args.filter((value) => !value.startsWith("--as-of="));
+const splitSeedArg = args.find((value) => value.startsWith("--split-seed="));
+const includeHoldout = args.includes("--include-holdout");
+const splitSeed = splitSeedArg?.slice("--split-seed=".length) || "sky-valuation-v3";
+const sourcePaths = args.filter(
+  (value) =>
+    value !== "--include-holdout" &&
+    !value.startsWith("--as-of=") &&
+    !value.startsWith("--split-seed="),
+);
 if (!sourcePaths.length)
   throw new Error(
-    "Usage: node scripts/audit-valuation-source.mjs [--as-of=YYYY-MM-DD] <source.jsonl> [...more.jsonl]",
+    "Usage: node scripts/audit-valuation-source.mjs [--as-of=YYYY-MM-DD] [--split-seed=value] [--include-holdout] <source.jsonl> [...more.jsonl]",
   );
 
 const patterns = new Map([
@@ -231,6 +240,111 @@ const summarize = (samples, includeEvidenceProfile = false) => {
       : {}),
   };
 };
+const accountKeyFor = (row) => {
+  const fingerprint = String(
+    row.account_group_hash ?? row.account_hash ?? row.account_fingerprint ?? "",
+  ).trim();
+  return fingerprint || null;
+};
+const groupKeyFor = (row) => {
+  const groupHash = String(row.group_hash ?? "").trim();
+  if (groupHash) return `group:${groupHash}`;
+  return `source:${String(row.source ?? row.__sourceHint ?? "unknown").trim() || "unknown"}`;
+};
+const sourceFor = (row) => {
+  const value = String(row.source ?? row.__sourceHint ?? "unknown").trim().toLowerCase();
+  if (/facebook|\bfb\b/.test(value)) return "facebook";
+  if (/drive|google/.test(value)) return "google_drive";
+  if (["8591_hk", "8591_tw", "carousell_tw"].includes(value)) return value;
+  return "unknown";
+};
+const timestampFor = (row) => dateFor(row)?.getTime() ?? Number.NEGATIVE_INFINITY;
+const evidenceRank = (row) => {
+  const kind = row.evidence_kind;
+  return ({ sold: 5, quick_sale: 4, ask: 3, professional_estimate: 2, comment: 1 })[kind] ?? 0;
+};
+const stableRowKey = (row) =>
+  createHash("sha256")
+    .update(JSON.stringify({
+      evidence_kind: row.evidence_kind ?? "",
+      price_twd: row.price_twd ?? "",
+      price_twd_low: row.price_twd_low ?? "",
+      price_twd_high: row.price_twd_high ?? "",
+      published_at: row.published_at ?? "",
+      observed_at: row.observed_at ?? "",
+      post_hash: row.post_hash ?? "",
+      account_key: accountKeyFor(row) ?? "",
+      group_key: groupKeyFor(row),
+      start_season_slug: row.start_season_slug ?? "",
+      season_progress: row.season_progress ?? null,
+      paid_package_count: row.paid_package_count ?? "",
+    }))
+    .digest("hex");
+const preferredRow = (left, right) => {
+  const evidenceDifference = evidenceRank(right) - evidenceRank(left);
+  if (evidenceDifference) return evidenceDifference > 0 ? right : left;
+  const timeDifference = timestampFor(right) - timestampFor(left);
+  if (timeDifference) return timeDifference > 0 ? right : left;
+  return stableRowKey(right).localeCompare(stableRowKey(left)) < 0 ? right : left;
+};
+const isCalibrationAccount = (accountKey) => {
+  if (!accountKey) return true;
+  const bucket = Number.parseInt(
+    createHash("sha256").update(`${splitSeed}:${accountKey}`).digest("hex").slice(0, 8),
+    16,
+  ) % 10;
+  return bucket < 8;
+};
+const applyGroupCap = (samples) => {
+  const groupWeights = new Map();
+  samples.forEach((sample) =>
+    groupWeights.set(sample.groupKey, (groupWeights.get(sample.groupKey) ?? 0) + sample.weight),
+  );
+  const totalWeight = [...groupWeights.values()].reduce((sum, weight) => sum + weight, 0);
+  if (groupWeights.size < 2 || !totalWeight) {
+    return { samples, groupCount: groupWeights.size, largestEffectiveShare: totalWeight ? 1 : 0, capped: false };
+  }
+  const [dominantGroup, dominantWeight] = [...groupWeights.entries()].sort(
+    ([leftKey, leftWeight], [rightKey, rightWeight]) =>
+      rightWeight - leftWeight || leftKey.localeCompare(rightKey),
+  )[0];
+  const otherWeight = totalWeight - dominantWeight;
+  const capWeight = otherWeight * 1.5;
+  const multiplier = dominantWeight > capWeight ? capWeight / dominantWeight : 1;
+  const cappedSamples = multiplier === 1
+    ? samples
+    : samples.map((sample) =>
+      sample.groupKey === dominantGroup ? { ...sample, weight: sample.weight * multiplier } : sample,
+    );
+  const effectiveTotal = cappedSamples.reduce((sum, sample) => sum + sample.weight, 0);
+  const effectiveDominant = cappedSamples
+    .filter((sample) => sample.groupKey === dominantGroup)
+    .reduce((sum, sample) => sum + sample.weight, 0);
+  return {
+    samples: cappedSamples,
+    groupCount: groupWeights.size,
+    largestEffectiveShare: effectiveTotal ? Number((effectiveDominant / effectiveTotal).toFixed(3)) : 0,
+    capped: multiplier !== 1,
+  };
+};
+const applyAnonymousCap = (samples) => {
+  const identifiedWeight = samples
+    .filter((sample) => sample.accountKey)
+    .reduce((sum, sample) => sum + sample.weight, 0);
+  const anonymousWeight = samples
+    .filter((sample) => !sample.accountKey)
+    .reduce((sum, sample) => sum + sample.weight, 0);
+  const weightLimit = identifiedWeight ? identifiedWeight / 9 : anonymousWeight;
+  const multiplier = anonymousWeight ? Math.min(1, weightLimit / anonymousWeight) : 1;
+  return {
+    samples: multiplier === 1
+      ? samples
+      : samples.map((sample) =>
+        sample.accountKey ? sample : { ...sample, weight: sample.weight * multiplier },
+      ),
+    capped: multiplier < 1,
+  };
+};
 
 const rows = [];
 for (const sourcePath of sourcePaths)
@@ -257,19 +371,29 @@ if (!Number.isFinite(referenceDate.getTime()))
   throw new Error("Invalid --as-of date; expected YYYY-MM-DD");
 
 const seasonMetrics = Object.fromEntries([...patterns.keys()].map((slug) => [slug, { samples: [], excludedCount: 0, duplicateCount: 0 }]));
-const eligible = [];
-const seenHashes = new Set();
-let excludedRows = 0;
-let duplicateRows = 0;
+const postRows = new Map();
+let duplicatePostRows = 0;
 for (const row of rows) {
-  const slugs = seasonSlugsFor(row);
   const hash = String(row.post_hash ?? "").trim();
-  if (hash && seenHashes.has(hash)) {
-    duplicateRows += 1;
-    slugs.forEach((slug) => (seasonMetrics[slug].duplicateCount += 1));
+  if (!hash) {
+    postRows.set(`row:${postRows.size}`, row);
     continue;
   }
-  if (hash) seenHashes.add(hash);
+  const existing = postRows.get(`post:${hash}`);
+  if (existing) {
+    duplicatePostRows += 1;
+    const retained = preferredRow(existing, row);
+    postRows.set(`post:${hash}`, retained);
+    seasonSlugsFor(row).forEach((slug) => (seasonMetrics[slug].duplicateCount += 1));
+  } else {
+    postRows.set(`post:${hash}`, row);
+  }
+}
+
+const eligibleCandidates = [];
+let excludedRows = 0;
+for (const row of postRows.values()) {
+  const slugs = seasonSlugsFor(row);
   if (invalidReason(row)) {
     excludedRows += 1;
     slugs.forEach((slug) => (seasonMetrics[slug].excludedCount += 1));
@@ -286,12 +410,16 @@ for (const row of rows) {
     weight: evidenceWeights[kind] * priceKindWeight * qualityWeights[row.evidence_quality ?? "medium"] * timeWeight(dateFor(row)),
     kind,
     quality: row.evidence_quality ?? "medium",
-    source: String(row.source ?? row.__sourceHint ?? "unknown"),
+    source: sourceFor(row),
     startSeason,
     startSeasonFactor: startSeasonFactorFor(row, startSeason),
     breakClass: breakClassFor(row),
     packageTier: packageTierFor(row),
     accountStyle: accountStyleFor(row),
+    accountKey: accountKeyFor(row),
+    groupKey: groupKeyFor(row),
+    publishedAt: timestampFor(row),
+    recordId: stableRowKey(row),
   };
   const affectsCalibration =
     slugs.length > 0 ||
@@ -303,8 +431,53 @@ for (const row of rows) {
     excludedRows += 1;
     continue;
   }
-  eligible.push(sample);
-  slugs.forEach((slug) => seasonMetrics[slug].samples.push(sample));
+  eligibleCandidates.push({ sample, slugs, row });
+}
+
+const selectedCandidates = [];
+const relistedByAccount = new Map();
+let relistedAccountRows = 0;
+for (const candidate of eligibleCandidates) {
+  const key = candidate.sample.accountKey;
+  if (!key) {
+    selectedCandidates.push(candidate);
+    continue;
+  }
+  const existing = relistedByAccount.get(key);
+  if (!existing) {
+    relistedByAccount.set(key, candidate);
+    continue;
+  }
+  relistedAccountRows += 1;
+  relistedByAccount.set(
+    key,
+    preferredRow(existing.row, candidate.row) === candidate.row ? candidate : existing,
+  );
+}
+selectedCandidates.push(...relistedByAccount.values());
+
+const uncappedSamples = selectedCandidates.map(({ sample }) => sample);
+const allEligible = uncappedSamples;
+const identifiedAccountRows = new Set(
+  allEligible.map((sample) => sample.accountKey).filter(Boolean),
+).size;
+const anonymousEligibleRows = allEligible.filter((sample) => !sample.accountKey).length;
+const calibrationOnly = allEligible.filter((sample) => isCalibrationAccount(sample.accountKey));
+const holdout = allEligible.filter((sample) => !isCalibrationAccount(sample.accountKey));
+const trainingSamples = includeHoldout ? allEligible : calibrationOnly;
+const identifiedTraining = trainingSamples.filter((sample) => sample.accountKey);
+const anonymousTraining = trainingSamples.filter((sample) => !sample.accountKey);
+const groupCap = applyGroupCap(identifiedTraining.length ? identifiedTraining : trainingSamples);
+const anonymousCap = applyAnonymousCap(
+  identifiedTraining.length ? [...groupCap.samples, ...anonymousTraining] : groupCap.samples,
+);
+const eligible = anonymousCap.samples;
+const eligibleByRecordId = new Map(eligible.map((sample) => [sample.recordId, sample]));
+for (const candidate of selectedCandidates) {
+  if (!includeHoldout && !isCalibrationAccount(candidate.sample.accountKey)) continue;
+  candidate.slugs.forEach((slug) => seasonMetrics[slug].samples.push(
+    eligibleByRecordId.get(candidate.sample.recordId) ?? candidate.sample,
+  ));
 }
 
 const seasons = Object.fromEntries([...patterns.keys()].map((slug) => {
@@ -378,25 +551,66 @@ const modifiers = {
     regular: 1,
   }),
 };
-const sourceBreakdown = Object.fromEntries([...new Set(eligible.map((sample) => sample.source))].sort().map((source) => [source, eligible.filter((sample) => sample.source === source).length]));
+const sourceBreakdown = Object.fromEntries([...new Set(allEligible.map((sample) => sample.source))].sort().map((source) => [source, allEligible.filter((sample) => sample.source === source).length]));
 const sourceRowsBySource = Object.fromEntries(
-  [...new Set(rows.map((row) => String(row.source ?? row.__sourceHint ?? "unknown")))]
+  [...new Set(rows.map(sourceFor))]
     .sort()
     .map((source) => [
       source,
-      rows.filter(
-        (row) => String(row.source ?? row.__sourceHint ?? "unknown") === source,
-      ).length,
+      rows.filter((row) => sourceFor(row) === source).length,
     ]),
 );
 
 console.log(JSON.stringify({
-  schemaVersion: 2,
+  schemaVersion: 3,
   asOf: referenceDate.toISOString().slice(0, 10),
   sourceRows: rows.length,
-  eligibleRows: eligible.length,
+  eligibleRows: allEligible.length,
   excludedRows,
-  duplicateRows,
+  duplicateRows: duplicatePostRows,
+  duplicatePostRows,
+  relistedAccountRows,
+  uniqueAccountRows: identifiedAccountRows,
+  anonymousEligibleRows,
+  anonymousCalibration: {
+    rowCount: anonymousEligibleRows,
+    effectiveWeight: Number(
+      eligible
+        .filter((sample) => !sample.accountKey)
+        .reduce((sum, sample) => sum + sample.weight, 0)
+        .toFixed(3),
+    ),
+    effectiveShare: Number(
+      (
+        eligible.length
+          ? eligible
+              .filter((sample) => !sample.accountKey)
+              .reduce((sum, sample) => sum + sample.weight, 0) /
+            eligible.reduce((sum, sample) => sum + sample.weight, 0)
+          : 0
+      ).toFixed(3),
+    ),
+    maximumShareWhenIdentified: 0.1,
+    capped: anonymousCap.capped,
+  },
+  split: {
+    splitSeed,
+    trainingMode: includeHoldout ? "all-eligible" : "calibration-only",
+    trainingRows: eligible.length,
+    calibrationRows: calibrationOnly.length,
+    holdoutRows: holdout.length,
+    anonymousCalibrationRows: eligible.filter((sample) => !sample.accountKey).length,
+    trainingEffectiveWeight: Number(eligible.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
+    calibrationEffectiveWeight: Number(calibrationOnly.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
+    holdoutEffectiveWeight: Number(holdout.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
+  },
+  groupConcentration: {
+    groupCount: groupCap.groupCount,
+    largestEffectiveShare: groupCap.largestEffectiveShare,
+    cap: 0.6,
+    capped: groupCap.capped,
+    sampleScope: identifiedTraining.length ? "identified-accounts" : "legacy-anonymous",
+  },
   sourceRowsBySource,
   sourceBreakdown,
   seasons,
