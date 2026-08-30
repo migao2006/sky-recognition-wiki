@@ -11,7 +11,7 @@ import {
 } from "./account-config";
 import { bundlePresets } from "./bundle-presets";
 import { formatMarketBindings, formatMarketPlatform } from "./market-copy";
-import { isSeasonPendant } from "./valuation-items";
+import { isSeasonPendant } from "./season-items";
 import type { OrganizerRuntime } from "./use-organizer-runtime";
 
 type AccountStepProps = {

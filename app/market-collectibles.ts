@@ -1,3 +1,5 @@
+import iapCatalog from "./iap-catalog.json";
+
 export type MarketAvailability = "global" | "china" | "platform";
 export type MarketPlatform =
   | "google"
@@ -9,11 +11,15 @@ export type MarketPlatform =
   | "playstation";
 export type MarketSaleSection = "collaboration" | "important" | "special";
 export type MarketValuationTier = "high" | "standard";
+export type MarketImportance = "important" | "standard";
+export type MarketReturning = "returning" | "limited" | "unknown";
 
 export type MarketCollectibleProfile = {
+  guid?: string;
   name: string;
   playerName: string;
   aliases: readonly string[];
+  packageName?: string;
   series: string;
   availability: MarketAvailability;
   platform?: MarketPlatform;
@@ -24,6 +30,9 @@ export type MarketCollectibleProfile = {
   saleSection: MarketSaleSection;
   salePriority: number;
   packageKey?: string;
+  importance: MarketImportance;
+  returning: MarketReturning;
+  curated?: boolean;
 };
 
 type ProfileSeed = readonly [
@@ -41,7 +50,11 @@ type ProfileDefaults = Pick<
   | "valuationTier"
   | "saleSection"
   | "salePriority"
-> & { platform?: MarketPlatform };
+> & {
+  platform?: MarketPlatform;
+  importance?: MarketImportance;
+  returning?: MarketReturning;
+};
 
 const defineProfiles = (
   defaults: ProfileDefaults,
@@ -55,6 +68,9 @@ const defineProfiles = (
     packageKey,
     salePriority: defaults.salePriority + index,
     saleCopy: true,
+    importance: defaults.importance ??
+      (defaults.saleSection === "important" ? "important" : "standard"),
+    returning: defaults.returning ?? "unknown",
   }));
 
 const permanentCollaboration = (
@@ -252,6 +268,7 @@ const standardPaidProfiles = defineProfiles(
     ["Ocean Veil", "海洋面紗", "ocean-veil-pack"],
     ["Charming Creature Outfit", "迷人小生物服裝", "charming-creature-pack"],
     ["Charming Creature Head Accessory", "迷人小生物頭飾", "charming-creature-pack"],
+    ["FlOw Cape", "FlOw 斗篷", undefined, ["花憩風之旅人斗篷"]],
   ],
 );
 
@@ -271,7 +288,49 @@ const legacyProfiles = defineProfiles(
   ],
 );
 
-export const importantMarketCollectibles: readonly MarketCollectibleProfile[] = [
+const collaborationSeries = new Set([
+  "絆愛",
+  "小王子",
+  "AURORA",
+  "九色鹿",
+  "大耳狗",
+  "姆明",
+  "Nintendo",
+  "風之旅人",
+  "PlayStation",
+]);
+
+type IapCatalogRow = {
+  guid: string;
+  name: string;
+  playerName: string;
+  aliases: readonly string[];
+  packageKey: string;
+  packageName: string;
+  paid: boolean;
+  series: string;
+  availability: MarketAvailability;
+  platform?: MarketPlatform;
+  importance: MarketImportance;
+  returning: MarketReturning;
+};
+
+const generatedIapProfiles: MarketCollectibleProfile[] = (
+  iapCatalog.items as IapCatalogRow[]
+).map((item, index) => {
+  const collaboration = collaborationSeries.has(item.series);
+  return {
+    ...item,
+    valuationMultiplier:
+      item.availability === "platform" ? 1.25 : collaboration ? 1.5 : 0.9,
+    valuationTier: collaboration ? "high" : "standard",
+    saleCopy: true,
+    saleSection: collaboration ? "collaboration" : "special",
+    salePriority: 1_000 + index,
+  };
+});
+
+const curatedProfiles: readonly MarketCollectibleProfile[] = [
   ...collaborationProfiles,
   ...importantPackageProfiles,
   ...importantLimitedProfiles,
@@ -279,14 +338,75 @@ export const importantMarketCollectibles: readonly MarketCollectibleProfile[] = 
   ...legacyProfiles,
 ];
 
-const profileByName = new Map(
-  importantMarketCollectibles.map((profile) => [profile.name, profile]),
+const profileByGuid = new Map(
+  generatedIapProfiles.map((profile) => [profile.guid, profile]),
 );
+const profileByName = new Map(
+  generatedIapProfiles.map((profile) => [profile.name, profile]),
+);
+const profileByAlias = new Map<string, MarketCollectibleProfile>();
 
-export const marketCollectibleProfile = (name: string) =>
-  profileByName.get(name) ?? null;
+const curatedPackageNames: Record<string, string> = {
+  "days-of-healing-pack": "療癒罌粟花禮包",
+  "cat-costume-pack": "貓咪套組",
+  "cinnamoroll-hair-combo": "大耳狗髮型套組",
+  "cinnamoroll-cape-combo": "大耳狗斗篷套組",
+  "moomintroll-accessory-set": "姆明耳尾套組",
+  "roving-snufkin-robe-set": "史力奇長袍套組",
+  "nintendo-pack": "Nintendo 套組",
+  "journey-pack": "風之旅人套組",
+  "transcendent-journey-pack": "超越之旅套組",
+  "moth-appreciation-pack": "飛蛾套組",
+  "sparrow-appreciation-pack": "麻雀套組",
+  "anniversary-cinema-set": "週年電影院套組",
+  "fortune-fish-pack": "福瑞魚套組",
+  "fortune-bun-pack": "福瑞套組",
+  "nature-turtle-pack": "自然海龜套組",
+  "charming-creature-pack": "迷人小生物套組",
+};
+
+for (const curated of curatedProfiles) {
+  const generated = profileByName.get(curated.name);
+  const merged: MarketCollectibleProfile = {
+    ...generated,
+    ...curated,
+    guid: generated?.guid,
+    packageKey: curated.packageKey ?? generated?.packageKey,
+    packageName:
+      (curated.packageKey ? curatedPackageNames[curated.packageKey] : undefined) ??
+      generated?.packageName,
+    aliases: Array.from(
+      new Set([...(generated?.aliases ?? []), ...curated.aliases]),
+    ),
+    importance:
+      curated.saleSection === "important" ? "important" : curated.importance,
+    returning: generated?.returning ?? curated.returning,
+    curated: true,
+  };
+  profileByName.set(merged.name, merged);
+  if (merged.guid) profileByGuid.set(merged.guid, merged);
+}
+
+for (const profile of profileByName.values()) {
+  for (const alias of profile.aliases) profileByAlias.set(alias, profile);
+}
+
+export const importantMarketCollectibles: readonly MarketCollectibleProfile[] = [
+  ...profileByName.values(),
+];
+
+export const marketCollectibleProfile = (name: string, guid?: string) =>
+  (guid ? profileByGuid.get(guid) : undefined) ??
+  profileByName.get(name) ??
+  profileByAlias.get(name) ??
+  null;
+
+export const marketCollectibleProfileForItem = (item: {
+  name: string;
+  guid?: string;
+}) => marketCollectibleProfile(item.name, item.guid);
 
 export const marketProfileNamesForSeries = (series: string) =>
-  importantMarketCollectibles
+  [...profileByName.values()]
     .filter((profile) => profile.series === series)
     .map((profile) => profile.name);

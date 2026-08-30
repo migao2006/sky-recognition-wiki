@@ -3,14 +3,15 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 import { asModuleUrl } from "./helpers/transpile.mjs";
+import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
 
-const [marketSource, bundleSource] = await Promise.all(
-  ["market-collectibles.ts", "bundle-presets.ts"].map((file) =>
+const [bundleSource] = await Promise.all(
+  ["bundle-presets.ts"].map((file) =>
     readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
   ),
 );
-const marketUrl = asModuleUrl(marketSource);
-const { importantMarketCollectibles } = await import(marketUrl);
+const marketUrl = await marketCollectiblesModuleUrl();
+const { importantMarketCollectibles, marketCollectibleProfile } = await import(marketUrl);
 const { bundlePresets } = await import(
   asModuleUrl(
     bundleSource.replace(
@@ -20,6 +21,26 @@ const { bundlePresets } = await import(
   )
 );
 const catalog = await loadRuntimeCatalog();
+const iapCatalog = JSON.parse(
+  await readFile(new URL("../app/iap-catalog.json", import.meta.url), "utf8"),
+);
+
+test("generated IAP metadata covers every mapped catalog item by GUID", () => {
+  assert.match(iapCatalog.sourceVersion, /^\d+\.\d+\.\d+$/);
+  assert.match(iapCatalog.sourceUrl, new RegExp(`@${iapCatalog.sourceVersion}/`));
+  assert.ok(iapCatalog.items.length >= 200);
+  assert.equal(new Set(iapCatalog.items.map((item) => item.guid)).size, iapCatalog.items.length);
+  for (const row of iapCatalog.items) {
+    const item = catalog.wikiItems.find((entry) => entry.guid === row.guid);
+    assert.ok(item, `missing catalog item for ${row.guid}`);
+    assert.equal(item.name, row.name, row.guid);
+    const profile = marketCollectibleProfile(item.name, item.guid);
+    assert.equal(typeof row.paid, "boolean", row.name);
+    assert.equal(typeof profile?.paid, "boolean", row.name);
+    assert.ok(profile?.packageKey, row.name);
+    assert.ok(profile?.playerName, row.name);
+  }
+});
 
 test("important market collectibles have complete structured metadata", () => {
   assert.ok(importantMarketCollectibles.length >= 30);

@@ -20,6 +20,19 @@ export type ExportValuationSummary = {
 export type ExportShowcaseOptions = ShowcaseOrderOptions & {
   preset?: ExportShowcasePreset;
   valuation?: ExportValuationSummary;
+  onProgress?: (progress: ExportShowcaseProgress) => void;
+};
+
+export type ExportShowcaseProgress = {
+  completed: number;
+  total: number;
+  phase: "loading-icons" | "rendering";
+};
+
+export type ExportShowcaseResult = {
+  images: Blob[];
+  loadedIconCount: number;
+  failedIconCount: number;
 };
 
 const iconCache = new Map<string, Promise<HTMLImageElement | null>>();
@@ -57,13 +70,21 @@ const loadIcon = (src: string) => {
   return request;
 };
 
-const loadIcons = async (items: WikiItem[], concurrency = 8) => {
+const loadIcons = async (
+  items: WikiItem[],
+  onProgress?: ExportShowcaseOptions["onProgress"],
+  concurrency = 8,
+) => {
   const icons = new Map<string, HTMLImageElement | null>();
   let next = 0;
+  let completed = 0;
+  onProgress?.({ completed, total: items.length, phase: "loading-icons" });
   const worker = async () => {
     while (next < items.length) {
       const item = items[next++];
       icons.set(item.guid, await loadIcon(item.icon));
+      completed += 1;
+      onProgress?.({ completed, total: items.length, phase: "loading-icons" });
     }
   };
   await Promise.all(
@@ -87,6 +108,12 @@ const showcaseMetrics = {
   clusterMinWidth: 96,
   sectionGap: 12,
 } as const;
+
+// Keep each rendered PNG within conservative mobile-browser canvas limits.
+const maximumCanvasHeight = Math.min(
+  16_384,
+  Math.floor(16_000_000 / showcaseMetrics.width),
+);
 
 const canvasToPng = (canvas: HTMLCanvasElement) =>
   new Promise<Blob>((resolve, reject) => {
@@ -180,8 +207,21 @@ export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
   return { width: showcaseMetrics.width, height: height + summaryHeight };
 };
 
+export const planShowcasePages = (options: ExportShowcaseOptions) => {
+  const { width, height } = measureShowcaseCanvas(options);
+  return Array.from(
+    { length: Math.ceil(height / maximumCanvasHeight) },
+    (_, index) => ({
+      index,
+      width,
+      height: Math.min(maximumCanvasHeight, height - index * maximumCanvasHeight),
+      offsetY: index * maximumCanvasHeight,
+    }),
+  );
+};
+
 export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
-  const { items, preset = "collection", valuation } = options;
+  const { items, preset = "collection", valuation, onProgress } = options;
   const groups = buildShowcaseGroups(options);
   const {
     width,
@@ -195,21 +235,11 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     clusterTitle,
     sectionGap,
   } = showcaseMetrics;
-  const { height, panelHeight, renderGroups } = buildShowcaseLayout(groups);
+  const { panelHeight, renderGroups } = buildShowcaseLayout(groups);
   const summaryHeight = preset === "valuation" && valuation ? 236 : 0;
 
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height + summaryHeight;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("canvas-unavailable");
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-
-  ctx.fillStyle = "#070b14";
-  ctx.fillRect(0, 0, width, canvas.height);
-
   const roundRect = (
+    ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     w: number,
@@ -229,8 +259,33 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     }
   };
 
+  const icons = await loadIcons(items, onProgress);
+  const loadedIconCount = Array.from(icons.values()).filter(Boolean).length;
+  const failedIconCount = items.length - loadedIconCount;
+  const pages = planShowcasePages(options);
+  const images: Blob[] = [];
+
+  for (const page of pages) {
+    onProgress?.({
+      completed: page.index,
+      total: pages.length,
+      phase: "rendering",
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = page.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("canvas-unavailable");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#070b14";
+    ctx.fillRect(0, 0, width, canvas.height);
+    ctx.save();
+    ctx.translate(0, -page.offsetY);
+
   if (summaryHeight && valuation) {
     roundRect(
+      ctx,
       pad,
       pad,
       width - pad * 2,
@@ -275,11 +330,11 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     );
   }
 
-  const icons = await loadIcons(items);
   let y = pad + summaryHeight;
   renderGroups.forEach((group) => {
     const boxHeight = panelHeight(group.layout.height);
     roundRect(
+      ctx,
       pad,
       y,
       width - pad * 2,
@@ -298,6 +353,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
         const x = pad + panelPad + clusterX;
         const clusterTop = y + titleHeight + clusterY;
         roundRect(
+          ctx,
           x,
           clusterTop,
           w,
@@ -355,6 +411,14 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     );
     y += boxHeight + sectionGap;
   });
+    ctx.restore();
+    images.push(await canvasToPng(canvas));
+    onProgress?.({
+      completed: page.index + 1,
+      total: pages.length,
+      phase: "rendering",
+    });
+  }
 
-  return canvasToPng(canvas);
+  return { images, loadedIconCount, failedIconCount } satisfies ExportShowcaseResult;
 };

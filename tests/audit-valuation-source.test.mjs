@@ -68,6 +68,51 @@ test("does not mistake collection time for publication recency", async () => {
     season_progress: { moomin: "start" },
   }]);
   assert.equal(result.seasons.moomin.effectiveWeight, 0.45);
+  assert.equal(result.segments.startSeason.moomin.sampleCount, 1);
+  assert.equal(result.segments.startSeason.moomin.effectiveWeight, 0.203);
+});
+
+test("unknown structured season progress never enters start-season calibration", async () => {
+  const result = await audit([{
+    post_hash: "unknown-start",
+    published_at: recent,
+    price_twd: 4500,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_confidence: "unknown",
+    season_progress: { moomin: "start" },
+  }]);
+  assert.equal(result.segments.startSeason.moomin.sampleCount, 0);
+});
+
+test("infers the earliest progressed season from multi-season structured progress", async () => {
+  const result = await audit([{
+    post_hash: "multi-season-start",
+    published_at: recent,
+    price_twd: 12000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    season_progress: {
+      blue_bird: "0/3",
+      moomin: "畢",
+      duets: "1/3",
+      nesting: 0,
+    },
+  }]);
+  assert.equal(result.segments.startSeason.duets.sampleCount, 1);
+  assert.equal(result.segments.startSeason.moomin.sampleCount, 0);
+});
+
+test("does not report a valid-price row as eligible when it affects no calibration", async () => {
+  const result = await audit([{
+    post_hash: "no-calibration-fields",
+    published_at: recent,
+    price_twd: 12000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+  }]);
+  assert.equal(result.eligibleRows, 0);
+  assert.equal(result.excludedRows, 1);
 });
 
 test("aggregates price ranges and objective market classifications", async () => {
@@ -110,4 +155,22 @@ test("reduces inferred and structured start-season evidence weight", async () =>
   ]);
   assert.equal(result.segments.startSeason.assembly.sampleCount, 3);
   assert.equal(result.segments.startSeason.assembly.effectiveWeight, 2.25);
+  assert.deepEqual(result.segments.startSeason.assembly.qualityBreakdown, {
+    high: 3,
+    medium: 0,
+    low: 0,
+  });
+  assert.deepEqual(result.segments.startSeason.assembly.sourceBreakdown, {
+    unknown: 3,
+  });
+});
+
+test("aggregate is stable when source rows arrive in a different order", async () => {
+  const rows = [
+    { post_hash: "one", published_at: recent, price_twd: 2000, evidence_kind: "ask", evidence_quality: "high", start_season_slug: "assembly", start_season_confidence: "inferred" },
+    { post_hash: "two", published_at: recent, price_twd: 4000, evidence_kind: "sold", evidence_quality: "medium", start_season_slug: "assembly", start_season_confidence: "structured" },
+  ];
+  const first = await audit(rows);
+  const second = await audit([...rows].reverse());
+  assert.deepEqual(first, second);
 });

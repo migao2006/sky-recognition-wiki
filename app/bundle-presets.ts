@@ -1,11 +1,61 @@
-import { marketProfileNamesForSeries } from "./market-collectibles";
-
 type BundlePreset = {
   key: string;
   name: string;
 } & ({ names: readonly string[] } | { collection: string });
 
-const series = (name: string) => marketProfileNamesForSeries(name);
+// Keep account-step presets independent from the complete IAP metadata snapshot.
+// The detailed profiles only load with the catalog/valuation runtime.
+const seriesNames = {
+  絆愛: ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"],
+  小王子: [
+    "Little Prince Asteroid Jacket",
+    "Little Prince Scarf Cape",
+    "Little Prince Fox",
+  ],
+  AURORA: [
+    "Wings of AURORA",
+    "Giving In Cape",
+    "To The Love Outfit",
+    "AURORA Musical Voyage Sneakers",
+    "Voice of AURORA",
+    "AURORA Runaway Outfit",
+    "AURORA Runaway Hair",
+    "Tiara We Can Touch",
+    "Cure for Me Mask",
+    "Cure for Me Outfit",
+  ],
+  風之旅人: ["Journey Hair", "Journey Cape", "Journey Mask"],
+  Nintendo: [
+    "Nintendo Elf Hair",
+    "Nintendo Red Switch Cape",
+    "Nintendo Blue Switch Cape",
+    "Vessel Flute",
+  ],
+  九色鹿: [
+    "Radiance of the Nine-Colored Deer Cape",
+    "Gift of the Nine-Colored Deer Antlers",
+    "Gift of the Nine-Colored Deer Mask",
+  ],
+  大耳狗: [
+    "Cinnamoroll Plushie",
+    "Cinnamoroll Ears",
+    "Cinnamoroll Swirled Hair",
+    "Cinnamoroll Cloud Cape",
+    "Cinnamoroll Bowtie",
+    "Cinnamoroll Mini Companion",
+  ],
+  姆明: [
+    "Moominmamma's Masterpiece Cape",
+    "Moomintroll Ears",
+    "Moomintroll Tail",
+    "Hattifattener Shoulder Buddy",
+    "Pointed Snufkin Hat",
+    "Roving Snufkin Robe",
+    "Roving Snufkin Scarf",
+  ],
+} as const;
+
+const series = (name: keyof typeof seriesNames) => seriesNames[name];
 
 export const bundlePresets: readonly BundlePreset[] = [
   { key: "kizuna", name: "絆愛三件套", names: series("絆愛") },

@@ -103,10 +103,10 @@ const itemSearchText = (item: SaleCopyItem) =>
     item.sourceName,
   ].join(" ");
 const isChinaOnlySaleItem = (item: SaleCopyItem) =>
-  marketCollectibleProfile(item.name)?.availability === "china" ||
+  marketCollectibleProfile(item.name, item.guid)?.availability === "china" ||
   /\b(?:china|cn|guo?fu|netease)\b|國服|国服/i.test(itemSearchText(item));
 const collaborationOf = (item: SaleCopyItem) => {
-  const verified = marketCollectibleProfile(item.name);
+  const verified = marketCollectibleProfile(item.name, item.guid);
   if (verified?.saleCopy && verified.saleSection === "collaboration") {
     const rank = collaborationSeries.findIndex(
       (series) => series.name === verified.series,
@@ -193,7 +193,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
   const categoryRank = (item: SaleCopyItem) =>
     collaborationOf(item)
       ? 0
-      : marketCollectibleProfile(item.name)?.saleSection === "important"
+      : marketCollectibleProfile(item.name, item.guid)?.importance === "important"
         ? 1
         : item.collection === "event-sky-anniversary"
           ? 2
@@ -218,9 +218,9 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
     .forEach((item) => {
       if (seen.has(item.guid)) return;
       seen.add(item.guid);
+      const profile = marketCollectibleProfile(item.name, item.guid);
       const collaboration = collaborationOf(item);
       if (collaboration) {
-        const profile = marketCollectibleProfile(item.name);
         appendUnique(
           limited,
           collaboration.name,
@@ -238,18 +238,6 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
         return;
       }
 
-      const profile = marketCollectibleProfile(item.name);
-      if (profile?.saleCopy && profile.saleSection === "important") {
-        appendUnique(
-          important,
-          item.name,
-          profile.playerName,
-          profile.salePriority,
-          profile.playerName,
-        );
-        return;
-      }
-
       if (item.collection === "event-sky-anniversary") {
         const number = anniversaryNumber(item);
         const key = number ? String(number) : "other";
@@ -259,6 +247,20 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           number ? ordinalLabel(number) : "其他",
           number ? -number : 999,
           tidyAnniversaryName(item.displayName),
+        );
+        return;
+      }
+
+      if (profile?.paid) {
+        const packageKey = profile.packageKey ?? `item:${item.guid}`;
+        const packageName = profile.packageName ?? profile.playerName;
+        const target = profile.importance === "important" ? important : special;
+        appendUnique(
+          target,
+          packageKey,
+          packageName,
+          profile.salePriority,
+          profile.playerName,
         );
         return;
       }

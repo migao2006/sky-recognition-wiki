@@ -362,8 +362,8 @@
     {
       "guid": "TfItBIVTeP",
       "englishName": "Transcendent Journey Hair",
-      "currentName": "超凡旅人髮型",
-      "displayName": "超凡旅人髮型",
+      "currentName": "超越之旅髮型",
+      "displayName": "超越之旅髮型",
       "aliases": [],
       "confidence": "fallback",
       "identitySources": [
@@ -811,13 +811,13 @@
     {
       "guid": "MHArTLwxyq",
       "englishName": "Nintendo Elf Hair",
-      "currentName": "Nintendo 精靈髮型",
+      "currentName": "林克髮型",
       "displayName": "林克髮型",
       "aliases": [
         "林克頭",
         "林克套裝髮型"
       ],
-      "confidence": "consensus",
+      "confidence": "fallback",
       "identitySources": [
         "https://sky-children-of-the-light.fandom.com/wiki/Sky_for_Nintendo_Switch#Nintendo_Pack",
         "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
@@ -889,8 +889,8 @@
     {
       "guid": "z2M4HqpR9C",
       "englishName": "Feast Hat",
-      "currentName": "宴會帽子",
-      "displayName": "宴會帽子",
+      "currentName": "宴會毛帽",
+      "displayName": "宴會毛帽",
       "aliases": [],
       "confidence": "fallback",
       "identitySources": [
@@ -955,13 +955,13 @@
     {
       "guid": "si_8YhNtmr",
       "englishName": "Mischief Witch Hair",
-      "currentName": "惡作劇巫師髮型",
+      "currentName": "女巫髮型",
       "displayName": "女巫髮型",
       "aliases": [
         "女巫頭",
         "女巫長髮"
       ],
-      "confidence": "consensus",
+      "confidence": "fallback",
       "identitySources": [
         "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2021#Mischief_Witch_Hair",
         "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
@@ -984,12 +984,12 @@
     {
       "guid": "cMNnwUbQed",
       "englishName": "Mischief Witch Hat",
-      "currentName": "惡作劇巫師帽子",
+      "currentName": "巫師帽",
       "displayName": "巫師帽",
       "aliases": [
         "女巫帽"
       ],
-      "confidence": "consensus",
+      "confidence": "fallback",
       "identitySources": [
         "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2020#Mischief_Witch_Hat",
         "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
@@ -1083,8 +1083,8 @@
     {
       "guid": "A26TJj3cSl",
       "englishName": "Fortune Fish Hood",
-      "currentName": "福瑞魚兜帽",
-      "displayName": "福瑞魚兜帽",
+      "currentName": "福瑞魚頭套",
+      "displayName": "福瑞魚頭套",
       "aliases": [
         "鯉魚頭",
         "錦鯉頭"
@@ -1106,8 +1106,8 @@
     {
       "guid": "rNDDbcjS4G",
       "englishName": "Fortune Bun Hair",
-      "currentName": "福瑞髮髻髮型",
-      "displayName": "福瑞髮髻髮型",
+      "currentName": "福瑞包子頭",
+      "displayName": "福瑞包子頭",
       "aliases": [
         "雙丸子頭"
       ],
@@ -1330,8 +1330,8 @@
     {
       "guid": "wZGUtak1mb",
       "englishName": "AURORA Runaway Hair",
-      "currentName": "歐若拉逃跑髮型",
-      "displayName": "歐若拉逃跑髮型",
+      "currentName": "逃跑髮型",
+      "displayName": "逃跑髮型",
       "aliases": [
         "奔離遠行頭"
       ],

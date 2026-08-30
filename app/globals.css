@@ -177,14 +177,19 @@ a:focus-visible {
   background: #070d17b8;
   box-shadow: inset 0 1px #ffffff08;
 }
-.catalog-search > span,
+.catalog-search {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.catalog-search > label,
 .source-select > span {
+  grid-column: 1 / -1;
   color: #b4becb;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 .catalog-search > div {
+  min-width: 0;
   height: 34px;
   display: flex;
   align-items: center;
@@ -208,6 +213,7 @@ a:focus-visible {
   color: #8491a3;
 }
 .catalog-search button {
+  align-self: center;
   width: 30px;
   height: 30px;
   border: 0;
@@ -1637,7 +1643,7 @@ footer {
     padding: 9px 11px;
     border-radius: 14px;
   }
-  .catalog-search > span,
+  .catalog-search > label,
   .source-select > span {
     font-size: 10px;
   }

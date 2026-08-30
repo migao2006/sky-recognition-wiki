@@ -6,6 +6,8 @@ import ts from "typescript";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const jsonImports = [
+  ["iapCatalog", "iap-catalog.json"],
+  ["iapCatalog", "iap-catalog.json"],
   ["playerHairNames", "player-hair-names.json"],
   ["playerZhNames", "player-zh-names.json"],
   ["wikiZhNames", "wiki-zh-names.json"],
@@ -17,6 +19,7 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
   try {
     for (const name of [
       "wiki-data",
+      "season-items",
       "market-collectibles",
       "valuation-items",
       "catalog-domain",
@@ -38,6 +41,7 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
           },
         })
         .outputText.replaceAll('from "./wiki-data"', 'from "./wiki-data.js"')
+        .replaceAll('from "./season-items"', 'from "./season-items.js"')
         .replaceAll(
           'from "./market-collectibles"',
           'from "./market-collectibles.js"',

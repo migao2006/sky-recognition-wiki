@@ -51,15 +51,15 @@ export const classifyBreakClass = (
 };
 
 export const classifyAccountStyle = ({
-  packageCount,
+  paidItemCount,
   graduationCount,
   seasonCount,
 }: {
-  packageCount: number;
+  paidItemCount: number;
   graduationCount: number;
   seasonCount: number;
 }): MarketAccountStyle =>
-  packageCount < 15 && graduationCount <= 4 && seasonCount <= 8
+  paidItemCount < 15 && graduationCount <= 4 && seasonCount <= 8
     ? "simple"
     : "regular";
 

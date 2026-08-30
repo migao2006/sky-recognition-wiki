@@ -61,6 +61,7 @@ const breakClasses = ["none", "slight", "medium", "big"];
 const packageTiers = ["few", "medium", "many", "hundred"];
 const accountStyles = ["simple", "regular"];
 const emptyBreakdown = () => ({ ask: 0, quick_sale: 0, sold: 0, professional_estimate: 0, comment: 0 });
+const emptyQualityBreakdown = () => ({ high: 0, medium: 0, low: 0 });
 
 let referenceDate = null;
 const dateFor = (row) => {
@@ -107,11 +108,47 @@ const seasonSlugsFor = (row) => {
   for (const [slug, pattern] of patterns) if (new RegExp(pattern, "i").test(text)) slugs.add(slug);
   return [...slugs];
 };
-const startSeasonFactorFor = (row) => {
-  if (!patterns.has(String(row.start_season_slug ?? "").trim().toLowerCase()))
-    return 0;
+const structuredSeasonSlugsFor = (row) => {
+  const slugs = new Set();
+  const add = (value) => {
+    const slug = String(value ?? "").trim().toLowerCase();
+    if (patterns.has(slug)) slugs.add(slug);
+  };
+  add(row.start_season_slug);
+  if (row.season_progress && typeof row.season_progress === "object")
+    Object.keys(row.season_progress).forEach(add);
+  if (Array.isArray(row.seasons))
+    row.seasons.forEach((season) =>
+      add(typeof season === "string" ? season : season?.slug),
+    );
+  return [...slugs];
+};
+const startSeasonFor = (row) => {
+  const explicit = String(row.start_season_slug ?? "").trim().toLowerCase();
+  if (patterns.has(explicit)) return explicit;
+  if (row.season_progress && typeof row.season_progress === "object") {
+    const hasProgress = (value) => {
+      if (value === null || value === undefined || value === false) return false;
+      if (typeof value === "number") return value > 0;
+      const normalized = String(value).trim().toLowerCase();
+      if (!normalized || /^(?:0|0\s*\/\s*\d+|⁰|none|no|false|-)$/.test(normalized))
+        return false;
+      return true;
+    };
+    for (const slug of patterns.keys()) {
+      if (Object.hasOwn(row.season_progress, slug) && hasProgress(row.season_progress[slug]))
+        return slug;
+    }
+  }
+  const structured = structuredSeasonSlugsFor(row);
+  return structured.length === 1 ? structured[0] : null;
+};
+const startSeasonFactorFor = (row, startSeason) => {
+  if (!startSeason) return 0;
   const confidence = String(row.start_season_confidence ?? "").toLowerCase();
   if (confidence === "unknown") return 0;
+  if (!patterns.has(String(row.start_season_slug ?? "").trim().toLowerCase()))
+    return 0.45;
   if (confidence === "inferred") return 0.45;
   if (confidence === "structured") return 0.8;
   return 1;
@@ -165,10 +202,16 @@ const weightedQuantile = (samples, percentile, valueKey = "price") => {
   }
   return ordered.at(-1)[valueKey];
 };
-const summarize = (samples) => {
+const summarize = (samples, includeEvidenceProfile = false) => {
   const effectiveWeight = samples.reduce((sum, sample) => sum + sample.weight, 0);
   const evidenceBreakdown = emptyBreakdown();
-  samples.forEach((sample) => (evidenceBreakdown[sample.kind] += 1));
+  const qualityBreakdown = emptyQualityBreakdown();
+  const sourceBreakdown = {};
+  samples.forEach((sample) => {
+    evidenceBreakdown[sample.kind] += 1;
+    qualityBreakdown[sample.quality] += 1;
+    sourceBreakdown[sample.source] = (sourceBreakdown[sample.source] ?? 0) + 1;
+  });
   return {
     sampleCount: samples.length,
     effectiveWeight: Number(effectiveWeight.toFixed(3)),
@@ -176,6 +219,16 @@ const summarize = (samples) => {
     median: weightedQuantile(samples, 0.5),
     p75: weightedQuantile(samples, 0.75),
     evidenceBreakdown,
+    ...(includeEvidenceProfile
+      ? {
+          qualityBreakdown,
+          sourceBreakdown: Object.fromEntries(
+            Object.entries(sourceBreakdown).sort(([left], [right]) =>
+              left.localeCompare(right),
+            ),
+          ),
+        }
+      : {}),
   };
 };
 
@@ -224,6 +277,7 @@ for (const row of rows) {
   }
   const kind = row.evidence_kind;
   const priceKind = row.price_kind ?? kind;
+  const startSeason = startSeasonFor(row);
   const priceKindWeight = row.price_kind
     ? (priceKindWeights[priceKind] ?? 0.75)
     : 1;
@@ -231,13 +285,24 @@ for (const row of rows) {
     price: priceFor(row),
     weight: evidenceWeights[kind] * priceKindWeight * qualityWeights[row.evidence_quality ?? "medium"] * timeWeight(dateFor(row)),
     kind,
+    quality: row.evidence_quality ?? "medium",
     source: String(row.source ?? row.__sourceHint ?? "unknown"),
-    startSeason: slugs.length === 1 ? slugs[0] : null,
-    startSeasonFactor: startSeasonFactorFor(row),
+    startSeason,
+    startSeasonFactor: startSeasonFactorFor(row, startSeason),
     breakClass: breakClassFor(row),
     packageTier: packageTierFor(row),
     accountStyle: accountStyleFor(row),
   };
+  const affectsCalibration =
+    slugs.length > 0 ||
+    sample.startSeasonFactor > 0 ||
+    sample.breakClass !== null ||
+    sample.packageTier !== null ||
+    sample.accountStyle !== null;
+  if (!affectsCalibration) {
+    excludedRows += 1;
+    continue;
+  }
   eligible.push(sample);
   slugs.forEach((slug) => seasonMetrics[slug].samples.push(sample));
 }
@@ -250,7 +315,7 @@ const segmentFor = (key, values) => Object.fromEntries(values.map((value) => [va
 const segments = {
   startSeason: Object.fromEntries([...patterns.keys()].map((slug) => [slug, summarize(eligible
     .filter((sample) => sample.startSeason === slug && sample.startSeasonFactor > 0)
-    .map((sample) => ({ ...sample, weight: sample.weight * sample.startSeasonFactor })))])),
+    .map((sample) => ({ ...sample, weight: sample.weight * sample.startSeasonFactor })), true)])),
   breakClass: segmentFor("breakClass", breakClasses),
   packageTier: segmentFor("packageTier", packageTiers),
   accountStyle: segmentFor("accountStyle", accountStyles),

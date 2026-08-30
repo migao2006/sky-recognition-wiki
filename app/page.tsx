@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AccountStep } from "./account-step";
 import {
   emptyBindings,
@@ -8,10 +9,19 @@ import {
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
-import { CatalogStep, useCatalogStepState } from "./catalog-step";
+import type { CatalogStepState } from "./catalog-step";
 import { useAccountDraft } from "./use-account-draft";
 import { useOrganizerRuntime } from "./use-organizer-runtime";
-import { ValuationStep, useValuationStepState } from "./valuation-step";
+import type { ValuationStepState } from "./valuation-step";
+
+const CatalogStep = dynamic(
+  () => import("./catalog-step").then((module) => module.CatalogStep),
+  { ssr: false },
+);
+const ValuationStep = dynamic(
+  () => import("./valuation-step").then((module) => module.ValuationStep),
+  { ssr: false },
+);
 
 const emptyAccount = (): AccountInfo => ({
   name: "",
@@ -32,8 +42,43 @@ export default function AccountOrganizer() {
   const [bindings, setBindings] =
     useState<Record<BindingKey, BindingStatus>>(emptyBindings);
   const [notice, setNotice] = useState("");
-  const catalogStepState = useCatalogStepState();
-  const valuationStepState = useValuationStepState();
+  const [visibleCount, setVisibleCount] = useState(40);
+  const [closet, setCloset] = useState("outfit");
+  const [sub, setSub] = useState("Outfit");
+  const [season, setSeason] = useState("全部季節");
+  const [query, setQuery] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [focusMode, setFocusMode] = useState<
+    "all" | "video" | "ultimate" | "limited"
+  >("all");
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const catalogStepState: CatalogStepState = {
+    visibleCount,
+    setVisibleCount,
+    closet,
+    setCloset,
+    sub,
+    setSub,
+    season,
+    setSeason,
+    query,
+    setQuery,
+    sourceFilter,
+    setSourceFilter,
+    focusMode,
+    setFocusMode,
+    filterPanelOpen,
+    setFilterPanelOpen,
+  };
+  const [showcasePreset, setShowcasePreset] = useState<
+    "valuation" | "video" | "collection"
+  >("valuation");
+  const valuationStepState: ValuationStepState = {
+    showcasePreset,
+    setShowcasePreset,
+  };
+  const announcedStep = useRef<1 | 2 | 3>(1);
+  const [stepAnnouncement, setStepAnnouncement] = useState("");
   const runtime = useOrganizerRuntime(setOwned);
   const { loadCatalog, loadValuation } = runtime;
   const { draftAvailable, clearStoredDraft } = useAccountDraft({
@@ -96,9 +141,32 @@ export default function AccountOrganizer() {
   const runtimeFailed =
     runtime.catalogLoadError ||
     (activeStep === 3 && runtime.valuationLoadError);
+  const activeStepReady =
+    activeStep === 1 ||
+    (activeStep === 2 && Boolean(runtime.catalogDomain)) ||
+    (activeStep === 3 &&
+      Boolean(runtime.catalogDomain) &&
+      Boolean(runtime.valuationRuntime));
+
+  useEffect(() => {
+    if (!activeStepReady || announcedStep.current === activeStep) return;
+    const stepName = ["", "帳號資料", "選擇物品", "估價與匯出"][activeStep];
+    const focusFrame = window.requestAnimationFrame(() => {
+      const heading = document.querySelector<HTMLElement>(".app-shell h1");
+      if (!heading) return;
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      setStepAnnouncement(`已切換至${stepName}`);
+      announcedStep.current = activeStep;
+    });
+    return () => window.cancelAnimationFrame(focusFrame);
+  }, [activeStep, activeStepReady]);
 
   return (
     <main className="app-shell">
+      <div className="visually-hidden" aria-live="polite" aria-atomic="true">
+        {stepAnnouncement}
+      </div>
       {runtimeMissing && (
         <section className="account-panel" aria-live="polite">
           <div className="empty">
@@ -173,8 +241,7 @@ export default function AccountOrganizer() {
       )}
       <footer>
         <span>
-          資料來源：SkyGame-Data 1.3.10、SkyGame-Planner、Sky Wiki／BWiki（核對於
-          2026-08-29）
+          資料來源：SkyGame-Data 1.3.10、SkyGame-Planner、Sky Wiki／BWiki
         </span>
       </footer>
     </main>

@@ -69,6 +69,11 @@ export type ValuationEstimate = {
     partialSeasons: number;
     completionRatio: number;
     effectiveSample: number;
+    paidItemCount: number;
+    canonicalPackageCount: number;
+    evidenceQuality: "strong" | "mixed" | "limited";
+    priceStage: "成交樣本" | "刊登樣本" | "混合參考" | "低資訊參考";
+    sourceConcentration: number;
   };
 };
 export type ValuationAnalysis = {
@@ -83,6 +88,7 @@ export type ValuationAnalysis = {
   issueCount: number;
   keepCount: number;
   bindings: Record<string, BindingStatus>;
+  bindingsConfirmed?: boolean;
   getZhName: (item: WikiItem) => string;
 };
 
@@ -119,11 +125,13 @@ export const analyzeValuation = ({
   chosen,
   bindings,
   bindingNote,
+  bindingsConfirmed = false,
   domain,
 }: {
   chosen: WikiItem[];
   bindings: Record<BindingKey | string, BindingStatus>;
   bindingNote: string;
+  bindingsConfirmed?: boolean;
   domain: ValuationDomain;
 }): ValuationAnalysis => {
   const valuationItems = chosen.filter(domain.isValuationFocus);
@@ -157,7 +165,9 @@ export const analyzeValuation = ({
   );
   const statuses = Object.values(bindings);
   const reviewed =
-    statuses.some((status) => status !== "none") || Boolean(bindingNote.trim());
+    bindingsConfirmed ||
+    statuses.some((status) => status !== "none") ||
+    Boolean(bindingNote.trim());
   return {
     valuationItems,
     ultimates,
@@ -179,6 +189,7 @@ export const analyzeValuation = ({
     issueCount: statuses.filter((status) => status === "issue").length,
     keepCount: statuses.filter((status) => status === "keep").length,
     bindings: bindings as Record<string, BindingStatus>,
+    bindingsConfirmed,
     getZhName: domain.getZhName,
   };
 };
@@ -241,6 +252,64 @@ const isPlatformTransferable = (
   return false;
 };
 
+const evidenceProfileFor = (evidence: {
+  sampleCount: number;
+  evidenceBreakdown: Record<string, number>;
+  qualityBreakdown?: Record<string, number>;
+  sourceBreakdown?: Record<string, number>;
+} | undefined) => {
+  const total = evidence?.sampleCount ?? 0;
+  const stages = evidence?.evidenceBreakdown ?? {};
+  const quality = evidence?.qualityBreakdown ?? {};
+  const sources = Object.values(
+    evidence?.sourceBreakdown ?? valuationMarketAggregate.sourceBreakdown ?? {},
+  );
+  const sourceConcentration = total
+    ? Math.max(0, ...sources) / total
+    : 1;
+  const sold = stages.sold ?? 0;
+  const listed = (stages.ask ?? 0) + (stages.quick_sale ?? 0);
+  const auxiliary = (stages.professional_estimate ?? 0) + (stages.comment ?? 0);
+  const highQuality = quality.high ?? 0;
+  const hasQualityData = Boolean(evidence?.qualityBreakdown);
+  const evidenceQuality =
+    hasQualityData &&
+    total >= 8 && highQuality / total >= 0.7 && sourceConcentration <= 0.75
+      ? "strong"
+      : total >= 5 && sourceConcentration <= 0.9
+        ? "mixed"
+        : "limited";
+  const priceStage = sold
+    ? listed || auxiliary
+      ? "混合參考"
+      : "成交樣本"
+    : listed
+      ? auxiliary
+        ? "混合參考"
+        : "刊登樣本"
+      : "低資訊參考";
+  return { evidenceQuality, priceStage, sourceConcentration } as const;
+};
+
+const confidenceForEvidence = (
+  confidence: SeasonConfidence,
+  profile: ReturnType<typeof evidenceProfileFor>,
+): SeasonConfidence => {
+  const rank: Record<SeasonConfidence, number> = {
+    inferred: 0,
+    low: 1,
+    medium: 2,
+    high: 3,
+  };
+  let next = rank[confidence];
+  if (profile.evidenceQuality === "mixed") next = Math.min(next, 2);
+  if (profile.evidenceQuality === "limited") next = Math.min(next, 1);
+  if (profile.priceStage === "刊登樣本") next = Math.min(next, 2);
+  if (profile.priceStage === "低資訊參考") next = Math.min(next, 1);
+  if (profile.sourceConcentration > 0.9) next = Math.min(next, 1);
+  return (["inferred", "low", "medium", "high"] as const)[next];
+};
+
 export const estimateValuation = ({
   analysis,
   resources,
@@ -265,6 +334,11 @@ export const estimateValuation = ({
         partialSeasons: 0,
         completionRatio: 0,
         effectiveSample: 0,
+        paidItemCount: 0,
+        canonicalPackageCount: 0,
+        evidenceQuality: "limited",
+        priceStage: "低資訊參考",
+        sourceConcentration: 1,
       },
     };
   }
@@ -313,7 +387,31 @@ export const estimateValuation = ({
       high: 0,
       percent: Math.round((breakMultiplier - 1) * 100),
     });
+  const partialSeasonDiscount = seasonRows.reduce(
+    (total, row) => {
+      if (!row.selected || row.selected >= row.expected) return total;
+      const missingRatio = Math.max(0, 1 - row.completion);
+      return {
+        low: total.low + row.contributionLow * missingRatio,
+        high: total.high + row.contributionHigh * missingRatio,
+      };
+    },
+    { low: 0, high: 0 },
+  );
+  if (partialSeasonDiscount.low || partialSeasonDiscount.high) {
+    low = Math.max(300, low - partialSeasonDiscount.low);
+    high = Math.max(low, high - partialSeasonDiscount.high);
+    contributions.push({
+      group: "season",
+      label: "未完成畢業禮",
+      low: -roundHundred(partialSeasonDiscount.low),
+      high: -roundHundred(partialSeasonDiscount.high),
+    });
+  }
   const packageMap = new Map<string, WikiItem>();
+  // Market samples describe the account's paid-item total, while the actual
+  // price contribution below remains deduplicated to one row per real pack.
+  const paidItemCount = analysis.packages.length;
   analysis.packages.forEach((item) => {
     if (isChinaOnlyItem(item)) {
       warnings.push("國服限定物品不列入國際服參考價格。");
@@ -324,7 +422,7 @@ export const estimateValuation = ({
     const key = canonicalPackageKey(item);
     if (key) packageMap.set(key, item);
   });
-  const packageTier = classifyPackageTier(packageMap.size);
+  const packageTier = classifyPackageTier(paidItemCount);
   const packageMarketMultiplier = marketPackageMultiplier(packageTier.key);
   const packageUnit = packageMap.size
     ? packageTier.premium / packageMap.size
@@ -398,7 +496,7 @@ export const estimateValuation = ({
   low += resource.low;
   high += resource.high;
   const accountStyle = classifyAccountStyle({
-    packageCount: packageMap.size,
+    paidItemCount,
     graduationCount: analysis.ultimates.length,
     seasonCount: analysis.seasonCompletion.size,
   });
@@ -440,15 +538,19 @@ export const estimateValuation = ({
   }
   low = roundHundred(Math.max(300, low * risk));
   high = roundHundred(Math.max(low, high * risk));
-  const confidence: SeasonConfidence = startBand?.confidence ?? "inferred";
-  const summary = summarizeValuationRange(low, high, confidence);
-  if (!analysis.startSeasonSlug)
-    warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
   const startEvidence = analysis.startSeasonSlug
     ? valuationMarketAggregate.segments.startSeason[
         analysis.startSeasonSlug as keyof typeof valuationMarketAggregate.segments.startSeason
       ]
     : undefined;
+  const evidenceProfile = evidenceProfileFor(startEvidence);
+  const confidence = confidenceForEvidence(
+    startBand?.confidence ?? "inferred",
+    evidenceProfile,
+  );
+  const summary = summarizeValuationRange(low, high, confidence);
+  if (!analysis.startSeasonSlug)
+    warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
   return {
     range: { low: summary.low, high: summary.high, currency: "TWD" },
     midpoint: summary.midpoint,
@@ -464,6 +566,9 @@ export const estimateValuation = ({
       partialSeasons: breakProfile.partialSeasons,
       completionRatio: breakProfile.completionRatio,
       effectiveSample: startEvidence?.sampleCount ?? 0,
+      paidItemCount,
+      canonicalPackageCount: packageMap.size,
+      ...evidenceProfile,
     },
   };
 };

@@ -2,13 +2,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { asModuleUrl } from "./helpers/transpile.mjs";
+import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
+import { injectSeasonItems } from "./helpers/season-items.mjs";
 
-const [valuationSource, marketSource] = await Promise.all(
-  ["valuation-items.ts", "market-collectibles.ts"].map((file) =>
+const [valuationSource] = await Promise.all(
+  ["valuation-items.ts"].map((file) =>
     readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
   ),
 );
-const marketUrl = asModuleUrl(marketSource);
+const marketUrl = await marketCollectiblesModuleUrl();
 const {
   canonicalPackageKey,
   isChinaOnlyItem,
@@ -19,7 +21,7 @@ const {
   isSeasonUltimate,
 } = await import(
   asModuleUrl(
-    valuationSource.replace(
+    (await injectSeasonItems(valuationSource)).replace(
       'import { marketCollectibleProfile } from "./market-collectibles";',
       `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
     ),

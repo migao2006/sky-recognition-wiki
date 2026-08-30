@@ -71,7 +71,7 @@ const packageTierNames = {
   hundred: "百禮",
 } as const;
 const showcasePresetNames: Record<ShowcasePreset, string> = {
-  valuation: "市場估算",
+  valuation: "刊登樣本估算",
   video: "快速核對",
   collection: "完整衣櫃",
 };
@@ -115,6 +115,12 @@ export function ValuationStep({
 }: Props) {
   const { showcasePreset, setShowcasePreset } = state;
   const importRef = useRef<HTMLInputElement>(null);
+  const exportInFlightRef = useRef(false);
+  const [imageExport, setImageExport] = useState<{
+    phase: "loading-icons" | "rendering";
+    completed: number;
+    total: number;
+  } | null>(null);
   const chosen = useMemo(
     () =>
       runtime.wikiItems.filter(
@@ -128,11 +134,13 @@ export function ValuationStep({
       runtime.valuationRuntime?.analysis.analyzeValuation({
         chosen,
         bindings,
+        bindingsConfirmed: account.bindingsConfirmed,
         bindingNote: account.bindingNote,
         domain: runtime.valuationDomain,
       }) ?? emptyValuationAnalysis,
     [
       account.bindingNote,
+      account.bindingsConfirmed,
       bindings,
       chosen,
       runtime.valuationDomain,
@@ -287,6 +295,7 @@ export function ValuationStep({
       : chosen;
   };
   const exportShowcaseImage = async () => {
+    if (exportInFlightRef.current) return;
     if (!chosen.length) {
       setNotice("尚未選取物品");
       return;
@@ -296,12 +305,19 @@ export function ValuationStep({
       setNotice("這個版型沒有可匯出的物品");
       return;
     }
+    exportInFlightRef.current = true;
+    setImageExport({
+      phase: "loading-icons",
+      completed: 0,
+      total: exportItems.length,
+    });
     setNotice("正在產生圖片…");
     try {
       const { renderShowcaseImage } = await import("./export-showcase");
-      const blob = await renderShowcaseImage({
+      const result = await renderShowcaseImage({
         ...runtime.showcaseOrderOptions(exportItems),
         preset: showcasePreset,
+        onProgress: setImageExport,
         valuation: {
           midpoint: valuationEstimate?.midpoint ?? null,
           range: valuationEstimate?.range ?? null,
@@ -314,16 +330,28 @@ export function ValuationStep({
             ? valuationEstimate.contributions
                 .slice(0, 5)
                 .map((row) => localizeValuationLabel(row.label))
-            : [],
+          : [],
         },
       });
-      downloadBlob(
-        blob,
-        `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}.png`,
+      const filePrefix = `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}`;
+      result.images.forEach((blob, index) =>
+        downloadBlob(
+          blob,
+          result.images.length === 1
+            ? `${filePrefix}.png`
+            : `${filePrefix}_${index + 1}-${result.images.length}.png`,
+        ),
       );
-      setNotice("整理圖片已下載");
+      setNotice(
+        result.failedIconCount
+          ? `已下載 ${result.images.length} 張圖片；${result.failedIconCount} 件圖示載入失敗，請重新匯出確認。`
+          : `整理圖片已下載（${result.loadedIconCount} 件圖示）`,
+      );
     } catch {
       setNotice("圖片產生失敗");
+    } finally {
+      exportInFlightRef.current = false;
+      setImageExport(null);
     }
   };
   const previewItems = orderShowcaseItems(
@@ -354,9 +382,9 @@ export function ValuationStep({
               type="button"
               className="showcase-download"
               onClick={exportShowcaseImage}
-              disabled={!previewItems.length}
+              disabled={!previewItems.length || Boolean(imageExport)}
             >
-              下載圖片
+              {imageExport ? "產生中…" : "下載圖片"}
             </button>
           </div>
         </div>
@@ -372,6 +400,7 @@ export function ValuationStep({
                 className={showcasePreset === key ? "active" : ""}
                 aria-pressed={showcasePreset === key}
                 onClick={() => setShowcasePreset(key)}
+                disabled={Boolean(imageExport)}
               >
                 <strong>{name}</strong>
                 <small>{itemCount.toLocaleString()} 件</small>
@@ -386,7 +415,7 @@ export function ValuationStep({
           </header>
           {showcasePreset === "valuation" && (
             <div className="showcase-price">
-              <span>市場中位估算</span>
+              <span>刊登樣本中位估算</span>
               <strong>
                 {valuationEstimate
                   ? formatTwd(valuationEstimate.midpoint)
@@ -419,6 +448,13 @@ export function ValuationStep({
           </div>
           {!previewItems.length && <p>尚未選取此版型需要的物品。</p>}
         </div>
+        {imageExport && (
+          <p className="showcase-export-status" role="status">
+            {imageExport.phase === "loading-icons"
+              ? `正在載入圖示 ${imageExport.completed}／${imageExport.total}`
+              : `正在輸出第 ${imageExport.completed + 1}／${imageExport.total} 張圖片`}
+          </p>
+        )}
       </section>
       <section className="valuation-report" aria-labelledby="valuation-title">
         <div className="valuation-report-head">
@@ -438,7 +474,7 @@ export function ValuationStep({
         <div className="valuation-summary">
           <article className="valuation-verdict">
             <span>
-              市場中位估算
+              刊登樣本中位估算
               {valuationEstimate
                 ? ` · ${confidenceNames[valuationEstimate.confidence]}`
                 : ""}
@@ -587,7 +623,7 @@ export function ValuationStep({
                 <br />
               </>
             )}
-            依季節完成度、禮包、限定、綁定與資源加權；價格以近期台幣刊登與成交資訊推估，實際成交可能不同。
+            依季節完成度、禮包、限定、綁定與資源加權；價格以近期台幣刊登樣本推估，實際交易條件可能不同。
             <br />
             資源採小額封頂，季卡項鍊不代表畢業；國服資料不混入台幣價格，結果僅供參考。
             <br />
@@ -596,12 +632,12 @@ export function ValuationStep({
               "zh-TW",
             )}{" "}
             筆帳號樣本，其中 {runtime.valuationSampleSummary.eligibleRows}{" "}
-            筆台幣樣本納入推斷（
+            筆台幣刊登樣本納入推斷（
             {runtime.valuationSampleSummary.asOf}）。
             本次納入 {runtime.valuationSampleSummary.driveEligibleRows} 筆雲端市場文案、
             {runtime.valuationSampleSummary.facebookEligibleRows} 筆社團刊登價與
             {runtime.valuationSampleSummary.marketplaceEligibleRows} 筆公開交易平台刊登；
-            成交、秒價、一般刊登與低資訊樣本採不同權重。
+            公開平台、社團刊登與資料完整度採不同權重。
             <a
               href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
               target="_blank"

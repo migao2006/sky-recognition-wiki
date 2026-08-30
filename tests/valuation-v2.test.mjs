@@ -17,9 +17,9 @@ test("season bands contain all thirty ordered seasons with valid price ranges", 
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
     sourceRows: 1186,
-    eligibleRows: 295,
+    eligibleRows: 281,
     facebookRows: 16,
-    facebookEligibleRows: 14,
+    facebookEligibleRows: 0,
     driveRows: 112,
     driveEligibleRows: 112,
     marketplaceRows: 36,
@@ -77,14 +77,14 @@ test("client summary contains no raw listing text", () => {
   assert.equal(/listing|description|seller|title/i.test(serialized), false);
 });
 
-test("anonymous market aggregate covers more than one hundred and fifty accounts", () => {
+test("anonymous market aggregate excludes samples that do not affect calibration", () => {
   assert.equal(marketAggregate.sourceRows, 164);
-  assert.equal(marketAggregate.eligibleRows, 162);
+  assert.equal(marketAggregate.eligibleRows, 148);
   assert.deepEqual(marketAggregate.sourceBreakdown, {
     "8591_hk": 33,
     "8591_tw": 1,
     carousell_tw: 2,
-    facebook: 14,
+    facebook: 0,
     google_drive: 112,
   });
   assert.deepEqual(marketAggregate.sourceRowsBySource, {

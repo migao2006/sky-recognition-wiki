@@ -2,27 +2,28 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { asModuleUrl } from "./helpers/transpile.mjs";
+import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
+import { injectSeasonItems } from "./helpers/season-items.mjs";
 const sources = await Promise.all(
   [
     "account-config.ts",
     "valuation-calibration.ts",
-    "market-collectibles.ts",
     "valuation-items.ts",
     "valuation-market.ts",
     "valuation-season-bands.ts",
     "valuation-analysis.ts",
   ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
 );
-const [config, calibration, market, items, valuationMarket, bands, analysis] = sources;
+const [config, calibration, items, valuationMarket, bands, analysis] = sources;
 const marketAggregate = JSON.parse(
   await readFile(
     new URL("../app/valuation-market-aggregate.json", import.meta.url),
     "utf8",
   ),
 );
-const marketUrl = asModuleUrl(market);
+const marketUrl = await marketCollectiblesModuleUrl();
 const itemsUrl = asModuleUrl(
-  items.replace(
+  (await injectSeasonItems(items)).replace(
     'import { marketCollectibleProfile } from "./market-collectibles";',
     `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
   ),
@@ -115,11 +116,16 @@ const domain = {
   ]),
   sortSeasonSlugs: (slugs) => [...slugs].sort(),
 };
-const analyze = (chosen, selectedBindings = bindings()) =>
+const analyze = (
+  chosen,
+  selectedBindings = bindings(),
+  bindingsConfirmed = false,
+) =>
   analyzeValuation({
     chosen,
     bindings: selectedBindings,
     bindingNote: "",
+    bindingsConfirmed,
     domain,
   });
 
@@ -342,7 +348,108 @@ test("a partial season is not treated as a break and kept platform content is ex
   assert.ok(result.warnings.some((warning) => warning.includes("playstation")));
 });
 
-test("excluded packages cannot raise the tier of transferable packages", () => {
+test("partial graduation is below full graduation without a second break penalty", () => {
+  const firstUltimate = item({
+    name: "Enchantment Ultimate 1",
+    group: "Ultimate",
+    section: "seasons",
+    collection: "enchantment",
+  });
+  const secondUltimate = item({
+    name: "Enchantment Ultimate 2",
+    group: "Ultimate",
+    section: "seasons",
+    collection: "enchantment",
+  });
+  const nextUltimate = item({
+    name: "Sanctuary Ultimate",
+    group: "Ultimate",
+    section: "seasons",
+    collection: "sanctuary",
+  });
+  const partial = estimateValuation({
+    analysis: analyze([firstUltimate, nextUltimate]),
+  });
+  const complete = estimateValuation({
+    analysis: analyze([firstUltimate, secondUltimate, nextUltimate]),
+  });
+  assert.ok(partial && complete);
+  assert.equal(partial.marketProfile.breakClass, "none");
+  assert.equal(partial.marketProfile.partialSeasons, 1);
+  assert.ok(partial.midpoint < complete.midpoint);
+  assert.equal(
+    partial.contributions.some((row) => row.label.includes("缺少畢業禮")),
+    false,
+  );
+  assert.ok(
+    partial.contributions.some((row) => row.label === "未完成畢業禮"),
+  );
+});
+
+test("market package tier uses paid item count while package value stays deduplicated", () => {
+  const items = Array.from({ length: 100 }, (_, index) =>
+    item({
+      name: `Same Pack Item ${index}`,
+      wiki: "https://wiki.test/Shared_Pack",
+    }),
+  );
+  const result = estimateValuation({ analysis: analyze(items) });
+  assert.ok(result);
+  assert.equal(result.marketProfile.paidItemCount, 100);
+  assert.equal(result.marketProfile.canonicalPackageCount, 1);
+  assert.equal(result.marketProfile.packageTier, "hundred");
+  assert.equal(
+    result.contributions.filter((row) => row.group === "package").length,
+    1,
+  );
+});
+
+test("confirmed all-none bindings count as complete account information", () => {
+  const unconfirmed = analyze([item({ wiki: "https://wiki.test/Pack" })]);
+  const confirmed = analyze([item({ wiki: "https://wiki.test/Pack" })], bindings(), true);
+  assert.ok(confirmed.completeness > unconfirmed.completeness);
+  assert.equal(confirmed.bindingsConfirmed, true);
+});
+
+test("listing-only start-season evidence is never presented as a completed sale", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({
+        name: "Enchantment Ultimate 1",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+      item({
+        name: "Enchantment Ultimate 2",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+    ]),
+  });
+  assert.ok(result);
+  assert.equal(result.marketProfile.priceStage, "刊登樣本");
+  assert.notEqual(result.marketProfile.evidenceQuality, "strong");
+});
+
+test("listing-only evidence can never produce the highest confidence", () => {
+  const result = estimateValuation({
+    analysis: analyze([
+      item({
+        name: "Prophecy Ultimate 1",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "prophecy",
+      }),
+    ]),
+  });
+  assert.ok(result);
+  assert.equal(result.marketProfile.priceStage, "刊登樣本");
+  assert.notEqual(result.confidence, "high");
+});
+
+test("untransferable paid items count toward the market tier but not pack value", () => {
   const transferable = Array.from({ length: 14 }, (_, index) =>
     item({
       name: `Pack ${index}`,
@@ -365,9 +472,16 @@ test("excluded packages cannot raise the tier of transferable packages", () => {
   });
 
   assert.ok(baseline && mixed);
-  assert.deepEqual(mixed.range, baseline.range);
+  assert.equal(baseline.marketProfile.paidItemCount, 14);
+  assert.equal(mixed.marketProfile.paidItemCount, 16);
+  assert.equal(baseline.marketProfile.packageTier, "few");
+  assert.equal(mixed.marketProfile.packageTier, "medium");
   assert.deepEqual(
-    mixed.contributions.filter((row) => row.group === "package"),
-    baseline.contributions.filter((row) => row.group === "package"),
+    mixed.contributions
+      .filter((row) => row.group === "package")
+      .map((row) => row.label),
+    baseline.contributions
+      .filter((row) => row.group === "package")
+      .map((row) => row.label),
   );
 });

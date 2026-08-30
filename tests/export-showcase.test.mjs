@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { asModuleUrl } from "./helpers/transpile.mjs";
+import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
+import { injectSeasonItems } from "./helpers/season-items.mjs";
 
 const [rawShowcaseSource, rawOrderSource] = await Promise.all(
   ["export-showcase.ts", "showcase-order.ts"].map((file) =>
@@ -25,6 +27,7 @@ const showcaseSource = rawShowcaseSource
 const {
   buildShowcaseGroups,
   measureShowcaseCanvas,
+  planShowcasePages,
 } = await import(
   asModuleUrl(showcaseSource)
 );
@@ -168,21 +171,40 @@ test("uses the shared valuation wording in image summaries", () => {
   assert.doesNotMatch(showcaseSource, /合理區間|尚無足夠估價重點|`完整度 \$\{/);
 });
 
+test("splits oversized exports into safe numbered canvas pages", () => {
+  const entries = Array.from({ length: 4_000 }, (_, index) =>
+    item({ guid: `oversized-${index}`, type: "Cape", order: index }),
+  );
+  const pages = planShowcasePages({ ...options(entries), preset: "collection" });
+  assert.ok(pages.length > 1);
+  assert.equal(pages[0].offsetY, 0);
+  assert.equal(pages.at(-1).offsetY, pages[0].height * (pages.length - 1));
+  assert.ok(pages.every((page) => page.height <= 10_000));
+});
+
+test("reports image load outcomes and progress through the export API", () => {
+  assert.match(showcaseSource, /loadedIconCount/);
+  assert.match(showcaseSource, /failedIconCount/);
+  assert.match(showcaseSource, /onProgress/);
+  assert.match(showcaseSource, /phase: "loading-icons"/);
+  assert.match(showcaseSource, /phase: "rendering"/);
+});
+
 test("keeps the complete catalog export within mobile canvas limits", async () => {
-  const [wikiSource, valuationSource, marketSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "market-collectibles.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
+  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
-  const marketUrl = asModuleUrl(marketSource);
+const marketUrl = await marketCollectiblesModuleUrl();
   const valuationUrl = asModuleUrl(
-    valuationSource.replace(
+    (await injectSeasonItems(valuationSource)).replace(
       'import { marketCollectibleProfile } from "./market-collectibles";',
       `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
     ),
   );
   const catalogUrl = asModuleUrl(
-    catalogSource
+    (await injectSeasonItems(catalogSource))
       .replace(
         'import { marketCollectibleProfile } from "./market-collectibles";',
         `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
@@ -240,6 +262,29 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
   });
   assert.equal(selected.length, 1169);
   assert.equal(size.width, 1600);
-  assert.ok(size.height <= 16384);
-  assert.ok(size.width * size.height <= 16777216);
+  const pages = planShowcasePages({
+    items: selected,
+    isUltimate: valuation.isSeasonUltimate,
+    isLimited: (entry) =>
+      valuation.isPaidItem(entry) || catalog.isLimitedItem(entry),
+    isPendant: valuation.isSeasonPendant,
+    getClusterName: (entry) =>
+      entry.section === "seasons"
+        ? catalog.seasonZh[entry.collection] || entry.collection
+        : entry.section === "events"
+          ? catalog.eventZh[entry.collection] || entry.collection
+          : entry.section === "realms"
+            ? catalog.realmZh[entry.collection] || "常駐地圖"
+            : entry.section === "store"
+              ? catalog.storeSource(entry)
+              : catalog.sourceKind(entry),
+    getClusterOrder: catalog.showcaseClusterOrder,
+    getItemTypeName: (entry) => catalog.labels[entry.type] || entry.type,
+    getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
+  });
+  assert.ok(pages.every((page) => page.height <= 10_000));
+  assert.equal(
+    pages.reduce((total, page) => total + page.height, 0),
+    size.height,
+  );
 });

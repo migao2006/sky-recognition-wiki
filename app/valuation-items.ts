@@ -1,23 +1,17 @@
 import type { WikiItem } from "./wiki-data";
 import { marketCollectibleProfile } from "./market-collectibles";
-
-export const isSeasonUltimate = (item: WikiItem) =>
-  item.section === "seasons" && item.group === "Ultimate";
-
-export const isSeasonPendant = (item: WikiItem) =>
-  isSeasonUltimate(item) &&
-  item.type === "Necklace" &&
-  /Ultimate Pendant/i.test(item.name);
-
-export const isGraduationGift = (item: WikiItem) =>
-  isSeasonUltimate(item) && !isSeasonPendant(item);
+export {
+  isGraduationGift,
+  isSeasonPendant,
+  isSeasonUltimate,
+} from "./season-items";
 
 export const isPaidItem = (item: WikiItem) =>
-  marketCollectibleProfile(item.name)?.paid === true || /Pack/i.test(item.wiki);
+  marketCollectibleProfile(item.name, item.guid)?.paid === true || /Pack/i.test(item.wiki);
 
 export const canonicalPackageKey = (item: WikiItem) => {
   if (!isPaidItem(item)) return null;
-  const profileKey = marketCollectibleProfile(item.name)?.packageKey;
+  const profileKey = marketCollectibleProfile(item.name, item.guid)?.packageKey;
   if (profileKey) return `verified:${profileKey}`;
   try {
     const url = new URL(item.wiki);
@@ -32,13 +26,13 @@ export const canonicalPackageKey = (item: WikiItem) => {
 };
 
 export const isChinaOnlyItem = (item: WikiItem) =>
-  marketCollectibleProfile(item.name)?.availability === "china" ||
+  marketCollectibleProfile(item.name, item.guid)?.availability === "china" ||
   /\b(?:china|cn|guo?fu|netease)\b|國服|国服/i.test(
     `${item.name} ${item.wiki} ${item.collection} ${item.group}`,
   );
 
 export const limitedItemKind = (item: WikiItem) => {
-  const profile = marketCollectibleProfile(item.name);
+  const profile = marketCollectibleProfile(item.name, item.guid);
   if (profile?.availability === "platform") return "platform" as const;
   if (profile && profile.valuationMultiplier >= 1.5) return "permanent" as const;
   const source = `${item.name} ${item.wiki} ${item.collection} ${item.group}`;
@@ -52,7 +46,7 @@ export const limitedItemKind = (item: WikiItem) => {
 };
 
 export const packageValuationMultiplier = (item: WikiItem) => {
-  const verified = marketCollectibleProfile(item.name)?.valuationMultiplier;
+  const verified = marketCollectibleProfile(item.name, item.guid)?.valuationMultiplier;
   if (verified !== undefined) return verified;
   const kind = limitedItemKind(item);
   return kind === "permanent"
@@ -65,7 +59,7 @@ export const packageValuationMultiplier = (item: WikiItem) => {
 };
 
 export const platformBindingForItem = (item: WikiItem) => {
-  const profilePlatform = marketCollectibleProfile(item.name)?.platform;
+  const profilePlatform = marketCollectibleProfile(item.name, item.guid)?.platform;
   if (profilePlatform) return profilePlatform;
   const source = `${item.name} ${item.wiki} ${item.collection} ${item.group}`;
   if (/nintendo/i.test(source)) return "nintendo";

@@ -12,10 +12,9 @@ import { bundlePresets } from "./bundle-presets";
 import type { WikiItem } from "./wiki-data";
 import type { ValuationDomain } from "./valuation-analysis";
 import {
-  isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
-} from "./valuation-items";
+} from "./season-items";
 
 type CatalogDomain = typeof import("./catalog-domain");
 type ValuationRuntime = {
@@ -121,6 +120,7 @@ export const useOrganizerRuntime = (
     catalogDomain?.graduationSeasonSlugs ?? emptyStringList;
   const heldClosetOrder = catalogDomain?.heldClosetOrder ?? emptyNumberMap;
   const isLimitedItem = catalogDomain?.isLimitedItem ?? alwaysFalse;
+  const isPaidItem = catalogDomain?.isPaidItem ?? alwaysFalse;
   const isProfessionalVideoFocus =
     catalogDomain?.isProfessionalVideoFocus ?? alwaysFalse;
   const isValuationFocus = catalogDomain?.isValuationFocus ?? alwaysFalse;
@@ -212,7 +212,7 @@ export const useOrganizerRuntime = (
       getItemTypeName: (item: WikiItem) => labels[item.type] || item.type,
       getItemTypeOrder: (item: WikiItem) => typeOrder.get(item.type) ?? 999,
     }),
-    [catalogDomain, isLimitedItem, labels, sourceCollectionName, typeOrder],
+    [catalogDomain, isLimitedItem, isPaidItem, labels, sourceCollectionName, typeOrder],
   );
 
   return {

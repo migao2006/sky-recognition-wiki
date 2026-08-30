@@ -89,6 +89,7 @@ export function CatalogStep({
   const searchPending = query !== deferredQuery;
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
+  const catalogRef = useRef<HTMLElement>(null);
   const [mobileFilters, setMobileFilters] = useState(false);
   const {
     wikiItems,
@@ -127,7 +128,23 @@ export function CatalogStep({
     if (!filterPanelOpen) return;
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
+    const backgroundElements: HTMLElement[] = mobileFilters
+      ? Array.from(catalogRef.current?.children ?? []).filter(
+          (element) =>
+            !element.classList.contains("filter-panel") &&
+            !element.classList.contains("filter-backdrop"),
+        ) as HTMLElement[]
+      : [];
+    const backgroundState = backgroundElements.map((element) => ({
+      element,
+      ariaHidden: element.getAttribute("aria-hidden"),
+      inert: (element as HTMLElement & { inert: boolean }).inert,
+    }));
     if (mobileFilters) document.body.style.overflow = "hidden";
+    backgroundElements.forEach((element) => {
+      (element as HTMLElement & { inert: boolean }).inert = true;
+      element.setAttribute("aria-hidden", "true");
+    });
     const focusFrame = mobileFilters
       ? window.requestAnimationFrame(() => {
           filterPanelRef.current
@@ -168,6 +185,11 @@ export function CatalogStep({
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleDialogKeys);
       if (mobileFilters) document.body.style.overflow = previousOverflow;
+      backgroundState.forEach(({ element, ariaHidden, inert }) => {
+        (element as HTMLElement & { inert: boolean }).inert = inert;
+        if (ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", ariaHidden);
+      });
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
         previousFocus.focus();
       }
@@ -177,9 +199,15 @@ export function CatalogStep({
   useEffect(() => {
     if (!nextClosetSub) return;
     const connection = (
-      navigator as Navigator & { connection?: { saveData?: boolean } }
+      navigator as Navigator & {
+        connection?: { effectiveType?: string; saveData?: boolean };
+      }
     ).connection;
-    if (connection?.saveData) return;
+    if (
+      connection?.saveData ||
+      ["slow-2g", "2g", "3g"].includes(connection?.effectiveType ?? "")
+    )
+      return;
     const nextIcons = wikiItems
       .filter((item) => matchesSub(item, nextClosetSub.subKey))
       .slice(0, 12)
@@ -306,9 +334,74 @@ export function CatalogStep({
     season !== "全部季節",
     focusMode !== "all",
   ].filter(Boolean).length;
+  const filterPanel = (
+    <div
+      className="filter-panel"
+      id="advanced-filters"
+      ref={filterPanelRef}
+      role={mobileFilters ? "dialog" : "region"}
+      aria-modal={mobileFilters || undefined}
+      aria-labelledby="filter-panel-title"
+      hidden={!filterPanelOpen}
+    >
+      <div className="filter-panel-head">
+        <b id="filter-panel-title">篩選物品</b>
+        <button type="button" onClick={() => setFilterPanelOpen(false)}>
+          完成
+        </button>
+      </div>
+      <label className="source-select">
+        <span>來源</span>
+        <select
+          value={sourceFilter}
+          onChange={(event) => {
+            const next = event.target.value;
+            setSourceFilter(next);
+            if (next !== "seasons") setSeason("全部季節");
+            resetVisibleItems();
+          }}
+          aria-label="來源篩選"
+        >
+          {sourceFilters.map((entry) => (
+            <option key={entry.key} value={entry.key}>
+              {entry.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {sourceFilter === "seasons" && (
+        <label className="source-select season-select">
+          <span>季節</span>
+          <select
+            aria-label="季節篩選"
+            value={season}
+            onChange={(event) => {
+              setSeason(event.target.value);
+              resetVisibleItems();
+            }}
+          >
+            <option value="全部季節">全部季節</option>
+            {seasons.map(([slug, name]) => (
+              <option key={slug} value={slug}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <button
+        type="button"
+        className="clear-filters"
+        onClick={resetAdvancedFilters}
+        disabled={activeFilterCount === 0}
+      >
+        清除篩選
+      </button>
+    </div>
+  );
 
   return (
-    <section className="catalog" id="top">
+    <section className="catalog" id="top" ref={catalogRef}>
       <div className="catalog-intro">
         <h1>選擇物品</h1>
         <button type="button" onClick={onNext}>
@@ -317,11 +410,14 @@ export function CatalogStep({
       </div>
       <div className="discovery-tools">
         <div className="discovery-primary">
-          <label className="catalog-search">
-            <span className="visually-hidden">搜尋物品</span>
+          <div className="catalog-search">
+            <label className="visually-hidden" htmlFor="catalog-search">
+              搜尋物品
+            </label>
             <div>
               <i>⌕</i>
               <input
+                id="catalog-search"
                 type="search"
                 value={query}
                 onChange={(event) => {
@@ -329,22 +425,21 @@ export function CatalogStep({
                   resetVisibleItems();
                 }}
                 placeholder="搜尋名稱、季節或 ID"
-                aria-label="搜尋全部衣櫃物品"
               />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("");
-                    resetVisibleItems();
-                  }}
-                  aria-label="清除搜尋"
-                >
-                  ×
-                </button>
-              )}
             </div>
-          </label>
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  resetVisibleItems();
+                }}
+                aria-label="清除搜尋"
+              >
+                ×
+              </button>
+            )}
+          </div>
           <button
             type="button"
             className={`filter-trigger${filterPanelOpen ? " open" : ""}${activeFilterCount ? " active" : ""}`}
@@ -381,77 +476,7 @@ export function CatalogStep({
             </button>
           ))}
         </div>
-        {filterPanelOpen && (
-          <button
-            type="button"
-            className="filter-backdrop"
-            aria-label="關閉篩選"
-            onClick={() => setFilterPanelOpen(false)}
-          />
-        )}
-        <div
-          className="filter-panel"
-          id="advanced-filters"
-          ref={filterPanelRef}
-          role={mobileFilters ? "dialog" : "region"}
-          aria-modal={mobileFilters || undefined}
-          aria-labelledby="filter-panel-title"
-          hidden={!filterPanelOpen}
-        >
-          <div className="filter-panel-head">
-            <b id="filter-panel-title">篩選物品</b>
-            <button type="button" onClick={() => setFilterPanelOpen(false)}>
-              完成
-            </button>
-          </div>
-          <label className="source-select">
-            <span>來源</span>
-            <select
-              value={sourceFilter}
-              onChange={(event) => {
-                const next = event.target.value;
-                setSourceFilter(next);
-                if (next !== "seasons") setSeason("全部季節");
-                resetVisibleItems();
-              }}
-              aria-label="來源篩選"
-            >
-              {sourceFilters.map((entry) => (
-                <option key={entry.key} value={entry.key}>
-                  {entry.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {sourceFilter === "seasons" && (
-            <label className="source-select season-select">
-              <span>季節</span>
-              <select
-                aria-label="季節篩選"
-                value={season}
-                onChange={(event) => {
-                  setSeason(event.target.value);
-                  resetVisibleItems();
-                }}
-              >
-                <option value="全部季節">全部季節</option>
-                {seasons.map(([slug, name]) => (
-                  <option key={slug} value={slug}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <button
-            type="button"
-            className="clear-filters"
-            onClick={resetAdvancedFilters}
-            disabled={activeFilterCount === 0}
-          >
-            清除篩選
-          </button>
-        </div>
+        {!mobileFilters && filterPanel}
       </div>
       <div className="closet-nav" aria-label="衣櫃順序">
         {closetGroups.map((entry) => (
@@ -582,6 +607,15 @@ export function CatalogStep({
             : "估價與匯出"}
         </button>
       </div>
+      {filterPanelOpen && (
+        <button
+          type="button"
+          className="filter-backdrop"
+          aria-label="關閉篩選"
+          onClick={() => setFilterPanelOpen(false)}
+        />
+      )}
+      {mobileFilters && filterPanel}
     </section>
   );
 }

@@ -3,12 +3,18 @@ import type { WikiItem } from "./wiki-data";
 import playerHairNames from "./player-hair-names.json";
 import playerZhNames from "./player-zh-names.json";
 import wikiZhNames from "./wiki-zh-names.json";
+import { isPaidItem } from "./valuation-items";
 import {
   isGraduationGift,
-  isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
-} from "./valuation-items";
+} from "./season-items";
+export { isPaidItem } from "./valuation-items";
+export {
+  isGraduationGift,
+  isSeasonPendant,
+  isSeasonUltimate,
+} from "./season-items";
 import { marketCollectibleProfile } from "./market-collectibles";
 
 const verifiedUltimateItems: WikiItem[] = [
@@ -203,7 +209,7 @@ const heldPropSeeds: readonly HeldPropSeed[] = [
   { name: "Festival Scepter", zh: "慶典權杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/38/Festival-Scepter-prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fireworks#Festival_Scepter", section: "events", collection: "days-of-fireworks" },
   { name: "Camera", zh: "相機", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/23/Moments-Guide-Prop-Camera-icon-Credit-Morybel.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Moments_Guide#Camera_Prop", section: "seasons", collection: "moments" },
   { name: "Manatee Staff", zh: "海牛手杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ef/Stern-Shepherd-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Stern_Shepherd#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
-  { name: "Manatee Toy", zh: "海牛玩偶", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/40/Tender-Toymaker-Manatee-Figurine-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tender_Toymaker#Prop", section: "seasons", collection: "two-embers-part-1" },
+  { name: "Manatee Toy", zh: "海牛公仔", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/40/Tender-Toymaker-Manatee-Figurine-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tender_Toymaker#Prop", section: "seasons", collection: "two-embers-part-1" },
   { name: "Sentry Spear", zh: "哨兵長矛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4d/Scarred-Sentry-Spear-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
   { name: "Sentry Shield", zh: "哨兵盾牌", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bf/Scarred-Sentry-Shield-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Prop", section: "seasons", collection: "two-embers-part-1" },
   { name: "Days of Fortune Enchanted Umbrella", zh: "福瑞魔法傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/50/Prosperous-Party-Parasol-icon-Morybel-0146.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune#Enchanted_Umbrella", section: "events", collection: "days-of-fortune" },
@@ -1628,7 +1634,7 @@ const communityZh: Record<string, string> = {
   "To The Love Outfit": "致愛服裝",
   "Tiara We Can Touch": "觸碰之冠",
   "SCA Cap": "Sky 創作者獎帽子",
-  "FlOw Cape": "風之旅人斗篷",
+  "FlOw Cape": "FlOw 斗篷",
   "Wonderland Primrose Pinafore Dress": "仙境報春花圍裙洋裝",
   "Ocean Sea Foam Boots": "海洋泡沫靴",
 };
@@ -1664,15 +1670,21 @@ const playerHairByGuid = playerHairNames.items as Record<
   { displayName: string; aliases: string[] }
 >;
 const wikiZhByGuid = wikiZhNames.items as Record<string, string>;
-export const zhItemName = (item: WikiItem) =>
-  playerHairByGuid[item.guid]?.displayName ??
-  playerZhByGuid[item.guid] ??
-  wikiZhByGuid[item.guid] ??
-  manualZhName(item.name) ??
-  tokenizedZhName(item.name);
+export const zhItemName = (item: WikiItem) => {
+  const marketProfile = marketCollectibleProfile(item.name, item.guid);
+  return (
+    (marketProfile?.curated ? marketProfile.playerName : undefined) ??
+    playerHairByGuid[item.guid]?.displayName ??
+    playerZhByGuid[item.guid] ??
+    wikiZhByGuid[item.guid] ??
+    manualZhName(item.name) ??
+    tokenizedZhName(item.name)
+  );
+};
 export const zhItemSearchNames = (item: WikiItem) =>
   [
     zhItemName(item),
+    ...(marketCollectibleProfile(item.name, item.guid)?.aliases ?? []),
     ...(playerHairByGuid[item.guid]?.aliases ?? []),
     wikiZhByGuid[item.guid],
     manualZhName(item.name),

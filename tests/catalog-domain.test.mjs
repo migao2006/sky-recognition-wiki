@@ -2,21 +2,23 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { asModuleUrl } from "./helpers/transpile.mjs";
+import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
+import { injectSeasonItems } from "./helpers/season-items.mjs";
 
 const loadCatalogDomain = async () => {
-  const [wikiSource, valuationSource, marketSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "market-collectibles.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
+  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
+    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
       readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
     ),
   );
-  const marketUrl = asModuleUrl(marketSource);
+  const marketUrl = await marketCollectiblesModuleUrl();
   const valuationUrl = asModuleUrl(
-    valuationSource.replace(
+    (await injectSeasonItems(valuationSource)).replace(
       'import { marketCollectibleProfile } from "./market-collectibles";',
       `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
     ),
   );
-  const catalogModule = catalogSource
+  const catalogModule = (await injectSeasonItems(catalogSource))
     .replace(
       'import { marketCollectibleProfile } from "./market-collectibles";',
       `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
@@ -199,7 +201,7 @@ test("popular player hair names and aliases stay searchable", () => {
 
 test("player-friendly names keep representative accessory, instrument, and prop identities", () => {
   for (const [guid, expected] of [
-    ["_Y-80G-t_2", "海龜夥伴"],
+    ["_Y-80G-t_2", "海龜肩飾"],
     ["instrument-fortune-drum", "幸運鼓"],
     ["held-treasure-shovel", "尋寶鏟"],
   ]) {
@@ -230,6 +232,14 @@ test("every visible wardrobe item has a Chinese display name", () => {
   for (const entry of wardrobeItems) {
     assert.match(zhItemName(entry), /[\u3400-\u9fff]/, entry.name);
   }
+});
+
+test("keeps formerly ambiguous paid and held-prop names distinct", () => {
+  const byName = (name) => wikiItems.find((entry) => entry.name === name);
+  assert.equal(zhItemName(byName("Journey Cape")), "風之旅人斗篷");
+  assert.equal(zhItemName(byName("FlOw Cape")), "FlOw 斗篷");
+  assert.equal(zhItemName(byName("Manatee Toy")), "海牛公仔");
+  assert.equal(zhItemName(byName("Manatee Plush")), "海牛玩偶");
 });
 
 test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {

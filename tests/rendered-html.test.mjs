@@ -88,8 +88,8 @@ test("renders the account organizer", async () => {
   assert.match(accountStepSource, /seasonPickerOpen &&/);
   assert.match(accountStepSource, /quickSelectOpen &&/);
   assert.match(source, /<AccountStep/);
-  assert.match(source, /<CatalogStep/);
-  assert.match(source, /<ValuationStep/);
+  assert.match(source, /dynamic\([\s\S]*?import\("\.\/catalog-step"\)/);
+  assert.match(source, /dynamic\([\s\S]*?import\("\.\/valuation-step"\)/);
   assert.match(source, /useAccountDraft/);
   assert.doesNotMatch(source, /localStorage|搜尋物品|估價分析/);
   assert.match(draftSource, /localStorage/);
@@ -102,7 +102,13 @@ test("renders the account organizer", async () => {
   assert.match(catalogStepSource, /className="filter-backdrop"/);
   assert.match(catalogStepSource, /aria-modal=\{mobileFilters \|\| undefined\}/);
   assert.match(catalogStepSource, /document\.body\.style\.overflow = "hidden"/);
+  assert.match(catalogStepSource, /\{ inert: boolean \}.*?\.inert = true/);
+  assert.match(catalogStepSource, /element\.setAttribute\("aria-hidden", "true"\)/);
   assert.match(catalogStepSource, /event\.key !== "Tab"/);
+  assert.match(catalogStepSource, /htmlFor="catalog-search"/);
+  assert.match(catalogStepSource, /id="catalog-search"/);
+  assert.match(catalogStepSource, /effectiveType/);
+  assert.match(source, /已切換至\$\{stepName\}/);
   assert.match(catalogStepSource, /前往估價/);
   assert.match(catalogStepSource, /已選 \{owned\.size\.toLocaleString\(\)\}/);
   assert.match(cssSource, /\.discovery-primary\s*\{[\s\S]*?position:\s*sticky/);
