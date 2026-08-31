@@ -7,9 +7,11 @@ import {
 import {
   classifyAccountStyle,
   classifyBreakClass,
+  capConfidenceForMarketValidation,
   marketAccountStyleMultiplier,
   marketBreakMultiplier,
   marketPackageMultiplier,
+  marketValidation,
   valuationMarketAggregate,
   type MarketAccountStyle,
   type MarketBreakClass,
@@ -31,6 +33,7 @@ import {
   type SeasonPriceBand,
 } from "./valuation-season-bands";
 import type { WikiItem } from "./wiki-data";
+import { calculateValuationModel } from "./valuation-model-core.js";
 
 export type ValuationDomain = {
   isValuationFocus: (item: WikiItem) => boolean;
@@ -97,34 +100,8 @@ export type ValuationAnalysis = {
   getZhName: (item: WikiItem) => string;
 };
 
+export { summarizeValuationRange } from "./valuation-model-core.js";
 const roundHundred = (value: number) => Math.round(value / 100) * 100;
-const roundFiveHundred = (value: number) => Math.round(value / 500) * 500;
-
-export const summarizeValuationRange = (
-  rawLow: number,
-  rawHigh: number,
-  confidence: SeasonConfidence,
-) => {
-  if (rawHigh <= 0) return { low: 0, high: 0, midpoint: 0 };
-
-  // Listing prices usually sit above realized transactions. A 64% position
-  // between quick-sale and listing anchors best represents the reference set.
-  const midpoint = roundFiveHundred(rawLow + (rawHigh - rawLow) * 0.64);
-  const spread =
-    confidence === "high"
-      ? 0.12
-      : confidence === "medium"
-        ? 0.14
-        : confidence === "low"
-          ? 0.16
-          : 0.18;
-
-  return {
-    low: roundHundred(Math.max(rawLow, midpoint * (1 - spread))),
-    high: roundHundred(Math.min(rawHigh, midpoint * (1 + spread))),
-    midpoint,
-  };
-};
 
 export const analyzeValuation = ({
   chosen,
@@ -385,10 +362,10 @@ export const estimateValuation = ({
     });
   } else if (analysis.startSeasonSlug)
     warnings.push("最早畢業季不在目前的市場樣本範圍，已使用保守基準。");
+  const baseLow = low;
+  const baseHigh = high;
   const breakProfile = classifyBreakClass(analysis.seasonCompletion);
   const breakMultiplier = marketBreakMultiplier(breakProfile.key);
-  low *= breakMultiplier;
-  high *= breakMultiplier;
   if (breakMultiplier !== 1)
     contributions.push({
       group: "market",
@@ -409,8 +386,6 @@ export const estimateValuation = ({
     { low: 0, high: 0 },
   );
   if (partialSeasonDiscount.low || partialSeasonDiscount.high) {
-    low = Math.max(300, low - partialSeasonDiscount.low);
-    high = Math.max(low, high - partialSeasonDiscount.high);
     contributions.push({
       group: "season",
       label: "未完成畢業禮",
@@ -512,10 +487,6 @@ export const estimateValuation = ({
   const packageHigh = Math.min(rawPackageHigh, packageCap.high);
   const limitedLow = Math.min(rawLimitedLow, limitedCap.low);
   const limitedHigh = Math.min(rawLimitedHigh, limitedCap.high);
-  const extraLow = packageLow + limitedLow;
-  const extraHigh = packageHigh + limitedHigh;
-  low += extraLow;
-  high += extraHigh;
   if (rawPackageLow > packageLow || rawPackageHigh > packageHigh) {
     contributions.push({
       group: "package",
@@ -535,16 +506,12 @@ export const estimateValuation = ({
   const resource = resourceValue(resources);
   if (resource.low || resource.high)
     contributions.push({ group: "resource", label: "帳號資源", ...resource });
-  low += resource.low;
-  high += resource.high;
   const accountStyle = classifyAccountStyle({
     paidItemCount,
     graduationCount: analysis.ultimates.length,
     seasonCount: analysis.seasonCompletion.size,
   });
   const accountStyleMultiplier = marketAccountStyleMultiplier(accountStyle);
-  low *= accountStyleMultiplier;
-  high *= accountStyleMultiplier;
   if (accountStyleMultiplier !== 1)
     contributions.push({
       group: "market",
@@ -569,7 +536,6 @@ export const estimateValuation = ({
     !analysis.issueCount &&
     !analysis.keepCount
   ) {
-    high *= 1.03;
     contributions.push({
       group: "binding",
       label: "可出綁定",
@@ -578,35 +544,44 @@ export const estimateValuation = ({
       percent: 3,
     });
   }
-  low = roundHundred(Math.max(300, low));
-  high = roundHundred(Math.max(low, high));
   const startEvidence = analysis.startSeasonSlug
     ? valuationMarketAggregate.segments.startSeason[
         analysis.startSeasonSlug as keyof typeof valuationMarketAggregate.segments.startSeason
       ]
     : undefined;
   const evidenceProfile = evidenceProfileFor(startEvidence);
-  const confidence = confidenceForEvidence(
+  const evidenceConfidence = confidenceForEvidence(
     startBand?.confidence ?? "inferred",
     evidenceProfile,
   );
-  const marketSummary = summarizeValuationRange(low, high, confidence);
-  const riskLow = roundHundred(Math.max(300, marketSummary.low * risk));
-  const riskHigh = roundHundred(
-    Math.max(riskLow, marketSummary.high * risk),
-  );
-  const summary = risk < 1
-    ? {
-        low: riskLow,
-        high: riskHigh,
-        midpoint: Math.min(
-          riskHigh,
-          Math.max(riskLow, roundFiveHundred(marketSummary.midpoint * risk)),
-        ),
-      }
-    : marketSummary;
+  const confidence = capConfidenceForMarketValidation(evidenceConfidence);
+  const transferHighMultiplier =
+    Object.values(analysis.bindings).some((value) => value === "transfer") &&
+    !analysis.issueCount &&
+    !analysis.keepCount
+      ? 1.03
+      : 1;
+  const summary = calculateValuationModel({
+    baseLow,
+    baseHigh,
+    breakMultiplier,
+    partialDiscountLow: partialSeasonDiscount.low,
+    partialDiscountHigh: partialSeasonDiscount.high,
+    packageLow,
+    packageHigh,
+    limitedLow,
+    limitedHigh,
+    resourceLow: resource.low,
+    resourceHigh: resource.high,
+    accountStyleMultiplier,
+    bindingRisk: risk,
+    transferHighMultiplier,
+    confidence,
+  });
   if (!analysis.startSeasonSlug)
     warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
+  if (!marketValidation.isValidated)
+    warnings.push("市場資料尚未通過完整模型驗證，目前為參考估價。");
   return {
     range: { low: summary.low, high: summary.high, currency: "TWD" },
     midpoint: summary.midpoint,

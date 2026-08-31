@@ -24,6 +24,13 @@
 7. 寫入前先執行唯讀 check 或產生 diff，確認不會大量縮減、改名、換 GUID 或移除資料；確認後才可 write，並加入能防止同類錯誤再次發生的測試。
 8. 完成後需記錄實際使用的來源版本、PR／commit 或檔案，並驗證執行時資料，而不只驗證原始快照。
 
+### Catalog、備份與估價發布限制
+
+- SkyGame-Data 已存在的手持與樂器必須保留官方 GUID、ID、order 與英文身分；中文名、玩家俗稱及衣櫃頁籤只能放在獨立顯示／taxonomy 規則。
+- IAP 同步只能以官方 GUID 精確配對，不得退回英文名、中文名或圖片模糊配對；未解析項目必須使 check 失敗。
+- 備份 v3 優先寫官方 GUID；上游尚未收錄的物品只能使用有來源註記的 overlay GUID。舊人工 GUID 相容性集中於輕量 `catalog-legacy-guids.ts`，不得讓草稿載入完整 catalog。
+- 估價 aggregate 未滿 200 個唯一帳號、3 個社團、原始最大社團占比超過 60%，缺完整 predictor 或 holdout 未通過時，只能標記 `legacy-unvalidated`／`unvalidated`，不得顯示高信心或修改文件降低門檻。
+
 ## 文件維護是 Definition of Done
 
 每次程式修改、功能新增、Bug 修復、重構、資料格式調整、依賴更新或合併，都必須執行 Documentation Impact Check。不得因使用者未要求而跳過，也不得預設文件不需要更新。
@@ -102,3 +109,13 @@ Checked:
 Reason:
 說明為何沒有影響功能、架構、指令、Schema 或使用方式。
 ```
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

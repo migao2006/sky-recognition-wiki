@@ -105,6 +105,7 @@ export function AccountStep({
           帳號名稱
           <input
             value={account.name}
+            maxLength={100}
             onChange={(event) =>
               setAccount({ ...account, name: event.target.value })
             }
@@ -136,6 +137,7 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.candles}
+                maxLength={32}
                 onChange={(event) =>
                   setAccount({ ...account, candles: event.target.value })
                 }
@@ -147,6 +149,7 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.hearts}
+                maxLength={32}
                 onChange={(event) =>
                   setAccount({ ...account, hearts: event.target.value })
                 }
@@ -158,6 +161,7 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.ascended}
+                maxLength={32}
                 onChange={(event) =>
                   setAccount({ ...account, ascended: event.target.value })
                 }
@@ -169,6 +173,7 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.passes}
+                maxLength={32}
                 onChange={(event) =>
                   setAccount({ ...account, passes: event.target.value })
                 }
@@ -179,6 +184,7 @@ export function AccountStep({
               其他說明
               <input
                 value={account.notes}
+                maxLength={1000}
                 onChange={(event) =>
                   setAccount({ ...account, notes: event.target.value })
                 }
@@ -244,6 +250,7 @@ export function AccountStep({
               綁定說明
               <input
                 value={account.bindingNote}
+                maxLength={1000}
                 onChange={(event) =>
                   setAccount({ ...account, bindingNote: event.target.value })
                 }

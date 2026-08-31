@@ -1,4 +1,8 @@
 import { createHash } from "node:crypto";
+import {
+  hasCompleteValuationModelFeatures,
+  valuationModelInputKeys,
+} from "../../app/valuation-model-core.js";
 
 export const evidenceWeights = {
   ask: 1,
@@ -18,6 +22,26 @@ export const qualityWeights = { high: 1, medium: 0.75, low: 0.5 };
 export const breakClasses = ["none", "slight", "medium", "big"];
 export const packageTiers = ["few", "medium", "many", "hundred"];
 export const accountStyles = ["simple", "regular"];
+
+// A source row may carry this normalized snapshot when it was collected from
+// the organizer.  It is intentionally numeric: validators must not recreate
+// package, limited-item or binding decisions from listing prose.
+export const valuationModelFeaturesFor = (row) => {
+  const value = row.valuation_model ?? row.valuationModel ?? row.model_features;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const result = Object.fromEntries(
+    valuationModelInputKeys.map((key) => [key, Number(value[key])]),
+  );
+  result.confidence = value.confidence;
+  if (!hasCompleteValuationModelFeatures(result)) return null;
+  if (result.baseLow <= 0 || result.baseHigh < result.baseLow) return null;
+  if (result.breakMultiplier <= 0 || result.accountStyleMultiplier <= 0) return null;
+  if (result.packageMarketMultiplier <= 0) return null;
+  if (result.bindingRisk < 0.7 || result.bindingRisk > 1) return null;
+  if (result.transferHighMultiplier < 1 || result.transferHighMultiplier > 1.03) return null;
+  if (["partialDiscountLow", "partialDiscountHigh", "packageLow", "packageHigh", "limitedLow", "limitedHigh", "resourceLow", "resourceHigh"].some((key) => result[key] < 0)) return null;
+  return result;
+};
 
 const numberOrNull = (value) =>
   Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;

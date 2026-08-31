@@ -163,6 +163,31 @@ test("splits oversized exports into safe numbered canvas pages", () => {
   assert.ok(pages.every((page) => page.height <= 10_000));
 });
 
+test("keeps a fitting showcase group together before splitting a later group", () => {
+  const entries = [
+    ...Array.from({ length: 1_700 }, (_, index) =>
+      item({ guid: `ultimate-${index}`, group: "Ultimate", order: index }),
+    ),
+    ...Array.from({ length: 1_700 }, (_, index) =>
+      item({ guid: `wardrobe-${index}`, group: "", order: index }),
+    ),
+  ];
+  const firstGroup = entries.slice(0, 1_700);
+  const firstGroupPages = planShowcasePages({
+    ...options(firstGroup),
+    preset: "collection",
+  });
+  const pages = planShowcasePages({ ...options(entries), preset: "collection" });
+  assert.ok(pages.length > 1);
+  assert.equal(firstGroupPages.length, 1);
+  assert.ok(pages[0].height >= firstGroupPages[0].height - 12);
+  assert.equal(pages[1].offsetY, pages[0].height);
+  assert.equal(
+    pages.reduce((total, page) => total + page.height, 0),
+    measureShowcaseCanvas({ ...options(entries), preset: "collection" }).height,
+  );
+});
+
 test("reports image load outcomes and progress through the export API", () => {
   assert.match(showcaseSource, /loadedIconCount/);
   assert.match(showcaseSource, /failedIconCount/);

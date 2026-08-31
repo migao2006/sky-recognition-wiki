@@ -2,13 +2,10 @@
 
 import {
   useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
+  type CSSProperties,
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { createAccountBackup, parseAccountBackup } from "./account-backup";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 import type {
   ShowcasePreset,
@@ -17,27 +14,18 @@ import type {
 import { orderShowcaseItems } from "./showcase-order";
 import { hasAccountDraftData } from "./use-account-draft";
 import type { OrganizerRuntime } from "./use-organizer-runtime";
-import {
-  isChinaOnlyItem,
-  isGraduationGift,
-  isPaidItem,
-} from "./valuation-items";
 import type { ValuationAnalysis } from "./valuation-analysis";
 import {
   marketAccountStyleNames,
   marketBreakClassNames,
+  marketValidation,
 } from "./valuation-market";
 import type { SeasonConfidence } from "./valuation-season-bands";
-
-const useValuationExportActions = () => {
-  const exportInFlightRef = useRef(false);
-  const [imageExport, setImageExport] = useState<{
-    phase: "loading-icons" | "rendering";
-    completed: number;
-    total: number;
-  } | null>(null);
-  return { exportInFlightRef, imageExport, setImageExport };
-};
+import {
+  ShowcasePreview,
+  showcasePresetNames,
+} from "./valuation-showcase-preview";
+import { useValuationExportActions } from "./use-valuation-export-actions";
 
 type Props = {
   runtime: OrganizerRuntime;
@@ -53,8 +41,6 @@ type Props = {
   onClearAll: () => void;
 };
 
-const safeFileName = (name: string) =>
-  name.replace(/[\\/:*?"<>|]/g, "-").trim() || "未命名";
 const formatTwd = (value: number) =>
   `NT$ ${Math.abs(value).toLocaleString("zh-TW")}`;
 const formatContribution = (low: number, high: number) => {
@@ -74,11 +60,6 @@ const packageTierNames = {
   many: "多禮",
   hundred: "百禮",
 } as const;
-const showcasePresetNames: Record<ShowcasePreset, string> = {
-  valuation: "刊登樣本估算",
-  video: "快速核對",
-  collection: "完整衣櫃",
-};
 const emptyValuationAnalysis: ValuationAnalysis = {
   valuationItems: [],
   ultimates: [],
@@ -92,16 +73,6 @@ const emptyValuationAnalysis: ValuationAnalysis = {
   keepCount: 0,
   bindings: {},
   getZhName: (item) => item.name,
-};
-const downloadBlob = (blob: Blob, fileName: string) => {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 export function ValuationStep({
@@ -118,9 +89,6 @@ export function ValuationStep({
   onClearAll,
 }: Props) {
   const { showcasePreset, setShowcasePreset } = state;
-  const importRef = useRef<HTMLInputElement>(null);
-  const { exportInFlightRef, imageExport, setImageExport } =
-    useValuationExportActions();
   const chosen = useMemo(
     () =>
       runtime.wikiItems.filter(
@@ -173,115 +141,6 @@ export function ValuationStep({
     );
     return match ? label.replace(match[0], match[1]) : label;
   };
-  const downloadText = (lines: string[], suffix: string) =>
-    downloadBlob(
-      new Blob(["\uFEFF" + lines.join("\n")], {
-        type: "text/plain;charset=utf-8",
-      }),
-      `光遇帳號_${safeFileName(account.name)}_${suffix}.txt`,
-    );
-  const saleCopyData = () => {
-    const collectibleItems = runtime.uniqueByGuid(
-      chosen.filter(
-        (item) =>
-          runtime.isLimitedItem(item) ||
-          isPaidItem(item) ||
-          runtime.saleCopyPresetGuids.has(item.guid) ||
-          item.collection === "event-sky-anniversary",
-      ),
-    );
-    return {
-      seasons: runtime.seasons.map(([slug, name]) => ({
-        name,
-        owned: chosen.filter(
-          (item) =>
-            item.section === "seasons" &&
-            item.collection === slug &&
-            isGraduationGift(item),
-        ).length,
-        total: runtime.seasonGraduationItems.get(slug)?.length ?? 0,
-      })),
-      bindingsConfirmed: account.bindingsConfirmed,
-      bindings,
-      items: collectibleItems.map((item) => ({
-        guid: item.guid,
-        name: item.name,
-        displayName: runtime.zhItemName(item),
-        section: item.section,
-        collection: item.collection,
-        group: item.group,
-        wiki: item.wiki,
-        sourceName: isChinaOnlyItem(item)
-          ? "國服限定"
-          : runtime.sourceCollectionName(item),
-        order: item.order,
-      })),
-    };
-  };
-  const exportAccount = async () => {
-    const { buildSaleCopy } = await import("./sale-copy");
-    downloadText(buildSaleCopy(saleCopyData()), "出售文案");
-  };
-  const copySaleCopy = async () => {
-    const { buildSaleCopy } = await import("./sale-copy");
-    const text = buildSaleCopy(saleCopyData()).join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      setNotice("出售文案已複製");
-    } catch {
-      downloadText([text], "出售文案");
-      setNotice("無法複製，已改為下載文案");
-    }
-  };
-  const exportJson = () => {
-    const backup = createAccountBackup({
-      account,
-      bindings,
-      items: chosen,
-      getZhName: runtime.zhItemName,
-      getSource: runtime.source,
-    });
-    downloadBlob(
-      new Blob([JSON.stringify(backup, null, 2)], {
-        type: "application/json;charset=utf-8",
-      }),
-      `光遇帳號_${safeFileName(account.name)}_備份.json`,
-    );
-  };
-  const importJson = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    try {
-      const imported = parseAccountBackup(
-        JSON.parse(await file.text()),
-        runtime.validItemGuids,
-      );
-      setAccount(imported.account);
-      setBindings(imported.bindings);
-      setOwned(new Set(imported.owned));
-      setNotice("JSON 備份已匯入");
-    } catch {
-      setNotice("無法匯入：檔案格式不正確");
-    }
-  };
-  const shareSummary = async () => {
-    const { buildSaleCopy } = await import("./sale-copy");
-    const summary = buildSaleCopy(saleCopyData()).join("\n");
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "光遇帳號摘要", text: summary });
-      } else {
-        await navigator.clipboard.writeText(summary);
-        setNotice("帳號摘要已複製");
-      }
-    } catch (error) {
-      if ((error as DOMException).name !== "AbortError") {
-        downloadText([summary], "分享摘要");
-        setNotice("已改為下載摘要");
-      }
-    }
-  };
   const showcaseItems = useMemo(() => {
     const videoItems = chosen.filter(runtime.isProfessionalVideoFocus);
     return {
@@ -294,72 +153,37 @@ export function ValuationStep({
       collection: chosen,
     } satisfies Record<ShowcasePreset, typeof chosen>;
   }, [chosen, runtime.isProfessionalVideoFocus, runtime.isValuationFocus, valuationAnalysis.valuationItems]);
-  const exportShowcaseImage = async () => {
-    if (exportInFlightRef.current) return;
-    if (!chosen.length) {
-      setNotice("尚未選取物品");
-      return;
-    }
-    const exportItems = showcaseItems[showcasePreset];
-    if (!exportItems.length) {
-      setNotice("這個版型沒有可匯出的物品");
-      return;
-    }
-    exportInFlightRef.current = true;
-    setImageExport({
-      phase: "loading-icons",
-      completed: 0,
-      total: exportItems.length,
-    });
-    setNotice("正在產生圖片…");
-    try {
-      const { renderShowcaseImage } = await import("./export-showcase");
-      const result = await renderShowcaseImage({
-        ...runtime.showcaseOrderOptions(exportItems),
-        preset: showcasePreset,
-        onProgress: setImageExport,
-        valuation: {
-          midpoint: valuationEstimate?.midpoint ?? null,
-          range: valuationEstimate?.range ?? null,
-          confidence: valuationEstimate
-            ? confidenceNames[valuationEstimate.confidence]
-            : "資料不足",
-          completeness: valuationAnalysis.completeness,
-          itemCount: valuationAnalysis.valuationItems.length,
-          highlights: valuationEstimate
-            ? valuationEstimate.contributions
-                .slice(0, 5)
-                .map((row) => localizeValuationLabel(row.label))
-          : [],
-        },
-      });
-      const filePrefix = `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}`;
-      result.images.forEach((blob, index) =>
-        downloadBlob(
-          blob,
-          result.images.length === 1
-            ? `${filePrefix}.png`
-            : `${filePrefix}_${index + 1}-${result.images.length}.png`,
-        ),
-      );
-      setNotice(
-        result.failedIconCount
-          ? `已下載 ${result.images.length} 張圖片；${result.failedIconCount} 件圖示載入失敗，請重新匯出確認。`
-          : `整理圖片已下載（${result.loadedIconCount} 件圖示）`,
-      );
-    } catch {
-      setNotice("圖片產生失敗");
-    } finally {
-      exportInFlightRef.current = false;
-      setImageExport(null);
-    }
-  };
   const { showcaseOrderOptions } = runtime;
   const previewItems = useMemo(
     () => orderShowcaseItems(showcaseOrderOptions(showcaseItems[showcasePreset])),
     [showcaseItems, showcaseOrderOptions, showcasePreset],
   );
   const previewLimit = showcasePreset === "collection" ? 24 : 16;
+  const {
+    importRef,
+    imageExport,
+    exportAccount,
+    copySaleCopy,
+    exportJson,
+    importJson,
+    shareSummary,
+    exportShowcaseImage,
+  } = useValuationExportActions({
+    runtime,
+    account,
+    bindings,
+    chosen,
+    showcasePreset,
+    showcaseItems,
+    valuationAnalysis,
+    valuationEstimate,
+    confidenceNames,
+    localizeValuationLabel,
+    setAccount,
+    setBindings,
+    setOwned,
+    setNotice,
+  });
 
   return (
     <section className="account-panel">
@@ -434,7 +258,7 @@ export function ValuationStep({
             style={
               {
                 "--completion": `${valuationAnalysis.completeness * 3.6}deg`,
-              } as React.CSSProperties
+              } as CSSProperties
             }
           >
             <b>{valuationAnalysis.completeness}%</b>
@@ -443,7 +267,7 @@ export function ValuationStep({
         <div className="valuation-summary">
           <article className="valuation-verdict">
             <span>
-              刊登樣本中位估算
+              {marketValidation.label}
               {valuationEstimate
                 ? ` · ${confidenceNames[valuationEstimate.confidence]}`
                 : ""}
@@ -673,50 +497,6 @@ export function ValuationStep({
         />
       </div>
     </section>
-  );
-}
-
-function ShowcasePreview({
-  preset,
-  items,
-  limit,
-  estimate,
-  getZhName,
-}: {
-  preset: ShowcasePreset;
-  items: readonly (typeof emptyValuationAnalysis.valuationItems)[number][];
-  limit: number;
-  estimate: ReturnType<NonNullable<OrganizerRuntime["valuationRuntime"]>["analysis"]["estimateValuation"]> | undefined;
-  getZhName: OrganizerRuntime["zhItemName"];
-}) {
-  return (
-    <div className={`showcase-preview preset-${preset}`}>
-      <header>
-        <span>{showcasePresetNames[preset]}</span>
-        <b>{items.length} 件</b>
-      </header>
-      {preset === "valuation" && (
-        <div className="showcase-price">
-          <span>刊登樣本中位估算</span>
-          <strong>{estimate ? formatTwd(estimate.midpoint) : "NT$ —"}</strong>
-          <small>
-            {estimate
-              ? `價格區間 ${formatTwd(estimate.range.low)}～${formatTwd(estimate.range.high)}`
-              : "選取估價物品後顯示"}
-          </small>
-        </div>
-      )}
-      <div className="showcase-preview-icons">
-        {items.slice(0, limit).map((item) => (
-          <span key={item.guid} title={getZhName(item)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.icon} alt={getZhName(item)} loading="lazy" decoding="async" draggable={false} referrerPolicy="no-referrer" />
-          </span>
-        ))}
-        {items.length > limit && <i>+{items.length - limit}</i>}
-      </div>
-      {!items.length && <p>尚未選取此版型需要的物品。</p>}
-    </div>
   );
 }
 

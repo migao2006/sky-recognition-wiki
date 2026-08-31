@@ -11,10 +11,11 @@ const sources = await Promise.all(
     "valuation-items.ts",
     "valuation-market.ts",
     "valuation-season-bands.ts",
+    "valuation-model-core.js",
     "valuation-analysis.ts",
   ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
 );
-const [config, calibration, items, valuationMarket, bands, analysis] = sources;
+const [config, calibration, items, valuationMarket, bands, modelCore, analysis] = sources;
 const calibrationLoaded = await import(asModuleUrl(calibration));
 const marketAggregate = JSON.parse(
   await readFile(
@@ -41,6 +42,7 @@ const bandsUrl = asModuleUrl(
     `const valuationMarketAggregate = ${JSON.stringify(marketAggregate)};\n`,
   ),
 );
+const modelCoreUrl = asModuleUrl(modelCore);
 const loaded = await import(
   asModuleUrl(
     analysis
@@ -68,6 +70,15 @@ const loaded = await import(
         /import \{([^;]*?)\} from "\.\/valuation-season-bands";/,
         (_, names) =>
           `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(bandsUrl)});`,
+      )
+      .replace(
+        /import \{([^;]*?)\} from "\.\/valuation-model-core\.js";/,
+        (_, names) =>
+          `const {${names}} = await import(${JSON.stringify(modelCoreUrl)});`,
+      )
+      .replace(
+        /export \{ summarizeValuationRange \} from "\.\/valuation-model-core\.js";/,
+        `const { summarizeValuationRange } = await import(${JSON.stringify(modelCoreUrl)});\nexport { summarizeValuationRange };`,
       ),
   )
 );

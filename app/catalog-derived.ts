@@ -60,8 +60,8 @@ export const compareCatalogItems = (
 ) => {
   if (mode === "held") {
     const heldOrderDifference =
-      (heldClosetOrder.get(left.name) ?? 999) -
-      (heldClosetOrder.get(right.name) ?? 999);
+      (heldClosetOrder.get(left.guid) ?? 999) -
+      (heldClosetOrder.get(right.guid) ?? 999);
     if (heldOrderDifference) return heldOrderDifference;
   }
   return (

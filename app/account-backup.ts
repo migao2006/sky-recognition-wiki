@@ -6,12 +6,19 @@ import {
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
+import { legacyCatalogGuidAliases } from "./catalog-legacy-guids";
 import type { WikiItem } from "./wiki-data";
 
 const BACKUP_FORMAT = "sky-recognition-wiki";
-const BACKUP_VERSION = 2;
+const BACKUP_VERSION = 3;
+const LEGACY_BACKUP_VERSIONS = new Set([1, 2]);
+export const ACCOUNT_BACKUP_MAX_BYTES = 5 * 1024 * 1024;
+export const ACCOUNT_BACKUP_MAX_OWNED_ITEMS = 5_000;
 
-export const ACCOUNT_DRAFT_STORAGE_KEY = "sky-recognition-wiki:draft:v2";
+export const ACCOUNT_DRAFT_STORAGE_KEY = "sky-recognition-wiki:draft:v3";
+export const ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS = [
+  "sky-recognition-wiki:draft:v2",
+] as const;
 export const ACCOUNT_DRAFT_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const ACCOUNT_DRAFT_CLOCK_SKEW_MS = 5 * 60 * 1000;
 
@@ -26,6 +33,15 @@ type BackupOptions = {
 
 type UnknownRecord = Record<string, unknown>;
 
+export type AccountImportResult = {
+  account: AccountInfo;
+  bindings: Record<BindingKey, BindingStatus>;
+  owned: string[];
+  imported: number;
+  migrated: number;
+  ignored: number;
+};
+
 type DraftOptions = {
   account: AccountInfo;
   bindings: Record<BindingKey, BindingStatus>;
@@ -37,6 +53,21 @@ const asRecord = (value: unknown): UnknownRecord | null =>
   value !== null && typeof value === "object"
     ? (value as UnknownRecord)
     : null;
+
+const text = (value: unknown, maxLength: number) =>
+  typeof value === "string" ? value.slice(0, maxLength) : "";
+
+const supportedVersion = (backup: UnknownRecord) => {
+  const version = backup.version;
+  if (version === undefined) return 0;
+  if (typeof version !== "number" || !Number.isInteger(version)) {
+    throw new Error("Unsupported account backup version");
+  }
+  if (version === BACKUP_VERSION || LEGACY_BACKUP_VERSIONS.has(version)) {
+    return version;
+  }
+  throw new Error("Unsupported account backup version");
+};
 
 export const createAccountBackup = ({
   account,
@@ -80,7 +111,7 @@ export const createAccountDraft = ({
 const parseAccountData = (
   value: unknown,
   validGuids?: ReadonlySet<string>,
-) => {
+): AccountImportResult => {
   const backup = asRecord(value);
   const rawAccount = asRecord(backup?.account);
   const rawBindings = asRecord(backup?.bindings);
@@ -93,6 +124,10 @@ const parseAccountData = (
   ) {
     throw new Error("Invalid account backup");
   }
+  supportedVersion(backup);
+  if (rawOwned.length > ACCOUNT_BACKUP_MAX_OWNED_ITEMS) {
+    throw new Error("Too many owned items in account backup");
+  }
 
   const bindings = emptyBindings();
   bindingKeys.forEach((key) => {
@@ -104,28 +139,45 @@ const parseAccountData = (
     }
   });
 
-  const importedType = String(rawAccount.accountType || "有翼");
+  const importedType = text(rawAccount.accountType, 100) || "有翼";
   const rawBindingsConfirmed = rawAccount.bindingsConfirmed;
   const account: AccountInfo = {
-    name: String(rawAccount.name || ""),
+    name: text(rawAccount.name, 100),
     accountType: importedType.includes("無翼") ? "無翼" : "有翼",
     bindingsConfirmed:
       typeof rawBindingsConfirmed === "boolean"
         ? rawBindingsConfirmed
         : Object.values(bindings).some((status) => status !== "none"),
-    candles: String(rawAccount.candles || ""),
-    hearts: String(rawAccount.hearts || ""),
-    ascended: String(rawAccount.ascended || ""),
-    passes: String(rawAccount.passes || ""),
-    bindingNote: String(rawAccount.bindingNote || ""),
-    notes: String(rawAccount.notes || ""),
+    candles: text(rawAccount.candles, 32),
+    hearts: text(rawAccount.hearts, 32),
+    ascended: text(rawAccount.ascended, 32),
+    passes: text(rawAccount.passes, 32),
+    bindingNote: text(rawAccount.bindingNote, 1_000),
+    notes: text(rawAccount.notes, 1_000),
   };
-  const owned = rawOwned.filter(
-    (guid): guid is string =>
-      typeof guid === "string" && (!validGuids || validGuids.has(guid)),
-  );
+  const owned: string[] = [];
+  const seen = new Set<string>();
+  let imported = 0;
+  let migrated = 0;
+  let ignored = 0;
+  rawOwned.forEach((rawGuid) => {
+    if (typeof rawGuid !== "string") {
+      ignored += 1;
+      return;
+    }
+    const mappedGuid = legacyCatalogGuidAliases[rawGuid] ?? rawGuid;
+    const wasMigrated = mappedGuid !== rawGuid;
+    if (seen.has(mappedGuid) || (validGuids && !validGuids.has(mappedGuid))) {
+      ignored += 1;
+      return;
+    }
+    seen.add(mappedGuid);
+    owned.push(mappedGuid);
+    if (wasMigrated) migrated += 1;
+    else imported += 1;
+  });
 
-  return { account, bindings, owned };
+  return { account, bindings, owned, imported, migrated, ignored };
 };
 
 export const parseAccountBackup = (

@@ -1,4 +1,5 @@
 import type { WikiItem } from "./wiki-data";
+import { officialHeldIdentities } from "./catalog-seeds";
 export const labels: Record<string, string> = {
   Hair: "髮型",
   HairAccessory: "髮飾",
@@ -18,27 +19,33 @@ export const labels: Record<string, string> = {
   Stance: "站姿",
   Call: "叫聲",
 };
-const heldClosetNames = [
-  "Harp", "Fledgling Harp", "Contrabass", "Piano Keyboard", "Horn",
-  "Small Bell", "Large Bell", "Flute", "Panflute", "Guitar",
-  "Rhythm Guitar", "Ukulele", "Xylophone", "Winter Piano",
-  "Sanctuary Handpan", "Triumph Handpan", "Prophecy Drum", "Lute", "Bugle",
-  "Kalimba", "Electric Guitar", "Blue Electric Guitar", "Dark Horn",
-  "Voice of AURORA", "Manta Ocarina", "Cello", "Duets Cello", "Harmonica",
-  "Cymbals", "Vessel Flute", "Drum", "Triumph Violin", "Triumph Saxophone",
-  "Fortune Drum", "Fireworks Staff", "Blue Umbrella", "Festival Scepter",
-  "Lightseekers Ultimate Umbrella", "Moments Ultimate Camera", "Camera",
-  "Moomin Ultimate Umbrella", "Starry Night's Canopy", "Manatee Staff", "Manatee Toy", "Sentry Spear",
-  "Sentry Shield", "Transverse Flute", "Days of Fortune Enchanted Umbrella",
-  "Days of Fortune Hand Fan", "Days of Love Serendipitous Scepter",
-  "Bloom Lilypad Umbrella", "Bloom Sunflower Umbrella", "SkyFest Jenova Fan",
-  "Anniversary Clapboard", "Tournament Torch", "Tournament Ice Snowboard",
-  "Lantern", "Summer Parasol", "Mischief Withered Broom", "Treasure Shovel",
-  "Fortune Plush Mount", "Company-Issued Laptop", "Anniversary Popcorn Prop",
-  "Winter Feast Snowboard",
+const officialHeldGuids = (names: readonly string[]) =>
+  names.map((name) => officialHeldIdentities[name].guid);
+const heldClosetGuids = [
+  ...officialHeldGuids([
+    "Harp", "Fledgling Harp", "Contrabass", "Piano Keyboard", "Horn",
+    "Small Bell", "Large Bell", "Flute", "Panflute", "Guitar",
+    "Rhythm Guitar", "Ukulele", "Xylophone", "Winter Piano",
+    "Sanctuary Handpan", "Triumph Handpan", "Prophecy Drum", "Lute", "Bugle",
+    "Kalimba", "Electric Guitar", "Blue Electric Guitar", "Dark Horn",
+    "Voice of AURORA", "Manta Ocarina", "Cello", "Duets Cello", "Harmonica",
+    "Cymbals", "Vessel Flute", "Drum", "Triumph Violin", "Triumph Saxophone",
+    "Fortune Drum", "Fireworks Staff", "Blue Umbrella", "Festival Scepter",
+  ]),
+  "2o3CEU9QhM", "W-3Nh_yWGv", "K_OhSP_gST", "dkfdFCaemY", "OAGgi-B-xa",
+  "held-manatee-staff",
+  ...officialHeldGuids([
+    "Manatee Toy", "Sentry Spear", "Sentry Shield", "Transverse Flute",
+    "Days of Fortune Enchanted Umbrella", "Days of Fortune Hand Fan",
+    "Days of Love Serendipitous Scepter", "Bloom Lilypad Umbrella",
+    "Bloom Sunflower Umbrella", "SkyFest Jenova Fan", "Anniversary Clapboard",
+    "Tournament Torch", "Tournament Ice Snowboard", "Lantern", "Summer Parasol",
+    "Mischief Withered Broom", "Treasure Shovel", "Fortune Plush Mount",
+    "Company-Issued Laptop", "Anniversary Popcorn Prop", "Winter Feast Snowboard",
+  ]),
 ] as const;
 export const heldClosetOrder = new Map<string, number>(
-  heldClosetNames.map((name, index) => [name, index]),
+  heldClosetGuids.map((guid, index) => [guid, index]),
 );
 
 export const closetGroups = [

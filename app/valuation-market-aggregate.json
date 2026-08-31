@@ -1,5 +1,13 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
+  "validationStatus": "legacy-unvalidated",
+  "provenance": {
+    "modelSchemaVersion": 1,
+    "reason": "目前只有 148 筆合格帳號，且匿名舊樣本未保存完整前端估價 predictors；不得標示為完整驗證。",
+    "minimumEligibleAccounts": 200,
+    "requiredMarketGroups": 3,
+    "maximumRawGroupShare": 0.6
+  },
   "asOf": "2026-08-30",
   "sourceRows": 164,
   "eligibleRows": 148,

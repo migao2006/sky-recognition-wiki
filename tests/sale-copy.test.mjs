@@ -257,6 +257,26 @@ test("uses player names and keeps every selected item in only one section", () =
   assert.equal(copy.match(/蝙蝠斗篷/g)?.length, 1);
 });
 
+test("keeps same-named anniversary hats when they belong to different years", () => {
+  const copy = buildSaleCopy(
+    input({
+      seasons: [],
+      items: [
+        item({ guid: "fifth-hat", name: "5th Anniversary Hat", displayName: "週年帽", collection: "event-sky-anniversary", wiki: "https://example.com/Sky_Anniversary/2024#Hat" }),
+        item({ guid: "sixth-hat", name: "6th Anniversary Hat", displayName: "週年帽", collection: "event-sky-anniversary", wiki: "https://example.com/Sky_Anniversary/2025#Hat", order: 2 }),
+      ],
+    }),
+  ).join("\n");
+  assert.match(copy, /6th｜週年帽\n5th｜週年帽/);
+});
+
+test("includes account transaction notes only when supplied", () => {
+  const copy = buildSaleCopy(
+    input({ seasons: [], bindingNote: "Google 可協助移轉", notes: "售出不退換" }),
+  ).join("\n");
+  assert.match(copy, /✦ 交易說明\n綁定說明｜Google 可協助移轉\n交易前須知｜售出不退換/);
+});
+
 test("omits empty optional sections and never adds the removed market copy", () => {
   const copy = buildSaleCopy(
     input({ seasons: [], bindingsConfirmed: true, bindings: {}, items: [] }),

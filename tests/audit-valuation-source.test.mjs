@@ -423,5 +423,5 @@ test("does not emit raw post, account, group, text, URL, or author fields", asyn
     "example.test",
     "private listing text",
   ]) assert.equal(output.includes(value), false);
-  assert.equal(result.schemaVersion, 3);
+  assert.equal(result.schemaVersion, 4);
 });

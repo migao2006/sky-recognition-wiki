@@ -3,32 +3,36 @@
   "sourceUrl": "https://unpkg.com/skygame-data@1.3.10/assets/everything.json",
   "sourceVersion": "1.3.10",
   "packages": 515,
+  "multiPackageItems": 131,
+  "packageSelection": "fewest-items, lowest-price, guid",
   "items": [
     {
       "guid": "_0PZEyTNxt",
       "name": "Bloom Picnic Basket",
       "playerName": "花憩野餐提籃",
       "aliases": [],
-      "packageKey": "iap:zwPqSQZWLt",
+      "packageKey": "iap:1ryX2u1XO3",
       "packageName": "Bloom Picnic Basket",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "_Y-80G-t_2",
       "name": "Nature Turtle Buddy",
       "playerName": "自然海龜夥伴",
       "aliases": [],
-      "packageKey": "iap:236RtTEBQ3",
+      "packageKey": "iap:-fstK-lvah",
       "packageName": "Nature Turtle Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "_Y4tdDzZYL",
@@ -80,7 +84,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "-EBoN4AWqQ",
@@ -106,7 +111,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "0F90DHi6Er",
@@ -128,6 +134,20 @@
       "aliases": [],
       "packageKey": "iap:TAdqkadSjD",
       "packageName": "Fledgling Upright Piano",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 1
+    },
+    {
+      "guid": "1xIwQnxHV-",
+      "name": "Fledgling Harp",
+      "playerName": "雛鳥豎琴",
+      "aliases": [],
+      "packageKey": "iap:dyqX00yWC0",
+      "packageName": "Fledgling Harp",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
@@ -171,7 +191,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "2e97D5cOuG",
@@ -184,7 +205,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "2XujEQcN6n",
@@ -217,13 +239,14 @@
       "name": "Style Heart Sunglasses",
       "playerName": "時尚愛心太陽眼鏡",
       "aliases": [],
-      "packageKey": "iap:vRbHAZeLEz",
+      "packageKey": "iap:5LZSuhPZTP",
       "packageName": "Style Heart Sunglasses",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "4c-yCAGV5U",
@@ -253,6 +276,20 @@
       "returning": "unknown"
     },
     {
+      "guid": "4CYafmMUql",
+      "name": "Days of Summer Umbrella",
+      "playerName": "夏日陽傘",
+      "aliases": [],
+      "packageKey": "iap:bEjUQmxgOa",
+      "packageName": "Summer Parasol",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 5
+    },
+    {
       "guid": "4D33RG4tNB",
       "name": "Spooky Bat Cape",
       "playerName": "蝙蝠斗篷",
@@ -263,46 +300,50 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 8
     },
     {
       "guid": "4i2CdmSgmX",
       "name": "Winter Feast Snowglobe",
       "playerName": "冬日宴會雪景球",
       "aliases": [],
-      "packageKey": "iap:VyP_B7mzgq",
+      "packageKey": "iap:H4HSEWVLK4",
       "packageName": "Feast Snow Globe",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "4kOgGOEAQT",
       "name": "To The Love Outfit",
       "playerName": "致愛服裝",
       "aliases": [],
-      "packageKey": "iap:OTJsDJNj98",
+      "packageKey": "iap:kuzbQO4-Fd",
       "packageName": "To The Love Outfit",
       "paid": true,
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "5F_G_puJb7",
       "name": "Bloom Rose-Embroidered Cape",
       "playerName": "花憩玫瑰刺繡斗篷",
       "aliases": [],
-      "packageKey": "iap:Y6-EEIOhTM",
+      "packageKey": "iap:mzbZeWJSV_",
       "packageName": "Bloom Rose-Embroidered Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "5k-f_eevZd",
@@ -318,6 +359,34 @@
       "returning": "unknown"
     },
     {
+      "guid": "5V_r38RVGd",
+      "name": "Triumph Violin",
+      "playerName": "凱旋小提琴",
+      "aliases": [],
+      "packageKey": "iap:frvgJDX_Cu",
+      "packageName": "Triumph Violin",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 2
+    },
+    {
+      "guid": "5xJ_mCzZQy",
+      "name": "Moonlight Lantern",
+      "playerName": "月光燈籠",
+      "aliases": [],
+      "packageKey": "iap:_NudGPNXnY",
+      "packageName": "Days of Summer Lights Lantern",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 6
+    },
+    {
       "guid": "6Kn8VMa4go",
       "name": "Ocean Sea Foam Cape",
       "playerName": "海洋海洋泡沫斗篷",
@@ -328,7 +397,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "6Nac-p14-9",
@@ -419,7 +489,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "8P8dL_Zp8q",
@@ -433,6 +504,20 @@
       "availability": "global",
       "importance": "standard",
       "returning": "unknown"
+    },
+    {
+      "guid": "8rYQfi8VP3",
+      "name": "Mischief Withered Broom",
+      "playerName": "惡作劇枯萎掃帚",
+      "aliases": [],
+      "packageKey": "iap:ObY89zyeG-",
+      "packageName": "Mischief Withered Broom",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "8Xr81aJbUN",
@@ -452,26 +537,28 @@
       "name": "Treasure Seeker's Bounty Mask",
       "playerName": "寶藏追尋者豐饒面具",
       "aliases": [],
-      "packageKey": "iap:lSAbeEJM_i",
+      "packageKey": "iap:_r8zDSMcf_",
       "packageName": "Treasure Seeker's Bounty",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "9ETwx3n-UZ",
       "name": "Dark Rainbow Tunic",
       "playerName": "深色彩虹短袍",
       "aliases": [],
-      "packageKey": "iap:c_adKtYeV1",
+      "packageKey": "iap:6d47mXYSYb",
       "packageName": "Dark Rainbow Tunic",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "9kbdAvVwR4",
@@ -484,6 +571,20 @@
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 2
+    },
+    {
+      "guid": "9Wqllerxa-",
+      "name": "Fortune Plush Mount",
+      "playerName": "福瑞絨偶坐騎",
+      "aliases": [],
+      "packageKey": "iap:Pql0BnYS7m",
+      "packageName": "Fortune Plush Mount",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
       "returning": "unknown"
     },
     {
@@ -491,26 +592,28 @@
       "name": "Fortune Fish Hood",
       "playerName": "福瑞魚兜帽",
       "aliases": [],
-      "packageKey": "iap:exZs0drSPp",
+      "packageKey": "iap:_n5CGfOGJ-",
       "packageName": "Days of Fortune Fish Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "ADJiva5H2Z",
       "name": "Fortune Muralist's Smock",
       "playerName": "福瑞壁畫家工作服",
       "aliases": [],
-      "packageKey": "iap:f2wGOnTOGl",
+      "packageKey": "iap:AZNU4TiFyl",
       "packageName": "Days of Fortune Muralist's Smock",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "aGS2A9wzQ8",
@@ -543,26 +646,28 @@
       "name": "Fortune Orange Hat",
       "playerName": "福瑞橘色帽子",
       "aliases": [],
-      "packageKey": "iap:P0xxZcQSx5",
+      "packageKey": "iap:-RQOnjiSgH",
       "packageName": "Days of Fortune Orange",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "ARZC1Eg2jx",
       "name": "Mischief Spider Quiff",
       "playerName": "惡作劇蜘蛛飛機頭",
       "aliases": [],
-      "packageKey": "iap:xAmLnyE6vE",
+      "packageKey": "iap:brwUie9WNh",
       "packageName": "Mischief Spider Quiff",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "Ay3g-0JAeW",
@@ -575,28 +680,58 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "B3YJxxJKJX",
       "name": "Winter Ancestor Cape",
       "playerName": "冬日先祖斗篷",
       "aliases": [],
-      "packageKey": "iap:mKOdlx1odg",
+      "packageKey": "iap:Efdkvx2rO_",
       "packageName": "Winter Ancestor Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "bcKjyS-_p3",
       "name": "Mischief Gossamer Cape",
       "playerName": "惡作劇薄紗斗篷",
       "aliases": [],
-      "packageKey": "iap:pyYGBWvbwB",
+      "packageKey": "iap:bDB0L4YVvX",
       "packageName": "Mischief Gossamer Cape",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 2
+    },
+    {
+      "guid": "BDfLuCSmaF",
+      "name": "Vessel Flute",
+      "playerName": "陶笛",
+      "aliases": [],
+      "packageKey": "iap:1HjO9K58mP",
+      "packageName": "Nintendo Pack",
+      "paid": true,
+      "series": "Nintendo",
+      "availability": "platform",
+      "platform": "nintendo",
+      "importance": "standard",
+      "returning": "unknown"
+    },
+    {
+      "guid": "bOQzUAzYfV",
+      "name": "Rhythm Guitar",
+      "playerName": "節奏吉他",
+      "aliases": [],
+      "packageKey": "iap:5VJfMMrFV1",
+      "packageName": "Rhythm Guitar",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
@@ -653,7 +788,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "bWyM7Ars0o",
@@ -738,26 +874,28 @@
       "name": "Rainbow Beanie Hat",
       "playerName": "彩虹毛帽帽子",
       "aliases": [],
-      "packageKey": "iap:o64dAgrcEN",
+      "packageKey": "iap:G8ESKgY1Mu",
       "packageName": "Rainbow Hat",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "cMNnwUbQed",
       "name": "Mischief Witch Hat",
       "playerName": "惡作劇巫師帽子",
       "aliases": [],
-      "packageKey": "iap:iMCpfyWz9M",
+      "packageKey": "iap:_XakvSmYcJ",
       "packageName": "Mischief Witch Hat",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "cXaPt2zi0Q",
@@ -777,13 +915,14 @@
       "name": "Mischief Witch Jumper",
       "playerName": "惡作劇巫師毛衣",
       "aliases": [],
-      "packageKey": "iap:hD6xfWsujC",
+      "packageKey": "iap:EJKU-alWQ9",
       "packageName": "Mischief Witch Jumper",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "czsVJwqa_g",
@@ -829,13 +968,14 @@
       "name": "Oreo Plush",
       "playerName": "奧利奧玩偶",
       "aliases": [],
-      "packageKey": "iap:HYun7FYMGn",
+      "packageKey": "iap:-ffdnMJH4w",
       "packageName": "Oreo Plush",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "Dhkf_3dAhf",
@@ -874,20 +1014,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 8
     },
     {
       "guid": "dncileSEYL",
       "name": "Little Prince Asteroid Jacket",
       "playerName": "小王子小行星外套",
       "aliases": [],
-      "packageKey": "iap:XAH6R5Ub1W",
+      "packageKey": "iap:GQhF2oh9WV",
       "packageName": "Little Prince Asteroid Jacket",
       "paid": true,
       "series": "小王子",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "DTesE2jxOl",
@@ -913,7 +1055,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "e8qFeoyXxK",
@@ -933,13 +1076,14 @@
       "name": "Moonlight Bunny Accessory",
       "playerName": "月光兔兔配件",
       "aliases": [],
-      "packageKey": "iap:ZXKOusH_JS",
-      "packageName": "Moonlight Bunny Accessory",
+      "packageKey": "iap:Erf5ohu3HY",
+      "packageName": "Bunny Accessory",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "EK5ApidEe_",
@@ -965,7 +1109,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "EocwmiV_Vf",
@@ -978,33 +1123,36 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "EQYKoHE95s",
       "name": "Wings of AURORA",
       "playerName": "AURORA 之翼",
       "aliases": [],
-      "packageKey": "iap:Nn_ORL__wP",
+      "packageKey": "iap:cKKbbELBsO",
       "packageName": "Wings of AURORA",
       "paid": true,
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "eruG9WiyJZ",
       "name": "Days of Summer Shell Hairpin",
       "playerName": "日之夏日貝殼髮夾",
       "aliases": [],
-      "packageKey": "iap:09o4l_zgOw",
-      "packageName": "Days of Summer Shell Hair Pin",
+      "packageKey": "iap:_qV-f7qVx2",
+      "packageName": "Seashell Hairpin",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "EsxTOk-gmG",
@@ -1024,13 +1172,14 @@
       "name": "Mischief Withered Antlers",
       "playerName": "惡作劇枯萎鹿角",
       "aliases": [],
-      "packageKey": "iap:RoNGpI5-2k",
+      "packageKey": "iap:FwadomhrU9",
       "packageName": "Mischief Withered Antlers",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "eWqTtgnrmt",
@@ -1056,33 +1205,36 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "f-X2dDeB9w",
       "name": "Rainbow Earrings",
       "playerName": "彩虹耳環",
       "aliases": [],
-      "packageKey": "iap:T_daeF3aRQ",
+      "packageKey": "iap:1nb5tGQT-i",
       "packageName": "Rainbow Earring",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "fLbULqwumS",
       "name": "Wonderland Primrose Pinafore Bow",
       "playerName": "仙境報春花圍裙洋裝鞠躬",
       "aliases": [],
-      "packageKey": "iap:EqbMdBedT6",
+      "packageKey": "iap:_Nj12DJmj_",
       "packageName": "Wonderland Primose Pinafore Set",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "FLMn1Hib7k",
@@ -1115,13 +1267,14 @@
       "name": "Mischief Web Cape",
       "playerName": "惡作劇蛛網斗篷",
       "aliases": [],
-      "packageKey": "iap:HSKDIn896y",
+      "packageKey": "iap:8J8E3NsR2j",
       "packageName": "Mischief Web Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "gHfkqCK-A8",
@@ -1134,7 +1287,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "gnC7YQCAug",
@@ -1147,33 +1301,36 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "gNWmRUkpFo",
       "name": "Double Rainbow Flower",
       "playerName": "雙人彩虹花朵",
       "aliases": [],
-      "packageKey": "iap:ynQuCl7q9Z",
+      "packageKey": "iap:BRXIbPRO5K",
       "packageName": "Double Rainbow Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "gsACsrp16_",
       "name": "Sunlight Chunky Sandals",
       "playerName": "陽光厚底涼鞋",
       "aliases": [],
-      "packageKey": "iap:JHaelZdmil",
+      "packageKey": "iap:0yLbT5Ob1R",
       "packageName": "Sunlight Chunky Sandals",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "gZoseEbqGz",
@@ -1193,8 +1350,22 @@
       "name": "Mischief Witch Jumper Shoes",
       "playerName": "惡作劇巫師毛衣鞋子",
       "aliases": [],
-      "packageKey": "iap:hD6xfWsujC",
+      "packageKey": "iap:EJKU-alWQ9",
       "packageName": "Mischief Witch Jumper",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 4
+    },
+    {
+      "guid": "hcuS6xsmHg",
+      "name": "Blue Electric Guitar",
+      "playerName": "藍色電吉他",
+      "aliases": [],
+      "packageKey": "iap:3uTp2mfgQj",
+      "packageName": "TGC Guitar Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
@@ -1212,72 +1383,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
-      "guid": "held-bloom-lilypad-umbrella",
-      "name": "Bloom Lilypad Umbrella",
-      "playerName": "花憩節睡蓮傘",
+      "guid": "HEV8fvTQwQ",
+      "name": "Fortune Hand Fan",
+      "playerName": "福瑞手持扇",
       "aliases": [],
-      "packageKey": "iap:BcxdW-iTA6",
-      "packageName": "Bloom Lilypad Umbrella",
+      "packageKey": "iap:oyY4AabfTV",
+      "packageName": "Fortune Hand Fan",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "held-bloom-sunflower-umbrella",
-      "name": "Bloom Sunflower Umbrella",
-      "playerName": "花憩節向日葵傘",
-      "aliases": [],
-      "packageKey": "iap:BclM9yFwwU",
-      "packageName": "Bloom Sunflower Umbrella",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "held-days-of-love-serendipitous-scepter",
-      "name": "Days of Love Serendipitous Scepter",
-      "playerName": "愛之日邂逅權杖",
-      "aliases": [],
-      "packageKey": "iap:65mCMf_2ZQ",
-      "packageName": "Days of Love Serendipitous Scepter",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "held-fortune-plush-mount",
-      "name": "Fortune Plush Mount",
-      "playerName": "福瑞絨偶坐騎",
-      "aliases": [],
-      "packageKey": "iap:Pql0BnYS7m",
-      "packageName": "Fortune Plush Mount",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "held-mischief-withered-broom",
-      "name": "Mischief Withered Broom",
-      "playerName": "惡作劇枯萎掃帚",
-      "aliases": [],
-      "packageKey": "iap:ObY89zyeG-",
-      "packageName": "Mischief Withered Broom",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "hnBe3t5FFZ",
@@ -1297,13 +1418,14 @@
       "name": "Fortune Blushing Mask",
       "playerName": "福瑞害羞面具",
       "aliases": [],
-      "packageKey": "iap:KbPeQWUPlV",
+      "packageKey": "iap:cjTDXNkvN1",
       "packageName": "Days of Fortune Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "HYH__1BtLI",
@@ -1323,13 +1445,14 @@
       "name": "Tiara We Can Touch",
       "playerName": "觸碰之冠",
       "aliases": [],
-      "packageKey": "iap:nVHTeXM_ta",
+      "packageKey": "iap:fLApkJ8Zyn",
       "packageName": "Tiara We Can Touch",
       "paid": true,
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "i9-S4tuhpn",
@@ -1340,98 +1463,6 @@
       "packageName": "Yellow Paintbrush",
       "paid": true,
       "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-blue-electric-guitar",
-      "name": "Blue Electric Guitar",
-      "playerName": "藍色電吉他",
-      "aliases": [],
-      "packageKey": "iap:3uTp2mfgQj",
-      "packageName": "TGC Guitar Pack",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-fledgling-harp",
-      "name": "Fledgling Harp",
-      "playerName": "雛鳥豎琴",
-      "aliases": [],
-      "packageKey": "iap:dyqX00yWC0",
-      "packageName": "Fledgling Harp",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-rhythm-guitar",
-      "name": "Rhythm Guitar",
-      "playerName": "節奏吉他",
-      "aliases": [],
-      "packageKey": "iap:5VJfMMrFV1",
-      "packageName": "Rhythm Guitar",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-triumph-handpan",
-      "name": "Triumph Handpan",
-      "playerName": "凱旋手碟",
-      "aliases": [],
-      "packageKey": "iap:Q0Cze2DKAF",
-      "packageName": "Triumph Handpan",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-triumph-violin",
-      "name": "Triumph Violin",
-      "playerName": "凱旋小提琴",
-      "aliases": [],
-      "packageKey": "iap:frvgJDX_Cu",
-      "packageName": "Triumph Violin",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-vessel-flute",
-      "name": "Vessel Flute",
-      "playerName": "陶笛",
-      "aliases": [],
-      "packageKey": "iap:1HjO9K58mP",
-      "packageName": "Nintendo Pack",
-      "paid": true,
-      "series": "Nintendo",
-      "availability": "platform",
-      "platform": "nintendo",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
-      "guid": "instrument-voice-of-aurora",
-      "name": "Voice of AURORA",
-      "playerName": "AURORA 之聲",
-      "aliases": [],
-      "packageKey": "iap:v-SU-ROcQr",
-      "packageName": "Voice of AURORA",
-      "paid": true,
-      "series": "AURORA",
       "availability": "global",
       "importance": "standard",
       "returning": "unknown"
@@ -1454,8 +1485,22 @@
       "name": "Nature Glasses",
       "playerName": "自然眼鏡",
       "aliases": [],
-      "packageKey": "iap:5RnFOO5fyy",
+      "packageKey": "iap:-gGiPg8b0n",
       "packageName": "Nature Glasses Pack",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 3
+    },
+    {
+      "guid": "IP1yVVhLdv",
+      "name": "Bloom Sunflower Umbrella",
+      "playerName": "花憩節向日葵傘",
+      "aliases": [],
+      "packageKey": "iap:BclM9yFwwU",
+      "packageName": "Bloom Sunflower Umbrella",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
@@ -1467,26 +1512,28 @@
       "name": "Anniversary Cinema 3D Glasses",
       "playerName": "週年電影院3D眼鏡",
       "aliases": [],
-      "packageKey": "iap:uuZ-VMISUm",
+      "packageKey": "iap:6I9KMThVgi",
       "packageName": "Anniversary Cinema Set",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "j51xlBBIZX",
       "name": "Rainbow Headphones",
       "playerName": "彩虹耳機",
       "aliases": [],
-      "packageKey": "iap:rWoC4IM-tj",
+      "packageKey": "iap:6sytee2Pft",
       "packageName": "Rainbow Headphones",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "jc8Pyt7eLR",
@@ -1519,13 +1566,14 @@
       "name": "Giving In Cape",
       "playerName": "臣服斗篷",
       "aliases": [],
-      "packageKey": "iap:zMYBkYtUM2",
+      "packageKey": "iap:8xvcHtifMn",
       "packageName": "Giving In Cape",
       "paid": true,
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "JIMbTWase4",
@@ -1571,26 +1619,42 @@
       "name": "Projector of Memories",
       "playerName": "投影機之回憶",
       "aliases": [],
-      "packageKey": "iap:rY0Zs2qcDM",
+      "packageKey": "iap:qq-8NACu43",
       "packageName": "Projector of Memories",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "jWAPWGsEd-",
       "name": "Nature Wave-Touched Hair",
       "playerName": "自然海浪輕拂髮型",
       "aliases": [],
-      "packageKey": "iap:sou0sDEkEW",
+      "packageKey": "iap:NlbDnrAvpE",
       "packageName": "Nature Wave-Touched Hair",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
+    },
+    {
+      "guid": "K0NBv__mv8",
+      "name": "Voice of AURORA",
+      "playerName": "AURORA 之聲",
+      "aliases": [],
+      "packageKey": "iap:9CY9ZuRnX9",
+      "packageName": "Voice of AURORA",
+      "paid": true,
+      "series": "AURORA",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "kKDtHO9xi6",
@@ -1606,30 +1670,46 @@
       "returning": "unknown"
     },
     {
+      "guid": "kLfBsnAsUL",
+      "name": "Bloom Lilypad Umbrella",
+      "playerName": "花憩節睡蓮傘",
+      "aliases": [],
+      "packageKey": "iap:azQfFhLDmo",
+      "packageName": "Bloom Lilypad Umbrella",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 2
+    },
+    {
       "guid": "KpS-2FdasB",
       "name": "Rainbow Hair Flower",
       "playerName": "彩虹髮型花朵",
       "aliases": [],
-      "packageKey": "iap:phpvRx9BAL",
+      "packageKey": "iap:7zvNQ-PQ1C",
       "packageName": "Rainbow Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "krzIL86J83",
       "name": "Dark Rainbow Earrings",
       "playerName": "深色彩虹耳環",
       "aliases": [],
-      "packageKey": "iap:JZeO-kuj4g",
+      "packageKey": "iap:5f7QqQElff",
       "packageName": "Dark Rainbow Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "KtlqKC7whS",
@@ -1650,65 +1730,70 @@
       "name": "Ocean Necklace",
       "playerName": "海洋項鍊",
       "aliases": [],
-      "packageKey": "iap:OHsxWZOsgs",
+      "packageKey": "iap:_DCq4jxbNC",
       "packageName": "Ocean Necklace",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "l6GE013zrh",
       "name": "Purple Bloom Teaset",
       "playerName": "紫色花憩茶具",
       "aliases": [],
-      "packageKey": "iap:SJrMMErd7U",
+      "packageKey": "iap:HQNwM6uvpQ",
       "packageName": "Purple Bloom Teaset",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "LGaX4cqdOe",
       "name": "Fortune Dragon Stole",
       "playerName": "福瑞龍披肩",
       "aliases": [],
-      "packageKey": "iap:xc37pb6Wvb",
+      "packageKey": "iap:cHyMg_9nlp",
       "packageName": "Days of Fortune Dragon Stole",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "LrI5FQ8vdi",
       "name": "AURORA Musical Voyage Sneakers",
       "playerName": "歐若拉音樂旅程運動鞋",
       "aliases": [],
-      "packageKey": "iap:SE1PMpYNqc",
+      "packageKey": "iap:QVs45L8tMt",
       "packageName": "Musical Voyage Sneakers",
       "paid": true,
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "lv_MnKorJN",
       "name": "Sunlight Helios Hoops",
       "playerName": "陽光太陽神圓環",
       "aliases": [],
-      "packageKey": "iap:WdXRjnor-8",
+      "packageKey": "iap:af8EXlZ_4K",
       "packageName": "Sunlight Helios Hoops",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "m39NUv_Jz9",
@@ -1730,6 +1815,19 @@
       "aliases": [],
       "packageKey": "iap:sEFrE7c4v4",
       "packageName": "Charming Creature Pack",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown"
+    },
+    {
+      "guid": "McTvO9Z8EQ",
+      "name": "Triumph Handpan",
+      "playerName": "凱旋手碟",
+      "aliases": [],
+      "packageKey": "iap:Q0Cze2DKAF",
+      "packageName": "Triumph Handpan",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
@@ -1768,13 +1866,14 @@
       "name": "Ocean Cape",
       "playerName": "海洋斗篷",
       "aliases": [],
-      "packageKey": "iap:wH4Rolvr0R",
+      "packageKey": "iap:ACq6i6UXTe",
       "packageName": "Ocean Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "MMv9XD-1X9",
@@ -1794,39 +1893,42 @@
       "name": "Moonlight Bunny Slippers",
       "playerName": "月光兔兔拖鞋",
       "aliases": [],
-      "packageKey": "iap:jgz-O04yoP",
-      "packageName": "Moonlight Bunny Slippers",
+      "packageKey": "iap:dwa7xvLVxV",
+      "packageName": "Style Bunny Slippers",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "mzF6ZaHa1s",
       "name": "Fortune Fish Cape",
       "playerName": "福瑞魚斗篷",
       "aliases": [],
-      "packageKey": "iap:exZs0drSPp",
+      "packageKey": "iap:_n5CGfOGJ-",
       "packageName": "Days of Fortune Fish Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "n_DeSbUOJ4",
       "name": "Anniversary Slippers",
       "playerName": "週年拖鞋",
       "aliases": [],
-      "packageKey": "iap:sszAOFSGjF",
+      "packageKey": "iap:CiplH58OIH",
       "packageName": "Anniversary Gown Ensemble",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "n6S9sKtNlW",
@@ -1865,20 +1967,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "Nep9ocMylo",
       "name": "Cozy Hermit Cape",
       "playerName": "暖心隱士斗篷",
       "aliases": [],
-      "packageKey": "iap:UQJntPLj4l",
+      "packageKey": "iap:195bMrG3JB",
       "packageName": "Cozy Hermit Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "Nf94RnTzOh",
@@ -1898,13 +2002,14 @@
       "name": "Sunlight Bonnet",
       "playerName": "陽光軟帽",
       "aliases": [],
-      "packageKey": "iap:h3cw_n8g-Z",
+      "packageKey": "iap:AAxgoFzDG5",
       "packageName": "Sunlight Bonnet Bundle",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "nMt5KsLO6Y",
@@ -1917,20 +2022,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "nrNcYrcZXy",
       "name": "Little Prince Fox",
       "playerName": "小王子狐狸",
       "aliases": [],
-      "packageKey": "iap:ILNCp5exZ-",
+      "packageKey": "iap:-gcPJFCEYm",
       "packageName": "Little Prince Fox",
       "paid": true,
       "series": "小王子",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "nz4W7amLch",
@@ -1943,20 +2050,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "o8CAzM0x1c",
       "name": "Fortune Cape",
       "playerName": "福瑞斗篷",
       "aliases": [],
-      "packageKey": "iap:KbPeQWUPlV",
+      "packageKey": "iap:cjTDXNkvN1",
       "packageName": "Days of Fortune Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "OAGgi-B-xa",
@@ -1982,7 +2091,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "OfOc3xQdCQ",
@@ -2002,39 +2112,42 @@
       "name": "Wonderland Cafe Corridor",
       "playerName": "仙境咖啡館走廊",
       "aliases": [],
-      "packageKey": "iap:sq7pfYkRjD",
+      "packageKey": "iap:SjSboH3d36",
       "packageName": "Wonderland Cafe Corridor",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "OjSfpOgFoR",
       "name": "Fortune Fish Accessory",
       "playerName": "福瑞魚配件",
       "aliases": [],
-      "packageKey": "iap:pTTfhnjNgn",
+      "packageKey": "iap:4u_4x-CMZZ",
       "packageName": "Days of Fortune Fish Accessory",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "pG1_D61KMT",
       "name": "Cat Cape",
       "playerName": "貓咪斗篷",
       "aliases": [],
-      "packageKey": "iap:OWK46yMzBT",
+      "packageKey": "iap:4JGWNM03tr",
       "packageName": "Cat Costume Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "pGinCIs2W7",
@@ -2067,26 +2180,28 @@
       "name": "Cozy Hermit Boots",
       "playerName": "暖心隱士靴子",
       "aliases": [],
-      "packageKey": "iap:UOg9ZA2scX",
+      "packageKey": "iap:2B4VUC1IJg",
       "packageName": "Cozy Hermit Boots",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "PuFWddickP",
       "name": "Days of Love Classy Cravat",
       "playerName": "日之愛之日優雅領巾",
       "aliases": [],
-      "packageKey": "iap:GfzBBN17Gm",
+      "packageKey": "iap:cVvWv3Nf7F",
       "packageName": "Days of Love Classy Cravat",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "Pyk6fYvTVM",
@@ -2112,20 +2227,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "QeNQhxg3mv",
       "name": "Cat Mask",
       "playerName": "貓咪面具",
       "aliases": [],
-      "packageKey": "iap:OWK46yMzBT",
+      "packageKey": "iap:4JGWNM03tr",
       "packageName": "Cat Costume Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "qpl9PPDD8z",
@@ -2151,7 +2268,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "rA-RHusWvS",
@@ -2184,13 +2302,14 @@
       "name": "Fortune Bun Hair",
       "playerName": "福瑞髮髻髮型",
       "aliases": [],
-      "packageKey": "iap:KbPeQWUPlV",
+      "packageKey": "iap:cjTDXNkvN1",
       "packageName": "Days of Fortune Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "RpAC3rlPrR",
@@ -2210,13 +2329,14 @@
       "name": "Days of Feast Horns",
       "playerName": "日之宴會角",
       "aliases": [],
-      "packageKey": "iap:jEMAHe1jhH",
+      "packageKey": "iap:5rvSltYZNX",
       "packageName": "Days of Feast Horns",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "sDNG_Nt7Ew",
@@ -2236,13 +2356,14 @@
       "name": "Pink Bloom Teaset",
       "playerName": "粉紅色花憩茶具",
       "aliases": [],
-      "packageKey": "iap:mdWojLD1RZ",
-      "packageName": "Bloom Teaset",
+      "packageKey": "iap:15aenJbpNM",
+      "packageName": "Pink Bloom Teaset",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "SVDLcIYgsD",
@@ -2262,13 +2383,14 @@
       "name": "Days Of Love Meteor Mantle",
       "playerName": "日之愛之日流星披肩",
       "aliases": [],
-      "packageKey": "iap:UXec8cY3C8",
+      "packageKey": "iap:IgsQg-Dlwf",
       "packageName": "Days of Love Meteor Mantle",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "sZRjoCGw_u",
@@ -2281,7 +2403,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
+    },
+    {
+      "guid": "Tf45PqqIsn",
+      "name": "Days of Love Serendipitous Scepter",
+      "playerName": "愛之日邂逅權杖",
+      "aliases": [],
+      "packageKey": "iap:65mCMf_2ZQ",
+      "packageName": "Days of Love Serendipitous Scepter",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "TfItBIVTeP",
@@ -2340,13 +2477,14 @@
       "name": "Wonderland Primrose Pinafore Dress",
       "playerName": "仙境報春花圍裙洋裝",
       "aliases": [],
-      "packageKey": "iap:EqbMdBedT6",
+      "packageKey": "iap:_Nj12DJmj_",
       "packageName": "Wonderland Primose Pinafore Set",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "TvT6x_UO5V",
@@ -2366,26 +2504,28 @@
       "name": "Mischief Crabula Cloak",
       "playerName": "惡作劇蟹伯爵披風",
       "aliases": [],
-      "packageKey": "iap:HYV2lsfbuI",
+      "packageKey": "iap:hKeD6VUXjB",
       "packageName": "Mischief Crabula Cloak",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "TXYOTW9Qyn",
       "name": "Campfire Snack Kit",
       "playerName": "營火點心套組",
       "aliases": [],
-      "packageKey": "iap:xapvROJehm",
+      "packageKey": "iap:IuJWH3gjsv",
       "packageName": "Campfire Snack Kit",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "tz-IwazQ7k",
@@ -2411,7 +2551,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "u7q3xg2y55",
@@ -2437,20 +2578,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "uJd-mEy1g4",
       "name": "Anniversary Tuxedo Cape",
       "playerName": "週年燕尾服斗篷",
       "aliases": [],
-      "packageKey": "iap:rpl4TX5I4v",
+      "packageKey": "iap:5O22WfgSu-",
       "packageName": "Anniversary Tuxedo Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "uvx7_B9OyH",
@@ -2463,7 +2606,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "uw30fc8L-C",
@@ -2479,6 +2623,20 @@
       "returning": "unknown"
     },
     {
+      "guid": "uzos22Ysp3",
+      "name": "Fortune Enchanted Umbrella",
+      "playerName": "福瑞魔法傘",
+      "aliases": [],
+      "packageKey": "iap:4jMCH8Vl-x",
+      "packageName": "Days of Fortune Enchanted Umbrella",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 3
+    },
+    {
       "guid": "vLeyYAngWk",
       "name": "Color Bubble Machine",
       "playerName": "彩色泡泡機",
@@ -2489,20 +2647,36 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "vNSMly5D9b",
       "name": "Sunlight Woven Wrap",
       "playerName": "陽光編織披巾",
       "aliases": [],
-      "packageKey": "iap:kgfb3dfWbU",
+      "packageKey": "iap:3GcMI-M31g",
       "packageName": "Sunlight Woven Wrap",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
+    },
+    {
+      "guid": "vPenDMkJkY",
+      "name": "Anniversary Popcorn",
+      "playerName": "週年爆米花道具",
+      "aliases": [],
+      "packageKey": "iap:6I9KMThVgi",
+      "packageName": "Anniversary Cinema Set",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "VRB1mcOeYv",
@@ -2531,19 +2705,6 @@
       "returning": "unknown"
     },
     {
-      "guid": "vx4vxVJ0L1",
-      "name": "Moonlight Lantern",
-      "playerName": "月光燈籠",
-      "aliases": [],
-      "packageKey": "iap:lWUpgP0ALe",
-      "packageName": "Moonlight Lantern Pack",
-      "paid": true,
-      "series": "付費禮包",
-      "availability": "global",
-      "importance": "standard",
-      "returning": "unknown"
-    },
-    {
       "guid": "VZsaoYRkCQ",
       "name": "Cinnamoroll Bowtie",
       "playerName": "大耳狗領結",
@@ -2561,39 +2722,42 @@
       "name": "Treasure Seeker's Bounty Outfit",
       "playerName": "寶藏追尋者豐饒服裝",
       "aliases": [],
-      "packageKey": "iap:lSAbeEJM_i",
+      "packageKey": "iap:_r8zDSMcf_",
       "packageName": "Treasure Seeker's Bounty",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "VZyiD3Wmtp",
       "name": "Snowflake Hair Accessory",
       "playerName": "雪花髮型配件",
       "aliases": [],
-      "packageKey": "iap:Te8lhAUlsm",
+      "packageKey": "iap:3xQHsmZv-e",
       "packageName": "Snowflake Hair Accessory",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     },
     {
       "guid": "w7byhvh3Xa",
       "name": "Days of Love Swing",
       "playerName": "日之愛之日鞦韆",
       "aliases": [],
-      "packageKey": "iap:FlOGVYjyiY",
-      "packageName": "Days of Love Pack",
+      "packageKey": "iap:-gWkeP967A",
+      "packageName": "Days of Love Swing Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 6
     },
     {
       "guid": "wkCxoe9zSP",
@@ -2606,7 +2770,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "wMsUtkvt3s",
@@ -2619,20 +2784,22 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "wUPw1TRQSI",
       "name": "Bloom Gardening Tunic",
       "playerName": "花憩園藝短袍",
       "aliases": [],
-      "packageKey": "iap:mEvjH3h1gv",
+      "packageKey": "iap:8BEhmbCn0q",
       "packageName": "Bloom Gardening Tunic",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 3
     },
     {
       "guid": "wXLGNti3db",
@@ -2652,26 +2819,28 @@
       "name": "AURORA Runaway Hair",
       "playerName": "歐若拉逃跑髮型",
       "aliases": [],
-      "packageKey": "iap:I1zcPgQt_W",
+      "packageKey": "iap:6uocGtwo0k",
       "packageName": "Runaway Hairstyle",
       "paid": true,
       "series": "AURORA",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "x-eBv-6iNk",
       "name": "Anniversary Gown",
       "playerName": "週年禮服",
       "aliases": [],
-      "packageKey": "iap:sszAOFSGjF",
+      "packageKey": "iap:CiplH58OIH",
       "packageName": "Anniversary Gown Ensemble",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "xaX_sfWwKV",
@@ -2691,26 +2860,28 @@
       "name": "Dark Rainbow Loafers",
       "playerName": "深色彩虹樂福鞋",
       "aliases": [],
-      "packageKey": "iap:XbLrnItDCF",
+      "packageKey": "iap:niXRqrDBPE",
       "packageName": "Dark Rainbow Loafers",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "xsTxIqIX8E",
       "name": "Fortune Dragon Bangles",
       "playerName": "福瑞龍手環",
       "aliases": [],
-      "packageKey": "iap:XMyw8g-P8x",
+      "packageKey": "iap:1f6Qmtj6ky",
       "packageName": "Days of Fortune Dragon Bangles",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "XURacs6BHP",
@@ -2723,7 +2894,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "y69WKTTyw7",
@@ -2769,13 +2941,14 @@
       "name": "Little Prince Scarf Cape",
       "playerName": "小王子圍巾",
       "aliases": [],
-      "packageKey": "iap:ffn9SevEDg",
+      "packageKey": "iap:EaPiJFN8nV",
       "packageName": "Little Prince Scarf Cape",
       "paid": true,
       "series": "小王子",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "Yqwe0k-zzj",
@@ -2795,13 +2968,14 @@
       "name": "Sunlight Sun Dress",
       "playerName": "陽光太陽洋裝",
       "aliases": [],
-      "packageKey": "iap:h3cw_n8g-Z",
+      "packageKey": "iap:AAxgoFzDG5",
       "packageName": "Sunlight Bonnet Bundle",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "yuO7uDMle8",
@@ -2821,13 +2995,14 @@
       "name": "Earth Cape",
       "playerName": "地球斗篷",
       "aliases": [],
-      "packageKey": "iap:JDYVILff0q",
+      "packageKey": "iap:dUfEqImdWR",
       "packageName": "Earth Cape",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 6
     },
     {
       "guid": "yv8WuDrV-e",
@@ -2847,26 +3022,28 @@
       "name": "Days of Love Seesaw",
       "playerName": "日之愛之日蹺蹺板",
       "aliases": [],
-      "packageKey": "iap:SMZdQolABl",
+      "packageKey": "iap:9Zfj0X2wNt",
       "packageName": "Days of Love Seesaw Pack",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 5
     },
     {
       "guid": "Yxt4jz3je6",
       "name": "Days Of Love Amethyst-Tipped Tails",
       "playerName": "日之愛之日紫水晶尖端尾巴",
       "aliases": [],
-      "packageKey": "iap:V28-mtG9V2",
+      "packageKey": "iap:H2mdNW8b-H",
       "packageName": "Days of Love Amethyst-Tipped Tails",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "z2M4HqpR9C",
@@ -2879,7 +3056,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 6
     },
     {
       "guid": "Z5JkGSWLbw",
@@ -2899,13 +3077,14 @@
       "name": "Skyfest Oreo Headband",
       "playerName": "天空慶典奧利奧頭帶",
       "aliases": [],
-      "packageKey": "iap:bKxtksJv4J",
+      "packageKey": "iap:-dyNdYI7we",
       "packageName": "SkyFest Oreo Headband",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 2
     },
     {
       "guid": "Z9HZ5p9DX7",
@@ -2918,7 +3097,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "zG11dMlH61",
@@ -2931,7 +3111,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "znjZlpHSt4",
@@ -2944,7 +3125,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 4
     }
   ]
 }

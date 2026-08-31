@@ -110,12 +110,21 @@ const standardizedExclusionReason = (row) => {
 const hmac = (salt, value) =>
   createHmac("sha256", salt).update(value, "utf8").digest("hex");
 
+const minimumSaltLength = 32;
+
+const assertSalt = (salt) => {
+  if (typeof salt !== "string" || salt.length < minimumSaltLength)
+    throw new Error(
+      `VALUATION_HASH_SALT must be at least ${minimumSaltLength} characters.`,
+    );
+};
+
 const identityFor = (row, keys, fallback) => readString(row, keys) || fallback;
 
 export const prepareRow = (row, salt) => {
   if (!row || typeof row !== "object" || Array.isArray(row))
     throw new Error("expected a JSON object");
-  if (!salt) throw new Error("VALUATION_HASH_SALT is required");
+  assertSalt(salt);
 
   const postIdentity = identityFor(
     row,
@@ -180,7 +189,11 @@ export const prepareRow = (row, salt) => {
 const inputPath = process.argv[1] === fileURLToPath(import.meta.url) ? process.argv[2] : undefined;
 if (inputPath) {
   const salt = process.env.VALUATION_HASH_SALT;
-  if (!salt) throw new Error(`${usage}\nVALUATION_HASH_SALT is required.`);
+  try {
+    assertSalt(salt);
+  } catch (error) {
+    throw new Error(`${usage}\n${error.message}`);
+  }
   const input = createInterface({ input: createReadStream(inputPath), crlfDelay: Infinity });
   let lineNumber = 0;
   for await (const line of input) {

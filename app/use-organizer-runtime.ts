@@ -119,7 +119,6 @@ export const useOrganizerRuntime = (
   const allClosetTypeSet = catalogDomain?.allClosetTypeSet ?? emptyStringSet;
   const graduationSeasonSlugs =
     catalogDomain?.graduationSeasonSlugs ?? emptyStringList;
-  const heldClosetOrder = catalogDomain?.heldClosetOrder ?? emptyNumberMap;
   const isLimitedItem = catalogDomain?.isLimitedItem ?? alwaysFalse;
   const isPaidItem = catalogDomain?.isPaidItem ?? alwaysFalse;
   const isProfessionalVideoFocus =
@@ -228,7 +227,6 @@ export const useOrganizerRuntime = (
     compareCatalogItems,
     allClosetTypeSet,
     isValuationFocus,
-    heldClosetOrder,
     isLimitedItem,
     isProfessionalVideoFocus,
     labels,

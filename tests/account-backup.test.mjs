@@ -15,6 +15,9 @@ const loadAccountBackup = async () => {
       `const {${imports.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(
         asModuleUrl(configSource),
       )});`,
+  ).replace(
+    'import { legacyCatalogGuidAliases } from "./catalog-legacy-guids";',
+    'const legacyCatalogGuidAliases = { "instrument-harp": "biKOov4qJQ" };',
   );
   return import(asModuleUrl(moduleSource));
 };
@@ -71,7 +74,7 @@ test("creates a stable versioned account backup", () => {
   });
 
   assert.equal(backup.format, "sky-recognition-wiki");
-  assert.equal(backup.version, 2);
+  assert.equal(backup.version, 3);
   assert.equal(backup.exportedAt, "2026-08-25T00:00:00.000Z");
   assert.deepEqual(backup.owned, ["valid-guid"]);
   assert.deepEqual(backup.items[0], {
@@ -88,6 +91,10 @@ test("creates a stable versioned account backup", () => {
   assert.deepEqual(restored.account, account);
   assert.deepEqual(restored.bindings, backup.bindings);
   assert.deepEqual(restored.owned, ["valid-guid"]);
+  assert.deepEqual(
+    { imported: restored.imported, migrated: restored.migrated, ignored: restored.ignored },
+    { imported: 1, migrated: 0, ignored: 0 },
+  );
 });
 
 test("normalizes imports and keeps only known item ids", () => {
@@ -125,8 +132,21 @@ test("rejects unrelated JSON files", () => {
   );
 });
 
-test("preserves the legacy version-agnostic import policy", () => {
-  const imported = parseAccountBackup(
+test("migrates v1, v2, and versionless backups but rejects future versions", () => {
+  for (const version of [undefined, 1, 2]) {
+    const imported = parseAccountBackup(
+      {
+        format: "sky-recognition-wiki",
+        ...(version === undefined ? {} : { version }),
+        account,
+        owned: [],
+      },
+      new Set(),
+    );
+    assert.equal(imported.account.name, "測試帳號");
+  }
+  assert.throws(
+    () => parseAccountBackup(
     {
       format: "sky-recognition-wiki",
       version: 999,
@@ -134,10 +154,38 @@ test("preserves the legacy version-agnostic import policy", () => {
       owned: [],
     },
     new Set(),
-  );
+  ), /Unsupported account backup version/);
+});
 
-  assert.equal(imported.account.name, "測試帳號");
-  assert.equal(imported.bindings.playstation, "none");
+test("migrates legacy ids, deduplicates owned items, and counts ignored entries", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 2,
+      account,
+      owned: ["instrument-harp", "biKOov4qJQ", "missing", "instrument-harp", 42],
+    },
+    new Set(["biKOov4qJQ"]),
+  );
+  assert.deepEqual(imported.owned, ["biKOov4qJQ"]);
+  assert.deepEqual(
+    { imported: imported.imported, migrated: imported.migrated, ignored: imported.ignored },
+    { imported: 0, migrated: 1, ignored: 4 },
+  );
+});
+
+test("rejects excessively large ownership lists and limits imported text", () => {
+  assert.throws(
+    () => parseAccountBackup({ format: "sky-recognition-wiki", account, owned: Array(5001).fill("valid-guid") }, new Set(["valid-guid"])),
+    /Too many owned items/,
+  );
+  const imported = parseAccountBackup(
+    { format: "sky-recognition-wiki", account: { ...account, name: "名".repeat(101), candles: "燭".repeat(33), notes: "注".repeat(1001) }, owned: [] },
+    new Set(),
+  );
+  assert.equal(imported.account.name.length, 100);
+  assert.equal(imported.account.candles.length, 32);
+  assert.equal(imported.account.notes.length, 1000);
 });
 
 test("migrates legacy backups and drafts without PlayStation bindings", () => {
@@ -183,13 +231,10 @@ test("creates and restores a compact account draft", () => {
 
   assert.equal(draft.savedAt, savedAt.toISOString());
   assert.equal("items" in draft, false);
+  const restored = parseAccountDraft(draft, new Set(["valid-guid"]), savedAt);
   assert.deepEqual(
-    parseAccountDraft(draft, new Set(["valid-guid"]), savedAt),
-    {
-      account,
-      bindings: draft.bindings,
-      owned: ["valid-guid"],
-    },
+    { account: restored.account, bindings: restored.bindings, owned: restored.owned },
+    { account, bindings: draft.bindings, owned: ["valid-guid"] },
   );
 });
 

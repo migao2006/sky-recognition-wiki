@@ -11,11 +11,13 @@ const {
   getNextClosetSub,
   graduationSeasonSlugs,
   heldClosetOrder,
+  legacyCatalogGuidAliases,
   isProfessionalVideoFocus,
   matchesSub,
   matchesSourceFilter,
   seasonGraduationItems,
   searchIndex,
+  officialHeldIdentities,
   showcaseClusterOrder,
   sourceCollectionName,
   sourceKind,
@@ -155,8 +157,8 @@ test("popular player hair names and aliases stay searchable", () => {
 test("player-friendly names keep representative accessory, instrument, and prop identities", () => {
   for (const [guid, expected] of [
     ["_Y-80G-t_2", "海龜肩飾"],
-    ["instrument-fortune-drum", "幸運鼓"],
-    ["held-treasure-shovel", "尋寶鏟"],
+    ["8KXtBlvNRO", "幸運鼓"],
+    ["aU_ZGHomyy", "尋寶鏟"],
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
@@ -187,9 +189,26 @@ test("every visible wardrobe item has a Chinese display name", () => {
   }
 });
 
+test("keeps SkyGame-Data identities and every synthetic-guid migration target", () => {
+  const byGuid = new Map(wikiItems.map((entry) => [entry.guid, entry]));
+  assert.equal(Object.keys(legacyCatalogGuidAliases).length, 63);
+  for (const identity of Object.values(officialHeldIdentities)) {
+    const item = byGuid.get(identity.guid);
+    assert.ok(item, identity.guid);
+    assert.ok(["Held", "Prop", "Furniture"].includes(item.sourceType), identity.guid);
+    assert.deepEqual(
+      [item.id, item.order, item.name, item.group],
+      [identity.id, identity.order, identity.name, identity.group],
+      identity.guid,
+    );
+  }
+  for (const [legacyGuid, officialGuid] of Object.entries(legacyCatalogGuidAliases))
+    assert.ok(byGuid.has(officialGuid), `${legacyGuid} -> ${officialGuid}`);
+});
+
 test("uses held order only for the held closet, not cross-closet search", () => {
   const held = item({
-    guid: "held-search-result",
+    guid: "biKOov4qJQ",
     name: "Harp",
     type: "Instrument",
     order: 999,
@@ -276,20 +295,22 @@ test("matches the three in-game prop closet tabs", () => {
   assert.equal(instruments.length, 38);
   assert.equal(new Set(instruments.map((entry) => entry.guid)).size, 38);
   assert.ok(instruments.some((entry) => entry.name === "Harp"));
-  assert.ok(instruments.some((entry) => entry.name === "Transverse Flute"));
+  assert.ok(
+    instruments.some((entry) => entry.name === "Lightmending Light Catcher Flute"),
+  );
   for (const [name, guid] of [
-    ["Sanctuary Handpan", "Hvq52gCeih"],
-    ["Prophecy Drum", "wGQSuhVWXD"],
-    ["Bugle", "B59f4_ru60"],
-    ["Grand Piano", "WuZeLoUATs"],
-    ["Duets Grand Piano", "O9jSph-v7e"],
+    ["Sanctuary Ultimate Handpan", "Hvq52gCeih"],
+    ["Prophecy Ultimate Drum", "wGQSuhVWXD"],
+    ["Assembly Ultimate Bugle", "B59f4_ru60"],
+    ["The Musicians' Legacy Piano", "WuZeLoUATs"],
+    ["Duets Ultimate Instrument", "O9jSph-v7e"],
     ["Fledgling Upright Piano", "10Ol7H9jKg"],
     ["Jam Station", "WMNr4yo_35"],
   ]) {
     assert.equal(instruments.find((entry) => entry.name === name)?.guid, guid);
   }
   assert.equal(
-    instruments.find((entry) => entry.name === "Grand Piano")?.group,
+    instruments.find((entry) => entry.name === "The Musicians' Legacy Piano")?.group,
     "SeasonPass",
   );
   for (const name of [
@@ -313,8 +334,8 @@ test("matches the three in-game prop closet tabs", () => {
   assert.equal(matchesSub(instrumentByName("Jam Station"), "large"), true);
   for (const [name, order] of [
     ["Jam Station", 4700],
-    ["Grand Piano", 10000],
-    ["Duets Grand Piano", 10100],
+    ["The Musicians' Legacy Piano", 10000],
+    ["Duets Ultimate Instrument", 10100],
     ["Fledgling Upright Piano", 11700],
   ]) {
     assert.equal(instrumentByName(name)?.order, order, name);
@@ -329,11 +350,11 @@ test("matches the three in-game prop closet tabs", () => {
   assert.ok(
     orderedLargeProps
       .slice(0, 3)
-      .every((entry) => !["Grand Piano", "Duets Grand Piano", "Fledgling Upright Piano"].includes(entry.name)),
+      .every((entry) => !["The Musicians' Legacy Piano", "Duets Ultimate Instrument", "Fledgling Upright Piano"].includes(entry.name)),
   );
   for (const name of [
-    "Grand Piano",
-    "Duets Grand Piano",
+    "The Musicians' Legacy Piano",
+    "Duets Ultimate Instrument",
     "Fledgling Upright Piano",
   ]) {
     assert.equal(matchesSub(instrumentByName(name), "large"), true);
@@ -368,7 +389,7 @@ test("walks all wardrobe subcategories in game order", () => {
 test("uses verified game placement categories for representative props", () => {
   const byName = (name) => wikiItems.find((entry) => entry.name === name);
   const held = byName("Lightseekers Ultimate Umbrella");
-  const heldFromScreenshot = byName("Company-Issued Laptop");
+  const heldFromScreenshot = byName("Company Issued Laptop");
   const large = byName("Challenge Bounce Pad Level 3");
   const small = byName("Tournament Skyball Set");
   assert.ok(held && heldFromScreenshot && large && small);
@@ -394,17 +415,17 @@ test("uses verified game placement categories for representative props", () => {
     .filter((entry) => matchesSub(entry, "held"))
     .sort(
       (a, b) =>
-        heldClosetOrder.get(a.name) - heldClosetOrder.get(b.name),
+        heldClosetOrder.get(a.guid) - heldClosetOrder.get(b.guid),
     );
   assert.deepEqual(
-    heldItems.map((entry) => entry.name),
+    heldItems.map((entry) => entry.guid),
     [...heldClosetOrder.keys()],
   );
   for (const name of [
     "Dark Horn",
-    "Blue Umbrella",
+    "Laidback Pioneer Umbrella",
     "Manatee Staff",
-    "Sentry Spear",
+    "Scarred Sentry Spear",
   ]) {
     assert.equal(byName(name)?.group, "SeasonPass");
   }

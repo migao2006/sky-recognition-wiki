@@ -206,16 +206,60 @@ export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
 };
 
 export const planShowcasePages = (options: ExportShowcaseOptions) => {
-  const { width, height } = measureShowcaseCanvas(options);
-  return Array.from(
-    { length: Math.ceil(height / maximumCanvasHeight) },
-    (_, index) => ({
-      index,
+  const groups = buildShowcaseGroups(options);
+  const { height, panelHeight, renderGroups } = buildShowcaseLayout(groups);
+  const { width } = showcaseMetrics;
+  const summaryHeight =
+    options.preset === "valuation" && options.valuation ? 236 : 0;
+  const breakpoints = new Set([0, height]);
+  let groupTop = showcaseMetrics.pad + summaryHeight;
+
+  // Prefer complete group panels. Very large groups fall back to complete icon
+  // rows, so an export page never cuts an item cell in half.
+  renderGroups.forEach((group) => {
+    const boxHeight = panelHeight(group.layout.height);
+    const groupEnd = groupTop + boxHeight + showcaseMetrics.sectionGap;
+    breakpoints.add(Math.min(groupEnd, height));
+    group.layout.placements.forEach((placement) => {
+      const itemTop =
+        groupTop +
+        showcaseMetrics.titleHeight +
+        placement.y +
+        showcaseMetrics.clusterPad +
+        showcaseMetrics.clusterTitle;
+      const rows = Math.ceil(placement.cluster.items.length / placement.columns);
+      for (let row = 1; row <= rows; row += 1) {
+        const rowEnd =
+          itemTop +
+          row * showcaseMetrics.cellHeight +
+          (row - 1) * showcaseMetrics.iconGap +
+          showcaseMetrics.clusterPad;
+        if (rowEnd < groupEnd) breakpoints.add(rowEnd);
+      }
+    });
+    groupTop = groupEnd;
+  });
+
+  const sortedBreakpoints = [...breakpoints].sort((left, right) => left - right);
+  const pages: { index: number; width: number; height: number; offsetY: number }[] = [];
+  let offsetY = 0;
+  while (offsetY < height) {
+    const maximumEnd = Math.min(offsetY + maximumCanvasHeight, height);
+    const safeEnd = sortedBreakpoints.reduce(
+      (best, point) =>
+        point > offsetY && point <= maximumEnd ? Math.max(best, point) : best,
+      offsetY,
+    );
+    const end = safeEnd > offsetY ? safeEnd : maximumEnd;
+    pages.push({
+      index: pages.length,
       width,
-      height: Math.min(maximumCanvasHeight, height - index * maximumCanvasHeight),
-      offsetY: index * maximumCanvasHeight,
-    }),
-  );
+      height: end - offsetY,
+      offsetY,
+    });
+    offsetY = end;
+  }
+  return pages;
 };
 
 export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {

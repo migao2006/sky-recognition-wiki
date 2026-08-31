@@ -483,7 +483,13 @@ const sourceRowsBySource = Object.fromEntries(
 );
 
 console.log(JSON.stringify({
-  schemaVersion: 3,
+  schemaVersion: 4,
+  validationStatus: "unvalidated",
+  provenance: {
+    modelSchemaVersion: 2,
+    predictorSchema: "valuation_model",
+    validation: "requires validate-valuation-model full holdout pass before publishing as validated",
+  },
   asOf: referenceDate.toISOString().slice(0, 10),
   sourceRows: rows.length,
   eligibleRows: allEligible.length,

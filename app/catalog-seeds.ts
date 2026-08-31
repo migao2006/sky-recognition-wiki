@@ -1,5 +1,81 @@
 import { wikiItems as baseWikiItems } from "./wiki-data";
 import type { WikiItem } from "./wiki-data";
+export { legacyCatalogGuidAliases } from "./catalog-legacy-guids";
+
+type OfficialIdentity = Pick<
+  WikiItem,
+  "id" | "order" | "guid" | "name" | "group"
+>;
+
+// SkyGame-Data v1.3.10 is the identity source for items omitted by the compact
+// wiki snapshot. The seed rows below only supply our closet/source taxonomy and
+// Chinese display copy; they must never mint replacement item identifiers.
+export const officialHeldIdentities: Record<string, OfficialIdentity> = {
+  "Harp": { id: 82, order: 100, guid: "biKOov4qJQ", name: "Harp", group: "" },
+  "Fledgling Harp": { id: 1939, order: 200, guid: "1xIwQnxHV-", name: "Fledgling Harp", group: "" },
+  "Contrabass": { id: 261, order: 300, guid: "k1JghrvRyd", name: "Contrabass", group: "" },
+  "Piano Keyboard": { id: 232, order: 400, guid: "o8VUub-4vw", name: "Piano", group: "" },
+  "Horn": { id: 303, order: 500, guid: "Zu6MhpSM7W", name: "Horn", group: "" },
+  "Small Bell": { id: 680, order: 600, guid: "eL5WjOsMrx", name: "Small Bell", group: "" },
+  "Large Bell": { id: 702, order: 700, guid: "aFozSzjdTL", name: "Large Bell", group: "SeasonPass" },
+  "Flute": { id: 724, order: 800, guid: "qR79V6fLUy", name: "Flute", group: "SeasonPass" },
+  "Panflute": { id: 745, order: 900, guid: "PIRW3pt_BE", name: "Panflute", group: "SeasonPass" },
+  "Guitar": { id: 824, order: 1000, guid: "Zvi-5bPtxs", name: "Guitar", group: "SeasonPass" },
+  "Rhythm Guitar": { id: 1940, order: 1100, guid: "bOQzUAzYfV", name: "Rhythm Guitar", group: "" },
+  "Ukulele": { id: 840, order: 1200, guid: "Ph__M3uulY", name: "Ukulele", group: "" },
+  "Xylophone": { id: 917, order: 1300, guid: "DVcrj6XSgH", name: "Xylophone", group: "" },
+  "Winter Piano": { id: 905, order: 1400, guid: "M1MCfh7sVo", name: "Winter Piano", group: "SeasonPass" },
+  "Sanctuary Handpan": { id: 394, order: 1500, guid: "Hvq52gCeih", name: "Sanctuary Ultimate Handpan", group: "Ultimate" },
+  "Triumph Handpan": { id: 1941, order: 1600, guid: "McTvO9Z8EQ", name: "Triumph Handpan", group: "" },
+  "Prophecy Drum": { id: 410, order: 1700, guid: "wGQSuhVWXD", name: "Prophecy Ultimate Drum", group: "Ultimate" },
+  "Lute": { id: 1145, order: 1800, guid: "xpq4O_F_Md", name: "Lute", group: "SeasonPass" },
+  "Bugle": { id: 438, order: 1900, guid: "B59f4_ru60", name: "Assembly Ultimate Bugle", group: "Ultimate" },
+  "Kalimba": { id: 1354, order: 2000, guid: "t3hOiGsS79", name: "Kalimba", group: "SeasonPass" },
+  "Electric Guitar": { id: 1456, order: 2100, guid: "ARf5D2Bu4v", name: "Electric Guitar", group: "SeasonPass" },
+  "Blue Electric Guitar": { id: 1942, order: 2200, guid: "hcuS6xsmHg", name: "Blue Electric Guitar", group: "" },
+  "Voice of AURORA": { id: 1558, order: 2400, guid: "K0NBv__mv8", name: "Voice of AURORA", group: "Limited" },
+  "Manta Ocarina": { id: 1642, order: 2500, guid: "kk4P3a0tb_", name: "Manta Ocarina", group: "SeasonPass" },
+  "Cello": { id: 2260, order: 2600, guid: "hnvn7nWtrl", name: "The Musicians' Legacy Cello", group: "" },
+  "Duets Cello": { id: 2296, order: 2700, guid: "Q393hmCmPi", name: "Duets Cello", group: "" },
+  "Harmonica": { id: 2359, order: 2800, guid: "iKNPyHiACK", name: "Spirit Of Adventure Harmonica", group: "" },
+  "Cymbals": { id: 2462, order: 2900, guid: "sQ7RAL1GWd", name: "Cymbals", group: "SeasonPass" },
+  "Vessel Flute": { id: 1946, order: 3000, guid: "BDfLuCSmaF", name: "Vessel Flute", group: "" },
+  "Drum": { id: 129, order: 3100, guid: "HGGTj_QBip", name: "Drum", group: "" },
+  "Triumph Violin": { id: 1933, order: 3200, guid: "5V_r38RVGd", name: "Triumph Violin", group: "" },
+  "Triumph Saxophone": { id: 1930, order: 3300, guid: "rMC7kQhgYk", name: "Triumph Saxophone", group: "" },
+  "Fortune Drum": { id: 2057, order: 3400, guid: "8KXtBlvNRO", name: "Fortune Drum", group: "" },
+  "Grand Piano": { id: 2259, order: 10000, guid: "WuZeLoUATs", name: "The Musicians' Legacy Piano", group: "SeasonPass" },
+  "Duets Grand Piano": { id: 2238, order: 10100, guid: "O9jSph-v7e", name: "Duets Ultimate Instrument", group: "Ultimate" },
+  "Fledgling Upright Piano": { id: 2406, order: 11700, guid: "10Ol7H9jKg", name: "Fledgling Upright Piano", group: "" },
+  "Jam Station": { id: 2407, order: 4700, guid: "WMNr4yo_35", name: "Jam Station", group: "" },
+  "Transverse Flute": { id: 2963, order: 4600, guid: "lwpJUPEbaC", name: "Lightmending Light Catcher Flute", group: "SeasonPass" },
+  "Dark Horn": { id: 1498, order: 2300, guid: "yonX7TEJZQ", name: "Dark Horn", group: "SeasonPass" },
+  "Fireworks Staff": { id: 299, order: 3500, guid: "0SP9P2WzZ9", name: "Fireworks Staff", group: "" },
+  "Blue Umbrella": { id: 735, order: 3600, guid: "Hi8NBjG271", name: "Laidback Pioneer Umbrella", group: "SeasonPass" },
+  "Festival Scepter": { id: 1956, order: 3700, guid: "YYi734W-IG", name: "Festival Scepter", group: "" },
+  "Camera": { id: 622, order: 4000, guid: "K_OhSP_gST", name: "Camera", group: "" },
+  "Manatee Toy": { id: 2680, order: 4300, guid: "KYolrTZPtJ", name: "Manatee Toy", group: "" },
+  "Sentry Spear": { id: 2714, order: 4400, guid: "NQsPOB-fqz", name: "Scarred Sentry Spear", group: "SeasonPass" },
+  "Sentry Shield": { id: 2711, order: 4500, guid: "3kxBYG-yVK", name: "Scarred Sentry Shield", group: "" },
+  "Days of Fortune Enchanted Umbrella": { id: 1735, order: 4700, guid: "uzos22Ysp3", name: "Fortune Enchanted Umbrella", group: "" },
+  "Days of Fortune Hand Fan": { id: 2503, order: 4800, guid: "HEV8fvTQwQ", name: "Fortune Hand Fan", group: "" },
+  "Days of Love Serendipitous Scepter": { id: 1754, order: 4900, guid: "Tf45PqqIsn", name: "Days of Love Serendipitous Scepter", group: "" },
+  "Bloom Lilypad Umbrella": { id: 2075, order: 5000, guid: "kLfBsnAsUL", name: "Bloom Lilypad Umbrella", group: "" },
+  "Bloom Sunflower Umbrella": { id: 3052, order: 5100, guid: "IP1yVVhLdv", name: "Bloom Sunflower Umbrella", group: "" },
+  "SkyFest Jenova Fan": { id: 2234, order: 5200, guid: "nFWJUG7K6q", name: "Skyfest Jenova Fan", group: "" },
+  "Anniversary Clapboard": { id: 2648, order: 5300, guid: "y54CllfiMA", name: "Anniversary Clapboard", group: "" },
+  "Tournament Torch": { id: 2283, order: 5400, guid: "TdAUrYLequ", name: "Tournament Torch", group: "" },
+  "Tournament Ice Snowboard": { id: 3001, order: 5500, guid: "oWEDCHWjbr", name: "Tournament Ice Board", group: "" },
+  "Lantern": { id: 1902, order: 5600, guid: "5xJ_mCzZQy", name: "Moonlight Lantern", group: "" },
+  "Summer Parasol": { id: 1904, order: 5700, guid: "4CYafmMUql", name: "Days of Summer Umbrella", group: "" },
+  "Mischief Withered Broom": { id: 2394, order: 5800, guid: "8rYQfi8VP3", name: "Mischief Withered Broom", group: "" },
+  "Treasure Shovel": { id: 2529, order: 5900, guid: "aU_ZGHomyy", name: "Treasure Shovel", group: "" },
+  "Fortune Plush Mount": { id: 3016, order: 6000, guid: "9Wqllerxa-", name: "Fortune Plush Mount", group: "" },
+  "Company-Issued Laptop": { id: 3188, order: 6100, guid: "cTvlz4Z8-3", name: "Company Issued Laptop", group: "" },
+  "Anniversary Popcorn Prop": { id: 2656, order: 6200, guid: "vPenDMkJkY", name: "Anniversary Popcorn", group: "" },
+  "Winter Feast Snowboard": { id: 1977, order: 6300, guid: "9-5LbKZZQz", name: "Winter Feast Snowboard", group: "" },
+};
+
 const verifiedUltimateItems: WikiItem[] = [
   {
     id: 371,
@@ -7,6 +83,7 @@ const verifiedUltimateItems: WikiItem[] = [
     guid: "2o3CEU9QhM",
     name: "Lightseekers Ultimate Umbrella",
     type: "HeldProp",
+    sourceType: "Held",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/7/7f/Icon_prop_lightseekers_large_umbrella.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Lightseekers_Guide#Ultimate_Gifts",
@@ -19,6 +96,7 @@ const verifiedUltimateItems: WikiItem[] = [
     guid: "W-3Nh_yWGv",
     name: "Moments Ultimate Camera",
     type: "HeldProp",
+    sourceType: "Held",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4f/Moments-Guide-Prop-Ultimate-Camera-icon-Credit-Morybel.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/Moments_Guide#Ultimate_Gifts",
@@ -31,6 +109,7 @@ const verifiedUltimateItems: WikiItem[] = [
     guid: "dkfdFCaemY",
     name: "Moomin Ultimate Umbrella",
     type: "HeldProp",
+    sourceType: "Held",
     group: "Ultimate",
     icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/dc/Moomin-Ultimate-Umbrella-Prop-icon.png",
     wiki: "https://sky-children-of-the-light.fandom.com/wiki/The_Moomin_Storybook#Moomin_Ultimate_Umbrella",
@@ -167,30 +246,29 @@ const instrumentSeeds: readonly InstrumentSeed[] = [
   { name: "Transverse Flute", zh: "橫笛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/6b/Lightmending-Light-Catcher-Instrument-icon.png", section: "seasons", collection: "lightmending" },
 ];
 
-const replacedInstrumentNames = new Set([
-  ...instrumentSeeds.map((item) => item.name),
-  "Sanctuary Ultimate Handpan",
-  "Prophecy Ultimate Drum",
-  "Assembly Ultimate Bugle",
-  "The Musicians' Legacy Piano",
-  "Duets Ultimate Instrument",
-]);
-const baseItemByGuid = new Map(baseWikiItems.map((item) => [item.guid, item]));
-const instrumentItems: WikiItem[] = instrumentSeeds.map((item, index) => {
-  const sourceItem = item.guid ? baseItemByGuid.get(item.guid) : undefined;
+const officialHeldGuids = new Set(
+  Object.values(officialHeldIdentities).map((item) => item.guid),
+);
+const officialSourceTypeFor = (guid: string) => {
+  if (guid === "10Ol7H9jKg") return "Prop";
+  if (["WuZeLoUATs", "O9jSph-v7e", "WMNr4yo_35"].includes(guid))
+    return "Furniture";
+  return "Held";
+};
+const identityFor = (seed: { name: string }) => {
+  const identity = officialHeldIdentities[seed.name];
+  if (!identity)
+    throw new Error(`Missing SkyGame-Data 1.3.10 identity for ${seed.name}`);
+  return identity;
+};
+const instrumentItems: WikiItem[] = instrumentSeeds.map((item) => {
+  const identity = identityFor(item);
   return {
-    id: 5000 + index,
-    order: sourceItem?.order ?? index + 1,
-    guid:
-      item.guid ??
-      `instrument-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-    name: item.name,
+    ...item,
+    ...identity,
     type: "Instrument",
-    group: item.group ?? "",
-    icon: item.icon,
-    wiki: `https://sky-children-of-the-light.fandom.com/wiki/Instruments#${item.name.replaceAll(" ", "_")}`,
-    section: item.section,
-    collection: item.collection,
+    sourceType: officialSourceTypeFor(identity.guid),
+    wiki: `https://sky-children-of-the-light.fandom.com/wiki/Instruments#${identity.name.replaceAll(" ", "_")}`,
   };
 });
 
@@ -235,44 +313,68 @@ const heldPropSeeds: readonly HeldPropSeed[] = [
   { name: "Winter Feast Snowboard", zh: "冬宴滑雪板", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d8/Winter-Feast-Snowboard-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast#Winter_Feast_Snowboard", section: "events", collection: "days-of-feast" },
 ];
 
-const heldPropItems: WikiItem[] = heldPropSeeds.map((item, index) => ({
-  ...item,
-  id: 5100 + index,
-  order: index + 1,
-  guid:
-    item.guid ??
-    `held-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-  type: "HeldProp",
-  group: item.group ?? "",
-}));
+const heldPropItems: WikiItem[] = heldPropSeeds.map((item, index) => {
+  const identity = officialHeldIdentities[item.name];
+  // This item is a separately tracked pre-release overlay. It has no 1.3.10
+  // identity yet, so keep its explicit PR GUID rather than minting one.
+  if (item.name === "Starry Night's Canopy")
+    return {
+      ...item,
+      id: 3269,
+      order: 5500,
+      guid: "OAGgi-B-xa",
+      type: "HeldProp",
+      sourceType: "Held",
+      group: item.group ?? "",
+    };
+  // Two Embers' Manatee Staff is likewise an explicit local overlay until its
+  // upstream item is available. Its existing GUID remains stable for drafts.
+  if (item.name === "Manatee Staff")
+    return {
+      ...item,
+      id: 5120 + index,
+      order: 4200,
+      guid: "held-manatee-staff",
+      type: "HeldProp",
+      group: item.group ?? "",
+    };
+  if (!identity)
+    throw new Error(`Missing SkyGame-Data 1.3.10 identity for ${item.name}`);
+  return {
+    ...item,
+    ...identity,
+    type: "HeldProp",
+    sourceType: officialSourceTypeFor(identity.guid),
+  };
+});
 
 const normalizePlaceableProp = (item: WikiItem): WikiItem => {
-  if (item.type === "Prop") return { ...item, type: "SmallProp" };
+  if (item.type === "Prop")
+    return { ...item, type: "SmallProp", sourceType: "Prop" };
   if (item.type === "Furniture")
     return {
       ...item,
       type: item.guid === "sZRjoCGw_u" ? "SmallProp" : "LargeProp",
+      sourceType: "Furniture",
     };
   return item;
 };
 
 export const wikiItems: WikiItem[] = [
   ...baseWikiItems
-    .filter((item) => !replacedInstrumentNames.has(item.name))
+    .filter((item) => !officialHeldGuids.has(item.guid))
     .map(normalizePlaceableProp),
   ...skyGameDataUpdates.map(normalizePlaceableProp),
   ...pendingSkyGameDataUpdates.map(normalizePlaceableProp),
-  ...verifiedUltimateItems.filter(
-    (item) => !replacedInstrumentNames.has(item.name),
-  ),
+  ...verifiedUltimateItems,
   ...instrumentItems,
   ...heldPropItems,
 ];
 export const verifiedInstrumentZh = Object.fromEntries(
-  instrumentSeeds.map((item) => [item.name, item.zh]),
+  instrumentItems.map((item, index) => [item.name, instrumentSeeds[index].zh]),
 );
 export const verifiedHeldPropZh = Object.fromEntries(
-  heldPropSeeds.map((item) => [item.name, item.zh]),
+  heldPropItems.map((item, index) => [item.name, heldPropSeeds[index].zh]),
 );
 export const verifiedUltimateZh: Record<string, string> = {
   "Lightseekers Ultimate Umbrella": "追光季畢業禮雨傘",

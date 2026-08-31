@@ -10,8 +10,9 @@ import { prepareRow } from "../scripts/prepare-facebook-valuation-source.mjs";
 
 const exec = promisify(execFile);
 const script = new URL("../scripts/prepare-facebook-valuation-source.mjs", import.meta.url);
+const testSalt = "test-salt-for-facebook-anonymization-32";
 
-const prepare = async (lines, salt = "test-salt") => {
+const prepare = async (lines, salt = testSalt) => {
   const directory = await mkdtemp(join(tmpdir(), "sky-facebook-private-"));
   const source = join(directory, "private.jsonl");
   try {
@@ -74,9 +75,9 @@ test("does not invent an account identity when a relist cannot be linked", async
 
 test("hashes are stable for the same salt and rotate with a new salt", async () => {
   const input = JSON.stringify({ post_id: "post-1", group_id: "group-1", account_id: "account-1", price_twd: 3000 });
-  const [first] = await prepare([input], "first-salt");
-  const [second] = await prepare([input], "first-salt");
-  const [rotated] = await prepare([input], "second-salt");
+  const [first] = await prepare([input], "first-salt-for-facebook-anonymization-32");
+  const [second] = await prepare([input], "first-salt-for-facebook-anonymization-32");
+  const [rotated] = await prepare([input], "second-salt-for-facebook-anonymization-32");
   assert.deepEqual(first, second);
   assert.notEqual(first.post_hash, rotated.post_hash);
   assert.notEqual(first.group_hash, rotated.group_hash);
@@ -100,7 +101,7 @@ test("fails with a source line number for malformed JSON", async () => {
   try {
     await writeFile(source, '{"post_id":"one"}\nnot-json\n');
     await assert.rejects(
-      exec(process.execPath, [fileURLToPath(script), source], { env: { ...process.env, VALUATION_HASH_SALT: "test-salt" } }),
+      exec(process.execPath, [fileURLToPath(script), source], { env: { ...process.env, VALUATION_HASH_SALT: testSalt } }),
       (error) => /private\.jsonl:2: invalid JSON/.test(`${error.stderr}\n${error.message}`),
     );
   } finally {
@@ -108,7 +109,7 @@ test("fails with a source line number for malformed JSON", async () => {
   }
 });
 
-test("requires a salt instead of writing reversible identifiers", async () => {
+test("requires a sufficiently long salt instead of writing reversible identifiers", async () => {
   const directory = await mkdtemp(join(tmpdir(), "sky-facebook-private-salt-"));
   const source = join(directory, "private.jsonl");
   try {
@@ -117,11 +118,18 @@ test("requires a salt instead of writing reversible identifiers", async () => {
     delete environment.VALUATION_HASH_SALT;
     await assert.rejects(
       exec(process.execPath, [fileURLToPath(script), source], { env: environment }),
-      (error) => /VALUATION_HASH_SALT is required/.test(`${error.stderr}\n${error.message}`),
+      (error) => /VALUATION_HASH_SALT must be at least 32 characters/.test(`${error.stderr}\n${error.message}`),
     );
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("rejects salts shorter than 32 characters", () => {
+  assert.throws(
+    () => prepareRow({ post_id: "short-salt" }, "too-short"),
+    /at least 32 characters/,
+  );
 });
 
 test("normalizes a reversed price range before anonymized output", () => {
@@ -130,7 +138,7 @@ test("normalizes a reversed price range before anonymized output", () => {
     group_id: "group-a",
     price_twd_low: 5000,
     price_twd_high: 3000,
-  }, "fixture-salt");
+  }, "fixture-salt-for-facebook-anonymization-32");
   assert.equal(output.price_twd_low, 3000);
   assert.equal(output.price_twd_high, 5000);
 });

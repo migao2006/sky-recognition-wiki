@@ -4,7 +4,11 @@ export {
   isSeasonPendant,
   isSeasonUltimate,
 } from "./season-items";
-export { wikiItems } from "./catalog-seeds";
+export {
+  legacyCatalogGuidAliases,
+  officialHeldIdentities,
+  wikiItems,
+} from "./catalog-seeds";
 export {
   allClosetTypeSet,
   closetGroups,

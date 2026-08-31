@@ -42,6 +42,22 @@ test("generated IAP metadata covers every mapped catalog item by GUID", () => {
   }
 });
 
+test("uses exact GUID mappings for the corrected paid held props", () => {
+  const rows = new Map(iapCatalog.items.map((item) => [item.guid, item]));
+  for (const [guid, name] of [
+    ["5xJ_mCzZQy", "Moonlight Lantern"],
+    ["uzos22Ysp3", "Fortune Enchanted Umbrella"],
+    ["HEV8fvTQwQ", "Fortune Hand Fan"],
+    ["4CYafmMUql", "Days of Summer Umbrella"],
+    ["vPenDMkJkY", "Anniversary Popcorn"],
+  ]) {
+    const row = rows.get(guid);
+    assert.equal(row?.name, name);
+    assert.equal(row?.paid, true);
+  }
+  assert.equal(rows.has("vx4vxVJ0L1"), false, "furniture Moonlight Lantern is not the paid held prop");
+});
+
 test("important market collectibles have complete structured metadata", () => {
   assert.ok(importantMarketCollectibles.length >= 30);
   assert.equal(
@@ -67,7 +83,9 @@ test("important market collectibles have complete structured metadata", () => {
 
 test("important market profiles resolve to one real wardrobe item", () => {
   importantMarketCollectibles.forEach((profile) => {
-    const matches = catalog.wikiItems.filter((item) => item.name === profile.name);
+    const matches = catalog.wikiItems.filter((item) =>
+      profile.guid ? item.guid === profile.guid : item.name === profile.name,
+    );
     assert.equal(matches.length, 1, profile.name);
     assert.notEqual(catalog.zhItemName(matches[0]), matches[0].name, profile.name);
   });

@@ -25,6 +25,7 @@ test("renders the account organizer", async () => {
     accountStepSource,
     catalogStepSource,
     valuationStepSource,
+    valuationActionsSource,
     stepStateSource,
     draftSource,
   ] = await Promise.all([
@@ -49,6 +50,10 @@ test("renders the account organizer", async () => {
     readFile(new URL("../app/account-step.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/catalog-step.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/valuation-step.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/use-valuation-export-actions.ts", import.meta.url),
+      "utf8",
+    ),
     readFile(new URL("../app/organizer-step-state.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/use-account-draft.ts", import.meta.url), "utf8"),
   ]);
@@ -85,7 +90,7 @@ test("renders the account organizer", async () => {
   assert.doesNotMatch(html, /季節無斷|核心收藏|交易風險/);
   assert.doesNotMatch(componentSource, /依季節匯出|匯出付費物品與畢業禮/);
   assert.match(valuationStepSource, /出售文案/);
-  assert.match(valuationStepSource, /saleCopyPresetGuids\.has\(item\.guid\)/);
+  assert.match(valuationActionsSource, /saleCopyPresetGuids\.has\(item\.guid\)/);
   assert.match(
     accountStepSource,
     /key === "nintendo" && option\.key === "transfer"/,
@@ -97,6 +102,7 @@ test("renders the account organizer", async () => {
   assert.match(runtimeSource, /import\("\.\/valuation-analysis"\)/);
   assert.match(runtimeSource, /catalogPromise\.current = null/);
   assert.match(runtimeSource, /valuationPromise\.current = null/);
+  assert.doesNotMatch(runtimeSource, /heldClosetOrder/);
   assert.match(stepStateSource, /INITIAL_VISIBLE_ITEMS = 40/);
   assert.doesNotMatch(catalogStepSource, /useCatalogStepState/);
   assert.match(source, /const catalogStepState = useCatalogStepState\(\)/);

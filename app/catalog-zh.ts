@@ -30,6 +30,8 @@ const exactZh: Record<string, string> = {
   "Prairie Elder Hair": "雲野長老髮型",
   "Isle Elder Hair": "晨島長老髮型",
   "Grand Piano": "高音鋼琴",
+  "Transverse Flute": "橫笛",
+  "Sentry Shield": "哨兵盾牌",
   "Manta Cape": "遙鯤斗篷",
   "Chibi Mask": "矮人面具",
   "Faceless Mask": "無臉面具",

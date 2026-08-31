@@ -9,6 +9,7 @@ import {
   type SetStateAction,
 } from "react";
 import {
+  ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS,
   ACCOUNT_DRAFT_STORAGE_KEY,
   createAccountDraft,
   parseAccountDraft,
@@ -86,9 +87,26 @@ export const useAccountDraft = ({
       let available = true;
 
       try {
-        const stored = window.localStorage.getItem(ACCOUNT_DRAFT_STORAGE_KEY);
+        const draftKey = [
+          ACCOUNT_DRAFT_STORAGE_KEY,
+          ...ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS,
+        ].find((key) => window.localStorage.getItem(key) !== null);
+        const stored = draftKey ? window.localStorage.getItem(draftKey) : null;
         if (stored) {
-            restored = parseAccountDraft(JSON.parse(stored), validGuids);
+          restored = parseAccountDraft(JSON.parse(stored), validGuids);
+          if (draftKey && draftKey !== ACCOUNT_DRAFT_STORAGE_KEY) {
+            window.localStorage.setItem(
+              ACCOUNT_DRAFT_STORAGE_KEY,
+              JSON.stringify(
+                createAccountDraft({
+                  account: restored.account,
+                  bindings: restored.bindings,
+                  owned: restored.owned,
+                }),
+              ),
+            );
+            window.localStorage.removeItem(draftKey);
+          }
         }
       } catch {
         try {

@@ -141,10 +141,14 @@ export function CatalogStep({
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      const current = document.activeElement;
+      if (!filterPanelRef.current.contains(current)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && current === first) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && current === last) {
         event.preventDefault();
         first.focus();
       }
@@ -426,7 +430,11 @@ export function CatalogStep({
             <i aria-hidden="true">⌄</i>
           </button>
         </div>
-        <div className="focus-shortcuts" aria-label="快速辨識篩選">
+        <div
+          className="focus-shortcuts"
+          role="group"
+          aria-label="快速辨識篩選"
+        >
           {(
             [
               ["video", "快速核對"],
@@ -450,7 +458,7 @@ export function CatalogStep({
         </div>
         {!mobileFilters && filterPanel}
       </div>
-      <div className="closet-nav" aria-label="衣櫃順序">
+      <nav className="closet-nav" aria-label="衣櫃順序">
         {closetGroups.map((entry) => (
           <button
             type="button"
@@ -473,9 +481,9 @@ export function CatalogStep({
             <span>{entry.name}</span>
           </button>
         ))}
-      </div>
+      </nav>
       {activeCloset.subs.length > 0 && (
-        <div className="closet-subs">
+        <nav className="closet-subs" aria-label={`${activeCloset.name}子分類`}>
           {activeCloset.subs.map((entry, index) => (
             <button
               type="button"
@@ -498,7 +506,7 @@ export function CatalogStep({
               {entry.name}
             </button>
           ))}
-        </div>
+        </nav>
       )}
       <div className="result-head">
         <h2>

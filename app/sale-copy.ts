@@ -28,6 +28,8 @@ export type SaleCopyInput = {
   bindingsConfirmed: boolean;
   bindings: Partial<Record<BindingKey, BindingStatus>>;
   items: SaleCopyItem[];
+  bindingNote?: string;
+  notes?: string;
 };
 
 type CopyGroup = {
@@ -184,6 +186,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
   const other = new Map<string, CopyGroup>();
   const seen = new Set<string>();
   const seenNames = new Set<string>();
+  const seenAnniversaryItems = new Set<string>();
 
   const isSpecialItem = (item: SaleCopyItem) =>
     item.section === "events" ||
@@ -206,9 +209,16 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
     name: string,
     rank: number,
     itemName: string,
+    anniversaryIdentity?: string,
   ) => {
-    if (seenNames.has(itemName)) return;
-    seenNames.add(itemName);
+    if (anniversaryIdentity) {
+      const uniqueKey = `${key}\u0000${anniversaryIdentity}`;
+      if (seenAnniversaryItems.has(uniqueKey)) return;
+      seenAnniversaryItems.add(uniqueKey);
+    } else {
+      if (seenNames.has(itemName)) return;
+      seenNames.add(itemName);
+    }
     appendGroup(groups, key, name, rank, itemName);
   };
 
@@ -247,6 +257,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           number ? ordinalLabel(number) : "其他",
           number ? -number : 999,
           tidyAnniversaryName(item.displayName),
+          item.guid,
         );
         return;
       }
@@ -315,5 +326,14 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     section("週年收藏", groups.anniversaries),
     section("特殊限定", groups.special),
     section("其他收藏", groups.other),
+    section(
+      "交易說明",
+      [
+        data.bindingNote?.trim()
+          ? `綁定說明｜${data.bindingNote.trim()}`
+          : "",
+        data.notes?.trim() ? `交易前須知｜${data.notes.trim()}` : "",
+      ].filter(Boolean),
+    ),
   ]);
 };

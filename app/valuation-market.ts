@@ -18,6 +18,36 @@ export const marketAccountStyleNames: Record<MarketAccountStyle, string> = {
 
 export const valuationMarketAggregate = marketAggregate;
 
+export type MarketValidationStatus =
+  | "validated"
+  | "legacy-unvalidated"
+  | "unvalidated";
+
+const validationStatus =
+  (marketAggregate as { validationStatus?: string }).validationStatus === "validated" ||
+  (marketAggregate as { validationStatus?: string }).validationStatus === "legacy-unvalidated"
+    ? (marketAggregate as { validationStatus?: "validated" | "legacy-unvalidated" }).validationStatus
+    : "unvalidated";
+
+/** A UI-safe summary of whether the published aggregate passed the full model gates. */
+export const marketValidation = {
+  status: validationStatus as MarketValidationStatus,
+  isValidated: validationStatus === "validated",
+  confidenceCap:
+    validationStatus === "validated" ? "high" : "low",
+  label:
+    validationStatus === "validated"
+      ? "市場驗證完成"
+      : "資料不足・參考估價",
+} as const;
+
+export const capConfidenceForMarketValidation = <T extends "high" | "medium" | "low" | "inferred">(
+  confidence: T,
+): T | "low" | "inferred" => {
+  if (marketValidation.isValidated || confidence === "inferred") return confidence;
+  return confidence === "high" || confidence === "medium" ? "low" : confidence;
+};
+
 export const classifyBreakClass = (
   completion: ReadonlyMap<string, { selected: number; expected: number }>,
 ) => {
