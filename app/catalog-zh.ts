@@ -14,6 +14,7 @@ const exactZh: Record<string, string> = {
   "Yellow Tent Top": "黃色帳篷頂",
   "Yellow Tent Window": "黃色帳篷窗",
   "Yellow Tent Door": "黃色帳篷門",
+  Easel: "畫架",
   "Little Prince Ultimate Rose": "小王子畢業玫瑰",
   "Sword Outfit": "劍士服",
   "Anubis Mask": "阿努比斯面具",

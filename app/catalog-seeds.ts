@@ -101,6 +101,21 @@ const skyGameDataUpdates: WikiItem[] = [
     collection: "summer-camping",
   },
 ];
+// Pending upstream overlay: Silverfeelin/SkyGame-Data PR #125.
+const pendingSkyGameDataUpdates: WikiItem[] = [
+  {
+    id: 3292,
+    order: 11750,
+    guid: "KwENV96jIh",
+    name: "Easel",
+    type: "Furniture",
+    group: "",
+    icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/26/Dear-Van-Gogh-Easel-Prop-icon.png",
+    wiki: "https://sky-children-of-the-light.fandom.com/wiki/Vase_with_Fifteen_Sunflowers#Easel_Prop",
+    section: "seasons",
+    collection: "dear-van-gogh",
+  },
+];
 type InstrumentSeed = {
   name: string;
   zh: string;
@@ -178,6 +193,7 @@ const instrumentItems: WikiItem[] = instrumentSeeds.map((item, index) => ({
 type HeldPropSeed = {
   name: string;
   zh: string;
+  guid?: string;
   icon: string;
   wiki: string;
   section: string;
@@ -200,6 +216,7 @@ const heldPropSeeds: readonly HeldPropSeed[] = [
   { name: "Days of Love Serendipitous Scepter", zh: "愛之日邂逅權杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/32/Days-of-Love-Wand-Icon-Morybel-0146.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love#Serendipitous_Scepter", section: "events", collection: "days-of-love" },
   { name: "Bloom Lilypad Umbrella", zh: "花憩節睡蓮傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/93/Bloom-Lilypad-Umbrella-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom#Bloom_Lilypad_Umbrella", section: "events", collection: "days-of-bloom" },
   { name: "Bloom Sunflower Umbrella", zh: "花憩節向日葵傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/3b/Bloom-Sunflower-Umbrella-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Bloom#Bloom_Sunflower_Umbrella", section: "events", collection: "days-of-bloom" },
+  { name: "Starry Night's Canopy", zh: "星夜之傘", guid: "OAGgi-B-xa", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f2/Starry-Nights-Canopy-Umbrella-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Dear_Van_Gogh#Starry_Night's_Canopy", section: "seasons", collection: "dear-van-gogh" },
   { name: "SkyFest Jenova Fan", zh: "SkyFest Jenova 紀念扇", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/9/92/SkyFest-Jenova-Fan-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary/2024#SkyFest_Jenova_Fan", section: "events", collection: "event-sky-anniversary" },
   { name: "Anniversary Clapboard", zh: "週年慶場記板", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/2e/SkyFest-Movie-Clapboard-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Sky_Anniversary#Anniversary_Clapboard", section: "events", collection: "event-sky-anniversary" },
   { name: "Tournament Torch", zh: "錦標賽火炬", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/fe/Tournament-Torch-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tournament_of_Triumph#Tournament_Torch", section: "events", collection: "event-tournament" },
@@ -218,7 +235,9 @@ const heldPropItems: WikiItem[] = heldPropSeeds.map((item, index) => ({
   ...item,
   id: 5100 + index,
   order: index + 1,
-  guid: `held-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+  guid:
+    item.guid ??
+    `held-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
   type: "HeldProp",
   group: item.group ?? "",
 }));
@@ -238,6 +257,7 @@ export const wikiItems: WikiItem[] = [
     .filter((item) => !replacedInstrumentNames.has(item.name))
     .map(normalizePlaceableProp),
   ...skyGameDataUpdates.map(normalizePlaceableProp),
+  ...pendingSkyGameDataUpdates.map(normalizePlaceableProp),
   ...verifiedUltimateItems.filter(
     (item) => !replacedInstrumentNames.has(item.name),
   ),

@@ -197,7 +197,7 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
     getItemTypeName: (entry) => catalog.labels[entry.type] || entry.type,
     getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
   });
-  assert.equal(selected.length, 1169);
+  assert.equal(selected.length, 1171);
   assert.equal(size.width, 1600);
   const pages = planShowcasePages({
     items: selected,

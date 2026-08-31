@@ -111,6 +111,9 @@ test("separates important visibility from paid valuation", () => {
   assert.equal(byName.get("Skyfest Wireframe Cape")?.saleSection, "important");
   assert.equal(byName.get("AURORA Runaway Hair")?.paid, false);
   assert.equal(byName.get("AURORA Runaway Hair")?.saleSection, "collaboration");
+  assert.equal(byName.get("Starry Night's Canopy")?.playerName, "星夜之傘");
+  assert.equal(byName.get("Starry Night's Canopy")?.saleSection, "important");
+  assert.equal(byName.get("Starry Night's Canopy")?.paid, true);
 });
 
 test("every common bundle only references real international items", () => {

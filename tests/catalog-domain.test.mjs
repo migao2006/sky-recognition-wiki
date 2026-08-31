@@ -180,7 +180,7 @@ test("reviewed Wiki snapshot contains only catalog guids and complete Chinese na
 
 test("every visible wardrobe item has a Chinese display name", () => {
   const wardrobeItems = wikiItems.filter((entry) => allClosetTypeSet.has(entry.type));
-  assert.equal(wardrobeItems.length, 1169);
+  assert.equal(wardrobeItems.length, 1171);
   for (const entry of wardrobeItems) {
     assert.match(zhItemName(entry), /[\u3400-\u9fff]/, entry.name);
   }
@@ -228,6 +228,17 @@ test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {
   for (const guid of nonWardrobeGuids) {
     assert.equal(wikiItems.some((entry) => entry.guid === guid), false, guid);
   }
+});
+
+test("includes the pending Dear Van Gogh umbrella and easel from upstream PR 125", () => {
+  const umbrella = wikiItems.find((entry) => entry.guid === "OAGgi-B-xa");
+  const easel = wikiItems.find((entry) => entry.guid === "KwENV96jIh");
+  assert.equal(umbrella?.name, "Starry Night's Canopy");
+  assert.equal(umbrella?.type, "HeldProp");
+  assert.equal(zhItemName(umbrella), "星夜之傘");
+  assert.equal(matchesSub(umbrella, "held"), true);
+  assert.equal(easel?.name, "Easel");
+  assert.equal(easel?.type, "LargeProp");
 });
 
 test("matches the three in-game prop closet tabs", () => {
@@ -338,7 +349,7 @@ test("uses verified game placement categories for representative props", () => {
   ]);
   assert.equal(
     wikiItems.filter((entry) => matchesSub(entry, "held")).length,
-    63,
+    64,
   );
   const heldItems = wikiItems
     .filter((entry) => matchesSub(entry, "held"))

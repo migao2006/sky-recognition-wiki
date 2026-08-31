@@ -186,6 +186,7 @@ const importantPackageProfiles = defineProfiles(
     ["Days of Feast Horns", "宴會鹿角"],
     ["Earth Cape", "綠芽斗篷"],
     ["Ocean Cape", "海洋斗篷"],
+    ["Starry Night's Canopy", "星夜之傘"],
     ["Nature Turtle Cape", "海龜斗篷"],
     ["Lantern", "燈籠"],
     ["Summer Parasol", "陽傘"],

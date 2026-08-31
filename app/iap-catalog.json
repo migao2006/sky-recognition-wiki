@@ -2,7 +2,7 @@
   "source": "SkyGame-Data",
   "sourceUrl": "https://unpkg.com/skygame-data@1.3.10/assets/everything.json",
   "sourceVersion": "1.3.10",
-  "packages": 514,
+  "packages": 515,
   "items": [
     {
       "guid": "_0PZEyTNxt",
@@ -1952,6 +1952,19 @@
       "aliases": [],
       "packageKey": "iap:KbPeQWUPlV",
       "packageName": "Days of Fortune Pack",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown"
+    },
+    {
+      "guid": "OAGgi-B-xa",
+      "name": "Starry Night's Canopy",
+      "playerName": "星夜之傘",
+      "aliases": [],
+      "packageKey": "iap:h09-v8Mh-Q",
+      "packageName": "Starry Night's Canopy",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",

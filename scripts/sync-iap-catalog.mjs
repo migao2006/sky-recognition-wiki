@@ -42,6 +42,16 @@ const availabilityFor = (name, packageName) => {
 
 const stableKey = (iap) => `iap:${iap.guid}`;
 
+// Exact data from Silverfeelin/SkyGame-Data PR #125 while it awaits merge.
+const pendingUpstreamIaps = [
+  {
+    guid: "h09-v8Mh-Q",
+    name: "Starry Night's Canopy",
+    price: 14.99,
+    items: ["OAGgi-B-xa"],
+  },
+];
+
 const packageResponse = await fetch(PACKAGE_SOURCE);
 if (!packageResponse.ok)
   throw new Error(`SkyGame-Data version download failed: ${packageResponse.status}`);
@@ -53,6 +63,10 @@ const sourceUrl = `https://unpkg.com/skygame-data@${sourceVersion}/assets/everyt
 const response = await fetch(sourceUrl);
 if (!response.ok) throw new Error(`SkyGame-Data download failed: ${response.status}`);
 const source = await response.json();
+const iaps = [...source.iaps.items];
+for (const pending of pendingUpstreamIaps) {
+  if (!iaps.some((iap) => iap.guid === pending.guid)) iaps.push(pending);
+}
 const catalog = await loadRuntimeCatalog();
 const upstreamByGuid = new Map(source.items.items.map((item) => [item.guid, item]));
 const localByGuid = new Map(catalog.wikiItems.map((item) => [item.guid, item]));
@@ -60,7 +74,7 @@ const localByName = new Map(catalog.wikiItems.map((item) => [item.name, item]));
 const seen = new Set();
 const rows = [];
 
-for (const iap of source.iaps.items) {
+for (const iap of iaps) {
   for (const upstreamGuid of iap.items ?? []) {
     const upstream = upstreamByGuid.get(upstreamGuid);
     const local = localByGuid.get(upstreamGuid) ?? localByName.get(upstream?.name);
@@ -89,7 +103,7 @@ const payload = {
   source: "SkyGame-Data",
   sourceUrl,
   sourceVersion,
-  packages: source.iaps.items.length,
+  packages: iaps.length,
   items: rows,
 };
 const destination = resolve(ROOT, "app", "iap-catalog.json");

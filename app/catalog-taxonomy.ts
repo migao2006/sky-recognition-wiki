@@ -28,7 +28,7 @@ const heldClosetNames = [
   "Cymbals", "Vessel Flute", "Drum", "Triumph Violin", "Triumph Saxophone",
   "Fortune Drum", "Fireworks Staff", "Blue Umbrella", "Festival Scepter",
   "Lightseekers Ultimate Umbrella", "Moments Ultimate Camera", "Camera",
-  "Moomin Ultimate Umbrella", "Manatee Staff", "Manatee Toy", "Sentry Spear",
+  "Moomin Ultimate Umbrella", "Starry Night's Canopy", "Manatee Staff", "Manatee Toy", "Sentry Spear",
   "Sentry Shield", "Transverse Flute", "Days of Fortune Enchanted Umbrella",
   "Days of Fortune Hand Fan", "Days of Love Serendipitous Scepter",
   "Bloom Lilypad Umbrella", "Bloom Sunflower Umbrella", "SkyFest Jenova Fan",
