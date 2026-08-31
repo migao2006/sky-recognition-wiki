@@ -34,13 +34,13 @@ export const classifyPackageTier = (count: number): PackageTier => {
 };
 
 // 玩家文案中的少／中／多禮，是以不重複的實際禮包數判斷。
-// 目前完整衣櫃約有 189 個禮包；玩家貼文對 50+ 的稱呼並不一致，
-// 而 100+ 才穩定出現百禮／超多禮，因此採保守、不灌水的固定門檻。
+// 目前完整衣櫃約有 189 個禮包。指定交易文案庫把 60／70 禮視為
+// 一般禮包量、90 禮視為近百禮，因此三段標題以 60、90 為界。
 // 免費活動物品、季節畢業禮與同一禮包內的多件物品都不重複計入。
 export const classifySalePackageTier = (
   canonicalPackageCount: number,
 ): SalePackageTier => {
-  if (canonicalPackageCount >= 100) return { key: "many", label: "多禮" };
+  if (canonicalPackageCount >= 90) return { key: "many", label: "多禮" };
   if (canonicalPackageCount >= 60) return { key: "medium", label: "中禮" };
   return { key: "few", label: "少禮" };
 };

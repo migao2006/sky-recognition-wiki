@@ -517,8 +517,8 @@ test("sale package wording uses conservative unique-package thresholds without c
   assert.equal(classifySalePackageTier(0).key, "few");
   assert.equal(classifySalePackageTier(59).key, "few");
   assert.equal(classifySalePackageTier(60).key, "medium");
-  assert.equal(classifySalePackageTier(99).key, "medium");
-  assert.equal(classifySalePackageTier(100).key, "many");
+  assert.equal(classifySalePackageTier(89).key, "medium");
+  assert.equal(classifySalePackageTier(90).key, "many");
   assert.equal(classifySalePackageTier(189).key, "many");
 });
 
