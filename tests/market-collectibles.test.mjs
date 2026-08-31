@@ -112,6 +112,7 @@ test("separates important visibility from paid valuation", () => {
   assert.equal(byName.get("AURORA Runaway Hair")?.paid, false);
   assert.equal(byName.get("AURORA Runaway Hair")?.saleSection, "collaboration");
   assert.equal(byName.get("Starry Night's Canopy")?.playerName, "星夜之傘");
+  assert.equal(byName.get("Starry Night's Canopy")?.packageName, "星夜之傘");
   assert.equal(byName.get("Starry Night's Canopy")?.saleSection, "important");
   assert.equal(byName.get("Starry Night's Canopy")?.paid, true);
 });

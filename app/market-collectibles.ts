@@ -186,7 +186,7 @@ const importantPackageProfiles = defineProfiles(
     ["Days of Feast Horns", "宴會鹿角"],
     ["Earth Cape", "綠芽斗篷"],
     ["Ocean Cape", "海洋斗篷"],
-    ["Starry Night's Canopy", "星夜之傘"],
+    ["Starry Night's Canopy", "星夜之傘", "iap:h09-v8Mh-Q"],
     ["Nature Turtle Cape", "海龜斗篷"],
     ["Lantern", "燈籠"],
     ["Summer Parasol", "陽傘"],
@@ -342,6 +342,7 @@ const profileByName = new Map(
 const profileByAlias = new Map<string, MarketCollectibleProfile>();
 
 const curatedPackageNames: Record<string, string> = {
+  "iap:h09-v8Mh-Q": "星夜之傘",
   "days-of-healing-pack": "療癒罌粟花禮包",
   "cat-costume-pack": "貓咪套組",
   "cinnamoroll-hair-combo": "大耳狗髮型套組",
