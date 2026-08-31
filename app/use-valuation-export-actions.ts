@@ -16,6 +16,10 @@ import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 import type { ShowcasePreset } from "./organizer-step-state";
 import { isChinaOnlyItem, isGraduationGift, isPaidItem } from "./valuation-items";
 import type { ValuationAnalysis, ValuationEstimate } from "./valuation-analysis";
+import {
+  marketBreakClassNames,
+  marketPackageTierNames,
+} from "./valuation-market";
 import type { SeasonConfidence } from "./valuation-season-bands";
 import { showcasePresetNames } from "./valuation-showcase-preview";
 import type { OrganizerRuntime } from "./use-organizer-runtime";
@@ -96,19 +100,43 @@ export const useValuationExportActions = ({
           item.collection === "event-sky-anniversary",
       ),
     );
+    const seasons = runtime.seasons.map(([slug, name]) => ({
+      name,
+      owned: chosen.filter(
+        (item) =>
+          item.section === "seasons" &&
+          item.collection === slug &&
+          isGraduationGift(item),
+      ).length,
+      total: runtime.seasonGraduationItems.get(slug)?.length ?? 0,
+    }));
     return {
-      seasons: runtime.seasons.map(([slug, name]) => ({
-        name,
-        owned: chosen.filter(
-          (item) =>
-            item.section === "seasons" &&
-            item.collection === slug &&
-            isGraduationGift(item),
-        ).length,
-        total: runtime.seasonGraduationItems.get(slug)?.length ?? 0,
-      })),
+      seasons,
       bindingsConfirmed: account.bindingsConfirmed,
       bindings,
+      summary: valuationEstimate
+        ? {
+            seasonName: valuationAnalysis.startSeasonSlug
+              ? runtime.seasonZh[valuationAnalysis.startSeasonSlug] ||
+                valuationAnalysis.startSeasonSlug
+              : "畢業未明",
+            breakLabel: valuationAnalysis.startSeasonSlug
+              ? marketBreakClassNames[
+                  valuationEstimate.marketProfile.breakClass
+                ]
+              : "",
+            packageLabel:
+              marketPackageTierNames[
+                valuationEstimate.marketProfile.packageTier
+              ],
+          }
+        : undefined,
+      resources: {
+        candles: account.candles,
+        hearts: account.hearts,
+        ascended: account.ascended,
+        passes: account.passes,
+      },
       bindingNote: account.bindingNote,
       notes: account.notes,
       items: collectibleItems.map((item) => ({

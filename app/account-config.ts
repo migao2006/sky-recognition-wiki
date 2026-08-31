@@ -21,6 +21,10 @@ export type AccountInfo = {
   notes: string;
 };
 
+export const accountResourceAmount = (
+  value: string | number | undefined,
+) => Math.max(0, Number.parseInt(String(value ?? "0"), 10) || 0);
+
 export const bindingNames: Record<BindingKey, string> = {
   google: "Google（GG）",
   nintendo: "Nintendo（NS）",

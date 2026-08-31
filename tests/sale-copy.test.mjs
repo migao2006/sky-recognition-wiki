@@ -101,6 +101,45 @@ test("formats continuous graduation progress from the first owned season", () =>
   assert.match(copy, /✦ 綁定狀態\nGG 出｜NS 不出｜Steam 遺失／異常/);
 });
 
+test("adds an automatic market title and the entered resource quantities", () => {
+  const copy = buildSaleCopy(
+    input({
+      summary: {
+        seasonName: "拾光季",
+        breakLabel: "微斷",
+        packageLabel: "多禮",
+      },
+      resources: {
+        candles: "1200",
+        hearts: "300",
+        ascended: "50",
+        passes: "2",
+      },
+    }),
+  ).join("\n");
+  assert.match(copy, /^✦ 拾光微斷多禮號\n\n✦ 季節進度/);
+  assert.match(
+    copy,
+    /✦ 資源數量\n白蠟 1,200｜愛心 300｜昇華蠟 50｜副卡 2/,
+  );
+});
+
+test("omits empty resources and never invents a break class without a season", () => {
+  const copy = buildSaleCopy(
+    input({
+      seasons: [],
+      summary: {
+        seasonName: "畢業未明",
+        breakLabel: "",
+        packageLabel: "少禮",
+      },
+      resources: { candles: "0", hearts: "", ascended: "abc", passes: -1 },
+    }),
+  ).join("\n");
+  assert.match(copy, /^✦ 畢業未明少禮號/);
+  assert.doesNotMatch(copy, /資源數量|大斷/);
+});
+
 test("uses compact Unicode fractions and falls back when Unicode has no fraction", () => {
   const copy = buildSaleCopy(
     input({

@@ -1,4 +1,5 @@
 import {
+  accountResourceAmount,
   bindingStatusNames,
   type BindingKey,
   type BindingStatus,
@@ -29,6 +30,17 @@ export type SaleCopyInput = {
   bindingsConfirmed: boolean;
   bindings: Partial<Record<BindingKey, BindingStatus>>;
   items: SaleCopyItem[];
+  summary?: {
+    seasonName: string;
+    breakLabel: string;
+    packageLabel: string;
+  };
+  resources?: {
+    candles?: string | number;
+    hearts?: string | number;
+    ascended?: string | number;
+    passes?: string | number;
+  };
   bindingNote?: string;
   notes?: string;
 };
@@ -66,6 +78,23 @@ const formatBindings = (
 };
 
 const shortSeasonName = (name: string) => name.trim().replace(/季$/, "");
+const formatAccountTitle = (summary: SaleCopyInput["summary"]) => {
+  if (!summary) return "";
+  const season = shortSeasonName(summary.seasonName) || "畢業未明";
+  return `${season}${summary.breakLabel}${summary.packageLabel}號`;
+};
+const formatResources = (resources: SaleCopyInput["resources"]) => {
+  const entries = [
+    ["白蠟", resources?.candles],
+    ["愛心", resources?.hearts],
+    ["昇華蠟", resources?.ascended],
+    ["副卡", resources?.passes],
+  ].flatMap(([label, value]) => {
+    const amount = accountResourceAmount(value);
+    return amount > 0 ? [`${label} ${amount.toLocaleString("zh-TW")}`] : [];
+  });
+  return entries.length ? [entries.join("｜")] : [];
+};
 const fractionSymbols = new Map([
   ["1/2", "½"],
   ["1/3", "⅓"],
@@ -408,9 +437,10 @@ const joinSections = (sections: string[][]) =>
 export const buildSaleCopy = (data: SaleCopyInput) => {
   const groups = groupCollectibles(data.items);
   const binding = formatBindings(data.bindingsConfirmed, data.bindings);
-  return joinSections([
+  const content = joinSections([
     section("季節進度", wrapSeasonProgress(data.seasons)),
     section("綁定狀態", binding ? [binding] : []),
+    section("資源數量", formatResources(data.resources)),
     section("限定聯動", groups.limited),
     section("重要禮包", groups.important),
     section("週年收藏", groups.anniversaries),
@@ -426,4 +456,6 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
       ].filter(Boolean),
     ),
   ]);
+  const title = formatAccountTitle(data.summary);
+  return title ? [`✦ ${title}`, "", ...content] : content;
 };

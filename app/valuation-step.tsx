@@ -18,6 +18,7 @@ import type { ValuationAnalysis } from "./valuation-analysis";
 import {
   marketAccountStyleNames,
   marketBreakClassNames,
+  marketPackageTierNames,
   marketValidation,
 } from "./valuation-market";
 import type { SeasonConfidence } from "./valuation-season-bands";
@@ -54,12 +55,6 @@ const confidenceNames: Record<SeasonConfidence, string> = {
   low: "低信心",
   inferred: "推估",
 };
-const packageTierNames = {
-  few: "少禮",
-  medium: "中禮",
-  many: "多禮",
-  hundred: "百禮",
-} as const;
 const emptyValuationAnalysis: ValuationAnalysis = {
   valuationItems: [],
   ultimates: [],
@@ -404,7 +399,7 @@ export function ValuationStep({
                     valuationEstimate.marketProfile.breakClass
                   ]
                 }{" "}
-                · {packageTierNames[valuationEstimate.marketProfile.packageTier]} ·{" "}
+                · {marketPackageTierNames[valuationEstimate.marketProfile.packageTier]} ·{" "}
                 {
                   marketAccountStyleNames[
                     valuationEstimate.marketProfile.accountStyle

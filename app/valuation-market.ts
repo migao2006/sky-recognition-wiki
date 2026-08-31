@@ -16,6 +16,13 @@ export const marketAccountStyleNames: Record<MarketAccountStyle, string> = {
   regular: "一般帳號",
 };
 
+export const marketPackageTierNames: Record<PackageTierKey, string> = {
+  few: "少禮",
+  medium: "中禮",
+  many: "多禮",
+  hundred: "百禮",
+};
+
 export const valuationMarketAggregate = marketAggregate;
 
 export type MarketValidationStatus =

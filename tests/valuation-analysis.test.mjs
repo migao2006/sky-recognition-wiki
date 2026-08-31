@@ -425,13 +425,13 @@ test("partial graduation is below full graduation without a second break penalty
     section: "seasons",
     collection: "sanctuary",
   });
-  const partial = estimateValuation({
-    analysis: analyze([firstUltimate, nextUltimate]),
-  });
+  const partialAnalysis = analyze([firstUltimate, nextUltimate]);
+  const partial = estimateValuation({ analysis: partialAnalysis });
   const complete = estimateValuation({
     analysis: analyze([firstUltimate, secondUltimate, nextUltimate]),
   });
   assert.ok(partial && complete);
+  assert.equal(partialAnalysis.startSeasonSlug, "enchantment");
   assert.equal(partial.marketProfile.breakClass, "none");
   assert.equal(partial.marketProfile.partialSeasons, 1);
   assert.ok(partial.midpoint < complete.midpoint);

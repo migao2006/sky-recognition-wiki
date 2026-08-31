@@ -1,4 +1,8 @@
-import { type BindingKey, type BindingStatus } from "./account-config";
+import {
+  accountResourceAmount,
+  type BindingKey,
+  type BindingStatus,
+} from "./account-config";
 import {
   classifyPackageTier,
   limitedValueCap,
@@ -137,8 +141,9 @@ export const analyzeValuation = ({
   const fallbackSeasonEvidence = domain.sortSeasonSlugs([
     ...new Set([...pendants, ...ultimates].map((item) => item.collection)),
   ])[0];
-  // A completed graduation season is the primary market-age signal. Pendants
-  // only provide an age fallback when the account has no completed season.
+  // The earliest season with graduation-reward progress is the primary
+  // market-age signal. Pendants only provide a fallback when no graduation
+  // reward is selected; partial progress is discounted later and is not a break.
   const accountAgeEvidence = startSeasonSlug ?? fallbackSeasonEvidence;
   const evidenceIndex = accountAgeEvidence
     ? domain.graduationSeasonSlugs.indexOf(accountAgeEvidence)
@@ -197,8 +202,6 @@ const resourceValue = (
   resources: ValuationResources | undefined,
   conservative = false,
 ) => {
-  const amount = (value: string | number | undefined) =>
-    Math.max(0, Number.parseInt(String(value ?? "0"), 10) || 0);
   const tier = (
     value: number,
     thresholds: readonly [number, number, number][],
@@ -209,25 +212,25 @@ const resourceValue = (
       [0, 0],
     );
   const values = [
-    tier(amount(resources?.candles), [
+    tier(accountResourceAmount(resources?.candles), [
       [200, 100, 200],
       [500, 250, 450],
       [1000, 500, 800],
       [2000, 800, 1200],
     ]),
-    tier(amount(resources?.hearts), [
+    tier(accountResourceAmount(resources?.hearts), [
       [50, 100, 200],
       [200, 200, 400],
       [500, 400, 700],
     ]),
-    tier(amount(resources?.ascended), [
+    tier(accountResourceAmount(resources?.ascended), [
       [20, 50, 100],
       [50, 100, 200],
       [100, 200, 350],
     ]),
     [
-      Math.min(amount(resources?.passes), 5) * 80,
-      Math.min(amount(resources?.passes), 5) * 150,
+      Math.min(accountResourceAmount(resources?.passes), 5) * 80,
+      Math.min(accountResourceAmount(resources?.passes), 5) * 150,
     ],
   ];
   return {
