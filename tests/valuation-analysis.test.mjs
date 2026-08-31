@@ -24,6 +24,12 @@ const marketAggregate = JSON.parse(
   ),
 );
 const marketUrl = await marketCollectiblesModuleUrl();
+const marketModule = await import(marketUrl);
+const marketGuidByName = new Map(
+  marketModule.importantMarketCollectibles.flatMap((profile) =>
+    [profile.name, ...profile.aliases].map((name) => [name, profile.guid]),
+  ),
+);
 const itemsUrl = asModuleUrl(
   (await injectSeasonItems(items)).replace(
     'import { marketCollectibleProfile } from "./market-collectibles";',
@@ -106,6 +112,7 @@ const item = (values = {}) => ({
   section: "events",
   collection: "event",
   ...values,
+  guid: marketGuidByName.get(values.name) ?? values.guid ?? `test-${values.name ?? "item"}`,
 });
 const domain = {
   isValuationFocus: (value) => value.name !== "ordinary",
@@ -295,6 +302,12 @@ test("binding penalties are capped and platform issues remove platform value", (
 
 test("resource brackets preserve their explicit low and high values", () => {
   const analysis = analyze([
+    item({
+      name: "Enchantment Ultimate",
+      group: "Ultimate",
+      section: "seasons",
+      collection: "enchantment",
+    }),
     item({ name: "Pack", wiki: "https://wiki.test/Pack" }),
   ]);
   const cases = [
@@ -324,7 +337,15 @@ test("China-only content has zero international-market value", () => {
 
 test("resources add a small capped contribution", () => {
   const result = estimateValuation({
-    analysis: analyze([item({ name: "Pack", wiki: "https://wiki.test/Pack" })]),
+    analysis: analyze([
+      item({
+        name: "Enchantment Ultimate",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+      item({ name: "Pack", wiki: "https://wiki.test/Pack" }),
+    ]),
     resources: { candles: 9000, hearts: 9000, ascended: 9000, passes: 99 },
   });
   assert.ok(result);
@@ -430,7 +451,17 @@ test("market package tier uses paid item count while package value stays dedupli
       wiki: "https://wiki.test/Shared_Pack",
     }),
   );
-  const result = estimateValuation({ analysis: analyze(items) });
+  const result = estimateValuation({
+    analysis: analyze([
+      item({
+        name: "Enchantment Ultimate",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+      ...items,
+    ]),
+  });
   assert.ok(result);
   assert.equal(result.marketProfile.paidItemCount, 100);
   assert.equal(result.marketProfile.canonicalPackageCount, 1);
@@ -477,6 +508,135 @@ test("package calibration stays monotonic across tier boundaries", () => {
     assert.ok(nextCap.high >= priorCap.high);
     assert.ok(nextCap.high <= priorCap.high * 1.15);
   }
+});
+
+test("recent-season accounts use conservative add-on caps", () => {
+  const { packageValueCap, limitedValueCap } = calibrationLoaded;
+  assert.deepEqual(packageValueCap(54, { conservative: true }), {
+    low: 700,
+    high: 1000,
+  });
+  assert.deepEqual(limitedValueCap(21, { conservative: true }), {
+    low: 300,
+    high: 500,
+  });
+  assert.deepEqual(packageValueCap(54), { low: 1920, high: 2620 });
+  assert.deepEqual(limitedValueCap(21), { low: 700, high: 1200 });
+});
+
+test("Moments-or-later starts cap resources without changing early accounts", () => {
+  const momentsUltimate = item({
+    name: "Moments Ultimate",
+    group: "Ultimate",
+    section: "seasons",
+    collection: "moments",
+  });
+  const recentDomain = {
+    ...domain,
+    graduationSeasonSlugs: ["enchantment", "sanctuary", "moments"],
+    seasonGraduationItems: new Map([
+      ...domain.seasonGraduationItems,
+      ["moments", [momentsUltimate]],
+    ]),
+  };
+  const paid = Array.from({ length: 54 }, (_, index) =>
+    item({
+      name: `Recent Pack ${index}`,
+      wiki: `https://wiki.test/Recent_Pack_${index}`,
+    }),
+  );
+  const limited = Array.from({ length: 21 }, (_, index) =>
+    item({ name: `Recent Limited ${index}`, group: "Limited" }),
+  );
+  const recentAnalysis = analyzeValuation({
+    chosen: [momentsUltimate, ...paid, ...limited],
+    bindings: bindings(),
+    bindingNote: "",
+    domain: recentDomain,
+  });
+  const earlyAnalysis = analyze([
+    item({
+      name: "Enchantment Ultimate",
+      group: "Ultimate",
+      section: "seasons",
+      collection: "enchantment",
+    }),
+  ]);
+  const resources = { candles: 3000, hearts: 800, ascended: 200, passes: 5 };
+  const recent = estimateValuation({ analysis: recentAnalysis, resources });
+  const early = estimateValuation({ analysis: earlyAnalysis, resources });
+  assert.equal(recentAnalysis.conservativeAddOnCaps, true);
+  assert.equal(earlyAnalysis.conservativeAddOnCaps, false);
+  assert.deepEqual(
+    recent.contributions.find((row) => row.group === "resource"),
+    { group: "resource", label: "帳號資源", low: 250, high: 400 },
+  );
+  assert.deepEqual(
+    early.contributions.find((row) => row.group === "resource"),
+    { group: "resource", label: "帳號資源", low: 1500, high: 2500 },
+  );
+  const contributionTotal = (group, side) =>
+    recent.contributions
+      .filter((row) => row.group === group)
+      .reduce((sum, row) => sum + row[side], 0);
+  assert.equal(contributionTotal("package", "low"), 700);
+  assert.equal(contributionTotal("package", "high"), 1000);
+  assert.equal(contributionTotal("limited", "low"), 300);
+  assert.equal(contributionTotal("limited", "high"), 500);
+  assert.ok(recent.midpoint >= recent.range.low);
+  assert.ok(recent.midpoint <= recent.range.high);
+});
+
+test("season evidence selects conservative caps at the Moments boundary", () => {
+  const seasonItem = (slug, type = "Cape") =>
+    item({
+      name: `${slug} Ultimate${type === "Necklace" ? " Pendant" : ""}`,
+      type,
+      group: "Ultimate",
+      section: "seasons",
+      collection: slug,
+    });
+  const passage = seasonItem("passage");
+  const momentsPendant = seasonItem("moments", "Necklace");
+  const revivalPendant = seasonItem("revival", "Necklace");
+  const currentUltimate = seasonItem("dear-van-gogh");
+  const ageDomain = {
+    ...domain,
+    ongoingSeasonSlugs: new Set(["dear-van-gogh"]),
+    graduationSeasonSlugs: ["passage", "moments", "revival"],
+    seasonGraduationItems: new Map([
+      ["passage", [passage]],
+      ["moments", [seasonItem("moments")]],
+      ["revival", [seasonItem("revival")]],
+    ]),
+    sortSeasonSlugs: (slugs) =>
+      [...slugs].sort(
+        (left, right) =>
+          ["passage", "moments", "revival", "dear-van-gogh"].indexOf(left) -
+          ["passage", "moments", "revival", "dear-van-gogh"].indexOf(right),
+      ),
+  };
+  const analyzeAge = (chosen) =>
+    analyzeValuation({
+      chosen,
+      bindings: bindings(),
+      bindingNote: "",
+      domain: ageDomain,
+    });
+  assert.equal(analyzeAge([passage]).conservativeAddOnCaps, false);
+  assert.equal(analyzeAge([momentsPendant]).conservativeAddOnCaps, true);
+  assert.equal(analyzeAge([revivalPendant]).conservativeAddOnCaps, true);
+  assert.equal(
+    analyzeAge([seasonItem("moments"), seasonItem("passage", "Necklace")])
+      .conservativeAddOnCaps,
+    true,
+  );
+  assert.equal(analyzeAge([currentUltimate]).conservativeAddOnCaps, true);
+  assert.equal(
+    analyzeAge([item({ wiki: "https://wiki.test/Recent_Pack" })])
+      .conservativeAddOnCaps,
+    true,
+  );
 });
 
 test("confirmed all-none bindings count as complete account information", () => {

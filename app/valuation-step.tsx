@@ -67,6 +67,7 @@ const emptyValuationAnalysis: ValuationAnalysis = {
   packages: [],
   limited: [],
   startSeasonSlug: null,
+  conservativeAddOnCaps: true,
   seasonCompletion: new Map(),
   completeness: 0,
   issueCount: 0,

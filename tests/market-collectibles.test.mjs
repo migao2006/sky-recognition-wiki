@@ -25,6 +25,16 @@ const iapCatalog = JSON.parse(
   await readFile(new URL("../app/iap-catalog.json", import.meta.url), "utf8"),
 );
 
+test("bundle search aliases never resolve as a fake single collectible", () => {
+  for (const alias of ["絆愛三件套", "姆明耳尾組", "林克套組", "超凡風旅", "爆米花組"])
+    assert.equal(marketCollectibleProfile(alias), null, alias);
+  assert.equal(
+    importantMarketCollectibles.filter((profile) => profile.aliases.includes("爆米花組"))
+      .length,
+    2,
+  );
+});
+
 test("generated IAP metadata covers every mapped catalog item by GUID", () => {
   assert.match(iapCatalog.sourceVersion, /^\d+\.\d+\.\d+$/);
   assert.match(iapCatalog.sourceUrl, new RegExp(`@${iapCatalog.sourceVersion}/`));
@@ -40,6 +50,19 @@ test("generated IAP metadata covers every mapped catalog item by GUID", () => {
     assert.ok(profile?.packageKey, row.name);
     assert.ok(profile?.playerName, row.name);
   }
+});
+
+test("same English name never transfers paid metadata to a different GUID", () => {
+  const held = catalog.wikiItems.find((item) => item.guid === "5xJ_mCzZQy");
+  const furniture = catalog.wikiItems.find((item) => item.guid === "vx4vxVJ0L1");
+  assert.equal(held?.name, "Moonlight Lantern");
+  assert.equal(furniture?.name, "Moonlight Lantern");
+  assert.equal(marketCollectibleProfile(held.name, held.guid)?.paid, true);
+  assert.equal(marketCollectibleProfile(furniture.name, furniture.guid), null);
+  assert.equal(catalog.isPaidItem(held), true);
+  assert.equal(catalog.isPaidItem(furniture), false);
+  assert.equal(catalog.zhItemName(held), "夏日燈籠");
+  assert.equal(catalog.zhItemName(furniture), "月華燈籠");
 });
 
 test("uses exact GUID mappings for the corrected paid held props", () => {

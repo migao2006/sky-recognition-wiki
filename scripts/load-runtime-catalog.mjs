@@ -21,6 +21,7 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
       "season-items",
       "market-collectibles",
       "valuation-items",
+      "catalog-name-resolver",
       "catalog-legacy-guids",
       "catalog-seeds",
       "catalog-taxonomy",

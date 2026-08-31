@@ -1101,7 +1101,16 @@ const tokenizedZhName = (name: string) => {
   return translated || name;
 };
 export const zhName = (name: string) => manualZhName(name) ?? tokenizedZhName(name);
-const playerZhByGuid = playerZhNames.items as Record<string, string>;
+type PlayerItemName = string | { displayName: string; aliases?: string[] };
+const playerZhByGuid = playerZhNames.items as Record<string, PlayerItemName>;
+const playerItemName = (guid: string) => {
+  const entry = playerZhByGuid[guid];
+  return typeof entry === "string" ? entry : entry?.displayName;
+};
+const playerItemAliases = (guid: string) => {
+  const entry = playerZhByGuid[guid];
+  return typeof entry === "string" ? [] : (entry?.aliases ?? []);
+};
 const playerHairByGuid = playerHairNames.items as Record<
   string,
   { displayName: string; aliases: string[] }
@@ -1112,7 +1121,7 @@ export const zhItemName = (item: WikiItem) => {
   return (
     (marketProfile?.curated ? marketProfile.playerName : undefined) ??
     playerHairByGuid[item.guid]?.displayName ??
-    playerZhByGuid[item.guid] ??
+    playerItemName(item.guid) ??
     wikiZhByGuid[item.guid] ??
     manualZhName(item.name) ??
     tokenizedZhName(item.name)
@@ -1123,6 +1132,7 @@ export const zhItemSearchNames = (item: WikiItem) =>
     zhItemName(item),
     ...(marketCollectibleProfile(item.name, item.guid)?.aliases ?? []),
     ...(playerHairByGuid[item.guid]?.aliases ?? []),
+    ...playerItemAliases(item.guid),
     wikiZhByGuid[item.guid],
     manualZhName(item.name),
     tokenizedZhName(item.name),

@@ -11,6 +11,12 @@ const [valuationSource] = await Promise.all(
   ),
 );
 const marketUrl = await marketCollectiblesModuleUrl();
+const marketModule = await import(marketUrl);
+const marketGuidByName = new Map(
+  marketModule.importantMarketCollectibles.flatMap((profile) =>
+    [profile.name, ...profile.aliases].map((name) => [name, profile.guid]),
+  ),
+);
 const {
   canonicalPackageKey,
   isChinaOnlyItem,
@@ -41,6 +47,7 @@ const item = (overrides = {}) => ({
   section: "events",
   collection: "test",
   ...overrides,
+  guid: marketGuidByName.get(overrides.name) ?? overrides.guid ?? "test",
 });
 
 test("season pendant is not counted as a graduation gift", () => {

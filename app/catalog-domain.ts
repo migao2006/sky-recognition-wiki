@@ -1,5 +1,11 @@
 export { isPaidItem } from "./valuation-items";
 export {
+  buildCatalogNameResolver,
+  normalizeCatalogTerm,
+  type CatalogNameMatch,
+  type CatalogTextResolution,
+} from "./catalog-name-resolver";
+export {
   isGraduationGift,
   isSeasonPendant,
   isSeasonUltimate,

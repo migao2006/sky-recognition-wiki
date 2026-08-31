@@ -13,6 +13,7 @@ import {
   realmZh,
   seasonOrder,
   seasonZh,
+  seasonSearchAliases,
   seasons,
   source,
   sourceKind,
@@ -174,6 +175,7 @@ export const searchIndex = new Map(
         valuationClass(x),
         String(x.id),
         seasonZh[x.collection] || "",
+        ...(seasonSearchAliases[x.collection] ?? []),
         eventZh[x.collection] || "",
         realmZh[x.collection] || "",
       ]

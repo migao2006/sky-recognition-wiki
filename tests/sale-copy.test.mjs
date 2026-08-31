@@ -10,6 +10,12 @@ const [source, configSource] = await Promise.all(
   ),
 );
 const marketUrl = await marketCollectiblesModuleUrl();
+const marketModule = await import(marketUrl);
+const marketGuidByName = new Map(
+  marketModule.importantMarketCollectibles.flatMap((profile) =>
+    [profile.name, ...profile.aliases].map((name) => [name, profile.guid]),
+  ),
+);
 const moduleUrl = asModuleUrl(
   source
     .replace(
@@ -41,6 +47,7 @@ const item = (overrides = {}) => ({
   sourceName: "常駐商店",
   order: 1,
   ...overrides,
+  guid: marketGuidByName.get(overrides.name) ?? overrides.guid ?? "test-item",
 });
 const input = (overrides = {}) => ({
   seasons: [
@@ -198,17 +205,17 @@ test("groups collaborations, anniversaries, and special collections", () => {
     }),
   ];
   const copy = buildSaleCopy(input({ items: [...items, items[0]] })).join("\n");
-  assert.match(copy, /✦ 限定聯動\n九色鹿｜鹿角・九色鹿面具\nNintendo｜林克髮型/);
-  assert.match(copy, /✦ 重要禮包\n小白花/);
+  assert.match(copy, /✦ 限定聯動\n九色鹿｜九色鹿頭角・九色鹿面具\nNintendo｜林克髮型/);
+  assert.match(copy, /✦ 重要禮包\n治癒小白花/);
   assert.match(copy, /✦ 週年收藏\n6th｜週年帽\n5th｜週年T恤\n其他｜天空慶典線框斗篷・茶杯頭飾/);
-  assert.match(copy, /✦ 特殊限定\n女巫髮型・新手鋼琴/);
+  assert.match(copy, /✦ 特殊限定\n巫師髮型・直立鋼琴/);
   assert.doesNotMatch(copy, /(?:Days of|Pack|Fledgling Upright Piano)/);
-  assert.match(copy, /女巫髮型/);
+  assert.match(copy, /巫師髮型/);
   assert.doesNotMatch(copy, /春日幸運草嫩芽/);
   assert.doesNotMatch(copy, /惡作劇之日｜|國服限定｜/);
-  assert.doesNotMatch(copy, /✦ 其他收藏\n新手鋼琴/);
+  assert.doesNotMatch(copy, /✦ 其他收藏\n直立鋼琴/);
   assert.doesNotMatch(copy, /常駐商店｜/);
-  assert.equal(copy.match(/鹿角/g)?.length, 1);
+  assert.equal(copy.match(/九色鹿頭角/g)?.length, 1);
   assert.equal(copy.match(/林克髮型/g)?.length, 1);
   assert.equal(copy.match(/╶────── ✦ ──────╴/g)?.length, 5);
 });
@@ -251,9 +258,10 @@ test("uses player names and keeps every selected item in only one section", () =
       ],
     }),
   ).join("\n");
-  assert.match(copy, /AURORA｜逃跑髮型/);
+  assert.match(copy, /AURORA｜極光短髮型/);
   assert.match(copy, /✦ 重要禮包\n蝙蝠斗篷/);
-  assert.equal(copy.match(/逃跑髮型/g)?.length, 1);
+  assert.equal(copy.match(/極光短髮型/g)?.length, 1);
+  assert.doesNotMatch(copy, /逃跑髮型/);
   assert.equal(copy.match(/蝙蝠斗篷/g)?.length, 1);
 });
 

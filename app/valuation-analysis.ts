@@ -91,6 +91,7 @@ export type ValuationAnalysis = {
   packages: WikiItem[];
   limited: WikiItem[];
   startSeasonSlug: string | null;
+  conservativeAddOnCaps: boolean;
   seasonCompletion: ReadonlyMap<string, { selected: number; expected: number }>;
   completeness: number;
   issueCount: number;
@@ -132,6 +133,21 @@ export const analyzeValuation = ({
   const startIndex = startSeasonSlug
     ? domain.graduationSeasonSlugs.indexOf(startSeasonSlug)
     : -1;
+  const recentStartIndex = domain.graduationSeasonSlugs.indexOf("moments");
+  const fallbackSeasonEvidence = domain.sortSeasonSlugs([
+    ...new Set([...pendants, ...ultimates].map((item) => item.collection)),
+  ])[0];
+  // A completed graduation season is the primary market-age signal. Pendants
+  // only provide an age fallback when the account has no completed season.
+  const accountAgeEvidence = startSeasonSlug ?? fallbackSeasonEvidence;
+  const evidenceIndex = accountAgeEvidence
+    ? domain.graduationSeasonSlugs.indexOf(accountAgeEvidence)
+    : -1;
+  const conservativeAddOnCaps =
+    !accountAgeEvidence ||
+    domain.ongoingSeasonSlugs.has(accountAgeEvidence) ||
+    evidenceIndex < 0 ||
+    (recentStartIndex >= 0 && evidenceIndex >= recentStartIndex);
   const expectedSlugs =
     startIndex >= 0 ? domain.graduationSeasonSlugs.slice(startIndex) : [];
   const seasonCompletion = new Map(
@@ -157,6 +173,7 @@ export const analyzeValuation = ({
     packages,
     limited,
     startSeasonSlug,
+    conservativeAddOnCaps,
     seasonCompletion,
     completeness: Math.round(
       ([
@@ -176,7 +193,10 @@ export const analyzeValuation = ({
   };
 };
 
-const resourceValue = (resources: ValuationResources | undefined) => {
+const resourceValue = (
+  resources: ValuationResources | undefined,
+  conservative = false,
+) => {
   const amount = (value: string | number | undefined) =>
     Math.max(0, Number.parseInt(String(value ?? "0"), 10) || 0);
   const tier = (
@@ -213,11 +233,11 @@ const resourceValue = (resources: ValuationResources | undefined) => {
   return {
     low: Math.min(
       values.reduce((sum, value) => sum + value[0], 0),
-      1500,
+      conservative ? 250 : 1500,
     ),
     high: Math.min(
       values.reduce((sum, value) => sum + value[1], 0),
-      2500,
+      conservative ? 400 : 2500,
     ),
   };
 };
@@ -481,8 +501,9 @@ export const estimateValuation = ({
     (sum, row) => sum + Math.max(0, row.high),
     0,
   );
-  const packageCap = packageValueCap(paidItemCount);
-  const limitedCap = limitedValueCap(limitedKeys.size);
+  const capContext = { conservative: analysis.conservativeAddOnCaps };
+  const packageCap = packageValueCap(paidItemCount, capContext);
+  const limitedCap = limitedValueCap(limitedKeys.size, capContext);
   const packageLow = Math.min(rawPackageLow, packageCap.low);
   const packageHigh = Math.min(rawPackageHigh, packageCap.high);
   const limitedLow = Math.min(rawLimitedLow, limitedCap.low);
@@ -503,7 +524,7 @@ export const estimateValuation = ({
       high: limitedHigh - rawLimitedHigh,
     });
   }
-  const resource = resourceValue(resources);
+  const resource = resourceValue(resources, analysis.conservativeAddOnCaps);
   if (resource.low || resource.high)
     contributions.push({ group: "resource", label: "帳號資源", ...resource });
   const accountStyle = classifyAccountStyle({

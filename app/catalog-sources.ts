@@ -32,6 +32,17 @@ export const seasonZh: Record<string, string> = {
   carnival: "狂歡季",
   "dear-van-gogh": "致梵谷季",
 };
+// 玩家交易文案常用縮寫只用於搜尋；畫面與匯出仍使用 seasonZh 的標準名稱。
+export const seasonSearchAliases: Record<string, readonly string[]> = {
+  belonging: ["歸"],
+  rhythm: ["音韻"],
+  enchantment: ["魔"],
+  remembrance: ["緬", "緬懷"],
+  passage: ["夜", "夜行"],
+  moments: ["時光", "拾光"],
+  "nine-colored-deer": ["彩鹿"],
+  migration: ["遷徒", "遷徙"],
+};
 export const eventZh: Record<string, string> = {
   "days-of-bloom": "花憩日",
   "days-of-feast": "宴會節",

@@ -79,10 +79,56 @@ test("player-friendly names use known catalog guids", async () => {
     await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
   );
   const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
-  assert.equal(Object.keys(playerNames.items).length, 39);
-  for (const [guid, name] of Object.entries(playerNames.items)) {
+  assert.equal(Object.keys(playerNames.items).length, 50);
+  for (const [guid, entry] of Object.entries(playerNames.items)) {
     assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
-    assert.match(name, /[\u3400-\u9fff]/);
+    assert.equal(typeof entry, "object", guid);
+    assert.match(entry.displayName, /[\u3400-\u9fff]/);
+    assert.ok(Array.isArray(entry.aliases), guid);
+    assert.equal(new Set(entry.aliases).size, entry.aliases.length, guid);
+    assert.ok(entry.aliases.every((alias) => alias.trim()), guid);
+  }
+});
+
+test("Drive player terms update display names while preserving old names and bundle search", () => {
+  for (const [name, displayName, terms] of [
+    ["Little Prince Scarf Cape", "王子圍巾斗", ["小王子圍巾"]],
+    ["Wings of AURORA", "極光金翅膀", ["AURORA 之翼"]],
+    ["Tiara We Can Touch", "金星月頭飾", ["觸碰之冠"]],
+    ["Cinnamoroll Plushie", "大耳狗娃娃", ["大耳狗玩偶"]],
+    ["Fledgling Upright Piano", "直立鋼琴", ["新手鋼琴"]],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.name === name);
+    assert.ok(entry, name);
+    assert.equal(zhItemName(entry), displayName);
+    for (const term of terms)
+      assert.ok(searchIndex.get(entry.guid).includes(term.toLowerCase()), `${name}: ${term}`);
+  }
+
+  for (const name of ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"]) {
+    const entry = wikiItems.find((candidate) => candidate.name === name);
+    assert.ok(entry, name);
+    assert.ok(searchIndex.get(entry.guid).includes("絆愛三件套"), name);
+  }
+  for (const name of ["Moomintroll Ears", "Moomintroll Tail"]) {
+    const entry = wikiItems.find((candidate) => candidate.name === name);
+    assert.ok(entry, name);
+    assert.ok(searchIndex.get(entry.guid).includes("姆明耳尾組"), name);
+  }
+});
+
+test("player season shorthand is searchable without replacing standard season labels", () => {
+  for (const [collection, alias, standardName] of [
+    ["rhythm", "音韻", "音韻季"],
+    ["nine-colored-deer", "彩鹿", "九色鹿季"],
+    ["migration", "遷徒", "遷徙季"],
+  ]) {
+    const entry = wikiItems.find(
+      (candidate) => candidate.collection === collection && allClosetTypeSet.has(candidate.type),
+    );
+    assert.ok(entry, collection);
+    assert.ok(searchIndex.get(entry.guid).includes(alias), `${collection}: ${alias}`);
+    assert.equal(sourceCollectionName(entry), standardName);
   }
 });
 
@@ -229,7 +275,7 @@ test("keeps formerly ambiguous paid and held-prop names distinct", () => {
   assert.equal(zhItemName(byName("Journey Cape")), "風之旅人斗篷");
   assert.equal(zhItemName(byName("FlOw Cape")), "FlOw 斗篷");
   assert.equal(zhItemName(byName("Manatee Toy")), "海牛公仔");
-  assert.equal(zhItemName(byName("Manatee Plush")), "海牛玩偶");
+  assert.equal(zhItemName(byName("Manatee Plush")), "小海牛玩偶");
 });
 
 test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {

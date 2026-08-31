@@ -18,6 +18,7 @@
 - `app/bundle-presets.ts`：常用套組設定
 - `app/catalog-legacy-guids.ts`：舊版備份人工 GUID 到官方 GUID 的遷移表
 - `app/catalog-*.ts`：物品資料、分類、中文名稱與來源規則
+- `app/player-zh-names.json`：以官方 GUID 保存玩家顯示名與搜尋別名；標準 Wiki 名稱仍可搜尋
 - `app/wiki-data.ts`：SkyGame-Data 衣櫃物品快照
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出
@@ -25,6 +26,7 @@
 - `app/valuation-season-bands.ts`：彙總後的季節價格帶與樣本信心
 - `scripts/audit-valuation-source.mjs`：從原始 JSONL 重算合格樣本、季節樣本數與分位數
 - `scripts/prepare-facebook-valuation-source.mjs`：將私人 Facebook 原始 JSONL 匿名成可供估價稽核的結構資料
+- `scripts/reconstruct-drive-valuations.mjs`：將私人出售文案中的唯一名稱與確認套組還原成官方 GUID，並以網站估價流程逐筆重播
 
 ## 本機開發
 
@@ -49,6 +51,8 @@
 
 尚未進入 SkyGame-Data 正式版本的新品，只能依可追溯的上游 PR／commit 或明確 Wiki 項目建立暫時 overlay。目前梵谷「星夜之傘」與畫架取自 [SkyGame-Data PR #125](https://github.com/Silverfeelin/SkyGame-Data/pull/125)；「海牛手杖」是等待上游正式 GUID 的 Wiki overlay。上游合併並同步正式快照後，應遷移既有 overlay GUID 並移除對應例外。
 
+玩家名稱以官方 GUID 對應，不用英文同名或圖片猜測。顯示名優先採台灣交易社群容易辨識的說法，舊名、Wiki 名與套組俗稱保留為搜尋別名；季節縮寫也只影響搜尋，不會改變標準季名或物品身分。現行一般物品用語參考 2026-08-31 讀取的指定 Google Drive 資料夾 26 份出售文案。
+
 ## 備份相容性
 
 目前匯出格式為 v3，物品保存 SkyGame-Data 官方 GUID；上游尚未收錄的新品則保存上述明確追蹤的 overlay GUID。v1、v2 與無版本的舊備份會在匯入時遷移；未知物品會被略過並顯示數量，較新的未知版本則拒絕匯入。本機草稿保存 30 天，舊 v2 草稿會自動搬移至 v3。
@@ -69,6 +73,10 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 輸出不含貼文原文、網址、作者或留言，只保留價格、季節、禮包與匿名雜湊等結構欄位。
 
+私人 Google Drive 文案同樣只可放在被 Git 忽略的 `work/`。逐筆 GUID 還原使用 `node scripts/reconstruct-drive-valuations.mjs`；腳本只接受唯一名稱與已明確定義的玩家套組，同名物品不會猜測，缺少逐件名稱的禮包也不會依數量杜撰。產生的逐筆結果與摘要仍留在 `work/`，只能用來比較刊登價是否落在估價區間，不能視為成交價驗證或直接發布成正式模型。
+
 先用 `audit-valuation-source.mjs` 產生只含 80% 帳號群組的候選彙總，再用 `validate-valuation-model.mjs` 對固定 20% 保留組比較現行模型。驗證通過後，改加 `--include-holdout` 重算全樣本正式彙總；未滿 200 個唯一有效帳號、少於 3 個社團、單一社團權重超過 60%，或誤差／區間覆蓋未達門檻時不得發布。樣本數門檻計算所有通過來源規則的唯一帳號；誤差只在具有可比較起季資料的帳號上計算。
 
 目前正式彙總只有 148 筆合格帳號，狀態為 `legacy-unvalidated`；網站仍提供低信心參考估價，但不得顯示為完整市場驗證。新樣本必須保存完整 `valuation_model` v2 predictor（包含信心與所有乘數），validator 會以候選的起季區間及市場乘數重播共用核心；通過 holdout 後才可改為 `validated`。
+
+估價中的禮包、限定與資源只計入二手帳號市場可保留的部分價值。拾光季起始或更晚、目前進行中季節，以及無法確認早期季節證據的帳號使用較低的附加價值上限，避免禮包數量把簡號推到早期稀有帳號的價格帶；起始畢業季在拾光以前的帳號保留原本的稀有度校正，完全沒有畢業禮時才以最早季卡項鍊判斷年代。此分段目前同樣屬 `legacy-unvalidated` 參考規則，需待足量同型成交樣本與 holdout 驗證後才能視為正式市場模型。
