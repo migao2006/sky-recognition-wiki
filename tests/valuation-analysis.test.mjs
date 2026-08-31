@@ -466,6 +466,7 @@ test("market package tier uses paid item count while package value stays dedupli
   assert.equal(result.marketProfile.paidItemCount, 100);
   assert.equal(result.marketProfile.canonicalPackageCount, 1);
   assert.equal(result.marketProfile.packageTier, "hundred");
+  assert.equal(result.marketProfile.salePackageTier, "few");
   assert.equal(
     result.contributions.filter((row) => row.group === "package").length,
     1,
@@ -482,6 +483,7 @@ test("modern multi-pack accounts use diminishing bundled resale value", () => {
   const result = estimateValuation({ analysis: analyze(paid) });
   assert.ok(result);
   assert.equal(result.marketProfile.packageTier, "many");
+  assert.equal(result.marketProfile.salePackageTier, "few");
   const packageTotal = result.contributions
     .filter((row) => row.group === "package" && row.low > 0)
     .reduce((sum, row) => sum + row.low, 0);
@@ -508,6 +510,16 @@ test("package calibration stays monotonic across tier boundaries", () => {
     assert.ok(nextCap.high >= priorCap.high);
     assert.ok(nextCap.high <= priorCap.high * 1.15);
   }
+});
+
+test("sale package wording uses conservative unique-package thresholds without changing valuation tiers", () => {
+  const { classifySalePackageTier } = calibrationLoaded;
+  assert.equal(classifySalePackageTier(0).key, "few");
+  assert.equal(classifySalePackageTier(59).key, "few");
+  assert.equal(classifySalePackageTier(60).key, "medium");
+  assert.equal(classifySalePackageTier(99).key, "medium");
+  assert.equal(classifySalePackageTier(100).key, "many");
+  assert.equal(classifySalePackageTier(189).key, "many");
 });
 
 test("recent-season accounts use conservative add-on caps", () => {

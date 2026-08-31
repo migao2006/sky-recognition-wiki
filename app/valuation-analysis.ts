@@ -5,8 +5,10 @@ import {
 } from "./account-config";
 import {
   classifyPackageTier,
+  classifySalePackageTier,
   limitedValueCap,
   packageValueCap,
+  type SalePackageTierKey,
 } from "./valuation-calibration";
 import {
   classifyAccountStyle,
@@ -76,6 +78,7 @@ export type ValuationEstimate = {
   marketProfile: {
     breakClass: MarketBreakClass;
     packageTier: PackageTierKey;
+    salePackageTier: SalePackageTierKey;
     accountStyle: MarketAccountStyle;
     missingSeasons: number;
     partialSeasons: number;
@@ -339,6 +342,7 @@ export const estimateValuation = ({
       marketProfile: {
         breakClass: "big",
         packageTier: "few",
+        salePackageTier: "few",
         accountStyle: "simple",
         missingSeasons: 0,
         partialSeasons: 0,
@@ -434,6 +438,7 @@ export const estimateValuation = ({
     if (key) packageMap.set(key, item);
   });
   const packageTier = classifyPackageTier(paidItemCount);
+  const salePackageTier = classifySalePackageTier(packageMap.size);
   const packageMarketMultiplier = marketPackageMultiplier(packageTier.key);
   const packageWeightTotal = [...packageMap.values()].reduce(
     (sum, item) => sum + packageValuationMultiplier(item),
@@ -616,6 +621,7 @@ export const estimateValuation = ({
     marketProfile: {
       breakClass: breakProfile.key,
       packageTier: packageTier.key,
+      salePackageTier: salePackageTier.key,
       accountStyle,
       missingSeasons: breakProfile.missingSeasons,
       partialSeasons: breakProfile.partialSeasons,

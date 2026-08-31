@@ -399,7 +399,7 @@ export function ValuationStep({
                     valuationEstimate.marketProfile.breakClass
                   ]
                 }{" "}
-                · {marketPackageTierNames[valuationEstimate.marketProfile.packageTier]} ·{" "}
+                · {marketPackageTierNames[valuationEstimate.marketProfile.salePackageTier]} ·{" "}
                 {
                   marketAccountStyleNames[
                     valuationEstimate.marketProfile.accountStyle

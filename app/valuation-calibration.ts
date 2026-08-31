@@ -6,6 +6,13 @@ export type PackageTier = {
   premium: number;
 };
 
+export type SalePackageTierKey = "few" | "medium" | "many";
+
+export type SalePackageTier = {
+  key: SalePackageTierKey;
+  label: "少禮" | "中禮" | "多禮";
+};
+
 export type ExtraValueCap = { low: number; high: number };
 
 export type ExtraValueContext = {
@@ -24,6 +31,18 @@ export const classifyPackageTier = (count: number): PackageTier => {
   if (count >= 15)
     return { key: "medium", label: "中禮", premium: 600 + (count - 15) * 20 };
   return { key: "few", label: "少禮", premium: count * 40 };
+};
+
+// 玩家文案中的少／中／多禮，是以不重複的實際禮包數判斷。
+// 目前完整衣櫃約有 189 個禮包；玩家貼文對 50+ 的稱呼並不一致，
+// 而 100+ 才穩定出現百禮／超多禮，因此採保守、不灌水的固定門檻。
+// 免費活動物品、季節畢業禮與同一禮包內的多件物品都不重複計入。
+export const classifySalePackageTier = (
+  canonicalPackageCount: number,
+): SalePackageTier => {
+  if (canonicalPackageCount >= 100) return { key: "many", label: "多禮" };
+  if (canonicalPackageCount >= 60) return { key: "medium", label: "中禮" };
+  return { key: "few", label: "少禮" };
 };
 
 // Paid cosmetics retain only a diminishing share of their original purchase

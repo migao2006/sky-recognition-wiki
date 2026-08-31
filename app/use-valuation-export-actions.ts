@@ -127,7 +127,7 @@ export const useValuationExportActions = ({
               : "",
             packageLabel:
               marketPackageTierNames[
-                valuationEstimate.marketProfile.packageTier
+                valuationEstimate.marketProfile.salePackageTier
               ],
           }
         : undefined,
