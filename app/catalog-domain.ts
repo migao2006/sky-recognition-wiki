@@ -34,6 +34,7 @@ export {
   zhName,
 } from "./catalog-zh";
 export {
+  compareCatalogItems,
   graduationSeasonSlugs,
   isLimitedItem,
   isProfessionalVideoFocus,

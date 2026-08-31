@@ -33,6 +33,7 @@ const alwaysFalse = () => false;
 const alwaysTrue = () => true;
 const emptyItemText = () => "";
 const itemEnglishName = (item: WikiItem) => item.name;
+const keepCatalogOrder = () => 0;
 const fallbackCloset = {
   key: "outfit",
   order: "01",
@@ -113,6 +114,8 @@ export const useOrganizerRuntime = (
 
   const wikiItems = catalogDomain?.wikiItems ?? emptyWikiItems;
   const closetGroups = catalogDomain?.closetGroups ?? [fallbackCloset];
+  const compareCatalogItems =
+    catalogDomain?.compareCatalogItems ?? keepCatalogOrder;
   const allClosetTypeSet = catalogDomain?.allClosetTypeSet ?? emptyStringSet;
   const graduationSeasonSlugs =
     catalogDomain?.graduationSeasonSlugs ?? emptyStringList;
@@ -222,6 +225,7 @@ export const useOrganizerRuntime = (
     loadValuation,
     wikiItems,
     closetGroups,
+    compareCatalogItems,
     allClosetTypeSet,
     isValuationFocus,
     heldClosetOrder,

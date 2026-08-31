@@ -2,7 +2,11 @@ import type { WikiItem } from "./wiki-data";
 import { isPaidItem } from "./valuation-items";
 import { isGraduationGift, isSeasonPendant, isSeasonUltimate } from "./season-items";
 import { wikiItems } from "./catalog-seeds";
-import { allClosetTypeSet, labels } from "./catalog-taxonomy";
+import {
+  allClosetTypeSet,
+  heldClosetOrder,
+  labels,
+} from "./catalog-taxonomy";
 import {
   eventZh,
   ongoingSeasonSlugs,
@@ -48,6 +52,24 @@ export const sourceFilters = [
 export const typeOrder = new Map(
   [...allClosetTypeSet].map((type, index) => [type, index]),
 );
+export const compareCatalogItems = (
+  left: WikiItem,
+  right: WikiItem,
+  useHeldOrder = false,
+) => {
+  if (useHeldOrder) {
+    const heldOrderDifference =
+      (heldClosetOrder.get(left.name) ?? 999) -
+      (heldClosetOrder.get(right.name) ?? 999);
+    if (heldOrderDifference) return heldOrderDifference;
+  }
+  return (
+    (typeOrder.get(left.type) ?? 99) - (typeOrder.get(right.type) ?? 99) ||
+    left.order - right.order ||
+    left.name.localeCompare(right.name) ||
+    left.guid.localeCompare(right.guid)
+  );
+};
 const limitedSourceKinds = new Set(["聯動", "平台限定", "限定"]);
 export const isLimitedItem = (x: WikiItem) =>
   x.group === "Limited" || limitedSourceKinds.has(sourceKind(x));

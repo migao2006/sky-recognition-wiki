@@ -7,6 +7,7 @@ const {
   closetSubSequence,
   closetGroups,
   allClosetTypeSet,
+  compareCatalogItems,
   getNextClosetSub,
   graduationSeasonSlugs,
   heldClosetOrder,
@@ -184,6 +185,24 @@ test("every visible wardrobe item has a Chinese display name", () => {
   for (const entry of wardrobeItems) {
     assert.match(zhItemName(entry), /[\u3400-\u9fff]/, entry.name);
   }
+});
+
+test("uses held order only for the held closet, not cross-closet search", () => {
+  const held = item({
+    guid: "held-search-result",
+    name: "Harp",
+    type: "Instrument",
+    order: 999,
+  });
+  const outfit = item({
+    guid: "outfit-search-result",
+    name: "Search Outfit",
+    type: "Outfit",
+    order: 1,
+  });
+
+  assert.ok(compareCatalogItems(held, outfit, true) < 0);
+  assert.ok(compareCatalogItems(held, outfit, false) > 0);
 });
 
 test("keeps formerly ambiguous paid and held-prop names distinct", () => {

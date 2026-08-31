@@ -65,7 +65,7 @@ export function CatalogStep({
     wikiItems,
     closetGroups,
     allClosetTypeSet,
-    heldClosetOrder,
+    compareCatalogItems,
     isLimitedItem,
     isProfessionalVideoFocus,
     matchesSourceFilter,
@@ -75,7 +75,6 @@ export function CatalogStep({
     seasons,
     sourceFilters,
     sourceKind,
-    typeOrder,
     zhItemName,
     getNextClosetSub,
   } = runtime;
@@ -214,20 +213,14 @@ export function CatalogStep({
             searchIndex.get(item.guid)?.includes(normalizedQuery)),
       )
       .sort((left, right) =>
-        sub === "held"
-          ? (heldClosetOrder.get(left.name) ?? 999) -
-            (heldClosetOrder.get(right.name) ?? 999)
-          : left.type === right.type
-            ? left.order - right.order || left.name.localeCompare(right.name)
-            : (typeOrder.get(left.type) ?? 99) -
-              (typeOrder.get(right.type) ?? 99),
+        compareCatalogItems(left, right, !normalizedQuery && sub === "held"),
       );
   }, [
     activeCloset,
     allClosetTypeSet,
+    compareCatalogItems,
     deferredQuery,
     focusMode,
-    heldClosetOrder,
     isLimitedItem,
     isProfessionalVideoFocus,
     matchesSourceFilter,
@@ -236,7 +229,6 @@ export function CatalogStep({
     season,
     sourceFilter,
     sub,
-    typeOrder,
     wikiItems,
   ]);
   const visibleItems = useMemo(
