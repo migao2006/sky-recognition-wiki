@@ -1,15 +1,22 @@
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import {
+  accountKeyFor,
+  accountStyles,
+  applyGroupCap,
+  breakClasses,
+  evidenceWeights,
+  inHoldout,
+  marketGroupFor,
+  packageTiers,
+  postKeyFor,
+  preferredSample,
+  priceFor,
+  qualityWeights,
+  sampleWeightFor,
+} from "./lib/valuation-source-core.mjs";
 
-const evidenceWeights = { ask: 1, quick_sale: 0.8, sold: 1.2, professional_estimate: 0.55, comment: 0.35 };
-const priceKindWeights = { ask: 0.9, quick_sale: 0.82, sold: 1, professional_estimate: 0.6, comment: 0.4 };
-const qualityWeights = { high: 1, medium: 0.75, low: 0.5 };
-const breakClasses = new Set(["none", "slight", "medium", "big"]);
-const packageTiers = new Set(["few", "medium", "many", "hundred"]);
-const accountStyles = new Set(["simple", "regular"]);
 const minimumEligibleAccounts = 200;
 
-const numberOrNull = (value) => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
 const weightedMedian = (rows, valueKey) => {
   const ordered = [...rows].sort((left, right) => left[valueKey] - right[valueKey]);
   const total = ordered.reduce((sum, row) => sum + row.weight, 0);
@@ -20,33 +27,6 @@ const weightedMedian = (rows, valueKey) => {
     if (cumulative >= total / 2) return row[valueKey];
   }
   return ordered.at(-1)?.[valueKey] ?? null;
-};
-const priceFor = (row) => {
-  const point = numberOrNull(row.price_twd);
-  if (point) return point;
-  const low = numberOrNull(row.price_twd_low);
-  const high = numberOrNull(row.price_twd_high);
-  if (!low && !high) return null;
-  const left = Math.min(low ?? high, high ?? low);
-  const right = Math.max(low ?? high, high ?? low);
-  const kind = row.price_kind ?? row.evidence_kind ?? "ask";
-  const position = kind === "quick_sale" ? 0.25 : kind === "sold" ? 0.5 : 0.58;
-  return left + (right - left) * position;
-};
-const dateWeight = (row, asOf) => {
-  const date = new Date(row.published_at ?? "");
-  if (!Number.isFinite(date.getTime())) return 0.45;
-  const years = (asOf.getTime() - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
-  if (years <= 2) return 1;
-  if (years <= 3) return 0.7;
-  if (years <= 4) return 0.45;
-  return 0.25;
-};
-const sampleWeightFor = (row, asOf) => {
-  const explicit = numberOrNull(row.effective_weight ?? row.sample_weight);
-  if (explicit) return explicit;
-  const priceKind = row.price_kind ?? row.evidence_kind ?? "ask";
-  return (evidenceWeights[row.evidence_kind] ?? 0) * (priceKindWeights[priceKind] ?? 0.75) * qualityWeights[row.evidence_quality ?? "medium"] * dateWeight(row, asOf);
 };
 const startSeasonFor = (row, aggregate) => {
   const explicit = String(row.start_season_slug ?? "").trim().toLowerCase();
@@ -61,7 +41,7 @@ const startSeasonFor = (row, aggregate) => {
   return null;
 };
 const breakClassFor = (row) => {
-  if (breakClasses.has(row.computed_break_class)) return row.computed_break_class;
+  if (breakClasses.includes(row.computed_break_class)) return row.computed_break_class;
   const missing = Number(row.missing_season_count);
   const completion = Number(row.completion_ratio);
   if (!Number.isFinite(missing) || !Number.isFinite(completion)) return null;
@@ -71,7 +51,7 @@ const breakClassFor = (row) => {
   return "big";
 };
 const packageTierFor = (row) => {
-  if (packageTiers.has(row.computed_package_tier)) return row.computed_package_tier;
+  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
   const count = Number(row.paid_package_count);
   if (!Number.isFinite(count) || count < 0) return null;
   if (count >= 100) return "hundred";
@@ -80,82 +60,6 @@ const packageTierFor = (row) => {
   return "few";
 };
 const multiplierFor = (aggregate, key, value) => Number(aggregate.modifiers?.[key]?.[value]?.multiplier) || 1;
-const accountGroupFor = (row) => {
-  const value = row.account_group_hash ?? row.account_hash ?? row.account_fingerprint;
-  return value === undefined || value === null || String(value).trim() === ""
-    ? null
-    : String(value);
-};
-const postGroupFor = (row) => {
-  const value = row.post_hash ?? row.post_fingerprint;
-  return value === undefined || value === null || String(value).trim() === ""
-    ? null
-    : String(value);
-};
-const marketGroupFor = (row) => String(row.group_hash ?? row.market_group_hash ?? row.source_group_hash ?? row.source ?? "unknown");
-const stableRowKey = (row) =>
-  createHash("sha256")
-    .update(JSON.stringify({
-      evidence_kind: row.evidence_kind ?? "",
-      price_twd: row.price_twd ?? "",
-      price_twd_low: row.price_twd_low ?? "",
-      price_twd_high: row.price_twd_high ?? "",
-      published_at: row.published_at ?? "",
-      observed_at: row.observed_at ?? "",
-      post_hash: row.post_hash ?? "",
-      account_key: accountGroupFor(row) ?? "",
-      group_key: String(row.group_hash ?? "").trim()
-        ? `group:${String(row.group_hash).trim()}`
-        : `source:${String(row.source ?? "unknown").trim() || "unknown"}`,
-      start_season_slug: row.start_season_slug ?? "",
-      season_progress: row.season_progress ?? null,
-      paid_package_count: row.paid_package_count ?? "",
-    }))
-    .digest("hex");
-const inHoldout = (accountGroup, seed) =>
-  createHash("sha256").update(`${seed}:${accountGroup}`).digest().readUInt32BE(0) % 10 >= 8;
-const applyGroupCap = (samples) => {
-  const raw = new Map();
-  samples.forEach((sample) =>
-    raw.set(sample.marketGroup, (raw.get(sample.marketGroup) ?? 0) + sample.weight),
-  );
-  const rawTotal = [...raw.values()].reduce((sum, weight) => sum + weight, 0);
-  const [dominantGroup, dominantWeight = 0] = [...raw.entries()].sort(
-    ([leftKey, leftWeight], [rightKey, rightWeight]) =>
-      rightWeight - leftWeight || leftKey.localeCompare(rightKey),
-  )[0] ?? [];
-  const otherWeight = rawTotal - dominantWeight;
-  const cappedWeight = otherWeight > 0 ? Math.min(dominantWeight, otherWeight * 1.5) : dominantWeight;
-  const multiplier = dominantWeight ? cappedWeight / dominantWeight : 1;
-  const capped = samples.map((sample) =>
-    sample.marketGroup === dominantGroup
-      ? { ...sample, weight: sample.weight * multiplier }
-      : sample,
-  );
-  const cappedByGroup = new Map();
-  capped.forEach((sample) =>
-    cappedByGroup.set(sample.marketGroup, (cappedByGroup.get(sample.marketGroup) ?? 0) + sample.weight),
-  );
-  const cappedTotal = capped.reduce((sum, sample) => sum + sample.weight, 0);
-  return {
-    samples: capped,
-    groupCount: raw.size,
-    rawLargestShare: rawTotal ? dominantWeight / rawTotal : 1,
-    cappedLargestShare: cappedTotal
-      ? Math.max(0, ...cappedByGroup.values()) / cappedTotal
-      : 1,
-  };
-};
-const evidenceRank = (kind) => ({ sold: 5, quick_sale: 4, ask: 3, professional_estimate: 2, comment: 1 })[kind] ?? 0;
-const preferredSample = (left, right) => {
-  const evidenceDifference = evidenceRank(right.evidenceKind) - evidenceRank(left.evidenceKind);
-  if (evidenceDifference) return evidenceDifference > 0 ? right : left;
-  if (right.publishedAt !== left.publishedAt)
-    return right.publishedAt > left.publishedAt ? right : left;
-  return stableRowKey(right.row).localeCompare(stableRowKey(left.row)) < 0
-    ? right
-    : left;
-};
 const predict = (aggregate, sample) => {
   const segment = aggregate.segments.startSeason[sample.startSeason];
   const modifier = multiplierFor(aggregate, "breakClass", sample.breakClass) * multiplierFor(aggregate, "packageTier", sample.packageTier) * multiplierFor(aggregate, "accountStyle", sample.accountStyle);
@@ -172,9 +76,9 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
     if (/^(?:cny|rmb|usd|hkd)$/i.test(String(row.currency ?? "").trim())) return [];
     const price = priceFor(row);
     const weight = sampleWeightFor(row, asOf);
-    const accountGroup = accountGroupFor(row);
+    const accountGroup = accountKeyFor(row, { trim: false });
     if (!price || !weight || !accountGroup) return [];
-    return [{ row, price, weight, accountGroup, postGroup: postGroupFor(row), marketGroup: marketGroupFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0 }];
+    return [{ row, price, weight, accountGroup, postGroup: postKeyFor(row, { trim: false }), marketGroup: marketGroupFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0 }];
   });
   const sourceWithoutPostIdentity = [];
   const sourceByPost = new Map();
@@ -184,19 +88,25 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
       return;
     }
     const previous = sourceByPost.get(sample.postGroup);
-    sourceByPost.set(sample.postGroup, previous ? preferredSample(previous, sample) : sample);
+    sourceByPost.set(
+      sample.postGroup,
+      previous ? preferredSample(previous, sample, { accountTrim: false }) : sample,
+    );
   });
   const sourceByAccount = new Map();
   [...sourceWithoutPostIdentity, ...sourceByPost.values()].forEach((sample) => {
     const previous = sourceByAccount.get(sample.accountGroup);
-    sourceByAccount.set(sample.accountGroup, previous ? preferredSample(previous, sample) : sample);
+    sourceByAccount.set(
+      sample.accountGroup,
+      previous ? preferredSample(previous, sample, { accountTrim: false }) : sample,
+    );
   });
   const sourceEligible = [...sourceByAccount.values()];
-  const sourceGroupCap = applyGroupCap(sourceEligible);
+  const sourceGroupCap = applyGroupCap(sourceEligible, "marketGroup");
   const candidates = sourceGroupCap.samples.flatMap((sample) => {
     const startSeason = startSeasonFor(sample.row, baseline);
     if (!startSeason || !baseline.segments?.startSeason?.[startSeason]?.median) return [];
-    return [{ ...sample, startSeason, breakClass: breakClassFor(sample.row), packageTier: packageTierFor(sample.row), accountStyle: accountStyles.has(sample.row.account_style) ? sample.row.account_style : null }];
+    return [{ ...sample, startSeason, breakClass: breakClassFor(sample.row), packageTier: packageTierFor(sample.row), accountStyle: accountStyles.includes(sample.row.account_style) ? sample.row.account_style : null }];
   });
   const eligible = candidates;
   const holdout = eligible.filter((sample) => inHoldout(sample.accountGroup, splitSeed));

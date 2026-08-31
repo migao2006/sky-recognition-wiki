@@ -1,6 +1,24 @@
 import { createReadStream } from "node:fs";
 import { createHash } from "node:crypto";
 import { createInterface } from "node:readline";
+import {
+  accountKeyFor,
+  accountStyles,
+  applyGroupCap as applySharedGroupCap,
+  breakClasses,
+  evidenceWeights,
+  groupKeyFor,
+  packageTiers,
+  preferredRow,
+  priceFor as sharedPriceFor,
+  priceKindWeights,
+  priceRangeFor as sharedPriceRangeFor,
+  sourceFor,
+  stableRowKey,
+  timeWeightFor,
+  timestampFor,
+  qualityWeights,
+} from "./lib/valuation-source-core.mjs";
 
 const args = process.argv.slice(2);
 const asOfArg = args.find((value) => value.startsWith("--as-of="));
@@ -51,57 +69,19 @@ const patterns = new Map([
   ["dear-van-gogh", "梵谷季|致梵谷季"],
 ]);
 
-const evidenceWeights = {
-  ask: 1,
-  quick_sale: 0.8,
-  sold: 1.2,
-  professional_estimate: 0.55,
-  comment: 0.35,
-};
-const priceKindWeights = {
-  ask: 0.9,
-  quick_sale: 0.82,
-  sold: 1,
-  professional_estimate: 0.6,
-  comment: 0.4,
-};
-const qualityWeights = { high: 1, medium: 0.75, low: 0.5 };
-const breakClasses = ["none", "slight", "medium", "big"];
-const packageTiers = ["few", "medium", "many", "hundred"];
-const accountStyles = ["simple", "regular"];
 const emptyBreakdown = () => ({ ask: 0, quick_sale: 0, sold: 0, professional_estimate: 0, comment: 0 });
 const emptyQualityBreakdown = () => ({ high: 0, medium: 0, low: 0 });
 
 let referenceDate = null;
-const dateFor = (row) => {
-  const date = new Date(row.published_at ?? "");
-  return Number.isFinite(date.getTime()) ? date : null;
-};
-const timeWeight = (date) => {
-  if (!date) return 0.45;
-  const age = ((referenceDate?.getTime() ?? Date.now()) - date.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
-  if (age <= 2) return 1;
-  if (age <= 3) return 0.7;
-  if (age <= 4) return 0.45;
-  return 0.25;
-};
-const finitePositive = (value) => Number.isFinite(value) && value > 0;
-const priceRangeFor = (row) => {
-  if (finitePositive(row.price_twd)) return { low: row.price_twd, high: row.price_twd };
-  const low = Number(row.price_twd_low);
-  const high = Number(row.price_twd_high);
-  if (!finitePositive(low) && !finitePositive(high)) return null;
-  return { low: finitePositive(low) ? low : high, high: finitePositive(high) ? high : low };
-};
-const priceFor = (row) => {
-  const range = priceRangeFor(row);
-  if (!range) return null;
-  const low = Math.min(range.low, range.high);
-  const high = Math.max(range.low, range.high);
-  const kind = row.price_kind ?? row.evidence_kind ?? "ask";
-  const position = kind === "quick_sale" ? 0.25 : kind === "sold" ? 0.5 : 0.58;
-  return Math.round(low + (high - low) * position);
-};
+const priceRangeFor = (row) => sharedPriceRangeFor(row, {
+  coercePoint: false,
+  coerceRange: true,
+});
+const priceFor = (row) => sharedPriceFor(row, {
+  round: true,
+  coercePoint: false,
+  coerceRange: true,
+});
 const seasonSlugsFor = (row) => {
   const start = String(row.start_season_slug ?? "").trim().toLowerCase();
   if (patterns.has(start)) return [start];
@@ -240,53 +220,6 @@ const summarize = (samples, includeEvidenceProfile = false) => {
       : {}),
   };
 };
-const accountKeyFor = (row) => {
-  const fingerprint = String(
-    row.account_group_hash ?? row.account_hash ?? row.account_fingerprint ?? "",
-  ).trim();
-  return fingerprint || null;
-};
-const groupKeyFor = (row) => {
-  const groupHash = String(row.group_hash ?? "").trim();
-  if (groupHash) return `group:${groupHash}`;
-  return `source:${String(row.source ?? row.__sourceHint ?? "unknown").trim() || "unknown"}`;
-};
-const sourceFor = (row) => {
-  const value = String(row.source ?? row.__sourceHint ?? "unknown").trim().toLowerCase();
-  if (/facebook|\bfb\b/.test(value)) return "facebook";
-  if (/drive|google/.test(value)) return "google_drive";
-  if (["8591_hk", "8591_tw", "carousell_tw"].includes(value)) return value;
-  return "unknown";
-};
-const timestampFor = (row) => dateFor(row)?.getTime() ?? Number.NEGATIVE_INFINITY;
-const evidenceRank = (row) => {
-  const kind = row.evidence_kind;
-  return ({ sold: 5, quick_sale: 4, ask: 3, professional_estimate: 2, comment: 1 })[kind] ?? 0;
-};
-const stableRowKey = (row) =>
-  createHash("sha256")
-    .update(JSON.stringify({
-      evidence_kind: row.evidence_kind ?? "",
-      price_twd: row.price_twd ?? "",
-      price_twd_low: row.price_twd_low ?? "",
-      price_twd_high: row.price_twd_high ?? "",
-      published_at: row.published_at ?? "",
-      observed_at: row.observed_at ?? "",
-      post_hash: row.post_hash ?? "",
-      account_key: accountKeyFor(row) ?? "",
-      group_key: groupKeyFor(row),
-      start_season_slug: row.start_season_slug ?? "",
-      season_progress: row.season_progress ?? null,
-      paid_package_count: row.paid_package_count ?? "",
-    }))
-    .digest("hex");
-const preferredRow = (left, right) => {
-  const evidenceDifference = evidenceRank(right) - evidenceRank(left);
-  if (evidenceDifference) return evidenceDifference > 0 ? right : left;
-  const timeDifference = timestampFor(right) - timestampFor(left);
-  if (timeDifference) return timeDifference > 0 ? right : left;
-  return stableRowKey(right).localeCompare(stableRowKey(left)) < 0 ? right : left;
-};
 const isCalibrationAccount = (accountKey) => {
   if (!accountKey) return true;
   const bucket = Number.parseInt(
@@ -296,35 +229,12 @@ const isCalibrationAccount = (accountKey) => {
   return bucket < 8;
 };
 const applyGroupCap = (samples) => {
-  const groupWeights = new Map();
-  samples.forEach((sample) =>
-    groupWeights.set(sample.groupKey, (groupWeights.get(sample.groupKey) ?? 0) + sample.weight),
-  );
-  const totalWeight = [...groupWeights.values()].reduce((sum, weight) => sum + weight, 0);
-  if (groupWeights.size < 2 || !totalWeight) {
-    return { samples, groupCount: groupWeights.size, largestEffectiveShare: totalWeight ? 1 : 0, capped: false };
-  }
-  const [dominantGroup, dominantWeight] = [...groupWeights.entries()].sort(
-    ([leftKey, leftWeight], [rightKey, rightWeight]) =>
-      rightWeight - leftWeight || leftKey.localeCompare(rightKey),
-  )[0];
-  const otherWeight = totalWeight - dominantWeight;
-  const capWeight = otherWeight * 1.5;
-  const multiplier = dominantWeight > capWeight ? capWeight / dominantWeight : 1;
-  const cappedSamples = multiplier === 1
-    ? samples
-    : samples.map((sample) =>
-      sample.groupKey === dominantGroup ? { ...sample, weight: sample.weight * multiplier } : sample,
-    );
-  const effectiveTotal = cappedSamples.reduce((sum, sample) => sum + sample.weight, 0);
-  const effectiveDominant = cappedSamples
-    .filter((sample) => sample.groupKey === dominantGroup)
-    .reduce((sum, sample) => sum + sample.weight, 0);
+  const result = applySharedGroupCap(samples);
   return {
-    samples: cappedSamples,
-    groupCount: groupWeights.size,
-    largestEffectiveShare: effectiveTotal ? Number((effectiveDominant / effectiveTotal).toFixed(3)) : 0,
-    capped: multiplier !== 1,
+    ...result,
+    largestEffectiveShare: result.cappedLargestShare
+      ? Number(result.cappedLargestShare.toFixed(3))
+      : 0,
   };
 };
 const applyAnonymousCap = (samples) => {
@@ -407,7 +317,7 @@ for (const row of postRows.values()) {
     : 1;
   const sample = {
     price: priceFor(row),
-    weight: evidenceWeights[kind] * priceKindWeight * qualityWeights[row.evidence_quality ?? "medium"] * timeWeight(dateFor(row)),
+    weight: evidenceWeights[kind] * priceKindWeight * qualityWeights[row.evidence_quality ?? "medium"] * timeWeightFor(row, referenceDate),
     kind,
     quality: row.evidence_quality ?? "medium",
     source: sourceFor(row),

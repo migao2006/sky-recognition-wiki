@@ -114,6 +114,7 @@ test("does not report a valid-price row as eligible when it affects no calibrati
     evidence_quality: "high",
   }]);
   assert.equal(result.eligibleRows, 0);
+  assert.equal(result.groupConcentration.largestEffectiveShare, 0);
   assert.equal(result.excludedRows, 1);
 });
 
