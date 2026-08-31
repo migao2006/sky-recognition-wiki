@@ -46,6 +46,7 @@ export {
   seasonUltimateSlugs,
   sortSeasonSlugs,
   sourceFilters,
+  type CatalogOrderMode,
   typeOrder,
   uniqueByGuid,
 } from "./catalog-derived";

@@ -175,20 +175,24 @@ const replacedInstrumentNames = new Set([
   "The Musicians' Legacy Piano",
   "Duets Ultimate Instrument",
 ]);
-const instrumentItems: WikiItem[] = instrumentSeeds.map((item, index) => ({
-  id: 5000 + index,
-  order: index + 1,
-  guid:
-    item.guid ??
-    `instrument-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-  name: item.name,
-  type: "Instrument",
-  group: item.group ?? "",
-  icon: item.icon,
-  wiki: `https://sky-children-of-the-light.fandom.com/wiki/Instruments#${item.name.replaceAll(" ", "_")}`,
-  section: item.section,
-  collection: item.collection,
-}));
+const baseItemByGuid = new Map(baseWikiItems.map((item) => [item.guid, item]));
+const instrumentItems: WikiItem[] = instrumentSeeds.map((item, index) => {
+  const sourceItem = item.guid ? baseItemByGuid.get(item.guid) : undefined;
+  return {
+    id: 5000 + index,
+    order: sourceItem?.order ?? index + 1,
+    guid:
+      item.guid ??
+      `instrument-${item.name.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    name: item.name,
+    type: "Instrument",
+    group: item.group ?? "",
+    icon: item.icon,
+    wiki: `https://sky-children-of-the-light.fandom.com/wiki/Instruments#${item.name.replaceAll(" ", "_")}`,
+    section: item.section,
+    collection: item.collection,
+  };
+});
 
 type HeldPropSeed = {
   name: string;

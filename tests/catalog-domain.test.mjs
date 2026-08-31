@@ -201,8 +201,8 @@ test("uses held order only for the held closet, not cross-closet search", () => 
     order: 1,
   });
 
-  assert.ok(compareCatalogItems(held, outfit, true) < 0);
-  assert.ok(compareCatalogItems(held, outfit, false) > 0);
+  assert.ok(compareCatalogItems(held, outfit, "held") < 0);
+  assert.ok(compareCatalogItems(held, outfit, "type") > 0);
 });
 
 test("keeps formerly ambiguous paid and held-prop names distinct", () => {
@@ -311,6 +311,26 @@ test("matches the three in-game prop closet tabs", () => {
     [34, 4, 0],
   );
   assert.equal(matchesSub(instrumentByName("Jam Station"), "large"), true);
+  for (const [name, order] of [
+    ["Jam Station", 4700],
+    ["Grand Piano", 10000],
+    ["Duets Grand Piano", 10100],
+    ["Fledgling Upright Piano", 11700],
+  ]) {
+    assert.equal(instrumentByName(name)?.order, order, name);
+  }
+  const orderedLargeProps = wikiItems
+    .filter((entry) => matchesSub(entry, "large"))
+    .sort((left, right) => compareCatalogItems(left, right, "shared"));
+  assert.deepEqual(
+    orderedLargeProps.map((entry) => entry.order),
+    [...orderedLargeProps].map((entry) => entry.order).sort((a, b) => a - b),
+  );
+  assert.ok(
+    orderedLargeProps
+      .slice(0, 3)
+      .every((entry) => !["Grand Piano", "Duets Grand Piano", "Fledgling Upright Piano"].includes(entry.name)),
+  );
   for (const name of [
     "Grand Piano",
     "Duets Grand Piano",

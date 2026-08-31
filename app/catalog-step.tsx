@@ -213,7 +213,17 @@ export function CatalogStep({
             searchIndex.get(item.guid)?.includes(normalizedQuery)),
       )
       .sort((left, right) =>
-        compareCatalogItems(left, right, !normalizedQuery && sub === "held"),
+        compareCatalogItems(
+          left,
+          right,
+          normalizedQuery
+            ? "type"
+            : sub === "held"
+              ? "held"
+              : sub === "large"
+                ? "shared"
+                : "type",
+        ),
       );
   }, [
     activeCloset,

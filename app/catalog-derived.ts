@@ -52,19 +52,22 @@ export const sourceFilters = [
 export const typeOrder = new Map(
   [...allClosetTypeSet].map((type, index) => [type, index]),
 );
+export type CatalogOrderMode = "type" | "held" | "shared";
 export const compareCatalogItems = (
   left: WikiItem,
   right: WikiItem,
-  useHeldOrder = false,
+  mode: CatalogOrderMode = "type",
 ) => {
-  if (useHeldOrder) {
+  if (mode === "held") {
     const heldOrderDifference =
       (heldClosetOrder.get(left.name) ?? 999) -
       (heldClosetOrder.get(right.name) ?? 999);
     if (heldOrderDifference) return heldOrderDifference;
   }
   return (
-    (typeOrder.get(left.type) ?? 99) - (typeOrder.get(right.type) ?? 99) ||
+    (mode === "type"
+      ? (typeOrder.get(left.type) ?? 99) - (typeOrder.get(right.type) ?? 99)
+      : 0) ||
     left.order - right.order ||
     left.name.localeCompare(right.name) ||
     left.guid.localeCompare(right.guid)
