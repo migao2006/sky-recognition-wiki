@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 /**
- * Read-only Traditional-Chinese name discovery from Fandom's Lua data modules.
+ * Review-first Traditional-Chinese name discovery from Fandom's Lua data modules.
  *
  * The report is intentionally review-first: a name is "accepted" only when an
  * exact project icon basename resolves to a module record with a non-English
- * zh override. It never writes app data.
+ * zh override. The default mode never writes app data; --write (or the legacy
+ * --snapshot alias) updates the reviewed snapshot after safety checks.
  *
  *   node scripts/sync-fandom-zh-names.mjs > dist/tmp/fandom-zh-names.json
  *   node scripts/sync-fandom-zh-names.mjs --out dist/tmp/fandom-zh-names.json
- *   node scripts/sync-fandom-zh-names.mjs --snapshot
+ *   node scripts/sync-fandom-zh-names.mjs --write
  */
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
+import { resolveRestrictedOutput } from "./lib/sync-safety.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const API = "https://sky-children-of-the-light.fandom.com/zh/api.php";
@@ -114,6 +116,11 @@ function translatedName(zh, field, moduleName) {
 }
 
 async function main() {
+  const writeSnapshot = Boolean(args.get("write") || args.get("snapshot"));
+  const output = args.get("out");
+  const outputTarget = output && output !== true
+    ? resolveRestrictedOutput(ROOT, String(output))
+    : null;
   const { wikiItems: catalog } = await loadRuntimeCatalog();
   const fetched = [];
   for (const page of MODULES) {
@@ -170,7 +177,7 @@ async function main() {
   const counts = Object.fromEntries(["matched", "review", "ambiguous", "unmatched"].map((status) => [status, rows.filter((row) => row.status === status).length]));
   const report = {
     generatedAt: new Date().toISOString(),
-    dryRun: true,
+    dryRun: !writeSnapshot,
     catalogItems: catalog.length,
     sources: fetched.map((result) => ({ page: result.page, englishUrl: result.english?.url ?? null, zhUrl: result.chinese?.url ?? null, error: result.error })),
     coverage: { ...counts, acceptedRate: catalog.length ? Number((counts.matched / catalog.length).toFixed(4)) : 0 },
@@ -182,7 +189,7 @@ async function main() {
     ],
     entries: rows,
   };
-  if (args.get("snapshot")) {
+  if (writeSnapshot) {
     const failedSources = fetched.filter((result) => result.error);
     if (failedSources.length) {
       throw new Error(`Refusing to replace the name snapshot: ${failedSources.length} Wiki source(s) failed`);
@@ -222,14 +229,11 @@ async function main() {
     console.error(`Wrote ${safeRows.length} reviewed names: ${snapshotTarget}`);
   }
   const text = `${JSON.stringify(report, null, 2)}\n`;
-  const output = args.get("out");
-  if (output && output !== true) {
-    const target = resolve(ROOT, String(output));
-    if (!target.startsWith(`${ROOT}\\`) || !/^(?:dist[\\/]tmp|tmp)[\\/]/i.test(String(output))) throw new Error("--out is restricted to dist/tmp or tmp");
-    await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, text, "utf8");
-    console.error(`Wrote dry-run report: ${target}`);
+  if (outputTarget) {
+    await mkdir(dirname(outputTarget), { recursive: true });
+    await writeFile(outputTarget, text, "utf8");
+    console.error(`Wrote dry-run report: ${outputTarget}`);
   } else process.stdout.write(text);
-  if (fetched.every((result) => result.error)) process.exitCode = 2;
+  if (fetched.some((result) => result.error)) process.exitCode = 2;
 }
 main().catch((error) => { console.error(error.stack || error); process.exitCode = 1; });

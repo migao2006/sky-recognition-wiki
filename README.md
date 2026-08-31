@@ -28,6 +28,13 @@
 - `npm run typecheck`：TypeScript 型別檢查
 - `npm test`：建置後驗證主要頁面內容
 
+## 資料同步
+
+- `npm run sync:iap:check`：檢查 SkyGame-Data 付費物品快照；資料不同時只回報，不寫檔
+- `npm run sync:iap:write`：人工確認後更新付費物品快照
+- `npm run sync:names:check`：產生中文 Wiki 名稱比對報告至 `dist/tmp`
+- `npm run sync:names:write`：通過來源與縮減保護後更新中文名稱快照
+
 ## 發佈流程
 
 唯一正式來源為 GitHub `main`。合併或推送到 `main` 後，由 Vercel 自動建置及發佈；不使用手動 Sites 或 Vercel 部署。

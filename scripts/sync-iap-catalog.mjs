@@ -1,9 +1,15 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
+import {
+  assertSnapshotNotShrunk,
+  writeFileAtomically,
+} from "./lib/sync-safety.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const PACKAGE_SOURCE = "https://unpkg.com/skygame-data@latest/package.json";
+const writeSnapshot = process.argv.includes("--write");
+const allowShrink = process.argv.includes("--allow-shrink");
 
 const classifySeries = (name, packageName, collection) => {
   const text = `${name} ${packageName} ${collection}`.toLowerCase();
@@ -91,7 +97,21 @@ const output = `${JSON.stringify(payload, null, 2)}\n`;
 const previous = await readFile(destination, "utf8").catch(() => null);
 if (previous === output) {
   console.log(`IAP catalog is current: ${rows.length} mappings from ${payload.packages} packages.`);
-} else {
-  await writeFile(destination, output, "utf8");
+} else if (writeSnapshot) {
+  const previousCount = previous
+    ? (JSON.parse(previous).items?.length ?? 0)
+    : 0;
+  assertSnapshotNotShrunk({
+    label: "the IAP catalog",
+    previousCount,
+    nextCount: rows.length,
+    allowShrink,
+  });
+  await writeFileAtomically(destination, output);
   console.log(`Wrote ${rows.length} catalog IAP item mappings from ${payload.packages} packages.`);
+} else {
+  console.error(
+    `IAP catalog is outdated: ${rows.length} mappings from ${payload.packages} packages. Run with --write after review.`,
+  );
+  process.exitCode = 1;
 }

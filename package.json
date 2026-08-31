@@ -11,7 +11,11 @@
     "start": "next start",
     "test": "node scripts/build-player-hair-names.mjs && npm run build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern .next --ignore-pattern dist",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental false",
+    "sync:iap:check": "node scripts/sync-iap-catalog.mjs",
+    "sync:iap:write": "node scripts/sync-iap-catalog.mjs --write",
+    "sync:names:check": "node scripts/sync-fandom-zh-names.mjs --out dist/tmp/fandom-zh-names.json",
+    "sync:names:write": "node scripts/sync-fandom-zh-names.mjs --write --out dist/tmp/fandom-zh-names.json"
   },
   "dependencies": {
     "next": "16.3.3",
