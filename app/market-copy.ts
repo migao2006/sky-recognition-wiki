@@ -4,7 +4,7 @@ import {
   type BindingStatus,
 } from "./account-config";
 
-export const marketPlatformNames: Record<BindingKey, string> = {
+const marketPlatformNames: Record<BindingKey, string> = {
   google: "ɢɢ",
   nintendo: "ɴs",
   gameCenter: "ɢᴄ",
@@ -14,12 +14,12 @@ export const marketPlatformNames: Record<BindingKey, string> = {
   playstation: "ᴘsɴ",
 };
 
-export const marketBindingStatusNames = bindingStatusNames;
+const marketBindingStatusNames = bindingStatusNames;
 
 export const formatMarketPlatform = (key: BindingKey) =>
   marketPlatformNames[key];
 
-export const formatMarketBinding = (
+const formatMarketBinding = (
   key: BindingKey,
   status: BindingStatus,
 ) =>

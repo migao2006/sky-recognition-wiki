@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+
+const readBuildOutput = async (url) => {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      return await readFile(url, "utf8");
+    } catch (error) {
+      if (error?.code !== "ENOENT" || attempt === 19) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+  throw new Error("Build output did not become available.");
+};
 
 test("renders the account organizer", async () => {
   const [
@@ -13,11 +25,11 @@ test("renders the account organizer", async () => {
     accountStepSource,
     catalogStepSource,
     valuationStepSource,
+    stepStateSource,
     draftSource,
   ] = await Promise.all([
-    readFile(
+    readBuildOutput(
       new URL("../.next/server/app/index.html", import.meta.url),
-      "utf8",
     ),
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(
@@ -26,10 +38,18 @@ test("renders the account organizer", async () => {
     ),
     readFile(new URL("../app/bundle-presets.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/catalog-item-card.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    Promise.all([
+      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+      ...(
+        await readdir(new URL("../app/styles", import.meta.url))
+      ).filter((name) => name.endsWith(".css")).map((name) =>
+        readFile(new URL(`../app/styles/${name}`, import.meta.url), "utf8"),
+      ),
+    ]).then((parts) => parts.join("\n")),
     readFile(new URL("../app/account-step.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/catalog-step.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/valuation-step.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/organizer-step-state.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/use-account-draft.ts", import.meta.url), "utf8"),
   ]);
   const componentSource = [
@@ -77,10 +97,14 @@ test("renders the account organizer", async () => {
   assert.match(runtimeSource, /import\("\.\/valuation-analysis"\)/);
   assert.match(runtimeSource, /catalogPromise\.current = null/);
   assert.match(runtimeSource, /valuationPromise\.current = null/);
-  assert.match(catalogStepSource, /INITIAL_VISIBLE_ITEMS = 40/);
-  assert.match(catalogStepSource, /useCatalogStepState/);
+  assert.match(stepStateSource, /INITIAL_VISIBLE_ITEMS = 40/);
+  assert.doesNotMatch(catalogStepSource, /useCatalogStepState/);
+  assert.match(source, /const catalogStepState = useCatalogStepState\(\)/);
   assert.match(source, /state=\{catalogStepState\}/);
-  assert.match(valuationStepSource, /useValuationStepState/);
+  assert.doesNotMatch(valuationStepSource, /useValuationStepState/);
+  assert.match(source, /const valuationStepState = useValuationStepState\(\)/);
+  assert.match(source, /useOwnedItems/);
+  assert.doesNotMatch(source, /useState<Set<string>>/);
   assert.match(source, /state=\{valuationStepState\}/);
   assert.match(valuationStepSource, /<th>起季帳號<\/th>/);
   assert.match(valuationStepSource, /中位 \{formatTwd\(row\.median\)\}/);
@@ -151,4 +175,5 @@ test("renders the account organizer", async () => {
   ).join("\n");
   assert.doesNotMatch(initialCode, /Sunlight Snorkel/);
   assert.doesNotMatch(initialCode, /sourceRows:1022/);
+  assert.doesNotMatch(initialCode, /showcase-preview|前往估價/);
 });

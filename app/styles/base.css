@@ -1,0 +1,96 @@
+:root {
+  color-scheme: dark;
+  --bg: #04060c;
+  --bg-2: #0a1020;
+  --text: #f7f9fc;
+  --line: #b8c9e32b;
+  --accent: #a9ceff;
+  --accent-violet: #9da8ff;
+  --accent-blue: #79a8ea;
+  --shadow: 0 18px 46px #00000066;
+  --soft-shadow: 0 8px 22px #00000052;
+  --glass: #09111dcc;
+  --glass-soft: #101a294d;
+  --glass-line: #b8d8ff2b;
+  --glass-shadow: 0 16px 38px #00000052;
+}
+* {
+  box-sizing: border-box;
+}
+[hidden] {
+  display: none !important;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% -8%, #233969 0, transparent 34%),
+    radial-gradient(circle at 92% 30%, #38295080 0, transparent 30%),
+    linear-gradient(155deg, var(--bg), var(--bg-2) 55%, #050811);
+  color: var(--text);
+  font-family:
+    ui-rounded, "SF Pro Rounded", "Noto Sans TC", "PingFang TC", system-ui,
+    sans-serif;
+  line-height: 1.5;
+}
+body:before,
+body:after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+body:before {
+  inset: 0;
+  background-image:
+    radial-gradient(circle, #ffffffd9 0 0.7px, transparent 1px),
+    radial-gradient(circle, #a9ceffb8 0 0.8px, transparent 1.15px),
+    radial-gradient(circle, #9da8ff99 0 0.65px, transparent 1px);
+  background-position: 0 0, 37px 53px, 19px 31px;
+  background-size: 83px 83px, 127px 127px, 173px 173px;
+  opacity: 0.42;
+}
+body:after {
+  width: 520px;
+  height: 520px;
+  right: -230px;
+  bottom: -210px;
+  border-radius: 50%;
+  background: #243d7a;
+  filter: blur(140px);
+  opacity: 0.28;
+}
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.18s,
+    border-color 0.18s,
+    color 0.18s,
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid #b7d6ff !important;
+  outline-offset: 3px !important;
+}
+.visually-hidden {
+  width: 1px !important;
+  height: 1px !important;
+  position: absolute !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}

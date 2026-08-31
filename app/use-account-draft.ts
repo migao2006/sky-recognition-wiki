@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
   type Dispatch,
-  type MutableRefObject,
   type SetStateAction,
 } from "react";
 import {
@@ -48,7 +47,7 @@ type UseAccountDraftOptions = {
   account: AccountInfo;
   bindings: AccountBindings;
   owned: ReadonlySet<string>;
-  validGuids: MutableRefObject<ReadonlySet<string> | undefined>;
+  validGuids: ReadonlySet<string> | undefined;
   setAccount: Dispatch<SetStateAction<AccountInfo>>;
   setBindings: Dispatch<SetStateAction<AccountBindings>>;
   setOwned: SetOwned;
@@ -89,7 +88,7 @@ export const useAccountDraft = ({
       try {
         const stored = window.localStorage.getItem(ACCOUNT_DRAFT_STORAGE_KEY);
         if (stored) {
-          restored = parseAccountDraft(JSON.parse(stored), validGuids.current);
+            restored = parseAccountDraft(JSON.parse(stored), validGuids);
         }
       } catch {
         try {
@@ -124,7 +123,10 @@ export const useAccountDraft = ({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [hasData, setAccount, setBindings, setNotice, setOwned, validGuids]);
+  // Draft restoration deliberately happens once before the catalog is loaded.
+  // The runtime filters restored GUIDs after the catalog becomes available.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasData, setAccount, setBindings, setNotice, setOwned]);
 
   useEffect(() => {
     if (!draftReady || !draftAvailable) return;

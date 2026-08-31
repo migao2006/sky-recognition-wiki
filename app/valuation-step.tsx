@@ -10,6 +10,10 @@ import {
 } from "react";
 import { createAccountBackup, parseAccountBackup } from "./account-backup";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
+import type {
+  ShowcasePreset,
+  ValuationStepState,
+} from "./organizer-step-state";
 import { orderShowcaseItems } from "./showcase-order";
 import { hasAccountDraftData } from "./use-account-draft";
 import type { OrganizerRuntime } from "./use-organizer-runtime";
@@ -25,15 +29,15 @@ import {
 } from "./valuation-market";
 import type { SeasonConfidence } from "./valuation-season-bands";
 
-type ShowcasePreset = "valuation" | "video" | "collection";
-
-export const useValuationStepState = () => {
-  const [showcasePreset, setShowcasePreset] =
-    useState<ShowcasePreset>("valuation");
-  return { showcasePreset, setShowcasePreset };
+const useValuationExportActions = () => {
+  const exportInFlightRef = useRef(false);
+  const [imageExport, setImageExport] = useState<{
+    phase: "loading-icons" | "rendering";
+    completed: number;
+    total: number;
+  } | null>(null);
+  return { exportInFlightRef, imageExport, setImageExport };
 };
-
-export type ValuationStepState = ReturnType<typeof useValuationStepState>;
 
 type Props = {
   runtime: OrganizerRuntime;
@@ -115,12 +119,8 @@ export function ValuationStep({
 }: Props) {
   const { showcasePreset, setShowcasePreset } = state;
   const importRef = useRef<HTMLInputElement>(null);
-  const exportInFlightRef = useRef(false);
-  const [imageExport, setImageExport] = useState<{
-    phase: "loading-icons" | "rendering";
-    completed: number;
-    total: number;
-  } | null>(null);
+  const { exportInFlightRef, imageExport, setImageExport } =
+    useValuationExportActions();
   const chosen = useMemo(
     () =>
       runtime.wikiItems.filter(
@@ -266,8 +266,8 @@ export function ValuationStep({
     }
   };
   const shareSummary = async () => {
-    const { buildShareSummary } = await import("./sale-copy");
-    const summary = buildShareSummary(saleCopyData()).join("\n");
+    const { buildSaleCopy } = await import("./sale-copy");
+    const summary = buildSaleCopy(saleCopyData()).join("\n");
     try {
       if (navigator.share) {
         await navigator.share({ title: "光遇帳號摘要", text: summary });
@@ -282,25 +282,25 @@ export function ValuationStep({
       }
     }
   };
-  const getShowcaseItems = (preset: ShowcasePreset) => {
-    if (preset === "collection") return chosen;
-    if (preset === "video") {
-      const videoItems = chosen.filter(runtime.isProfessionalVideoFocus);
-      return videoItems.length
+  const showcaseItems = useMemo(() => {
+    const videoItems = chosen.filter(runtime.isProfessionalVideoFocus);
+    return {
+      valuation: valuationAnalysis.valuationItems.length
+        ? valuationAnalysis.valuationItems
+        : chosen,
+      video: videoItems.length
         ? videoItems
-        : chosen.filter(runtime.isValuationFocus);
-    }
-    return valuationAnalysis.valuationItems.length
-      ? valuationAnalysis.valuationItems
-      : chosen;
-  };
+        : chosen.filter(runtime.isValuationFocus),
+      collection: chosen,
+    } satisfies Record<ShowcasePreset, typeof chosen>;
+  }, [chosen, runtime.isProfessionalVideoFocus, runtime.isValuationFocus, valuationAnalysis.valuationItems]);
   const exportShowcaseImage = async () => {
     if (exportInFlightRef.current) return;
     if (!chosen.length) {
       setNotice("尚未選取物品");
       return;
     }
-    const exportItems = getShowcaseItems(showcasePreset);
+    const exportItems = showcaseItems[showcasePreset];
     if (!exportItems.length) {
       setNotice("這個版型沒有可匯出的物品");
       return;
@@ -354,8 +354,10 @@ export function ValuationStep({
       setImageExport(null);
     }
   };
-  const previewItems = orderShowcaseItems(
-    runtime.showcaseOrderOptions(getShowcaseItems(showcasePreset)),
+  const { showcaseOrderOptions } = runtime;
+  const previewItems = useMemo(
+    () => orderShowcaseItems(showcaseOrderOptions(showcaseItems[showcasePreset])),
+    [showcaseItems, showcaseOrderOptions, showcasePreset],
   );
   const previewLimit = showcasePreset === "collection" ? 24 : 16;
 
@@ -392,7 +394,7 @@ export function ValuationStep({
           {(
             Object.entries(showcasePresetNames) as [ShowcasePreset, string][]
           ).map(([key, name]) => {
-            const itemCount = getShowcaseItems(key).length;
+            const itemCount = showcaseItems[key].length;
             return (
               <button
                 type="button"
@@ -408,46 +410,13 @@ export function ValuationStep({
             );
           })}
         </div>
-        <div className={`showcase-preview preset-${showcasePreset}`}>
-          <header>
-            <span>{showcasePresetNames[showcasePreset]}</span>
-            <b>{previewItems.length} 件</b>
-          </header>
-          {showcasePreset === "valuation" && (
-            <div className="showcase-price">
-              <span>刊登樣本中位估算</span>
-              <strong>
-                {valuationEstimate
-                  ? formatTwd(valuationEstimate.midpoint)
-                  : "NT$ —"}
-              </strong>
-              <small>
-                {valuationEstimate
-                  ? `價格區間 ${formatTwd(valuationEstimate.range.low)}～${formatTwd(valuationEstimate.range.high)}`
-                  : "選取估價物品後顯示"}
-              </small>
-            </div>
-          )}
-          <div className="showcase-preview-icons">
-            {previewItems.slice(0, previewLimit).map((item) => (
-              <span key={item.guid} title={runtime.zhItemName(item)}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.icon}
-                  alt={runtime.zhItemName(item)}
-                  loading="lazy"
-                  decoding="async"
-                  draggable={false}
-                  referrerPolicy="no-referrer"
-                />
-              </span>
-            ))}
-            {previewItems.length > previewLimit && (
-              <i>+{previewItems.length - previewLimit}</i>
-            )}
-          </div>
-          {!previewItems.length && <p>尚未選取此版型需要的物品。</p>}
-        </div>
+        <ShowcasePreview
+          preset={showcasePreset}
+          items={previewItems}
+          limit={previewLimit}
+          estimate={valuationEstimate}
+          getZhName={runtime.zhItemName}
+        />
         {imageExport && (
           <p className="showcase-export-status" role="status">
             {imageExport.phase === "loading-icons"
@@ -704,6 +673,50 @@ export function ValuationStep({
         />
       </div>
     </section>
+  );
+}
+
+function ShowcasePreview({
+  preset,
+  items,
+  limit,
+  estimate,
+  getZhName,
+}: {
+  preset: ShowcasePreset;
+  items: readonly (typeof emptyValuationAnalysis.valuationItems)[number][];
+  limit: number;
+  estimate: ReturnType<NonNullable<OrganizerRuntime["valuationRuntime"]>["analysis"]["estimateValuation"]> | undefined;
+  getZhName: OrganizerRuntime["zhItemName"];
+}) {
+  return (
+    <div className={`showcase-preview preset-${preset}`}>
+      <header>
+        <span>{showcasePresetNames[preset]}</span>
+        <b>{items.length} 件</b>
+      </header>
+      {preset === "valuation" && (
+        <div className="showcase-price">
+          <span>刊登樣本中位估算</span>
+          <strong>{estimate ? formatTwd(estimate.midpoint) : "NT$ —"}</strong>
+          <small>
+            {estimate
+              ? `價格區間 ${formatTwd(estimate.range.low)}～${formatTwd(estimate.range.high)}`
+              : "選取估價物品後顯示"}
+          </small>
+        </div>
+      )}
+      <div className="showcase-preview-icons">
+        {items.slice(0, limit).map((item) => (
+          <span key={item.guid} title={getZhName(item)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={item.icon} alt={getZhName(item)} loading="lazy" decoding="async" draggable={false} referrerPolicy="no-referrer" />
+          </span>
+        ))}
+        {items.length > limit && <i>+{items.length - limit}</i>}
+      </div>
+      {!items.length && <p>尚未選取此版型需要的物品。</p>}
+    </div>
   );
 }
 

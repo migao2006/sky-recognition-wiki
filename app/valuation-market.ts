@@ -2,6 +2,7 @@ import marketAggregate from "./valuation-market-aggregate.json";
 
 export type MarketBreakClass = "none" | "slight" | "medium" | "big";
 export type MarketAccountStyle = "simple" | "regular";
+export type PackageTierKey = "few" | "medium" | "many" | "hundred";
 
 export const marketBreakClassNames: Record<MarketBreakClass, string> = {
   none: "無斷",
@@ -67,7 +68,7 @@ export const marketBreakMultiplier = (key: MarketBreakClass) =>
   marketAggregate.modifiers.breakClass[key].multiplier;
 
 export const marketPackageMultiplier = (
-  key: "few" | "medium" | "many" | "hundred",
+  key: PackageTierKey,
 ) => marketAggregate.modifiers.packageTier[key].multiplier;
 
 export const marketAccountStyleMultiplier = (key: MarketAccountStyle) =>

@@ -1,0 +1,166 @@
+/* 季節項鍊與畢業禮逐件選擇 */
+.season-ultimate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+.season-ultimate-card {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #a9cfff24;
+  border-radius: 14px;
+  background: var(--glass-soft);
+  transition:
+    border-color 0.18s,
+    background-color 0.18s;
+}
+.season-ultimate-card.has-selected {
+  border-color: #789dcc62;
+  background: #111927;
+}
+.season-ultimate-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.season-ultimate-card header b {
+  color: #e6edf6;
+  font-size: 11px;
+}
+.season-ultimate-card header span {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #8fc7ff12;
+  color: #91aaca;
+  font-size: 8px;
+  font-weight: 800;
+}
+.season-ultimate-items {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.season-ultimate-item {
+  width: 52px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #a3aebd;
+  cursor: pointer;
+}
+.season-ultimate-icon {
+  width: 52px;
+  height: 52px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid #a9cfff25;
+  border-radius: 11px;
+  background: radial-gradient(circle at 50% 40%, #263957, #111927 68%);
+  overflow: hidden;
+}
+.season-ultimate-icon img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 7px #0008);
+}
+.season-ultimate-icon i {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #789dcc;
+  color: #08111e;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: 0.16s;
+}
+.season-ultimate-item small {
+  width: 100%;
+  overflow: hidden;
+  color: #929fb1;
+  font-size: 8px;
+  line-height: 1.3;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.season-ultimate-item.pendant .season-ultimate-icon {
+  border-color: #8fc7ff52;
+  background: radial-gradient(circle at 50% 40%, #263a55, #121b2a 70%);
+}
+.season-ultimate-item.pendant small {
+  color: #a7c5ea;
+}
+.season-ultimate-item.selected .season-ultimate-icon {
+  border-color: #789dcc;
+  background: radial-gradient(circle at 50% 40%, #304566, #111a29 70%);
+  box-shadow: inset 0 0 0 1px #789dcc2e;
+}
+.season-ultimate-item.selected .season-ultimate-icon i {
+  opacity: 1;
+  transform: scale(1);
+}
+.season-ultimate-item.selected small {
+  color: #d1dae5;
+  font-weight: 800;
+}
+.season-ultimate-item:hover .season-ultimate-icon {
+  border-color: #8fc7ff6b;
+}
+.season-ultimate-item:active {
+  transform: scale(0.96);
+}
+.season-ultimate-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+  .season-ultimate-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .season-ultimate-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .season-ultimate-card {
+    padding: 9px;
+    border-radius: 12px;
+  }
+  .season-ultimate-card header b {
+    font-size: 10px;
+  }
+  .season-ultimate-item {
+    width: 43px;
+  }
+  .season-ultimate-icon {
+    width: 43px;
+    height: 43px;
+    border-radius: 9px;
+  }
+  .season-ultimate-item small {
+    font-size: 7px;
+  }
+  .season-ultimate-items {
+    gap: 5px;
+  }
+}

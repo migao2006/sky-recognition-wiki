@@ -9,10 +9,13 @@ import {
   type BindingKey,
   type BindingStatus,
 } from "./account-config";
-import type { CatalogStepState } from "./catalog-step";
+import {
+  useCatalogStepState,
+  useValuationStepState,
+} from "./organizer-step-state";
 import { useAccountDraft } from "./use-account-draft";
+import { useOwnedItems } from "./use-owned-items";
 import { useOrganizerRuntime } from "./use-organizer-runtime";
-import type { ValuationStepState } from "./valuation-step";
 
 const CatalogStep = dynamic(
   () => import("./catalog-step").then((module) => module.CatalogStep),
@@ -37,46 +40,13 @@ const emptyAccount = (): AccountInfo => ({
 
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
-  const [owned, setOwned] = useState<Set<string>>(new Set());
+  const { owned, setOwned, toggleOwned } = useOwnedItems();
   const [account, setAccount] = useState<AccountInfo>(emptyAccount);
   const [bindings, setBindings] =
     useState<Record<BindingKey, BindingStatus>>(emptyBindings);
   const [notice, setNotice] = useState("");
-  const [visibleCount, setVisibleCount] = useState(40);
-  const [closet, setCloset] = useState("outfit");
-  const [sub, setSub] = useState("Outfit");
-  const [season, setSeason] = useState("全部季節");
-  const [query, setQuery] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("all");
-  const [focusMode, setFocusMode] = useState<
-    "all" | "video" | "ultimate" | "limited"
-  >("all");
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-  const catalogStepState: CatalogStepState = {
-    visibleCount,
-    setVisibleCount,
-    closet,
-    setCloset,
-    sub,
-    setSub,
-    season,
-    setSeason,
-    query,
-    setQuery,
-    sourceFilter,
-    setSourceFilter,
-    focusMode,
-    setFocusMode,
-    filterPanelOpen,
-    setFilterPanelOpen,
-  };
-  const [showcasePreset, setShowcasePreset] = useState<
-    "valuation" | "video" | "collection"
-  >("valuation");
-  const valuationStepState: ValuationStepState = {
-    showcasePreset,
-    setShowcasePreset,
-  };
+  const catalogStepState = useCatalogStepState();
+  const valuationStepState = useValuationStepState();
   const announcedStep = useRef<1 | 2 | 3>(1);
   const [stepAnnouncement, setStepAnnouncement] = useState("");
   const runtime = useOrganizerRuntime(setOwned);
@@ -85,7 +55,7 @@ export default function AccountOrganizer() {
     account,
     bindings,
     owned,
-    validGuids: runtime.catalogValidGuids,
+    validGuids: runtime.catalogDomain ? runtime.validItemGuids : undefined,
     setAccount,
     setBindings,
     setOwned,
@@ -97,15 +67,6 @@ export default function AccountOrganizer() {
     const timer = window.setTimeout(() => setNotice(""), 2600);
     return () => window.clearTimeout(timer);
   }, [notice]);
-
-  const toggleOwned = useCallback((guid: string) => {
-    setOwned((previous) => {
-      const next = new Set(previous);
-      if (next.has(guid)) next.delete(guid);
-      else next.add(guid);
-      return next;
-    });
-  }, []);
 
   const safelyLoadCatalog = useCallback(() => {
     void loadCatalog().catch(() => undefined);
@@ -200,6 +161,7 @@ export default function AccountOrganizer() {
           setBindings={setBindings}
           owned={owned}
           setOwned={setOwned}
+          onToggleOwned={toggleOwned}
           setNotice={setNotice}
           draftAvailable={draftAvailable}
           runtime={runtime}

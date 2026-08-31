@@ -4,11 +4,9 @@ import {
   type ShowcaseOrderOptions,
 } from "./showcase-order";
 
-export { buildShowcaseGroups } from "./showcase-order";
+type ExportShowcasePreset = "valuation" | "video" | "collection";
 
-export type ExportShowcasePreset = "valuation" | "video" | "collection";
-
-export type ExportValuationSummary = {
+type ExportValuationSummary = {
   midpoint: number | null;
   range: { low: number; high: number } | null;
   confidence: string;
@@ -17,19 +15,19 @@ export type ExportValuationSummary = {
   highlights: string[];
 };
 
-export type ExportShowcaseOptions = ShowcaseOrderOptions & {
+type ExportShowcaseOptions = ShowcaseOrderOptions & {
   preset?: ExportShowcasePreset;
   valuation?: ExportValuationSummary;
   onProgress?: (progress: ExportShowcaseProgress) => void;
 };
 
-export type ExportShowcaseProgress = {
+type ExportShowcaseProgress = {
   completed: number;
   total: number;
   phase: "loading-icons" | "rendering";
 };
 
-export type ExportShowcaseResult = {
+type ExportShowcaseResult = {
   images: Blob[];
   loadedIconCount: number;
   failedIconCount: number;

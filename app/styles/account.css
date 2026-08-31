@@ -1,0 +1,487 @@
+/* 帳號整理 */
+.account-panel {
+  width: min(1200px, 100%);
+  margin: auto;
+  padding: 30px 24px 0;
+}
+.account-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 4px 2px 12px;
+}
+.account-intro h1 {
+  margin: 0;
+  font-size: 28px;
+}
+.account-form {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  box-shadow: var(--glass-shadow);
+}
+.account-form label {
+  display: grid;
+  gap: 8px;
+  color: #c0cad6;
+  font-size: 12px;
+  font-weight: 750;
+}
+.account-form input,
+.account-form select {
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #a9cfff28;
+  border-radius: 13px;
+  background: #070c14;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+.account-form input:focus,
+.account-form select:focus {
+  border-color: #8fc7ff73;
+  box-shadow: 0 0 0 3px #8fc7ff12;
+}
+.account-form input::placeholder {
+  color: #8693a5;
+}
+.account-name {
+  grid-column: span 2;
+}
+.account-notes {
+  grid-column: 1/-1;
+}
+.binding-section {
+  grid-column: 1/-1;
+  overflow: hidden;
+  border: 0;
+  border-top: 1px solid var(--glass-line);
+  border-radius: 0;
+  background: transparent;
+}
+.binding-section summary,
+.account-extra summary {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 15px;
+  cursor: pointer;
+  list-style: none;
+}
+.binding-section summary::-webkit-details-marker,
+.account-extra summary::-webkit-details-marker {
+  display: none;
+}
+.binding-section summary span,
+.account-extra summary span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.binding-section summary b,
+.account-extra summary b {
+  color: #f1f6fc;
+  font-size: 14px;
+}
+.binding-section summary small,
+.account-extra summary small {
+  overflow: hidden;
+  color: #8f9daf;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.binding-section summary i,
+.account-extra summary i,
+.more-exports summary i {
+  color: #8eb5e3;
+  font-style: normal;
+  transition: transform 0.12s;
+}
+.binding-section[open] summary i,
+.account-extra[open] summary i,
+.more-exports[open] summary i {
+  transform: rotate(180deg);
+}
+.binding-section.has-issue {
+  border-color: #e7929f55;
+}
+.binding-section.has-issue summary small {
+  color: #e2a5af;
+}
+.binding-content {
+  padding: 0 14px 14px;
+}
+.binding-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.account-form .binding-card {
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--glass-soft);
+}
+.binding-card > span {
+  color: #bec8d4;
+  font-size: 12px;
+}
+.account-form .binding-card select {
+  height: 40px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.binding-card.status-transfer {
+  border-color: #789dcc55 !important;
+  background: #789dcc0c !important;
+}
+.binding-card.status-keep {
+  border-color: #9da8ff4a !important;
+  background: #9da8ff0b !important;
+}
+.binding-card.status-issue {
+  border-color: #e7929f55 !important;
+  background: #e7929f0c !important;
+}
+.account-form .binding-confirm {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 11px 1px 0;
+  color: #bec8d4;
+  font-size: 12px;
+}
+.account-form .binding-confirm input {
+  width: 18px;
+  height: 18px;
+  accent-color: #8fc7ff;
+}
+.account-extra {
+  grid-column: 1/-1;
+  overflow: hidden;
+  border: 0;
+  border-top: 1px solid var(--glass-line);
+  border-radius: 0;
+  background: transparent;
+}
+.account-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+.account-extra-grid .account-notes {
+  grid-column: 1/-1;
+}
+.quick-select,
+.season-picker {
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+}
+.quick-select summary,
+.season-picker summary {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.quick-select summary::-webkit-details-marker,
+.season-picker summary::-webkit-details-marker {
+  display: none;
+}
+.quick-select summary b,
+.season-picker summary b {
+  color: #f4f7fb;
+  font-size: 15px;
+}
+.quick-select summary i,
+.season-picker summary i {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #060a11;
+  color: #8eb5e3;
+  font-size: 17px;
+  font-style: normal;
+  transition: transform 0.2s;
+}
+.quick-select[open] summary i,
+.season-picker[open] summary i {
+  transform: rotate(180deg);
+}
+.quick-select-body,
+.season-picker-body {
+  padding: 2px 22px 22px;
+}
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.preset-grid button {
+  min-height: 68px;
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 10px 11px 10px 39px;
+  border: 1px solid #a9cfff25;
+  border-radius: 13px;
+  background: var(--glass-soft);
+  color: #d9e6f5;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.18s;
+}
+.preset-grid button:hover {
+  transform: translateY(-1px);
+  border-color: #8fc7ff5e;
+  background: #172238;
+}
+.preset-grid button:active {
+  transform: scale(0.98);
+}
+.preset-grid button > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+.preset-grid button b {
+  font-size: 12px;
+}
+.preset-grid button small {
+  flex: none;
+  padding: 3px 6px;
+  border-radius: 7px;
+  background: #8fc7ff13;
+  color: #8fc7ff;
+  font-size: 9px;
+}
+.preset-check {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid #789dcc4d;
+  border-radius: 7px;
+  background: #060a11;
+  color: transparent;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+.preset-grid button.partial {
+  border-color: #9da8ff6b;
+  background: #9da8ff10;
+}
+.preset-grid button.partial .preset-check {
+  border-color: #9da8ff85;
+  background: #9da8ff22;
+  color: #c5daf3;
+}
+.preset-grid button.partial small {
+  background: #9da8ff1c;
+  color: #c5daf3;
+}
+.preset-grid button.selected {
+  border-color: #779fe084;
+  background: #1d3150;
+  color: #f7f9fc;
+  box-shadow: inset 3px 0 #a9cfff;
+}
+.preset-grid button.selected .preset-check {
+  border-color: #8fc7ff8c;
+  background: #8fc7ff24;
+  color: #f3f7fc;
+  box-shadow: none;
+}
+.preset-grid button.selected small {
+  background: #8fc7ff21;
+  color: #d3e4f8;
+  font-weight: 900;
+}
+.showcase-builder {
+  margin-bottom: 12px;
+  padding: 20px;
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  box-shadow: var(--glass-shadow);
+}
+.showcase-builder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.showcase-builder-head h2 {
+  margin: 0;
+  color: #f4f7fb;
+  font-size: 20px;
+}
+.showcase-primary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.showcase-primary-actions > button {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid #a9cfff2b;
+  border-radius: 13px;
+  background: var(--glass-soft);
+  color: #dce8f7;
+  font-weight: 800;
+  cursor: pointer;
+}
+.showcase-primary-actions > button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.showcase-download {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid #8fc7ff66;
+  border-radius: 13px;
+  background: #789dcc24;
+  color: #eff7ff;
+  font-weight: 850;
+  cursor: pointer;
+}
+.showcase-download:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.showcase-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 12px;
+}
+.showcase-presets button {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 58px;
+  padding: 7px 6px;
+  border: 1px solid #a9cfff24;
+  border-radius: 12px;
+  background: var(--glass-soft);
+  color: #9facbd;
+  cursor: pointer;
+}
+.showcase-presets button strong {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 850;
+}
+.showcase-presets button small {
+  color: #77869a;
+  font-size: 9px;
+  font-weight: 700;
+}
+.showcase-presets button.active {
+  border-color: #8fc7ff6e;
+  background: #789dcc1d;
+  color: #edf6ff;
+}
+.showcase-presets button.active small {
+  color: #a9cfff;
+}
+.showcase-preview {
+  min-height: 210px;
+  padding: 18px;
+  border: 1px solid #a9cfff26;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 80% 0, #31508342, transparent 42%),
+    linear-gradient(145deg, #050910, #0d1422);
+  box-shadow: inset 0 0 0 1px #ffffff05;
+}
+.showcase-preview > header {
+  display: flex;
+  justify-content: space-between;
+  color: #a9cfff;
+  font-size: 11px;
+  font-weight: 850;
+}
+.showcase-price {
+  display: grid;
+  gap: 3px;
+  margin: 16px 0;
+}
+.showcase-price span,
+.showcase-price small {
+  color: #899bb2;
+  font-size: 10px;
+}
+.showcase-price strong {
+  color: #f3f7fc;
+  font-size: 28px;
+}
+.showcase-preview-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 16px;
+}
+.showcase-preview-icons span,
+.showcase-preview-icons i {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #a9cfff20;
+  border-radius: 10px;
+  background: #111a29;
+}
+.showcase-preview-icons img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+}
+.showcase-preview-icons i {
+  color: #a9cfff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 850;
+}
+.showcase-preview > p {
+  margin: 42px 0 0;
+  color: #8291a4;
+  font-size: 12px;
+  text-align: center;
+}

@@ -1,4 +1,5 @@
-export type PackageTierKey = "few" | "medium" | "many" | "hundred";
+import type { PackageTierKey } from "./valuation-market";
+
 export type PackageTier = {
   key: PackageTierKey;
   label: string;

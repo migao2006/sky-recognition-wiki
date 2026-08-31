@@ -23,6 +23,7 @@ type AccountStepProps = {
   >;
   owned: ReadonlySet<string>;
   setOwned: React.Dispatch<React.SetStateAction<Set<string>>>;
+  onToggleOwned: (guid: string) => void;
   setNotice: React.Dispatch<React.SetStateAction<string>>;
   draftAvailable: boolean;
   runtime: OrganizerRuntime;
@@ -36,6 +37,7 @@ export function AccountStep({
   setBindings,
   owned,
   setOwned,
+  onToggleOwned,
   setNotice,
   draftAvailable,
   runtime,
@@ -57,16 +59,6 @@ export function AccountStep({
   const safelyLoadCatalog = useCallback(() => {
     void loadCatalog().catch(() => undefined);
   }, [loadCatalog]);
-  const toggleOwned = useCallback(
-    (guid: string) =>
-      setOwned((previous) => {
-        const next = new Set(previous);
-        if (next.has(guid)) next.delete(guid);
-        else next.add(guid);
-        return next;
-      }),
-    [setOwned],
-  );
   const quickPresetState = (items: (typeof runtime.wikiItems)[number][]) => {
     const selected = items.filter((item) => owned.has(item.guid)).length;
     return {
@@ -317,7 +309,7 @@ export function AccountStep({
                             aria-label={`${seasonZh[slug]}　${name}`}
                             title={`${seasonZh[slug]} · ${zhItemName(item)}`}
                             key={item.guid}
-                            onClick={() => toggleOwned(item.guid)}
+                            onClick={() => onToggleOwned(item.guid)}
                           >
                             <span className="season-ultimate-icon">
                               {/* External catalog icons must keep their source URL and referrer policy. */}

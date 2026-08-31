@@ -2,6 +2,10 @@
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CatalogItemCard } from "./catalog-item-card";
+import {
+  INITIAL_VISIBLE_ITEMS,
+  type CatalogStepState,
+} from "./organizer-step-state";
 import type { OrganizerRuntime } from "./use-organizer-runtime";
 import {
   isPaidItem,
@@ -9,7 +13,6 @@ import {
   isSeasonUltimate,
 } from "./valuation-items";
 
-type FocusMode = "all" | "video" | "ultimate" | "limited";
 type ClosetSubRoute = {
   closetKey: string;
   closetName: string;
@@ -17,40 +20,7 @@ type ClosetSubRoute = {
   subName: string;
 };
 
-const INITIAL_VISIBLE_ITEMS = 40;
 const VISIBLE_ITEM_BATCH = 40;
-
-export const useCatalogStepState = () => {
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
-  const [closet, setCloset] = useState("outfit");
-  const [sub, setSub] = useState("Outfit");
-  const [season, setSeason] = useState("全部季節");
-  const [query, setQuery] = useState("");
-  const [sourceFilter, setSourceFilter] = useState("all");
-  const [focusMode, setFocusMode] = useState<FocusMode>("all");
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-
-  return {
-    visibleCount,
-    setVisibleCount,
-    closet,
-    setCloset,
-    sub,
-    setSub,
-    season,
-    setSeason,
-    query,
-    setQuery,
-    sourceFilter,
-    setSourceFilter,
-    focusMode,
-    setFocusMode,
-    filterPanelOpen,
-    setFilterPanelOpen,
-  };
-};
-
-export type CatalogStepState = ReturnType<typeof useCatalogStepState>;
 
 export function CatalogStep({
   runtime,

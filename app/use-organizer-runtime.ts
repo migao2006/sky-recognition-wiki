@@ -65,7 +65,6 @@ export const useOrganizerRuntime = (
   const [valuationLoadError, setValuationLoadError] = useState(false);
   const catalogPromise = useRef<Promise<CatalogDomain> | null>(null);
   const valuationPromise = useRef<Promise<ValuationRuntime> | null>(null);
-  const catalogValidGuids = useRef<ReadonlySet<string> | undefined>(undefined);
 
   const loadCatalog = useCallback(() => {
     if (!catalogPromise.current) {
@@ -73,7 +72,6 @@ export const useOrganizerRuntime = (
       catalogPromise.current = import("./catalog-domain")
         .then((module) => {
           const validGuids = new Set(module.wikiItems.map((item) => item.guid));
-          catalogValidGuids.current = validGuids;
           setOwned((previous) => {
             const filtered = new Set(
               [...previous].filter((guid) => validGuids.has(guid)),
@@ -220,7 +218,6 @@ export const useOrganizerRuntime = (
     valuationRuntime,
     catalogLoadError,
     valuationLoadError,
-    catalogValidGuids,
     loadCatalog,
     loadValuation,
     wikiItems,

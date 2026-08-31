@@ -1,55 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
-import { injectSeasonItems } from "./helpers/season-items.mjs";
-
-const loadCatalogDomain = async () => {
-  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
-      readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-    ),
-  );
-  const marketUrl = await marketCollectiblesModuleUrl();
-  const valuationUrl = asModuleUrl(
-    (await injectSeasonItems(valuationSource)).replace(
-      'import { marketCollectibleProfile } from "./market-collectibles";',
-      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
-    ),
-  );
-  const catalogModule = (await injectSeasonItems(catalogSource))
-    .replace(
-      'import { marketCollectibleProfile } from "./market-collectibles";',
-      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
-    )
-    .replace(
-      'import playerHairNames from "./player-hair-names.json";',
-      `const playerHairNames = ${playerHairSource};`,
-    )
-    .replace(
-      'import playerZhNames from "./player-zh-names.json";',
-      `const playerZhNames = ${playerZhSource};`,
-    )
-    .replace(
-      'import { wikiItems as baseWikiItems } from "./wiki-data";',
-      `const { wikiItems: baseWikiItems } = await import(${JSON.stringify(
-        asModuleUrl(wikiSource),
-      )});`,
-    )
-    .replace(
-      'import wikiZhNames from "./wiki-zh-names.json";',
-      `const wikiZhNames = ${wikiZhSource};`,
-    )
-    .replace(
-      /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
-      (_, imports) =>
-        `const {${imports}} = await import(${JSON.stringify(
-          valuationUrl,
-        )});`,
-    );
-  return import(asModuleUrl(catalogModule));
-};
+import { loadCatalogRuntime } from "./helpers/catalog-runtime.mjs";
 
 const {
   closetSubSequence,
@@ -70,7 +22,7 @@ const {
   zhItemName,
   zhItemSearchNames,
   zhName,
-} = await loadCatalogDomain();
+} = await loadCatalogRuntime();
 
 const item = (overrides = {}) => ({
   id: 1,

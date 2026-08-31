@@ -22,7 +22,7 @@ const moduleUrl = asModuleUrl(
       `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
     ),
 );
-const { buildSaleCopy, buildShareSummary } = await import(moduleUrl);
+const { buildSaleCopy } = await import(moduleUrl);
 
 const season = (slug, name, owned = 0, total = 3) => ({
   slug,
@@ -296,8 +296,4 @@ test("drops invalid future-season ratios instead of publishing 1/0", () => {
   ).join("\n");
   assert.doesNotMatch(copy, /未來|1\/0/);
   assert.match(copy, /當前1\/2/);
-});
-
-test("download and share use the exact same listing", () => {
-  assert.deepEqual(buildShareSummary(input()), buildSaleCopy(input()));
 });

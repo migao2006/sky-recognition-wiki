@@ -317,5 +317,3 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
     section("其他收藏", groups.other),
   ]);
 };
-
-export const buildShareSummary = buildSaleCopy;

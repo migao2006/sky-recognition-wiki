@@ -1,14 +1,8 @@
 import iapCatalog from "./iap-catalog.json";
+import type { BindingKey } from "./account-config";
 
 export type MarketAvailability = "global" | "china" | "platform";
-export type MarketPlatform =
-  | "google"
-  | "nintendo"
-  | "gameCenter"
-  | "facebook"
-  | "steam"
-  | "twitch"
-  | "playstation";
+export type MarketPlatform = BindingKey;
 export type MarketSaleSection = "collaboration" | "important" | "special";
 export type MarketValuationTier = "high" | "standard";
 export type MarketImportance = "important" | "standard";
@@ -400,11 +394,6 @@ export const marketCollectibleProfile = (name: string, guid?: string) =>
   profileByName.get(name) ??
   profileByAlias.get(name) ??
   null;
-
-export const marketCollectibleProfileForItem = (item: {
-  name: string;
-  guid?: string;
-}) => marketCollectibleProfile(item.name, item.guid);
 
 export const marketProfileNamesForSeries = (series: string) =>
   [...profileByName.values()]

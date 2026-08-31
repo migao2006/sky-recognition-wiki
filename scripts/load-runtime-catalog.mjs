@@ -7,7 +7,6 @@ import ts from "typescript";
 const ROOT = resolve(import.meta.dirname, "..");
 const jsonImports = [
   ["iapCatalog", "iap-catalog.json"],
-  ["iapCatalog", "iap-catalog.json"],
   ["playerHairNames", "player-hair-names.json"],
   ["playerZhNames", "player-zh-names.json"],
   ["wikiZhNames", "wiki-zh-names.json"],
@@ -22,6 +21,11 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
       "season-items",
       "market-collectibles",
       "valuation-items",
+      "catalog-seeds",
+      "catalog-taxonomy",
+      "catalog-sources",
+      "catalog-zh",
+      "catalog-derived",
       "catalog-domain",
     ]) {
       let source = await readFile(join(ROOT, "app", `${name}.ts`), "utf8");
@@ -40,15 +44,9 @@ export async function loadRuntimeCatalog({ stubJsonFiles = [] } = {}) {
             module: ts.ModuleKind.ESNext,
           },
         })
-        .outputText.replaceAll('from "./wiki-data"', 'from "./wiki-data.js"')
-        .replaceAll('from "./season-items"', 'from "./season-items.js"')
-        .replaceAll(
-          'from "./market-collectibles"',
-          'from "./market-collectibles.js"',
-        )
-        .replaceAll(
-          'from "./valuation-items"',
-          'from "./valuation-items.js"',
+        .outputText.replace(
+          /from "(\.\/[^".]+)"/g,
+          'from "$1.js"',
         );
       await writeFile(join(directory, `${name}.js`), output, "utf8");
     }

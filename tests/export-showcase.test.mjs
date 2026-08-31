@@ -1,36 +1,17 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
-import { injectSeasonItems } from "./helpers/season-items.mjs";
+import {
+  loadCatalogRuntime,
+  loadShowcaseRuntime,
+} from "./helpers/catalog-runtime.mjs";
 
-const [rawShowcaseSource, rawOrderSource] = await Promise.all(
-  ["export-showcase.ts", "showcase-order.ts"].map((file) =>
-    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-  ),
-);
-const orderModuleUrl = asModuleUrl(
-  rawOrderSource.replace('import type { WikiItem } from "./wiki-data";', ""),
-);
-const { orderShowcaseItems } = await import(orderModuleUrl);
-const showcaseSource = rawShowcaseSource
-  .replace('import type { WikiItem } from "./wiki-data";', "")
-  .replace(
-    /import \{[\s\S]*?\} from "\.\/showcase-order";/,
-    `import { buildShowcaseGroups } from ${JSON.stringify(orderModuleUrl)};`,
-  )
-  .replace(
-    'export { buildShowcaseGroups } from "./showcase-order";',
-    `export { buildShowcaseGroups } from ${JSON.stringify(orderModuleUrl)};`,
-  );
 const {
   buildShowcaseGroups,
+  orderShowcaseItems,
+  source: showcaseSource,
   measureShowcaseCanvas,
   planShowcasePages,
-} = await import(
-  asModuleUrl(showcaseSource)
-);
+} = await loadShowcaseRuntime();
 
 let fixtureId = 0;
 const item = (overrides = {}) => ({
@@ -191,52 +172,8 @@ test("reports image load outcomes and progress through the export API", () => {
 });
 
 test("keeps the complete catalog export within mobile canvas limits", async () => {
-  const [wikiSource, valuationSource, catalogSource, wikiZhSource, playerZhSource, playerHairSource] = await Promise.all(
-    ["wiki-data.ts", "valuation-items.ts", "catalog-domain.ts", "wiki-zh-names.json", "player-zh-names.json", "player-hair-names.json"].map((file) =>
-      readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-    ),
-  );
-const marketUrl = await marketCollectiblesModuleUrl();
-  const valuationUrl = asModuleUrl(
-    (await injectSeasonItems(valuationSource)).replace(
-      'import { marketCollectibleProfile } from "./market-collectibles";',
-      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
-    ),
-  );
-  const catalogUrl = asModuleUrl(
-    (await injectSeasonItems(catalogSource))
-      .replace(
-        'import { marketCollectibleProfile } from "./market-collectibles";',
-        `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
-      )
-      .replace(
-        'import playerHairNames from "./player-hair-names.json";',
-        `const playerHairNames = ${playerHairSource};`,
-      )
-      .replace(
-        'import playerZhNames from "./player-zh-names.json";',
-        `const playerZhNames = ${playerZhSource};`,
-      )
-      .replace(
-        'import { wikiItems as baseWikiItems } from "./wiki-data";',
-        `const { wikiItems: baseWikiItems } = await import(${JSON.stringify(
-          asModuleUrl(wikiSource),
-        )});`,
-      )
-      .replace(
-        'import wikiZhNames from "./wiki-zh-names.json";',
-        `const wikiZhNames = ${wikiZhSource};`,
-      )
-      .replace(
-        /import \{([\s\S]*?)\} from "\.\/valuation-items";/,
-        (_, imports) =>
-          `const {${imports}} = await import(${JSON.stringify(valuationUrl)});`,
-      ),
-  );
-  const [catalog, valuation] = await Promise.all([
-    import(catalogUrl),
-    import(valuationUrl),
-  ]);
+  const catalog = await loadCatalogRuntime();
+  const valuation = catalog;
   const selected = catalog.wikiItems.filter((entry) =>
     catalog.allClosetTypeSet.has(entry.type),
   );

@@ -13,6 +13,7 @@ import {
   valuationMarketAggregate,
   type MarketAccountStyle,
   type MarketBreakClass,
+  type PackageTierKey,
 } from "./valuation-market";
 import {
   canonicalPackageKey,
@@ -67,7 +68,7 @@ export type ValuationEstimate = {
   seasonRows: ValuationSeasonRow[];
   marketProfile: {
     breakClass: MarketBreakClass;
-    packageTier: "few" | "medium" | "many" | "hundred";
+    packageTier: PackageTierKey;
     accountStyle: MarketAccountStyle;
     missingSeasons: number;
     partialSeasons: number;
