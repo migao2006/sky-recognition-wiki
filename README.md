@@ -18,7 +18,7 @@
 - `app/bundle-presets.ts`：常用套組設定
 - `app/catalog-legacy-guids.ts`：舊版備份人工 GUID 到官方 GUID 的遷移表
 - `app/catalog-*.ts`：物品資料、分類、中文名稱與來源規則
-- `app/player-zh-names.json`：以官方 GUID 保存玩家顯示名與搜尋別名；標準 Wiki 名稱仍可搜尋
+- `app/player-zh-names.json`：以官方 GUID 保存玩家顯示名、出售短名與搜尋別名；標準 Wiki 名稱仍可搜尋
 - `app/wiki-data.ts`：SkyGame-Data 衣櫃物品快照
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出
@@ -51,7 +51,7 @@
 
 尚未進入 SkyGame-Data 正式版本的新品，只能依可追溯的上游 PR／commit 或明確 Wiki 項目建立暫時 overlay。目前梵谷「星夜之傘」與畫架取自 [SkyGame-Data PR #125](https://github.com/Silverfeelin/SkyGame-Data/pull/125)；「海牛手杖」是等待上游正式 GUID 的 Wiki overlay。上游合併並同步正式快照後，應遷移既有 overlay GUID 並移除對應例外。
 
-玩家名稱以官方 GUID 對應，不用英文同名或圖片猜測。顯示名優先採台灣交易社群容易辨識的說法，舊名、Wiki 名與套組俗稱保留為搜尋別名；季節縮寫也只影響搜尋，不會改變標準季名或物品身分。現行一般物品用語參考 2026-08-31 讀取的指定 Google Drive 資料夾 26 份出售文案。
+玩家名稱以官方 GUID 對應，不用英文同名或圖片猜測。顯示名優先採台灣交易社群容易辨識的說法，舊名、Wiki 名與套組俗稱保留為搜尋別名；只有具有玩家用語依據的物品才另外設定 `saleName`，此短名只用於出售文案，不改變衣櫃、搜尋、備份或整理圖片。出售文案的季節部分畢業比例優先使用 `½`、`⅓`、`⅔` 等單字元分數，沒有對應字元時保留 `n/d`；每行最多四件物品並依手機閱讀長度換行。現行一般物品用語參考 2026-08-31 讀取的指定 Google Drive 資料夾 26 份出售文案。
 
 ## 備份相容性
 

@@ -115,6 +115,7 @@ export const useValuationExportActions = ({
         guid: item.guid,
         name: item.name,
         displayName: runtime.zhItemName(item),
+        saleName: runtime.saleItemName(item),
         section: item.section,
         collection: item.collection,
         group: item.group,

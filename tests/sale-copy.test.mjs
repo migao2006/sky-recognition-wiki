@@ -36,19 +36,28 @@ const season = (slug, name, owned = 0, total = 3) => ({
   owned,
   total,
 });
-const item = (overrides = {}) => ({
-  guid: "test-item",
-  name: "Test Item",
-  displayName: "測試物品",
-  section: "store",
-  collection: "store",
-  group: "",
-  wiki: "https://example.com/item",
-  sourceName: "常駐商店",
-  order: 1,
-  ...overrides,
-  guid: marketGuidByName.get(overrides.name) ?? overrides.guid ?? "test-item",
-});
+const item = (overrides = {}) => {
+  const value = {
+    guid: "test-item",
+    name: "Test Item",
+    displayName: "測試物品",
+    section: "store",
+    collection: "store",
+    group: "",
+    wiki: "https://example.com/item",
+    sourceName: "常駐商店",
+    order: 1,
+    ...overrides,
+    guid: marketGuidByName.get(overrides.name) ?? overrides.guid ?? "test-item",
+  };
+  return {
+    ...value,
+    saleName:
+      overrides.saleName ??
+      marketModule.marketCollectibleProfile(value.name, value.guid)?.playerName ??
+      value.displayName,
+  };
+};
 const input = (overrides = {}) => ({
   seasons: [
     season("lightseekers", "追光季", 0, 2),
@@ -72,24 +81,42 @@ test("formats continuous graduation progress from the first owned season", () =>
   assert.match(copy, /^✦ 季節進度$/m);
   assert.equal(copy.includes("追光"), false);
   for (const expected of [
-    "拾光2/3",
+    "拾光⅔",
     "歸巢⁰",
     "九色鹿畢",
-    "築巢1/2",
-    "協奏1/3",
+    "築巢½",
+    "協奏⅓",
     "姆明⁰",
     "染色畢",
     "青鳥畢",
   ]) {
-    assert.match(copy, new RegExp(expected.replace("/", "\\/")));
+    assert.match(copy, new RegExp(expected));
   }
-  assert.ok(copy.indexOf("拾光2/3") < copy.indexOf("歸巢⁰"));
+  assert.ok(copy.indexOf("拾光⅔") < copy.indexOf("歸巢⁰"));
   assert.ok(copy.indexOf("歸巢⁰") < copy.indexOf("九色鹿畢"));
   const progressLines = copy.split("\n").slice(1, 4);
-  assert.equal(progressLines[0], "拾光2/3｜歸巢⁰｜九色鹿畢｜築巢1/2");
-  assert.equal(progressLines[1], "協奏1/3｜姆明⁰｜染色畢｜青鳥畢");
-  assert.doesNotMatch(copy, /拾光\s+2\/3|九色鹿季|畢業/);
+  assert.equal(progressLines[0], "拾光⅔｜歸巢⁰｜九色鹿畢｜築巢½");
+  assert.equal(progressLines[1], "協奏⅓｜姆明⁰｜染色畢｜青鳥畢");
+  assert.doesNotMatch(copy, /拾光\s+⅔|九色鹿季|畢業/);
   assert.match(copy, /✦ 綁定狀態\nGG 出｜NS 不出｜Steam 遺失／異常/);
+});
+
+test("uses compact Unicode fractions and falls back when Unicode has no fraction", () => {
+  const copy = buildSaleCopy(
+    input({
+      bindingsConfirmed: false,
+      seasons: [
+        season("one-half", "二分季", 1, 2),
+        season("one-third", "三分季", 1, 3),
+        season("two-thirds", "三分二季", 2, 3),
+        season("one-fourth", "四分季", 1, 4),
+        season("three-fourths", "四分三季", 3, 4),
+        season("unsupported", "十一分季", 2, 11),
+      ],
+    }),
+  ).join("\n");
+  assert.match(copy, /二分½｜三分⅓｜三分二⅔｜四分¼/);
+  assert.match(copy, /四分三¾｜十一分2\/11/);
 });
 
 test("groups collaborations, anniversaries, and special collections", () => {
@@ -136,6 +163,7 @@ test("groups collaborations, anniversaries, and special collections", () => {
       guid: "skyfest-wireframe",
       name: "Skyfest Wireframe Cape",
       displayName: "天空慶典線框斗篷",
+      saleName: "天空慶典線框斗篷",
       section: "events",
       collection: "event-sky-anniversary",
       group: "Limited",
@@ -265,6 +293,45 @@ test("uses player names and keeps every selected item in only one section", () =
   assert.equal(copy.match(/蝙蝠斗篷/g)?.length, 1);
 });
 
+test("uses GUID-specific sale names and wraps item rows for mobile reading", () => {
+  const items = [
+    item({ guid: "short-1", displayName: "花憩玫瑰刺繡斗篷", saleName: "玫瑰斗" }),
+    item({ guid: "short-2", displayName: "花憩向日葵夏日洋裝", saleName: "向日葵裙", order: 2 }),
+    item({ guid: "short-3", displayName: "彩虹臉部彩繪面具", saleName: "彩繪面具", order: 3 }),
+    item({ guid: "short-4", displayName: "日之愛之日優雅領巾", saleName: "優雅領巾", order: 4 }),
+    item({ guid: "short-5", displayName: "錦標賽俐落滑冰服裝", saleName: "錦標滑冰服", order: 5 }),
+  ];
+  const copy = buildSaleCopy(input({ seasons: [], items })).join("\n");
+  assert.match(copy, /✦ 其他收藏\n玫瑰斗・向日葵裙・彩繪面具・優雅領巾\n錦標滑冰服/);
+  assert.doesNotMatch(copy, /花憩玫瑰刺繡斗篷|錦標賽俐落滑冰服裝/);
+});
+
+test("qualifies colliding short names instead of dropping an item", () => {
+  const copy = buildSaleCopy(
+    input({
+      seasons: [],
+      items: [
+        item({ guid: "wireframe-sky", displayName: "天空線框斗篷", saleName: "線框斗", sourceName: "週年慶" }),
+        item({ guid: "wireframe-tgc", displayName: "TGC 線框斗篷", saleName: "線框斗", sourceName: "TGC", order: 2 }),
+      ],
+    }),
+  ).join("\n");
+  assert.match(copy, /週年慶線框斗・TGC線框斗/);
+});
+
+test("falls back to distinct display names when source prefixes still collide", () => {
+  const copy = buildSaleCopy(
+    input({
+      seasons: [],
+      items: [
+        item({ guid: "same-source-a", displayName: "先知髮型", saleName: "髮型", sourceName: "預言季" }),
+        item({ guid: "same-source-b", displayName: "長老髮型", saleName: "髮型", sourceName: "預言季", order: 2 }),
+      ],
+    }),
+  ).join("\n");
+  assert.match(copy, /先知髮型・長老髮型/);
+});
+
 test("keeps same-named anniversary hats when they belong to different years", () => {
   const copy = buildSaleCopy(
     input({
@@ -323,5 +390,5 @@ test("drops invalid future-season ratios instead of publishing 1/0", () => {
     }),
   ).join("\n");
   assert.doesNotMatch(copy, /未來|1\/0/);
-  assert.match(copy, /當前1\/2/);
+  assert.match(copy, /當前½/);
 });

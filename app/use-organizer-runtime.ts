@@ -145,6 +145,7 @@ export const useOrganizerRuntime = (
   const sourceKind = catalogDomain?.sourceKind ?? emptyItemText;
   const typeOrder = catalogDomain?.typeOrder ?? emptyNumberMap;
   const zhItemName = catalogDomain?.zhItemName ?? itemEnglishName;
+  const saleItemName = catalogDomain?.saleItemName ?? zhItemName;
   const uniqueByGuid =
     catalogDomain?.uniqueByGuid ??
     ((items: WikiItem[]) => [
@@ -246,6 +247,7 @@ export const useOrganizerRuntime = (
     typeOrder,
     uniqueByGuid,
     zhItemName,
+    saleItemName,
     getNextClosetSub,
     validItemGuids,
     bundlePresetItems,

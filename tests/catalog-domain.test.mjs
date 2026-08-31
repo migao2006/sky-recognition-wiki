@@ -17,6 +17,7 @@ const {
   matchesSourceFilter,
   seasonGraduationItems,
   searchIndex,
+  saleItemName,
   officialHeldIdentities,
   showcaseClusterOrder,
   sourceCollectionName,
@@ -74,19 +75,33 @@ test("uses player-friendly names while keeping Wiki names searchable", () => {
   assert.match(searchIndex.get(naturalHair.guid), /自然潛游髮型/);
 });
 
+test("uses compact sale names without changing wardrobe display names", () => {
+  const roseCape = wikiItems.find((entry) => entry.guid === "5F_G_puJb7");
+  assert.ok(roseCape);
+  assert.equal(zhItemName(roseCape), "花憩玫瑰刺繡斗篷");
+  assert.equal(saleItemName(roseCape), "玫瑰斗");
+  assert.equal(zhItemSearchNames(roseCape).includes("玫瑰斗"), false);
+});
+
 test("player-friendly names use known catalog guids", async () => {
   const playerNames = JSON.parse(
     await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
   );
   const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
-  assert.equal(Object.keys(playerNames.items).length, 50);
+  assert.equal(Object.keys(playerNames.items).length, 62);
   for (const [guid, entry] of Object.entries(playerNames.items)) {
     assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
     assert.equal(typeof entry, "object", guid);
-    assert.match(entry.displayName, /[\u3400-\u9fff]/);
-    assert.ok(Array.isArray(entry.aliases), guid);
-    assert.equal(new Set(entry.aliases).size, entry.aliases.length, guid);
-    assert.ok(entry.aliases.every((alias) => alias.trim()), guid);
+    assert.ok(entry.displayName || entry.saleName, guid);
+    if (entry.displayName) assert.match(entry.displayName, /[\u3400-\u9fff]/);
+    if (entry.saleName) {
+      assert.match(entry.saleName, /[\u3400-\u9fff]/);
+      assert.ok(Array.from(entry.saleName).length <= 6, guid);
+    }
+    const aliases = entry.aliases ?? [];
+    assert.ok(Array.isArray(aliases), guid);
+    assert.equal(new Set(aliases).size, aliases.length, guid);
+    assert.ok(aliases.every((alias) => alias.trim()), guid);
   }
 });
 

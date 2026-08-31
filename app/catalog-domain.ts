@@ -39,6 +39,7 @@ export {
   storeSource,
 } from "./catalog-sources";
 export {
+  saleItemName,
   zhItemName,
   zhItemSearchNames,
   zhName,

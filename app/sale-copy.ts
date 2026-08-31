@@ -15,6 +15,7 @@ export type SaleCopyItem = {
   guid: string;
   name: string;
   displayName: string;
+  saleName: string;
   section: string;
   collection: string;
   group: string;
@@ -65,6 +66,30 @@ const formatBindings = (
 };
 
 const shortSeasonName = (name: string) => name.trim().replace(/季$/, "");
+const fractionSymbols = new Map([
+  ["1/2", "½"],
+  ["1/3", "⅓"],
+  ["2/3", "⅔"],
+  ["1/4", "¼"],
+  ["3/4", "¾"],
+  ["1/5", "⅕"],
+  ["2/5", "⅖"],
+  ["3/5", "⅗"],
+  ["4/5", "⅘"],
+  ["1/6", "⅙"],
+  ["5/6", "⅚"],
+  ["1/7", "⅐"],
+  ["1/8", "⅛"],
+  ["3/8", "⅜"],
+  ["5/8", "⅝"],
+  ["7/8", "⅞"],
+  ["1/9", "⅑"],
+  ["1/10", "⅒"],
+]);
+const partialProgress = (owned: number, total: number) => {
+  const ratio = `${owned}/${total}`;
+  return fractionSymbols.get(ratio) ?? ratio;
+};
 const wrapSeasonProgress = (seasons: SaleSeasonProgress[]) => {
   const validSeasons = seasons.filter(
     (season) =>
@@ -76,7 +101,7 @@ const wrapSeasonProgress = (seasons: SaleSeasonProgress[]) => {
     const name = shortSeasonName(season.name);
     if (!season.owned) return `${name}⁰`;
     if (season.total > 0 && season.owned === season.total) return `${name}畢`;
-    return `${name}${season.owned}/${season.total}`;
+    return `${name}${partialProgress(season.owned, season.total)}`;
   });
   return Array.from({ length: Math.ceil(tokens.length / 4) }, (_, index) =>
     tokens.slice(index * 4, index * 4 + 4).join("｜"),
@@ -178,6 +203,33 @@ const appendGroup = (
   groups.set(key, group);
 };
 
+const textLength = (value: string) => Array.from(value).length;
+const wrapItemNames = (
+  names: readonly string[],
+  firstPrefix = "",
+  maximumItems = 4,
+  maximumLength = 24,
+) => {
+  const rows: string[] = [];
+  let current: string[] = [];
+  for (const name of names) {
+    const prefix = rows.length ? "" : firstPrefix;
+    const candidate = `${prefix}${[...current, name].join("・")}`;
+    if (
+      current.length &&
+      (current.length >= maximumItems || textLength(candidate) > maximumLength)
+    ) {
+      rows.push(`${rows.length ? "" : firstPrefix}${current.join("・")}`);
+      current = [name];
+    } else {
+      current.push(name);
+    }
+  }
+  if (current.length)
+    rows.push(`${rows.length ? "" : firstPrefix}${current.join("・")}`);
+  return rows;
+};
+
 const groupCollectibles = (items: SaleCopyItem[]) => {
   const limited = new Map<string, CopyGroup>();
   const important = new Map<string, CopyGroup>();
@@ -203,6 +255,45 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           : isSpecialItem(item)
             ? 3
             : 4;
+  const saleItems = items.filter((item) => !isChinaOnlySaleItem(item));
+  const itemsByGuid = new Map(saleItems.map((item) => [item.guid, item]));
+  const preferredNames = new Map(
+    [...itemsByGuid].map(([guid, item]) => [
+      guid,
+      item.saleName.trim() || item.displayName,
+    ]),
+  );
+  const preferredNameCounts = new Map<string, number>();
+  for (const name of preferredNames.values())
+    preferredNameCounts.set(name, (preferredNameCounts.get(name) ?? 0) + 1);
+  const qualifiedNames = new Map(
+    [...preferredNames].map(([guid, preferred]) => {
+      const item = itemsByGuid.get(guid);
+      const source = item
+        ? shortSeasonName(item.sourceName).split("／")[0]
+        : "";
+      return [guid, source ? `${source}${preferred}` : ""];
+    }),
+  );
+  const qualifiedNameCounts = new Map<string, number>();
+  for (const name of qualifiedNames.values()) {
+    if (name)
+      qualifiedNameCounts.set(name, (qualifiedNameCounts.get(name) ?? 0) + 1);
+  }
+  const copyName = (item: SaleCopyItem) => {
+    const preferred = preferredNames.get(item.guid) ?? item.displayName;
+    if (
+      item.collection === "event-sky-anniversary" ||
+      (preferredNameCounts.get(preferred) ?? 0) <= 1
+    )
+      return preferred;
+    const qualified = qualifiedNames.get(item.guid) ?? "";
+    return qualified &&
+      textLength(qualified) <= 8 &&
+      (qualifiedNameCounts.get(qualified) ?? 0) === 1
+      ? qualified
+      : item.displayName;
+  };
   const appendUnique = (
     groups: Map<string, CopyGroup>,
     key: string,
@@ -222,8 +313,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
     appendGroup(groups, key, name, rank, itemName);
   };
 
-  [...items]
-    .filter((item) => !isChinaOnlySaleItem(item))
+  [...saleItems]
     .sort((a, b) => categoryRank(a) - categoryRank(b) || a.order - b.order)
     .forEach((item) => {
       if (seen.has(item.guid)) return;
@@ -238,7 +328,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           collaboration.rank,
           tidyItemName(
             collaboration.name,
-            profile?.playerName ?? item.displayName,
+            copyName(item),
           ),
         );
         if (profile) {
@@ -256,7 +346,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           key,
           number ? ordinalLabel(number) : "其他",
           number ? -number : 999,
-          tidyAnniversaryName(item.displayName),
+          tidyAnniversaryName(copyName(item)),
           item.guid,
         );
         return;
@@ -271,7 +361,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
           packageKey,
           packageName,
           profile.salePriority,
-          profile.playerName,
+          copyName(item),
         );
         return;
       }
@@ -283,7 +373,7 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
         sourceName,
         sourceName,
         100,
-        profile?.saleCopy ? profile.playerName : item.displayName,
+        copyName(item),
       );
     });
 
@@ -292,12 +382,12 @@ const groupCollectibles = (items: SaleCopyItem[]) => {
       (a, b) => a.rank - b.rank || a.name.localeCompare(b.name, "zh-Hant"),
     );
   const format = (groups: Map<string, CopyGroup>) =>
-    ordered(groups).map((group) => `${group.name}｜${group.items.join("・")}`);
+    ordered(groups).flatMap((group) =>
+      wrapItemNames(group.items, `${group.name}｜`),
+    );
   const directItems = (groups: Map<string, CopyGroup>) => {
     const names = ordered(groups).flatMap((group) => group.items);
-    return Array.from({ length: Math.ceil(names.length / 4) }, (_, index) =>
-      names.slice(index * 4, index * 4 + 4).join("・"),
-    );
+    return wrapItemNames(names);
   };
   return {
     limited: format(limited),

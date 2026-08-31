@@ -1101,7 +1101,9 @@ const tokenizedZhName = (name: string) => {
   return translated || name;
 };
 export const zhName = (name: string) => manualZhName(name) ?? tokenizedZhName(name);
-type PlayerItemName = string | { displayName: string; aliases?: string[] };
+type PlayerItemName =
+  | string
+  | { displayName?: string; saleName?: string; aliases?: string[] };
 const playerZhByGuid = playerZhNames.items as Record<string, PlayerItemName>;
 const playerItemName = (guid: string) => {
   const entry = playerZhByGuid[guid];
@@ -1110,6 +1112,10 @@ const playerItemName = (guid: string) => {
 const playerItemAliases = (guid: string) => {
   const entry = playerZhByGuid[guid];
   return typeof entry === "string" ? [] : (entry?.aliases ?? []);
+};
+const playerItemSaleName = (guid: string) => {
+  const entry = playerZhByGuid[guid];
+  return typeof entry === "string" ? undefined : entry?.saleName;
 };
 const playerHairByGuid = playerHairNames.items as Record<
   string,
@@ -1127,6 +1133,12 @@ export const zhItemName = (item: WikiItem) => {
     tokenizedZhName(item.name)
   );
 };
+export const saleItemName = (item: WikiItem) =>
+  playerItemSaleName(item.guid) ??
+  playerHairByGuid[item.guid]?.displayName ??
+  playerItemName(item.guid) ??
+  marketCollectibleProfile(item.name, item.guid)?.playerName ??
+  zhItemName(item);
 export const zhItemSearchNames = (item: WikiItem) =>
   [
     zhItemName(item),
