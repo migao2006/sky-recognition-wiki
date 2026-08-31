@@ -278,7 +278,7 @@ test("matches the three in-game prop closet tabs", () => {
     ["held", "large", "small"].map(
       (tab) => instruments.filter((entry) => matchesSub(entry, tab)).length,
     ),
-    [34, 1, 3],
+    [34, 4, 0],
   );
   assert.equal(matchesSub(instrumentByName("Jam Station"), "large"), true);
   for (const name of [
@@ -286,7 +286,9 @@ test("matches the three in-game prop closet tabs", () => {
     "Duets Grand Piano",
     "Fledgling Upright Piano",
   ]) {
-    assert.equal(matchesSub(instrumentByName(name), "small"), true);
+    assert.equal(matchesSub(instrumentByName(name), "large"), true);
+    assert.equal(matchesSub(instrumentByName(name), "held"), false);
+    assert.equal(matchesSub(instrumentByName(name), "small"), false);
   }
 });
 

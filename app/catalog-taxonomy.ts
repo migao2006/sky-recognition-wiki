@@ -115,8 +115,8 @@ export const getNextClosetSub = (closetKey: string, subKey: string) => {
   );
   return index >= 0 ? closetSubSequence[index + 1] || null : null;
 };
-const largeInstrumentGuids = new Set(["WMNr4yo_35"]);
-const smallInstrumentGuids = new Set([
+const largeInstrumentGuids = new Set([
+  "WMNr4yo_35",
   "WuZeLoUATs",
   "O9jSph-v7e",
   "10Ol7H9jKg",
@@ -124,15 +124,13 @@ const smallInstrumentGuids = new Set([
 export const matchesSub = (x: WikiItem, sub: string) => {
   if (sub === "held")
     return (
-      (x.type === "Instrument" &&
-        !largeInstrumentGuids.has(x.guid) &&
-        !smallInstrumentGuids.has(x.guid)) ||
+      (x.type === "Instrument" && !largeInstrumentGuids.has(x.guid)) ||
       x.type === "HeldProp"
     );
   if (sub === "large")
     return largeInstrumentGuids.has(x.guid) || x.type === "LargeProp";
   if (sub === "small")
-    return smallInstrumentGuids.has(x.guid) || x.type === "SmallProp";
+    return x.type === "SmallProp";
   return x.type === sub;
 };
 
