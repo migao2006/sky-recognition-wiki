@@ -6,9 +6,14 @@
 
 ## 專案結構
 
-- `app/page.tsx`：帳號資料、衣櫃選取、估價與匯出流程
+- `app/page.tsx`：三步驟流程協調與按需載入
+- `app/account-step.tsx`：帳號資料與綁定設定
+- `app/catalog-step.tsx`：衣櫃搜尋、分類與快速選取
+- `app/valuation-step.tsx`：估價、備份、出售文案與圖片匯出
+- `app/use-account-draft.ts`：本機草稿保存與還原
 - `app/account-config.ts`：登入綁定、帳號型別與常用套組設定
-- `app/wiki-data.ts`：物品資料庫
+- `app/catalog-*.ts`：物品資料、分類、中文名稱與來源規則
+- `app/wiki-data.ts`：SkyGame-Data 衣櫃物品快照
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出
 - `app/sale-copy.ts`：出售文案輸出
@@ -34,6 +39,12 @@
 - `npm run sync:iap:write`：人工確認後更新付費物品快照
 - `npm run sync:names:check`：產生中文 Wiki 名稱比對報告至 `dist/tmp`
 - `npm run sync:names:write`：通過來源與縮減保護後更新中文名稱快照
+
+尚未進入 SkyGame-Data 正式版本的新品，只能依可追溯的上游 PR／commit 建立暫時 overlay。目前梵谷「星夜之傘」與畫架取自 [SkyGame-Data PR #125](https://github.com/Silverfeelin/SkyGame-Data/pull/125)；上游合併並同步正式快照後，應移除對應 overlay。
+
+## AI 開發規範
+
+所有 Agent 修改與合併都必須遵守 [AGENTS.md](./AGENTS.md)，並把 Documentation Impact Check 納入完成條件。
 
 ## 發佈流程
 
