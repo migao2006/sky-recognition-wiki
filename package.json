@@ -17,7 +17,9 @@
     "sync:iap:write": "node scripts/sync-iap-catalog.mjs --write",
     "sync:catalog:check": "node scripts/check-catalog-identities.mjs",
     "sync:names:check": "node scripts/sync-fandom-zh-names.mjs --out dist/tmp/fandom-zh-names.json",
-    "sync:names:write": "node scripts/sync-fandom-zh-names.mjs --write --out dist/tmp/fandom-zh-names.json"
+    "sync:names:write": "node scripts/sync-fandom-zh-names.mjs --write --out dist/tmp/fandom-zh-names.json",
+    "sync:trade-names:check": "node scripts/sync-transaction-names.mjs",
+    "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write"
   },
   "dependencies": {
     "next": "16.3.3",

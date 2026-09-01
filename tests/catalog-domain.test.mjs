@@ -88,20 +88,37 @@ test("player-friendly names use known catalog guids", async () => {
     await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
   );
   const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
-  assert.equal(Object.keys(playerNames.items).length, 62);
+  assert.equal(Object.keys(playerNames.items).length, 400);
   for (const [guid, entry] of Object.entries(playerNames.items)) {
     assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
     assert.equal(typeof entry, "object", guid);
-    assert.ok(entry.displayName || entry.saleName, guid);
+    const aliases = entry.aliases ?? [];
+    assert.ok(entry.displayName || entry.saleName || aliases.length, guid);
     if (entry.displayName) assert.match(entry.displayName, /[\u3400-\u9fff]/);
     if (entry.saleName) {
       assert.match(entry.saleName, /[\u3400-\u9fff]/);
       assert.ok(Array.from(entry.saleName).length <= 6, guid);
     }
-    const aliases = entry.aliases ?? [];
     assert.ok(Array.isArray(aliases), guid);
     assert.equal(new Set(aliases).size, aliases.length, guid);
     assert.ok(aliases.every((alias) => alias.trim()), guid);
+  }
+});
+
+test("reviewed transaction terms stay attached to their official guids", () => {
+  for (const [guid, expectedSaleName, expectedAlias] of [
+    ["VToGfUfrj1", "背帶褲", "傻笑童子軍服裝"],
+    ["DI0RLfo9Sj", "創始人斗", "創始人斗篷"],
+    ["Bm0aFDGHk2", "白鳥斗", "沉思編導斗篷"],
+    ["EQYKoHE95s", "歐若拉之翼", "歐若拉之翼斗篷"],
+    ["jM8xKFwbTE", "飛蛾觸角", "飛蛾裝扮髮飾"],
+    ["K0NBv__mv8", "人聲樂器", "歐若拉之聲道具"],
+    ["5xJ_mCzZQy", "夏日燈籠", "夏日回憶燈籠"],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(saleItemName(entry), expectedSaleName, guid);
+    assert.ok(zhItemSearchNames(entry).includes(expectedAlias), `${guid}: ${expectedAlias}`);
   }
 });
 
