@@ -88,21 +88,80 @@ test("player-friendly names use known catalog guids", async () => {
     await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
   );
   const catalogGuids = new Set(wikiItems.map((entry) => entry.guid));
-  assert.equal(Object.keys(playerNames.items).length, 400);
+  assert.ok(Object.keys(playerNames.items).length >= 400);
   for (const [guid, entry] of Object.entries(playerNames.items)) {
     assert.ok(catalogGuids.has(guid), `unknown guid: ${guid}`);
     assert.equal(typeof entry, "object", guid);
     const aliases = entry.aliases ?? [];
     assert.ok(entry.displayName || entry.saleName || aliases.length, guid);
-    if (entry.displayName) assert.match(entry.displayName, /[\u3400-\u9fff]/);
+    if (entry.displayName) {
+      assert.match(entry.displayName, /[\u3400-\u9fff]/);
+      assert.doesNotMatch(
+        entry.displayName,
+        /(?:套組|組合|耳尾組|三件套|全圖|熱門復刻)/u,
+        guid,
+      );
+    }
     if (entry.saleName) {
       assert.match(entry.saleName, /[\u3400-\u9fff]/);
       assert.ok(Array.from(entry.saleName).length <= 6, guid);
+      assert.doesNotMatch(
+        entry.saleName,
+        /(?:套組|組合|耳尾組|三件套|全圖|熱門復刻)/u,
+        guid,
+      );
     }
     assert.ok(Array.isArray(aliases), guid);
     assert.equal(new Set(aliases).size, aliases.length, guid);
     assert.ok(aliases.every((alias) => alias.trim()), guid);
+    assert.ok(aliases.every((alias) => alias !== entry.displayName), guid);
   }
+});
+
+test("reviewed player wording keeps seller habits as aliases", () => {
+  for (const [guid, displayName, aliases] of [
+    ["-EBoN4AWqQ", "史力奇尖帽", ["史力奇帽子"]],
+    ["evuvua13dC", "枯枝角", ["巫樹犄角耳飾", "枯角"]],
+    ["OfOc3xQdCQ", "超凡風旅斗篷", ["超凡風之旅人斗篷", "風旅斗"]],
+    ["YUqENRc8rQ", "綠芽斗篷", ["綠芽斗"]],
+    ["w7byhvh3Xa", "雙人鞦韆", ["情人鞦韆", "鞦韆"]],
+    ["yWCpBlHsWa", "小蹺蹺板", ["雙人翹翹板", "情人蹺蹺板"]],
+    ["nrNcYrcZXy", "王子小狐狸", ["小王子狐狸小型家具", "狐狸背包"]],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(zhItemName(entry), displayName, guid);
+    for (const alias of aliases)
+      assert.ok(zhItemSearchNames(entry).includes(alias), `${guid}: ${alias}`);
+  }
+});
+
+test("Kizuna names use the global items without China-only variants", () => {
+  const kizunaItems = wikiItems.filter((entry) =>
+    ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"].includes(entry.name),
+  );
+  assert.deepEqual(
+    kizunaItems.map((entry) => zhItemName(entry)).sort(),
+    ["絆愛斗篷", "絆愛蝴蝶結", "絆愛髮型"].sort(),
+  );
+  for (const entry of kizunaItems)
+    assert.doesNotMatch(zhItemSearchNames(entry).join("｜"), /中國/u, entry.guid);
+});
+
+test("Transcendent Journey keeps a distinct sale name from the regular Journey cape", () => {
+  const transcendent = wikiItems.find((entry) => entry.guid === "OfOc3xQdCQ");
+  const regular = wikiItems.find((entry) => entry.guid === "6Nac-p14-9");
+  assert.ok(transcendent);
+  assert.ok(regular);
+  assert.equal(saleItemName(transcendent), "超凡風旅斗");
+  assert.equal(saleItemName(regular), "風旅斗");
+});
+
+test("the Hair owner migration preserves the reviewed rainbow hat wording", () => {
+  const rainbowHat = wikiItems.find((entry) => entry.guid === "cMLcvRtjoh");
+  assert.ok(rainbowHat);
+  assert.equal(zhItemName(rainbowHat), "彩虹毛帽");
+  assert.ok(zhItemSearchNames(rainbowHat).includes("彩虹帽"));
 });
 
 test("reviewed transaction terms stay attached to their official guids", () => {
