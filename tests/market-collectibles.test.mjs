@@ -13,6 +13,12 @@ const catalog = await loadRuntimeCatalog();
 const iapCatalog = JSON.parse(
   await readFile(new URL("../app/iap-catalog.json", import.meta.url), "utf8"),
 );
+const reviewedIapNames = JSON.parse(
+  await readFile(
+    new URL("../app/reviewed-iap-player-names.json", import.meta.url),
+    "utf8",
+  ),
+);
 
 test("bundle search aliases never resolve as a fake single collectible", () => {
   for (const alias of ["絆愛三件套", "姆明耳尾組", "林克套組", "超凡風旅", "爆米花組"])
@@ -38,6 +44,41 @@ test("generated IAP metadata covers every mapped catalog item by GUID", () => {
     assert.equal(typeof profile?.paid, "boolean", row.name);
     assert.ok(profile?.packageKey, row.name);
     assert.ok(profile?.playerName, row.name);
+  }
+});
+
+test("reviewed IAP player terms replace machine translations by exact GUID", () => {
+  const rows = new Map(iapCatalog.items.map((item) => [item.guid, item]));
+  assert.ok(Object.keys(reviewedIapNames.items).length >= 14);
+  for (const [guid, reviewed] of Object.entries(reviewedIapNames.items)) {
+    const row = rows.get(guid);
+    assert.ok(row, guid);
+    assert.equal(row.nameReviewed, true, guid);
+    assert.equal(row.playerName, reviewed.playerName, guid);
+    assert.doesNotMatch(
+      row.playerName,
+      /海洋海洋|夥伴夥伴|帽帽子|日之愛之日|腿部保暖|洋裝鞠躬/u,
+      guid,
+    );
+    for (const alias of reviewed.aliases)
+      assert.ok(row.aliases.includes(alias), `${guid}: ${alias}`);
+  }
+});
+
+test("every multi-item package keeps distinguishable sale names", () => {
+  const grouped = new Map();
+  for (const profile of importantMarketCollectibles) {
+    if (!profile.packageKey || !profile.guid) continue;
+    const entry = catalog.wikiItems.find((item) => item.guid === profile.guid);
+    if (!entry) continue;
+    const names = grouped.get(profile.packageKey) ?? [];
+    names.push(catalog.saleItemName(entry));
+    grouped.set(profile.packageKey, names);
+  }
+  assert.ok([...grouped.values()].filter((names) => names.length > 1).length >= 30);
+  for (const [packageKey, names] of grouped) {
+    if (names.length < 2) continue;
+    assert.equal(new Set(names).size, names.length, packageKey);
   }
 });
 

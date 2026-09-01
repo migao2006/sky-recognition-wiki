@@ -7,10 +7,12 @@ import {
 } from "./lib/sync-safety.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
+const REVIEWED_NAMES_PATH = resolve(ROOT, "app", "reviewed-iap-player-names.json");
 const PACKAGE_SOURCE = "https://unpkg.com/skygame-data@latest/package.json";
 const writeSnapshot = process.argv.includes("--write");
 const allowShrink = process.argv.includes("--allow-shrink");
 const FETCH_TIMEOUT_MS = 20_000;
+const reviewedNames = JSON.parse(await readFile(REVIEWED_NAMES_PATH, "utf8"));
 
 const classifySeries = (name, packageName, collection) => {
   const text = `${name} ${packageName} ${collection}`.toLowerCase();
@@ -124,6 +126,18 @@ const upstreamByGuid = uniqueMap(
 const localByGuid = new Map(catalog.wikiItems.map((item) => [item.guid, item]));
 if (localByGuid.size !== catalog.wikiItems.length)
   throw new Error("Runtime catalog contains duplicate item GUIDs.");
+for (const [guid, entry] of Object.entries(reviewedNames.items ?? {})) {
+  if (!localByGuid.has(guid))
+    throw new Error(`Reviewed IAP player name uses an unknown catalog GUID: ${guid}`);
+  if (
+    !entry ||
+    typeof entry.playerName !== "string" ||
+    !entry.playerName.trim() ||
+    !Array.isArray(entry.aliases) ||
+    entry.aliases.some((alias) => typeof alias !== "string" || !alias.trim())
+  )
+    throw new Error(`Reviewed IAP player name is malformed: ${guid}`);
+}
 
 // SkyGame-Data intentionally lists some items in both standalone and bundle
 // IAPs. Select the smallest/least expensive offer deterministically and retain
@@ -168,11 +182,24 @@ for (const iap of iaps) {
       continue;
     }
     const platform = platformFor(local.name, iap.name);
+    const generatedPlayerName = catalog.zhName(local.name);
+    const reviewedName = reviewedNames.items?.[local.guid];
+    const playerName = reviewedName?.playerName ?? generatedPlayerName;
+    const aliases = Array.from(
+      new Set([
+        ...(upstream?.name && upstream.name !== local.name ? [upstream.name] : []),
+        ...(reviewedName?.aliases ?? []),
+        ...(reviewedName && generatedPlayerName !== playerName
+          ? [generatedPlayerName]
+          : []),
+      ]),
+    ).filter((alias) => alias !== playerName);
     rows.push({
       guid: local.guid,
       name: local.name,
-      playerName: catalog.zhName(local.name),
-      aliases: upstream?.name && upstream.name !== local.name ? [upstream.name] : [],
+      playerName,
+      aliases,
+      ...(reviewedName ? { nameReviewed: true } : {}),
       packageKey: stableKey(iap),
       packageName: iap.name,
       paid: Number(iap.price) > 0,

@@ -83,6 +83,60 @@ test("uses compact sale names without changing wardrobe display names", () => {
   assert.equal(zhItemSearchNames(roseCape).includes("玫瑰斗"), false);
 });
 
+test("uses reviewed player terms instead of generated IAP translations", () => {
+  for (const [guid, expected] of [
+    ["-ZIWymGtlX", "紫水晶頭飾"],
+    ["6Kn8VMa4go", "泡沫斗"],
+    ["8aWnwc3_C6", "冬日筒帽"],
+    ["aoUa2jtXfL", "冬日腿套"],
+    ["e8qFeoyXxK", "花朵髮飾"],
+    ["EMG3a7883l", "泡沫靴"],
+    ["EocwmiV_Vf", "海浪面具"],
+    ["fLbULqwumS", "報春花蝴蝶結"],
+    ["gHfkqCK-A8", "回音海螺"],
+    ["rA-RHusWvS", "拼圖寬簷帽"],
+    ["svUBdDQ945", "流星披肩"],
+    ["tSAl1nV-qo", "報春花洋裝"],
+    ["VRB1mcOeYv", "FlOw斗"],
+    ["yv8WuDrV-e", "寶藏夥伴"],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(zhItemName(entry), expected, guid);
+    assert.equal(saleItemName(entry), expected, guid);
+  }
+  const seaFoamCape = wikiItems.find((candidate) => candidate.guid === "6Kn8VMa4go");
+  assert.ok(seaFoamCape);
+  assert.ok(zhItemSearchNames(seaFoamCape).includes("海洋海洋泡沫斗篷"));
+});
+
+test("keeps established short player terms for collaboration Hair", () => {
+  for (const [guid, expected] of [
+    ["MHArTLwxyq", "林克"],
+    ["FLMn1Hib7k", "絆愛髮"],
+    ["8P8dL_Zp8q", "風之旅人"],
+    ["TfItBIVTeP", "超凡風之旅人"],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(saleItemName(entry), expected, guid);
+  }
+});
+
+test("uses player shorthand instead of tokenized event and painting names", () => {
+  for (const [guid, expected] of [
+    ["79IJJygQsw", "自畫像"],
+    ["MV5iUIEMMH", "紫水晶擺飾"],
+    ["P-7ozR83J8", "花拱門"],
+    ["VBR5HI2-dU", "花冠"],
+    ["rFRaOxnvXF", "玫瑰面具"],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(saleItemName(entry), expected, guid);
+  }
+});
+
 test("player-friendly names use known catalog guids", async () => {
   const playerNames = JSON.parse(
     await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8"),
@@ -143,6 +197,10 @@ test("Kizuna names use the global items without China-only variants", () => {
   assert.deepEqual(
     kizunaItems.map((entry) => zhItemName(entry)).sort(),
     ["絆愛斗篷", "絆愛蝴蝶結", "絆愛髮型"].sort(),
+  );
+  assert.deepEqual(
+    kizunaItems.map((entry) => saleItemName(entry)).sort(),
+    ["絆愛斗", "絆愛蝴蝶結", "絆愛髮"].sort(),
   );
   for (const entry of kizunaItems)
     assert.doesNotMatch(zhItemSearchNames(entry).join("｜"), /中國/u, entry.guid);
@@ -371,7 +429,7 @@ test("uses held order only for the held closet, not cross-closet search", () => 
 test("keeps formerly ambiguous paid and held-prop names distinct", () => {
   const byName = (name) => wikiItems.find((entry) => entry.name === name);
   assert.equal(zhItemName(byName("Journey Cape")), "風之旅人斗篷");
-  assert.equal(zhItemName(byName("FlOw Cape")), "FlOw 斗篷");
+  assert.equal(zhItemName(byName("FlOw Cape")), "FlOw斗");
   assert.equal(zhItemName(byName("Manatee Toy")), "海牛公仔");
   assert.equal(zhItemName(byName("Manatee Plush")), "小海牛玩偶");
 });

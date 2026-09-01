@@ -1,0 +1,19 @@
+{
+  "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
+  "items": {
+    "-ZIWymGtlX": { "playerName": "紫水晶頭飾", "aliases": ["愛之慶典紫水晶頭飾"] },
+    "6Kn8VMa4go": { "playerName": "泡沫斗", "aliases": ["海洋泡沫斗篷"] },
+    "8aWnwc3_C6": { "playerName": "冬日筒帽", "aliases": ["蓬鬆冬日筒帽"] },
+    "aoUa2jtXfL": { "playerName": "冬日腿套", "aliases": ["蓬鬆冬日腿套"] },
+    "e8qFeoyXxK": { "playerName": "花朵髮飾", "aliases": ["花朵髮型配件"] },
+    "EMG3a7883l": { "playerName": "泡沫靴", "aliases": ["海洋泡沫靴"] },
+    "EocwmiV_Vf": { "playerName": "海浪面具", "aliases": ["海洋海浪面具"] },
+    "fLbULqwumS": { "playerName": "報春花蝴蝶結", "aliases": ["仙境報春花蝴蝶結"] },
+    "gHfkqCK-A8": { "playerName": "回音海螺", "aliases": ["自然回音貝殼"] },
+    "rA-RHusWvS": { "playerName": "拼圖寬簷帽", "aliases": ["惡作劇拼圖工匠寬簷帽"] },
+    "svUBdDQ945": { "playerName": "流星披肩", "aliases": ["浪漫流星斗篷"] },
+    "tSAl1nV-qo": { "playerName": "報春花洋裝", "aliases": ["仙境報春花圍裙洋裝"] },
+    "VRB1mcOeYv": { "playerName": "FlOw斗", "aliases": ["FlOw 斗篷", "花憩風之旅人斗篷"] },
+    "yv8WuDrV-e": { "playerName": "寶藏夥伴", "aliases": ["尋寶水手夥伴"] }
+  }
+}

@@ -103,8 +103,12 @@
     {
       "guid": "-ZIWymGtlX",
       "name": "Days Of Love Amethyst Accessory",
-      "playerName": "日之愛之日紫水晶配件",
-      "aliases": [],
+      "playerName": "紫水晶頭飾",
+      "aliases": [
+        "愛之慶典紫水晶頭飾",
+        "日之愛之日紫水晶配件"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:kE_RqeOcHu",
       "packageName": "Days of Love Amethyst Accessory",
       "paid": true,
@@ -389,8 +393,12 @@
     {
       "guid": "6Kn8VMa4go",
       "name": "Ocean Sea Foam Cape",
-      "playerName": "海洋海洋泡沫斗篷",
-      "aliases": [],
+      "playerName": "泡沫斗",
+      "aliases": [
+        "海洋泡沫斗篷",
+        "海洋海洋泡沫斗篷"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:6fgefdyfOb",
       "packageName": "Ocean Sea Foam Set",
       "paid": true,
@@ -468,8 +476,12 @@
     {
       "guid": "8aWnwc3_C6",
       "name": "Fluffy Winter Pillbox Hat",
-      "playerName": "蓬鬆冬日筒帽帽子",
-      "aliases": [],
+      "playerName": "冬日筒帽",
+      "aliases": [
+        "蓬鬆冬日筒帽",
+        "蓬鬆冬日筒帽帽子"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:3PMpLqW_rH",
       "packageName": "Fluffy Winter Wear",
       "paid": true,
@@ -631,8 +643,12 @@
     {
       "guid": "aoUa2jtXfL",
       "name": "Fluffy Winter Leg Warmer",
-      "playerName": "蓬鬆冬日腿部保暖",
-      "aliases": [],
+      "playerName": "冬日腿套",
+      "aliases": [
+        "蓬鬆冬日腿套",
+        "蓬鬆冬日腿部保暖"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:3PMpLqW_rH",
       "packageName": "Fluffy Winter Wear",
       "paid": true,
@@ -1061,8 +1077,11 @@
     {
       "guid": "e8qFeoyXxK",
       "name": "Flower Hair Accessory",
-      "playerName": "花朵髮型配件",
-      "aliases": [],
+      "playerName": "花朵髮飾",
+      "aliases": [
+        "花朵髮型配件"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:G6SF2VMPE3",
       "packageName": "Flower + FlOw Pack",
       "paid": true,
@@ -1101,8 +1120,11 @@
     {
       "guid": "EMG3a7883l",
       "name": "Ocean Sea Foam Boots",
-      "playerName": "海洋泡沫靴",
-      "aliases": [],
+      "playerName": "泡沫靴",
+      "aliases": [
+        "海洋泡沫靴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:6fgefdyfOb",
       "packageName": "Ocean Sea Foam Set",
       "paid": true,
@@ -1115,8 +1137,11 @@
     {
       "guid": "EocwmiV_Vf",
       "name": "Ocean Wave Mask",
-      "playerName": "海洋海浪面具",
-      "aliases": [],
+      "playerName": "海浪面具",
+      "aliases": [
+        "海洋海浪面具"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:5sO_q1MnG6",
       "packageName": "Ocean Wave Mask",
       "paid": true,
@@ -1225,8 +1250,12 @@
     {
       "guid": "fLbULqwumS",
       "name": "Wonderland Primrose Pinafore Bow",
-      "playerName": "仙境報春花圍裙洋裝鞠躬",
-      "aliases": [],
+      "playerName": "報春花蝴蝶結",
+      "aliases": [
+        "仙境報春花蝴蝶結",
+        "仙境報春花圍裙洋裝鞠躬"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:_Nj12DJmj_",
       "packageName": "Wonderland Primose Pinafore Set",
       "paid": true,
@@ -1279,8 +1308,12 @@
     {
       "guid": "gHfkqCK-A8",
       "name": "Nature Sonorous Seashell",
-      "playerName": "自然洪亮海螺",
-      "aliases": [],
+      "playerName": "回音海螺",
+      "aliases": [
+        "自然回音貝殼",
+        "自然洪亮海螺"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:7anZDnNjVZ",
       "packageName": "Nature Sonorous Seashell",
       "paid": true,
@@ -2274,8 +2307,12 @@
     {
       "guid": "rA-RHusWvS",
       "name": "Mischief Puzzlewright's Brimmed Hat",
-      "playerName": "惡作劇拼圖工匠寬簷帽子",
-      "aliases": [],
+      "playerName": "拼圖寬簷帽",
+      "aliases": [
+        "惡作劇拼圖工匠寬簷帽",
+        "惡作劇拼圖工匠寬簷帽子"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:jh1HAJhsh-",
       "packageName": "Mischief Puzzlewright's Brimmed Hat",
       "paid": true,
@@ -2381,8 +2418,12 @@
     {
       "guid": "svUBdDQ945",
       "name": "Days Of Love Meteor Mantle",
-      "playerName": "日之愛之日流星披肩",
-      "aliases": [],
+      "playerName": "流星披肩",
+      "aliases": [
+        "浪漫流星斗篷",
+        "日之愛之日流星披肩"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:IgsQg-Dlwf",
       "packageName": "Days of Love Meteor Mantle",
       "paid": true,
@@ -2475,8 +2516,11 @@
     {
       "guid": "tSAl1nV-qo",
       "name": "Wonderland Primrose Pinafore Dress",
-      "playerName": "仙境報春花圍裙洋裝",
-      "aliases": [],
+      "playerName": "報春花洋裝",
+      "aliases": [
+        "仙境報春花圍裙洋裝"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:_Nj12DJmj_",
       "packageName": "Wonderland Primose Pinafore Set",
       "paid": true,
@@ -2681,8 +2725,12 @@
     {
       "guid": "VRB1mcOeYv",
       "name": "FlOw Cape",
-      "playerName": "FlOw 斗篷",
-      "aliases": [],
+      "playerName": "FlOw斗",
+      "aliases": [
+        "FlOw 斗篷",
+        "花憩風之旅人斗篷"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:G6SF2VMPE3",
       "packageName": "Flower + FlOw Pack",
       "paid": true,
@@ -3007,8 +3055,12 @@
     {
       "guid": "yv8WuDrV-e",
       "name": "Treasure Mate Companion",
-      "playerName": "寶藏夥伴夥伴",
-      "aliases": [],
+      "playerName": "寶藏夥伴",
+      "aliases": [
+        "尋寶水手夥伴",
+        "寶藏夥伴夥伴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:9mH8z44XCV",
       "packageName": "Treasure Mate Companion",
       "paid": true,

@@ -12,6 +12,7 @@ type MarketCollectibleProfile = {
   guid?: string;
   name: string;
   playerName: string;
+  nameReviewed?: boolean;
   aliases: readonly string[];
   packageName?: string;
   series: string;
@@ -300,6 +301,7 @@ type IapCatalogRow = {
   guid: string;
   name: string;
   playerName: string;
+  nameReviewed?: boolean;
   aliases: readonly string[];
   packageKey: string;
   packageName: string;
@@ -374,6 +376,9 @@ for (const curated of curatedProfiles) {
   const merged: MarketCollectibleProfile = {
     ...generated,
     ...curated,
+    playerName: generated?.nameReviewed
+      ? generated.playerName
+      : curated.playerName,
     guid: generated?.guid,
     packageKey: curated.packageKey ?? generated?.packageKey,
     packageName:

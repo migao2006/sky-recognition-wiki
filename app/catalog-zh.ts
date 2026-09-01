@@ -1125,7 +1125,9 @@ const wikiZhByGuid = wikiZhNames.items as Record<string, string>;
 export const zhItemName = (item: WikiItem) => {
   const marketProfile = marketCollectibleProfile(item.name, item.guid);
   return (
-    (marketProfile?.curated ? marketProfile.playerName : undefined) ??
+    (marketProfile?.curated || marketProfile?.nameReviewed
+      ? marketProfile.playerName
+      : undefined) ??
     playerHairByGuid[item.guid]?.displayName ??
     playerItemName(item.guid) ??
     wikiZhByGuid[item.guid] ??
@@ -1133,12 +1135,17 @@ export const zhItemName = (item: WikiItem) => {
     tokenizedZhName(item.name)
   );
 };
-export const saleItemName = (item: WikiItem) =>
-  playerItemSaleName(item.guid) ??
-  playerHairByGuid[item.guid]?.displayName ??
-  playerItemName(item.guid) ??
-  marketCollectibleProfile(item.name, item.guid)?.playerName ??
-  zhItemName(item);
+export const saleItemName = (item: WikiItem) => {
+  const marketProfile = marketCollectibleProfile(item.name, item.guid);
+  return (
+    (marketProfile?.nameReviewed ? marketProfile.playerName : undefined) ??
+    playerItemSaleName(item.guid) ??
+    (marketProfile?.curated ? marketProfile.playerName : undefined) ??
+    playerHairByGuid[item.guid]?.displayName ??
+    playerItemName(item.guid) ??
+    zhItemName(item)
+  );
+};
 export const zhItemSearchNames = (item: WikiItem) =>
   [
     zhItemName(item),

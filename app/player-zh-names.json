@@ -1,6 +1,11 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案，以及 2026-09-01 全物件交易用語重查清單；作者個人寫法會正規化，且只寫入唯一、高信心的單件對應。",
   "items": {
+    "79IJJygQsw": { "displayName": "自畫像", "aliases": ["戴灰氈帽的自畫像"] },
+    "MV5iUIEMMH": { "displayName": "紫水晶擺飾", "aliases": ["紫羅蘭水晶道具"] },
+    "P-7ozR83J8": { "displayName": "花拱門", "aliases": ["花卉拱門"] },
+    "VBR5HI2-dU": { "displayName": "花冠", "aliases": ["花朵皇冠"] },
+    "rFRaOxnvXF": { "displayName": "玫瑰面具", "aliases": ["愛之日面具"] },
     "PpIpcfoNDH": { "displayName": "藍色帽子" },
     "uJd-mEy1g4": { "displayName": "週年燕尾斗篷" },
     "x-eBv-6iNk": { "displayName": "週年服裝", "aliases": ["週年禮服"] },
@@ -258,7 +263,7 @@
     "jaI5b86En7": { "saleName": "衝浪", "aliases": ["衝浪髮型", "衝浪"] },
     "CCT1qLLxKN": { "saleName": "蜘蛛", "aliases": ["蜘蛛髮型", "蜘蛛"] },
     "8aoU-Pwe_p": { "saleName": "大耳狗裝扮", "aliases": ["大耳狗裝扮髮型", "大耳狗裝扮"] },
-    "FLMn1Hib7k": { "saleName": "絆愛", "aliases": ["絆愛髮型", "絆愛"] },
+    "FLMn1Hib7k": { "saleName": "絆愛髮", "aliases": ["絆愛髮型", "絆愛"] },
     "MHArTLwxyq": { "saleName": "林克", "aliases": ["林克髮型"] },
     "8P8dL_Zp8q": { "saleName": "風之旅人", "aliases": ["風之旅人髮型", "風之旅人"] },
     "DTMwTb6_mu": { "saleName": "禮貌學者髮", "aliases": ["禮貌學者髮型", "禮貌學者髮"] },
