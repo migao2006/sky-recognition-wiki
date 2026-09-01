@@ -1,17 +1,11 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
-import { injectSeasonItems } from "./helpers/season-items.mjs";
+import { tsImport } from "tsx/esm/api";
 
-const [valuationSource] = await Promise.all(
-  ["valuation-items.ts"].map((file) =>
-    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-  ),
-);
-const marketUrl = await marketCollectiblesModuleUrl();
-const marketModule = await import(marketUrl);
+const [marketModule, valuationItems] = await Promise.all([
+  tsImport("../app/market-collectibles.ts", import.meta.url),
+  tsImport("../app/valuation-items.ts", import.meta.url),
+]);
 const marketGuidByName = new Map(
   marketModule.importantMarketCollectibles.flatMap((profile) =>
     [profile.name, ...profile.aliases].map((name) => [name, profile.guid]),
@@ -25,14 +19,7 @@ const {
   limitedItemKind,
   isSeasonPendant,
   isSeasonUltimate,
-} = await import(
-  asModuleUrl(
-    (await injectSeasonItems(valuationSource)).replace(
-      'import { marketCollectibleProfile } from "./market-collectibles";',
-      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
-    ),
-  )
-);
+} = valuationItems;
 
 const item = (overrides = {}) => ({
   id: 1,

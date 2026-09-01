@@ -19,7 +19,7 @@ import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 type AccountBindings = Record<BindingKey, BindingStatus>;
 type SetOwned = Dispatch<SetStateAction<Set<string>>>;
 
-export type HasAccountDraftData = (
+type HasAccountDraftData = (
   account: AccountInfo,
   bindings: AccountBindings,
   owned: ReadonlySet<string>,
@@ -66,7 +66,7 @@ const storedDraftKeys = [
   ...ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS,
 ];
 
-export const removeAllStoredDrafts = () => {
+const clearStoredDrafts = () => {
   let failure: unknown;
   storedDraftKeys.forEach((key) => {
     try {
@@ -127,7 +127,7 @@ export const useAccountDraft = ({
         }
       } catch {
         try {
-          removeAllStoredDrafts();
+          clearStoredDrafts();
         } catch {
           available = false;
         }
@@ -144,7 +144,7 @@ export const useAccountDraft = ({
           setNotice("已恢復此裝置上的草稿");
         } else {
           try {
-            removeAllStoredDrafts();
+            clearStoredDrafts();
           } catch {
             available = false;
           }
@@ -178,11 +178,11 @@ export const useAccountDraft = ({
             JSON.stringify(createAccountDraft({ account, bindings, owned })),
           );
         } else {
-          removeAllStoredDrafts();
+          clearStoredDrafts();
         }
       } catch {
         try {
-          removeAllStoredDrafts();
+          clearStoredDrafts();
         } catch {
           // Storage is unavailable; the in-memory session remains usable.
         }
@@ -195,7 +195,7 @@ export const useAccountDraft = ({
 
   const clearStoredDraft = useCallback(() => {
     try {
-      removeAllStoredDrafts();
+      clearStoredDrafts();
     } catch {
       setDraftAvailable(false);
     }

@@ -1,11 +1,5 @@
 .valuation-report {
   padding: 22px;
-  border: 1px solid var(--glass-line);
-  border-radius: 22px;
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(16px) saturate(115%);
-  backdrop-filter: blur(16px) saturate(115%);
-  box-shadow: var(--glass-shadow);
 }
 .valuation-report-head {
   display: flex;

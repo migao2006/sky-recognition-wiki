@@ -1,35 +1,16 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
+import { tsImport } from "tsx/esm/api";
 
-const [source, configSource] = await Promise.all(
-  ["sale-copy.ts", "account-config.ts"].map((file) =>
-    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-  ),
-);
-const marketUrl = await marketCollectiblesModuleUrl();
-const marketModule = await import(marketUrl);
+const [marketModule, { buildSaleCopy }] = await Promise.all([
+  tsImport("../app/market-collectibles.ts", import.meta.url),
+  tsImport("../app/sale-copy.ts", import.meta.url),
+]);
 const marketGuidByName = new Map(
   marketModule.importantMarketCollectibles.flatMap((profile) =>
     [profile.name, ...profile.aliases].map((name) => [name, profile.guid]),
   ),
 );
-const moduleUrl = asModuleUrl(
-  source
-    .replace(
-      /import \{([\s\S]*?)\} from "\.\/account-config";/,
-      (_, names) =>
-        `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(configSource))});`,
-    )
-    .replace(
-      'import { marketCollectibleProfile } from "./market-collectibles";',
-      `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
-    ),
-);
-const { buildSaleCopy } = await import(moduleUrl);
-
 const season = (slug, name, owned = 0, total = 3) => ({
   slug,
   name,

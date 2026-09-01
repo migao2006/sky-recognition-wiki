@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export type FocusMode = "all" | "video" | "ultimate" | "limited";
+type FocusMode = "all" | "video" | "ultimate" | "limited";
 export type ShowcasePreset = "valuation" | "video" | "collection";
 export const INITIAL_VISIBLE_ITEMS = 40;
 

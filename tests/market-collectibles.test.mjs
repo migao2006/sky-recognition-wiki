@@ -2,24 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
+import { tsImport } from "tsx/esm/api";
 
-const [bundleSource] = await Promise.all(
-  ["bundle-presets.ts"].map((file) =>
-    readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-  ),
-);
-const marketUrl = await marketCollectiblesModuleUrl();
-const { importantMarketCollectibles, marketCollectibleProfile } = await import(marketUrl);
-const { bundlePresets } = await import(
-  asModuleUrl(
-    bundleSource.replace(
-      'import { marketProfileNamesForSeries } from "./market-collectibles";',
-      `const { marketProfileNamesForSeries } = await import(${JSON.stringify(marketUrl)});`,
-    ),
-  )
-);
+const [marketModule, { bundlePresets }] = await Promise.all([
+  tsImport("../app/market-collectibles.ts", import.meta.url),
+  tsImport("../app/bundle-presets.ts", import.meta.url),
+]);
+const { importantMarketCollectibles, marketCollectibleProfile } = marketModule;
 const catalog = await loadRuntimeCatalog();
 const iapCatalog = JSON.parse(
   await readFile(new URL("../app/iap-catalog.json", import.meta.url), "utf8"),

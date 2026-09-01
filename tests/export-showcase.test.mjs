@@ -1,18 +1,24 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
-import {
-  loadCatalogRuntime,
-  loadShowcaseRuntime,
-} from "./helpers/catalog-runtime.mjs";
+import { tsImport } from "tsx/esm/api";
+import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
-const {
-  buildShowcaseGroups,
-  orderShowcaseItems,
-  source: showcaseSource,
-  measureShowcaseCanvas,
-  planShowcasePageItems,
-  planShowcasePages,
-} = await loadShowcaseRuntime();
+const [
+  { buildShowcaseGroups, orderShowcaseItems },
+  {
+    measureShowcaseCanvas,
+    planShowcasePageItems,
+    planShowcasePages,
+  },
+] = await Promise.all([
+  tsImport("../app/showcase-order.ts", import.meta.url),
+  tsImport("../app/export-showcase.ts", import.meta.url),
+]);
+const showcaseSource = await readFile(
+  new URL("../app/export-showcase.ts", import.meta.url),
+  "utf8",
+);
 
 let fixtureId = 0;
 const item = (overrides = {}) => ({
@@ -42,6 +48,27 @@ const options = (items) => ({
   getItemTypeName: (entry) => entry.type,
   getItemTypeOrder: (entry) =>
     ({ Outfit: 0, Cape: 1, Prop: 2 }[entry.type] ?? 99),
+});
+
+const catalogOptions = (catalog, items) => ({
+  items,
+  isUltimate: catalog.isSeasonUltimate,
+  isLimited: (entry) =>
+    catalog.isPaidItem(entry) || catalog.isLimitedItem(entry),
+  isPendant: catalog.isSeasonPendant,
+  getClusterName: (entry) =>
+    entry.section === "seasons"
+      ? catalog.seasonZh[entry.collection] || entry.collection
+      : entry.section === "events"
+        ? catalog.eventZh[entry.collection] || entry.collection
+        : entry.section === "realms"
+          ? catalog.realmZh[entry.collection] || "常駐地圖"
+          : entry.section === "store"
+            ? catalog.storeSource(entry)
+            : catalog.sourceKind(entry),
+  getClusterOrder: catalog.showcaseClusterOrder,
+  getItemTypeName: (entry) => catalog.labels[entry.type] || entry.type,
+  getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
 });
 
 test("sorts season graduation clusters from oldest to newest", () => {
@@ -250,53 +277,15 @@ test("decodes and releases icon batches one export page at a time", () => {
 });
 
 test("keeps the complete catalog export within mobile canvas limits", async () => {
-  const catalog = await loadCatalogRuntime();
-  const valuation = catalog;
+  const catalog = await loadRuntimeCatalog();
   const selected = catalog.wikiItems.filter((entry) =>
     catalog.allClosetTypeSet.has(entry.type),
   );
-  const size = measureShowcaseCanvas({
-    items: selected,
-    isUltimate: valuation.isSeasonUltimate,
-    isLimited: (entry) =>
-      valuation.isPaidItem(entry) || catalog.isLimitedItem(entry),
-    isPendant: valuation.isSeasonPendant,
-    getClusterName: (entry) =>
-      entry.section === "seasons"
-        ? catalog.seasonZh[entry.collection] || entry.collection
-        : entry.section === "events"
-          ? catalog.eventZh[entry.collection] || entry.collection
-          : entry.section === "realms"
-            ? catalog.realmZh[entry.collection] || "常駐地圖"
-            : entry.section === "store"
-              ? catalog.storeSource(entry)
-              : catalog.sourceKind(entry),
-    getClusterOrder: catalog.showcaseClusterOrder,
-    getItemTypeName: (entry) => catalog.labels[entry.type] || entry.type,
-    getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
-  });
+  const settings = catalogOptions(catalog, selected);
+  const size = measureShowcaseCanvas(settings);
   assert.equal(selected.length, 1171);
   assert.equal(size.width, 1600);
-  const pages = planShowcasePages({
-    items: selected,
-    isUltimate: valuation.isSeasonUltimate,
-    isLimited: (entry) =>
-      valuation.isPaidItem(entry) || catalog.isLimitedItem(entry),
-    isPendant: valuation.isSeasonPendant,
-    getClusterName: (entry) =>
-      entry.section === "seasons"
-        ? catalog.seasonZh[entry.collection] || entry.collection
-        : entry.section === "events"
-          ? catalog.eventZh[entry.collection] || entry.collection
-          : entry.section === "realms"
-            ? catalog.realmZh[entry.collection] || "常駐地圖"
-            : entry.section === "store"
-              ? catalog.storeSource(entry)
-              : catalog.sourceKind(entry),
-    getClusterOrder: catalog.showcaseClusterOrder,
-    getItemTypeName: (entry) => catalog.labels[entry.type] || entry.type,
-    getItemTypeOrder: (entry) => catalog.typeOrder.get(entry.type) ?? 999,
-  });
+  const pages = planShowcasePages(settings);
   assert.ok(pages.every((page) => page.height <= 10_000));
   assert.equal(
     pages.reduce((total, page) => total + page.height, 0),

@@ -1,6 +1,6 @@
 import type { PackageTierKey } from "./valuation-market";
 
-export type PackageTier = {
+type PackageTier = {
   key: PackageTierKey;
   label: string;
   premium: number;
@@ -8,14 +8,14 @@ export type PackageTier = {
 
 export type SalePackageTierKey = "few" | "medium" | "many";
 
-export type SalePackageTier = {
+type SalePackageTier = {
   key: SalePackageTierKey;
   label: "少禮" | "中禮" | "多禮";
 };
 
-export type ExtraValueCap = { low: number; high: number };
+type ExtraValueCap = { low: number; high: number };
 
-export type ExtraValueContext = {
+type ExtraValueContext = {
   conservative?: boolean;
 };
 

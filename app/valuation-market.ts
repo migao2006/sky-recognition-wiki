@@ -25,7 +25,7 @@ export const marketPackageTierNames: Record<PackageTierKey, string> = {
 
 export const valuationMarketAggregate = marketAggregate;
 
-export type MarketValidationStatus =
+type MarketValidationStatus =
   | "validated"
   | "legacy-unvalidated"
   | "unvalidated";

@@ -1,14 +1,14 @@
 import iapCatalog from "./iap-catalog.json";
 import type { BindingKey } from "./account-config";
 
-export type MarketAvailability = "global" | "china" | "platform";
-export type MarketPlatform = BindingKey;
-export type MarketSaleSection = "collaboration" | "important" | "special";
-export type MarketValuationTier = "high" | "standard";
-export type MarketImportance = "important" | "standard";
-export type MarketReturning = "returning" | "limited" | "unknown";
+type MarketAvailability = "global" | "china" | "platform";
+type MarketPlatform = BindingKey;
+type MarketSaleSection = "collaboration" | "important" | "special";
+type MarketValuationTier = "high" | "standard";
+type MarketImportance = "important" | "standard";
+type MarketReturning = "returning" | "limited" | "unknown";
 
-export type MarketCollectibleProfile = {
+type MarketCollectibleProfile = {
   guid?: string;
   name: string;
   playerName: string;

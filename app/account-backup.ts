@@ -14,7 +14,7 @@ const BACKUP_FORMAT = "sky-recognition-wiki";
 const BACKUP_VERSION = 3;
 const LEGACY_BACKUP_VERSIONS = new Set([1, 2]);
 export const ACCOUNT_BACKUP_MAX_BYTES = 5 * 1024 * 1024;
-export const ACCOUNT_BACKUP_MAX_OWNED_ITEMS = 5_000;
+const ACCOUNT_BACKUP_MAX_OWNED_ITEMS = 5_000;
 
 export const ACCOUNT_DRAFT_STORAGE_KEY = "sky-recognition-wiki:draft:v3";
 export const ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS = [
@@ -34,7 +34,7 @@ type BackupOptions = {
 
 type UnknownRecord = Record<string, unknown>;
 
-export type AccountImportResult = {
+type AccountImportResult = {
   account: AccountInfo;
   bindings: Record<BindingKey, BindingStatus>;
   owned: string[];

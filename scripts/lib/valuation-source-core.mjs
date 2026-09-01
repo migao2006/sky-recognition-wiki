@@ -23,6 +23,29 @@ export const breakClasses = ["none", "slight", "medium", "big"];
 export const packageTiers = ["few", "medium", "many", "hundred"];
 export const accountStyles = ["simple", "regular"];
 
+// These classifications are based only on normalized numeric source fields.
+// Listing-language fallbacks belong to the ingestion/audit layer so validators
+// never recreate market attributes from seller prose.
+export const breakClassFor = (row) => {
+  if (breakClasses.includes(row.computed_break_class)) return row.computed_break_class;
+  const missing = Number(row.missing_season_count);
+  const completion = Number(row.completion_ratio);
+  if (!Number.isFinite(missing) || !Number.isFinite(completion)) return null;
+  if (missing === 0) return "none";
+  if (missing <= 2 && completion >= 0.8) return "slight";
+  if (missing <= 5 || completion >= 0.5) return "medium";
+  return "big";
+};
+export const packageTierFor = (row) => {
+  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
+  const count = Number(row.paid_package_count);
+  if (!Number.isFinite(count) || count < 0) return null;
+  if (count >= 100) return "hundred";
+  if (count >= 40) return "many";
+  if (count >= 15) return "medium";
+  return "few";
+};
+
 // A source row may carry this normalized snapshot when it was collected from
 // the organizer.  It is intentionally numeric: validators must not recreate
 // package, limited-item or binding decisions from listing prose.

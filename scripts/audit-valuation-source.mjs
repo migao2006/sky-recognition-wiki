@@ -6,9 +6,11 @@ import {
   accountStyles,
   applyGroupCap as applySharedGroupCap,
   breakClasses,
+  breakClassFor as sharedBreakClassFor,
   evidenceWeights,
   groupKeyFor,
   packageTiers,
+  packageTierFor,
   preferredRow,
   priceFor as sharedPriceFor,
   priceKindWeights,
@@ -142,31 +144,15 @@ const startSeasonFactorFor = (row, startSeason) => {
   if (confidence === "structured") return 0.8;
   return 1;
 };
-const breakClassFor = (row) => {
-  if (breakClasses.includes(row.computed_break_class)) return row.computed_break_class;
-  const missing = Number(row.missing_season_count);
-  const completion = Number(row.completion_ratio);
-  if (Number.isFinite(missing) && Number.isFinite(completion)) {
-    if (missing === 0) return "none";
-    if (missing <= 2 && completion >= 0.8) return "slight";
-    if (missing <= 5 || completion >= 0.5) return "medium";
-    return "big";
-  }
+const auditBreakClassFor = (row) => {
+  const structured = sharedBreakClassFor(row);
+  if (structured) return structured;
   const label = String(row.seller_break_label ?? "").toLowerCase();
   if (/無斷|none/.test(label)) return "none";
   if (/微斷|小斷|近無斷|偽無斷|slight/.test(label)) return "slight";
   if (/中斷|半斷|medium/.test(label)) return "medium";
   if (/大斷|多斷|big/.test(label)) return "big";
   return null;
-};
-const packageTierFor = (row) => {
-  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
-  const count = Number(row.paid_package_count);
-  if (!Number.isFinite(count) || count < 0) return null;
-  if (count >= 100) return "hundred";
-  if (count >= 40) return "many";
-  if (count >= 15) return "medium";
-  return "few";
 };
 const accountStyleFor = (row) => accountStyles.includes(row.account_style) ? row.account_style : null;
 const invalidReason = (row) => {
@@ -323,7 +309,7 @@ for (const row of postRows.values()) {
     source: sourceFor(row),
     startSeason,
     startSeasonFactor: startSeasonFactorFor(row, startSeason),
-    breakClass: breakClassFor(row),
+    breakClass: auditBreakClassFor(row),
     packageTier: packageTierFor(row),
     accountStyle: accountStyleFor(row),
     accountKey: accountKeyFor(row),

@@ -150,6 +150,19 @@ test("aggregates price ranges and objective market classifications", async () =>
   assert.ok(packageModifiers.hundred.multiplier <= 1.21);
 });
 
+test("keeps seller break labels as an audit-only fallback", async () => {
+  const result = await audit([{
+    post_hash: "seller-break-label",
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "assembly",
+    seller_break_label: "微斷",
+  }]);
+  assert.equal(result.segments.breakClass.slight.sampleCount, 1);
+});
+
 test("reduces inferred and structured start-season evidence weight", async () => {
   const base = {
     published_at: recent,

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadCatalogRuntime } from "./helpers/catalog-runtime.mjs";
+import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
-const catalog = await loadCatalogRuntime();
+const catalog = await loadRuntimeCatalog();
 const resolver = catalog.buildCatalogNameResolver(
   catalog.wikiItems,
   catalog.zhItemSearchNames,

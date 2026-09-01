@@ -28,7 +28,7 @@ export const accountResourceLimits = {
   passes: 999,
 } as const;
 
-export type AccountResourceKey = keyof typeof accountResourceLimits;
+type AccountResourceKey = keyof typeof accountResourceLimits;
 
 /** Returns an empty value for a missing or invalid resource quantity. */
 export const normalizeAccountResource = (

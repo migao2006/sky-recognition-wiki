@@ -239,19 +239,6 @@
   .item-card:hover {
     transform: none;
   }
-  .grid .source-badge,
-  .grid .discontinued-badge {
-    top: 5px;
-    padding: 3px 5px;
-    border-radius: 6px;
-    font-size: 7px;
-  }
-  .grid .source-badge {
-    right: 5px;
-  }
-  .grid .discontinued-badge {
-    left: 5px;
-  }
   .grid .card-body {
     min-height: 34px;
     padding: 5px;
@@ -310,10 +297,6 @@
   .binding-card > span {
     font-size: 11px;
   }
-  .account-form .binding-card select {
-    height: 40px;
-    font-size: 12px;
-  }
   .quick-select summary,
   .season-picker summary {
     min-height: 60px;
@@ -342,9 +325,6 @@
   }
   .preset-grid button b {
     font-size: 11px;
-  }
-  .preset-grid button small {
-    font-size: 9px;
   }
   .showcase-builder {
     padding: 14px 12px;

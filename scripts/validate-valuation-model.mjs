@@ -3,11 +3,11 @@ import {
   accountKeyFor,
   accountStyles,
   applyGroupCap,
-  breakClasses,
+  breakClassFor,
   evidenceWeights,
   inHoldout,
   marketGroupFor,
-  packageTiers,
+  packageTierFor,
   postKeyFor,
   preferredSample,
   priceFor,
@@ -45,25 +45,6 @@ const startSeasonFor = (row, aggregate) => {
     if (aggregate.segments.startSeason[slug]?.median) return slug;
   }
   return null;
-};
-const breakClassFor = (row) => {
-  if (breakClasses.includes(row.computed_break_class)) return row.computed_break_class;
-  const missing = Number(row.missing_season_count);
-  const completion = Number(row.completion_ratio);
-  if (!Number.isFinite(missing) || !Number.isFinite(completion)) return null;
-  if (missing === 0) return "none";
-  if (missing <= 2 && completion >= 0.8) return "slight";
-  if (missing <= 5 || completion >= 0.5) return "medium";
-  return "big";
-};
-const packageTierFor = (row) => {
-  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
-  const count = Number(row.paid_package_count);
-  if (!Number.isFinite(count) || count < 0) return null;
-  if (count >= 100) return "hundred";
-  if (count >= 40) return "many";
-  if (count >= 15) return "medium";
-  return "few";
 };
 const multiplierFor = (aggregate, key, value) => Number(aggregate.modifiers?.[key]?.[value]?.multiplier) || 1;
 const supportedSeasonSlugsFor = (aggregate) =>

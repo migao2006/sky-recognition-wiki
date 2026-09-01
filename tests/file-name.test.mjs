@@ -1,13 +1,8 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
+import { tsImport } from "tsx/esm/api";
 
-const source = await readFile(
-  new URL("../app/file-name.ts", import.meta.url),
-  "utf8",
-);
-const { safeFileName } = await import(asModuleUrl(source));
+const { safeFileName } = await tsImport("../app/file-name.ts", import.meta.url);
 
 test("creates portable download file name fragments", () => {
   assert.equal(safeFileName("  帳號:/\\?*  "), "帳號-----");

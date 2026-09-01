@@ -6,13 +6,13 @@ import {
 } from "./account-config";
 import { marketCollectibleProfile } from "./market-collectibles";
 
-export type SaleSeasonProgress = {
+type SaleSeasonProgress = {
   name: string;
   owned: number;
   total: number;
 };
 
-export type SaleCopyItem = {
+type SaleCopyItem = {
   guid: string;
   name: string;
   displayName: string;
@@ -25,7 +25,7 @@ export type SaleCopyItem = {
   order: number;
 };
 
-export type SaleCopyInput = {
+type SaleCopyInput = {
   seasons: SaleSeasonProgress[];
   bindingsConfirmed: boolean;
   bindings: Partial<Record<BindingKey, BindingStatus>>;

@@ -20,6 +20,10 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   padding: 22px;
+}
+.account-form,
+.showcase-builder,
+.valuation-report {
   border: 1px solid var(--glass-line);
   border-radius: 22px;
   background: var(--glass);
@@ -334,12 +338,6 @@
 .showcase-builder {
   margin-bottom: 12px;
   padding: 20px;
-  border: 1px solid var(--glass-line);
-  border-radius: 22px;
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(16px) saturate(115%);
-  backdrop-filter: blur(16px) saturate(115%);
-  box-shadow: var(--glass-shadow);
 }
 .showcase-builder-head {
   display: flex;

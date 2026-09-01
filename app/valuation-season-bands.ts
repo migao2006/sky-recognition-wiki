@@ -8,7 +8,7 @@ import {
 
 export type SeasonConfidence = "high" | "medium" | "low" | "inferred";
 
-export type SeasonEvidenceBreakdown = {
+type SeasonEvidenceBreakdown = {
   directSale: number;
   professionalEstimate: number;
   commentSignal: number;

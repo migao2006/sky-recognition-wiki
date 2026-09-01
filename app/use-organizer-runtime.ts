@@ -261,7 +261,7 @@ export const useOrganizerRuntime = (
   };
 };
 
-export type OrganizerRuntime = ReturnType<typeof useOrganizerRuntime>;
+type OrganizerRuntime = ReturnType<typeof useOrganizerRuntime>;
 
 export type AccountRuntime = Pick<
   OrganizerRuntime,

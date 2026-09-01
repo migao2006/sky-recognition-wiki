@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { loadCatalogRuntime } from "./helpers/catalog-runtime.mjs";
+import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const {
   closetSubSequence,
@@ -26,7 +26,7 @@ const {
   zhItemName,
   zhItemSearchNames,
   zhName,
-} = await loadCatalogRuntime();
+} = await loadRuntimeCatalog();
 
 const item = (overrides = {}) => ({
   id: 1,

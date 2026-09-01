@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-export type OwnedItems = Set<string>;
+type OwnedItems = Set<string>;
 
 /** Keeps every single-item selection on the same optimistic state update. */
 export const useOwnedItems = () => {

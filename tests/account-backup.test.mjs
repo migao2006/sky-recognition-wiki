@@ -1,26 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-
-const loadAccountBackup = async () => {
-  const [configSource, backupSource] = await Promise.all(
-    ["account-config.ts", "account-backup.ts"].map((file) =>
-      readFile(new URL(`../app/${file}`, import.meta.url), "utf8"),
-    ),
-  );
-  const moduleSource = backupSource.replace(
-    /import \{([\s\S]*?)\} from "\.\/account-config";/,
-    (_, imports) =>
-      `const {${imports.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(
-        asModuleUrl(configSource),
-      )});`,
-  ).replace(
-    'import { legacyCatalogGuidAliases } from "./catalog-legacy-guids";',
-    'const legacyCatalogGuidAliases = { "instrument-harp": "biKOov4qJQ", "held-manatee-staff": "Ll1veXMDa9" };',
-  );
-  return import(asModuleUrl(moduleSource));
-};
+import { tsImport } from "tsx/esm/api";
 
 const {
   ACCOUNT_DRAFT_MAX_AGE_MS,
@@ -28,7 +8,7 @@ const {
   createAccountDraft,
   parseAccountBackup,
   parseAccountDraft,
-} = await loadAccountBackup();
+} = await tsImport("../app/account-backup.ts", import.meta.url);
 
 const account = {
   name: "測試帳號",
