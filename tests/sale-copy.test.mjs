@@ -326,6 +326,56 @@ test("uses GUID-specific sale names and wraps item rows for mobile reading", () 
   assert.doesNotMatch(copy, /花憩玫瑰刺繡斗篷|錦標賽俐落滑冰服裝/);
 });
 
+test("packs four-character names in fours and five-to-six-character names in threes", () => {
+  const fourCharacterCopy = buildSaleCopy(
+    input({
+      seasons: [],
+      items: ["蝙蝠斗篷", "巫師髮型", "新手橘斗", "音韻吉他"].map(
+        (saleName, index) =>
+          item({ guid: `four-${index}`, saleName, order: index }),
+      ),
+    }),
+  ).join("\n");
+  assert.match(fourCharacterCopy, /蝙蝠斗篷・巫師髮型・新手橘斗・音韻吉他/);
+
+  const longerCopy = buildSaleCopy(
+    input({
+      seasons: [],
+      items: [
+        "九色鹿頭角",
+        "王子圍巾斗",
+        "王子小狐狸",
+        "極光金翅膀",
+      ].map((saleName, index) =>
+        item({ guid: `longer-${index}`, saleName, order: index }),
+      ),
+    }),
+  ).join("\n");
+  assert.match(longerCopy, /九色鹿頭角・王子圍巾斗・王子小狐狸\n極光金翅膀/);
+});
+
+test("does not count a collection label against the item row width", () => {
+  const copy = buildSaleCopy(
+    input({
+      seasons: [],
+      items: ["王子星球斗", "王子圍巾斗", "王子小狐狸"].map(
+        (saleName, index) =>
+          item({
+            guid: `prince-${index}`,
+            name: `Little Prince ${index}`,
+            saleName,
+            section: "events",
+            collection: "little-prince",
+            group: "Limited",
+            sourceName: "小王子季",
+            order: index,
+          }),
+      ),
+    }),
+  ).join("\n");
+  assert.match(copy, /小王子｜王子星球斗・王子圍巾斗・王子小狐狸/);
+});
+
 test("qualifies colliding short names instead of dropping an item", () => {
   const copy = buildSaleCopy(
     input({

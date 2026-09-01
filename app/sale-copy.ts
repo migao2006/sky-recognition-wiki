@@ -238,13 +238,12 @@ const wrapItemNames = (
   names: readonly string[],
   firstPrefix = "",
   maximumItems = 4,
-  maximumLength = 24,
+  maximumLength = 20,
 ) => {
   const rows: string[] = [];
   let current: string[] = [];
   for (const name of names) {
-    const prefix = rows.length ? "" : firstPrefix;
-    const candidate = `${prefix}${[...current, name].join("・")}`;
+    const candidate = [...current, name].join("・");
     if (
       current.length &&
       (current.length >= maximumItems || textLength(candidate) > maximumLength)
