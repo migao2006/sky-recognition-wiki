@@ -50,7 +50,7 @@
 - `npm run sync:catalog:check`：以 SkyGame-Data 1.3.10 逐 GUID 核對所有可對應物品的身分與原始類型
 - `npm run sync:names:check`：產生中文 Wiki 名稱比對報告至 `dist/tmp`
 - `npm run sync:names:write`：通過來源與縮減保護後更新中文名稱快照
-- `npm run sync:trade-names:check -- <清單.txt>`：以分類順序與既有名稱交叉比對交易用語，產生 GUID 對照報告但不寫檔
+- `npm run sync:trade-names:check -- <清單.txt>`：以分類順序與既有名稱交叉比對交易用語，產生 GUID 對照報告但不寫檔；未採用資料會再區分「目前別名已可唯一辨識」及「仍需外部核對」
 - `npm run sync:trade-names:write -- <清單.txt>`：只將報告中的唯一高信心對應寫入玩家名稱快照；C 級名稱只保留搜尋別名，不會建立出售短名
 - `npm run collect:wiki-market -- --ocr`：透過兩站 MediaWiki API 蒐集禮包、活動、限定、聯動與週年證據，並辨識含文字的海報／公告；報告與圖片只存於未提交的 `work/wiki-market-evidence/`
 - `npm run verify:wiki-market`：將蒐集報告逐張核對 runtime catalog；Fandom 只有圖示檔名與官方資料完全相同才算國際服身分證據，BWiki 名稱則先轉繁體、依現有玩家別名解析並核對衣櫃類型，結果只寫入未提交的核對報告

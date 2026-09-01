@@ -59,6 +59,57 @@ const reviewedGuidOverrides = {
   furniture_large_0036: "yWCpBlHsWa", // Days of Love Seesaw
   furniture_small_0013: "nrNcYrcZXy", // Little Prince Fox
   furniture_small_0025: "5xJ_mCzZQy", // Moonlight Lantern
+  shoes_0022: "MuQrbnmbdp", // Moonlight Bunny Slippers
+  neck_accessory_0056: "cXaPt2zi0Q", // Spirited Manatee Tail
+  neck_accessory_0058: "inAM509HYO", // Moonlight Tufted Tail
+  head_accessory_0066: "EEFIpR6x7Q", // Moonlight Bunny Accessory
+  ear_accessory_0012: "y69WKTTyw7", // Spirited Manatee Ears
+  furniture_large_0029: "P09UDA73qQ", // Anniversary Movie Seats
+  furniture_small_0021: "bXyztrTj5R", // Manatee Plush
+  face_accessory_0028: "IZNxLq33GB", // Anniversary Cinema 3D Glasses
+  neck_accessory_0010: "TQUcvFL8k7", // Little Prince Ultimate Pendant
+  neck_accessory_0023: "1uyZfKjJg5", // Moomin Ultimate Pendant
+  neck_accessory_0035: "IKrJLeNVIL", // Remembrance Ultimate Sash
+  neck_accessory_0054: "JIMbTWase4", // Moomintroll Tail
+  head_accessory_0005: "cbWKMsAh7H", // Flight Ultimate Hair Accessory
+  head_accessory_0011: "nBg1iBLlGM", // Moments Ultimate Hat
+  head_accessory_0017: "3gb3myYbBB", // Moomintroll Ears
+  head_accessory_0025: "8z8SeKQRk8", // Two Embers Part 1 Ultimate Hair Accessory
+  ear_accessory_0002: "FlOSNmw_38", // Enchantment Ultimate Hair Tassels
+  prop_0052: "nFWJUG7K6q", // Skyfest Jenova Fan
+  prop_0061: "cTvlz4Z8-3", // Company Issued Laptop
+  prop_0062: "vPenDMkJkY", // Anniversary Popcorn
+  furniture_large_0074: "zRHFsHh3Z8", // Cozy Cafe Table
+  neck_accessory_0015: "JCRIpETL35", // AURORA Ultimate Pendant
+  neck_accessory_0020: "9uVcch8mbe", // Nine-Colored Deer Ultimate Pendant
+  neck_accessory_0038: "Nf94RnTzOh", // Hattifattener Shoulder Buddy
+  neck_accessory_0053: "yv8WuDrV-e", // Treasure Mate Companion
+  mask_0066: "-66QzAlj3l", // Cure for Me Mask
+  mask_0078: "Gn1DSb6m5E", // Spirit of Mural Mask
+  mask_0079: "czsVJwqa_g", // Gift of the Nine-Colored Deer Mask
+  cape_0068: "1IhlCcq61j", // Shattering Ultimate Krill Cape
+  cape_0071: "FjxHIvszIu", // Shattering Ultimate Manta Cape
+  cape_0078: "JFV-ZmGQiu", // Giving In Cape
+  cape_0095: "BTogmcHcr5", // Radiance of the Nine-Colored Deer Cape
+  prop_0032: "5V_r38RVGd", // Triumph Violin
+  furniture_small_0036: "EZ_nfEHgOx", // Days of Love Gondola
+  cape_0002: "xaX_sfWwKV", // Beta Cape
+  cape_0166: "bcKjyS-_p3", // Mischief Gossamer Cape
+  cape_0167: "txwX8D1yKh", // Mischief Crabula Cloak
+  cape_0190: "VRB1mcOeYv", // FlOw Cape
+  prop_0050: "kLfBsnAsUL", // Bloom Lilypad Umbrella
+  prop_0051: "IP1yVVhLdv", // Bloom Sunflower Umbrella
+  prop_0058: "8rYQfi8VP3", // Mischief Withered Broom
+  head_accessory_0040: "KpS-2FdasB", // Rainbow Hair Flower
+  head_accessory_0041: "gNWmRUkpFo", // Double Rainbow Flower
+  head_accessory_0050: "fLbULqwumS", // Wonderland Primrose Pinafore Bow
+  head_accessory_0052: "8aWnwc3_C6", // Fluffy Winter Pillbox Hat
+  head_accessory_0054: "HdoyB06O4V", // Tournament Golden Garland
+  head_accessory_0072: "2XujEQcN6n", // Green Folded Ears
+  head_accessory_0073: "PpIpcfoNDH", // Blue Pinned Cap
+  head_accessory_0074: "i9-S4tuhpn", // Yellow Paintbrush
+  head_accessory_0077: "1YM9K1fWqF", // Treasure Seeker's Hat
+  ear_accessory_0014: "XURacs6BHP", // Moonlight Earrings
 };
 
 // A source term can be a useful alias without being the best primary label.
@@ -74,10 +125,42 @@ const reviewedDisplayNameOverrides = {
   furniture_large_0035: "雙人鞦韆",
   furniture_large_0036: "小蹺蹺板",
   furniture_small_0013: "王子小狐狸",
+  furniture_small_0021: "小海牛玩偶",
+  face_accessory_0028: "週年電影院 3D 眼鏡",
+  prop_0061: "公司配發筆電",
+  prop_0062: "週年爆米花",
+  neck_accessory_0015: "極光季項鍊",
+  mask_0066: "Cure for Me 面具",
+  cape_0068: "破碎冥龍斗篷",
+  cape_0071: "破碎遙鯤斗篷",
+  cape_0078: "極光臣服斗篷",
+  cape_0095: "九色鹿斗篷",
+  furniture_small_0036: "貢多拉船",
+  cape_0002: "Beta 斗篷",
+  cape_0166: "惡作劇薄紗斗篷",
+  cape_0167: "惡作劇蟹伯爵披風",
+  cape_0190: "FlOw 斗篷",
+  prop_0058: "飛行掃帚",
   cape_0055: "王子圍巾斗",
 };
 
 const reviewedSaleNameOverrides = {
+  furniture_small_0021: "小海牛玩偶",
+  face_accessory_0028: "3D眼鏡",
+  prop_0061: "公司筆電",
+  prop_0062: "週年爆米花",
+  neck_accessory_0015: "極光項鍊",
+  mask_0066: "Cure面具",
+  cape_0068: "冥龍斗",
+  cape_0071: "遙鯤斗",
+  cape_0078: "臣服斗",
+  cape_0095: "九色鹿斗",
+  furniture_small_0036: "貢多拉船",
+  cape_0002: "Beta斗",
+  cape_0166: "薄紗斗",
+  cape_0167: "蟹伯爵斗",
+  cape_0190: "FlOw斗",
+  prop_0058: "飛行掃帚",
   cape_0189: "超凡風旅斗",
   cape_0186: "紅斗",
   cape_0187: "藍斗",
@@ -291,6 +374,11 @@ if (rows.length !== 1149)
 
 const runtime = await loadRuntimeCatalog();
 const { compareCatalogItems, matchesSub, wikiItems, zhName } = runtime;
+const itemMatchesRowCategory = (row, item) => {
+  const spec = categorySpecs[row.prefix];
+  if (!spec) return false;
+  return spec.sub ? matchesSub(item, spec.sub) : spec.types.includes(item.type);
+};
 const wikiNames = JSON.parse(await readFile(WIKI_NAMES_PATH, "utf8"));
 const stableZhItemName = (item) => wikiNames.items[item.guid] ?? zhName(item.name);
 const allAligned = [];
@@ -423,6 +511,49 @@ for (const { row } of accepted) {
   );
 }
 const acceptedIds = new Set(accepted.map(({ row }) => row.id));
+const unresolvedRows = rows.filter((row) => !acceptedIds.has(row.id));
+const resolver = runtime.buildCatalogNameResolver(
+  wikiItems,
+  runtime.zhItemSearchNames,
+);
+const searchableUnresolved = unresolvedRows.flatMap((row) => {
+  // China-only labels may intentionally reuse the international item name.
+  // They are evidence for a different catalog and must not resolve here.
+  if (/(?:中国|中國|国服|國服)/u.test(row.original)) return [];
+  let match;
+  for (const term of unique([row.original, row.term])) {
+    const candidate = resolver.resolve(term);
+    if (
+      candidate?.candidates.length === 1 &&
+      candidate.method === "exact" &&
+      candidate.candidates.every((item) => itemMatchesRowCategory(row, item))
+    ) {
+      match = candidate;
+      break;
+    }
+  }
+  if (!match) return [];
+  const items = match.candidates;
+  return [{
+    row,
+    items,
+    mode: "item",
+    valuationRelevant: items.some(
+      (item) =>
+        runtime.isPaidItem(item) ||
+        runtime.isGraduationGift(item) ||
+        runtime.isLimitedItem(item),
+    ),
+  }];
+});
+const searchableUnresolvedIds = new Set(
+  searchableUnresolved.map(({ row }) => row.id),
+);
+const valuationRelevantSearchableGuids = new Set(
+  searchableUnresolved
+    .filter(({ valuationRelevant }) => valuationRelevant)
+    .flatMap(({ items }) => items.map((item) => item.guid)),
+);
 const acceptedGuids = new Set();
 const duplicateGuidMatches = [];
 for (const match of accepted) {
@@ -449,6 +580,10 @@ const report = {
       .length,
     saleNames: accepted.filter(({ row }) => saleNameFor(row)).length,
     unresolved: rows.length - accepted.length,
+    alreadySearchable: searchableUnresolved.length,
+    researchRequired: unresolvedRows.length - searchableUnresolved.length,
+    valuationRelevantAlreadySearchableGuids:
+      valuationRelevantSearchableGuids.size,
   },
   accepted: accepted.map(({ row, item, score, exact, reviewed = false }) => ({
     id: row.id,
@@ -465,8 +600,29 @@ const report = {
     saleName: saleNameFor(row),
     writesSaleName: Boolean(saleNameFor(row)),
   })),
-  unresolved: rows
-    .filter((row) => !acceptedIds.has(row.id))
+  unresolved: unresolvedRows.map((row) => {
+    const searchable = searchableUnresolved.find(
+      (candidate) => candidate.row.id === row.id,
+    );
+    return {
+      id: row.id,
+      grade: row.grade,
+      term: row.term,
+      original: row.original,
+      category: row.category,
+      ...(searchable
+        ? {
+            status: "already-searchable",
+            resolution: searchable.mode,
+            guids: searchable.items.map((item) => item.guid),
+            current: searchable.items.map(stableZhItemName),
+            valuationRelevant: searchable.valuationRelevant,
+          }
+        : { status: "research-required" }),
+    };
+  }),
+  researchRequired: unresolvedRows
+    .filter((row) => !searchableUnresolvedIds.has(row.id))
     .map((row) => ({
       id: row.id,
       grade: row.grade,
@@ -539,6 +695,8 @@ console.log(
     `可寫入玩家顯示名：${report.result.displayNames} 筆`,
     `可寫入出售短名：${report.result.saleNames} 筆`,
     `保留待查：${report.result.unresolved} 筆`,
+    `目前別名已可唯一辨識：${report.result.alreadySearchable} 筆`,
+    `仍需外部核對：${report.result.researchRequired} 筆`,
     `報告：${REPORT_PATH}`,
     shouldWrite ? `已更新：${PLAYER_NAMES_PATH}` : "檢查模式：未修改名稱快照",
   ].join("\n"),

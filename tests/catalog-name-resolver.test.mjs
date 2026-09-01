@@ -16,6 +16,62 @@ test("resolves a unique player-facing name to its official GUID", () => {
   assert.ok(match.candidates[0].guid);
 });
 
+test("resolves the Little Prince sword outfit from seller wording", () => {
+  const match = resolver.resolve("小王子佩劍禮服");
+  assert.ok(match);
+  assert.equal(match.candidates.length, 1);
+  assert.equal(match.candidates[0].guid, "l_C7GM60an");
+  assert.equal(catalog.isLimitedItem(match.candidates[0]), true);
+});
+
+test("resolves reviewed event wording without changing paid identity", () => {
+  const cases = [
+    ["玉兔拖鞋", "MuQrbnmbdp", true],
+    ["玉兔髮飾", "EEFIpR6x7Q", true],
+    ["玉兔尾巴頸飾", "inAM509HYO", false],
+    ["活力海牛耳飾", "y69WKTTyw7", true],
+    ["活力海牛頸飾", "cXaPt2zi0Q", true],
+    ["週年影院沙發椅", "P09UDA73qQ", false],
+    ["白底TGC斗篷", "xaX_sfWwKV", true],
+    ["蛛絲斗篷", "bcKjyS-_p3", true],
+    ["惡作劇飛行掃帚道具", "8rYQfi8VP3", true],
+    ["彩虹小花髮飾", "KpS-2FdasB", true],
+  ];
+  for (const [term, guid, paid] of cases) {
+    const match = resolver.resolve(term);
+    assert.ok(match, term);
+    assert.equal(match.method, "exact", term);
+    assert.deepEqual(match.candidates.map((item) => item.guid), [guid], term);
+    assert.equal(catalog.isPaidItem(match.candidates[0]), paid, term);
+  }
+});
+
+test("does not import a China-only store term into the global resolver", () => {
+  assert.equal(resolver.resolve("四葉草頭飾"), null);
+});
+
+test("keeps reviewed ultimate gifts distinct from season pendants", () => {
+  const graduationGuids = [
+    "1IhlCcq61j",
+    "FjxHIvszIu",
+    "cbWKMsAh7H",
+    "nBg1iBLlGM",
+    "8z8SeKQRk8",
+    "FlOSNmw_38",
+  ];
+  const pendantGuids = ["TQUcvFL8k7", "JCRIpETL35", "9uVcch8mbe", "1uyZfKjJg5"];
+  for (const guid of graduationGuids) {
+    const item = catalog.wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(item, guid);
+    assert.equal(catalog.isGraduationGift(item), true, guid);
+  }
+  for (const guid of pendantGuids) {
+    const item = catalog.wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(item, guid);
+    assert.equal(catalog.isGraduationGift(item), false, guid);
+  }
+});
+
 test("never guesses between same-named catalog items", () => {
   const match = resolver.resolve("Moonlight Lantern");
   assert.ok(match);
@@ -48,8 +104,13 @@ const confirmedSets = new Map([
   ["冥龍耳尾組", ["Io4R50c-s1", "nBIm3PkDea"]],
   ["海牛耳尾組", ["cXaPt2zi0Q", "y69WKTTyw7"]],
   ["爆米花組", ["IZNxLq33GB", "vPenDMkJkY"]],
+  ["週年影院套餐", ["IZNxLq33GB", "vPenDMkJkY"]],
   ["超凡風旅", ["OfOc3xQdCQ", "RpAC3rlPrR", "TfItBIVTeP"]],
   ["姆明耳尾組", ["3gb3myYbBB", "JIMbTWase4"]],
+  ["姆明飾品套裝", ["3gb3myYbBB", "JIMbTWase4"]],
+  ["冥龍套裝", ["Io4R50c-s1", "nBIm3PkDea"]],
+  ["活力海牛套裝", ["cXaPt2zi0Q", "y69WKTTyw7"]],
+  ["星夜披風套裝", ["tgeTchWQfN", "tz-IwazQ7k"]],
   ["林克套組", ["4c9HLTfREP", "KtlqKC7whS", "MHArTLwxyq"]],
   ["絆愛三件套", ["FLMn1Hib7k", "daH57TClK7", "u7q3xg2y55"]],
 ]);

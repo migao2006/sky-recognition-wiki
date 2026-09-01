@@ -747,7 +747,11 @@
       "guid": "bcKjyS-_p3",
       "name": "Mischief Gossamer Cape",
       "playerName": "惡作劇薄紗斗篷",
-      "aliases": [],
+      "aliases": [
+        "蛛絲斗篷",
+        "蛛絲斗"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:bDB0L4YVvX",
       "packageName": "Mischief Gossamer Cape",
       "paid": true,
@@ -855,7 +859,9 @@
       "name": "Manatee Plush",
       "playerName": "小海牛玩偶",
       "aliases": [
-        "海牛玩偶"
+        "海牛玩偶",
+        "海牛夥伴小型家具",
+        "海牛夥伴"
       ],
       "nameReviewed": true,
       "packageKey": "iap:G-ONZpBF7V",
@@ -952,6 +958,8 @@
       "playerName": "海牛尾巴",
       "aliases": [
         "海牛耳尾組",
+        "活力海牛套裝",
+        "活力海牛頸飾",
         "活潑海牛尾巴"
       ],
       "nameReviewed": true,
@@ -1554,6 +1562,7 @@
       "playerName": "冥龍尾巴",
       "aliases": [
         "冥龍耳尾組",
+        "冥龍套裝",
         "冥龍套裝頸飾",
         "遺跡之深色龍尾巴"
       ],
@@ -2043,6 +2052,7 @@
       "aliases": [
         "遺跡之深色龍角",
         "冥龍耳尾組",
+        "冥龍套裝",
         "冥龍套裝耳飾"
       ],
       "nameReviewed": true,
@@ -2265,6 +2275,7 @@
       "name": "Blue Pinned Cap",
       "playerName": "藍色帽子",
       "aliases": [
+        "藍色守護帽",
         "藍色別針帽子"
       ],
       "nameReviewed": true,
@@ -2615,7 +2626,11 @@
       "guid": "txwX8D1yKh",
       "name": "Mischief Crabula Cloak",
       "playerName": "惡作劇蟹伯爵披風",
-      "aliases": [],
+      "aliases": [
+        "吸蟹伯爵斗篷",
+        "吸蟹伯爵斗"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:hKeD6VUXjB",
       "packageName": "Mischief Crabula Cloak",
       "paid": true,
@@ -3041,6 +3056,8 @@
       "playerName": "海牛耳朵",
       "aliases": [
         "海牛耳尾組",
+        "活力海牛套裝",
+        "活力海牛耳飾",
         "活潑海牛耳朵"
       ],
       "nameReviewed": true,
