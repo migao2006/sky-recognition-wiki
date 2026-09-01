@@ -2,6 +2,7 @@ import {
   bindingKeys,
   bindingOptions,
   emptyBindings,
+  normalizeAccountResource,
   type AccountInfo,
   type BindingKey,
   type BindingStatus,
@@ -40,6 +41,12 @@ export type AccountImportResult = {
   imported: number;
   migrated: number;
   ignored: number;
+  /** Unknown official GUIDs are retained for an import preview, never restored. */
+  unknownGuids: Array<{ guid: string; name: string }>;
+  /** Valid GUIDs repeated in the file after legacy migration. */
+  duplicates: string[];
+  /** Entries in owned that are not strings. */
+  invalidEntries: number;
 };
 
 type DraftOptions = {
@@ -56,6 +63,22 @@ const asRecord = (value: unknown): UnknownRecord | null =>
 
 const text = (value: unknown, maxLength: number) =>
   typeof value === "string" ? value.slice(0, maxLength) : "";
+
+type BackupItemSnapshot = { guid: string; name: string };
+
+const v3ItemSnapshots = (backup: UnknownRecord): Map<string, string> => {
+  if (backup.version !== BACKUP_VERSION || !Array.isArray(backup.items)) {
+    return new Map();
+  }
+  const snapshots = new Map<string, string>();
+  backup.items.forEach((entry) => {
+    const item = asRecord(entry);
+    if (!item || typeof item.guid !== "string") return;
+    const name = text(item.zhName, 100) || text(item.name, 100);
+    if (name) snapshots.set(item.guid, name);
+  });
+  return snapshots;
+};
 
 const supportedVersion = (backup: UnknownRecord) => {
   const version = backup.version;
@@ -148,10 +171,10 @@ const parseAccountData = (
       typeof rawBindingsConfirmed === "boolean"
         ? rawBindingsConfirmed
         : Object.values(bindings).some((status) => status !== "none"),
-    candles: text(rawAccount.candles, 32),
-    hearts: text(rawAccount.hearts, 32),
-    ascended: text(rawAccount.ascended, 32),
-    passes: text(rawAccount.passes, 32),
+    candles: normalizeAccountResource(rawAccount.candles, "candles"),
+    hearts: normalizeAccountResource(rawAccount.hearts, "hearts"),
+    ascended: normalizeAccountResource(rawAccount.ascended, "ascended"),
+    passes: normalizeAccountResource(rawAccount.passes, "passes"),
     bindingNote: text(rawAccount.bindingNote, 1_000),
     notes: text(rawAccount.notes, 1_000),
   };
@@ -159,16 +182,27 @@ const parseAccountData = (
   const seen = new Set<string>();
   let imported = 0;
   let migrated = 0;
-  let ignored = 0;
+  let invalidEntries = 0;
+  const unknownGuids: BackupItemSnapshot[] = [];
+  const duplicates: string[] = [];
+  const snapshots = v3ItemSnapshots(backup);
   rawOwned.forEach((rawGuid) => {
     if (typeof rawGuid !== "string") {
-      ignored += 1;
+      invalidEntries += 1;
       return;
     }
     const mappedGuid = legacyCatalogGuidAliases[rawGuid] ?? rawGuid;
     const wasMigrated = mappedGuid !== rawGuid;
-    if (seen.has(mappedGuid) || (validGuids && !validGuids.has(mappedGuid))) {
-      ignored += 1;
+    if (seen.has(mappedGuid)) {
+      duplicates.push(mappedGuid);
+      return;
+    }
+    if (validGuids && !validGuids.has(mappedGuid)) {
+      seen.add(mappedGuid);
+      unknownGuids.push({
+        guid: mappedGuid,
+        name: snapshots.get(rawGuid) || "",
+      });
       return;
     }
     seen.add(mappedGuid);
@@ -177,7 +211,18 @@ const parseAccountData = (
     else imported += 1;
   });
 
-  return { account, bindings, owned, imported, migrated, ignored };
+  const ignored = unknownGuids.length + duplicates.length + invalidEntries;
+  return {
+    account,
+    bindings,
+    owned,
+    imported,
+    migrated,
+    ignored,
+    unknownGuids,
+    duplicates,
+    invalidEntries,
+  };
 };
 
 export const parseAccountBackup = (

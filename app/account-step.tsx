@@ -5,6 +5,8 @@ import {
   bindingKeys,
   bindingNames,
   bindingOptions,
+  accountResourceLimits,
+  normalizeAccountResource,
   type AccountInfo,
   type BindingKey,
   type BindingStatus,
@@ -12,7 +14,7 @@ import {
 import { bundlePresets } from "./bundle-presets";
 import { formatMarketBindings, formatMarketPlatform } from "./market-copy";
 import { isSeasonPendant } from "./season-items";
-import type { OrganizerRuntime } from "./use-organizer-runtime";
+import type { AccountRuntime } from "./use-organizer-runtime";
 
 type AccountStepProps = {
   account: AccountInfo;
@@ -26,7 +28,7 @@ type AccountStepProps = {
   onToggleOwned: (guid: string) => void;
   setNotice: React.Dispatch<React.SetStateAction<string>>;
   draftAvailable: boolean;
-  runtime: OrganizerRuntime;
+  runtime: AccountRuntime;
   onNext: () => void;
 };
 
@@ -43,6 +45,13 @@ export function AccountStep({
   runtime,
   onNext,
 }: AccountStepProps) {
+  const setResource = (
+    key: "candles" | "hearts" | "ascended" | "passes",
+    value: string,
+  ) => {
+    if (value && normalizeAccountResource(value, key) === "") return;
+    setAccount({ ...account, [key]: value });
+  };
   const [seasonPickerOpen, setSeasonPickerOpen] = useState(false);
   const [quickSelectOpen, setQuickSelectOpen] = useState(false);
   const {
@@ -137,9 +146,10 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.candles}
-                maxLength={32}
+                maxLength={5}
+                max={accountResourceLimits.candles}
                 onChange={(event) =>
-                  setAccount({ ...account, candles: event.target.value })
+                  setResource("candles", event.target.value)
                 }
                 placeholder="0"
               />
@@ -149,9 +159,10 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.hearts}
-                maxLength={32}
+                maxLength={5}
+                max={accountResourceLimits.hearts}
                 onChange={(event) =>
-                  setAccount({ ...account, hearts: event.target.value })
+                  setResource("hearts", event.target.value)
                 }
                 placeholder="0"
               />
@@ -161,9 +172,10 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.ascended}
-                maxLength={32}
+                maxLength={5}
+                max={accountResourceLimits.ascended}
                 onChange={(event) =>
-                  setAccount({ ...account, ascended: event.target.value })
+                  setResource("ascended", event.target.value)
                 }
                 placeholder="0"
               />
@@ -173,9 +185,10 @@ export function AccountStep({
               <input
                 inputMode="numeric"
                 value={account.passes}
-                maxLength={32}
+                maxLength={3}
+                max={accountResourceLimits.passes}
                 onChange={(event) =>
-                  setAccount({ ...account, passes: event.target.value })
+                  setResource("passes", event.target.value)
                 }
                 placeholder="0"
               />

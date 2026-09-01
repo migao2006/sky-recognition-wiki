@@ -13,7 +13,9 @@ import {
   parseAccountBackup,
 } from "./account-backup";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
+import { safeFileName } from "./file-name";
 import type { ShowcasePreset } from "./organizer-step-state";
+import { hasAccountDraftData } from "./use-account-draft";
 import { isChinaOnlyItem, isGraduationGift, isPaidItem } from "./valuation-items";
 import type { ValuationAnalysis, ValuationEstimate } from "./valuation-analysis";
 import {
@@ -22,7 +24,7 @@ import {
 } from "./valuation-market";
 import type { SeasonConfidence } from "./valuation-season-bands";
 import { showcasePresetNames } from "./valuation-showcase-preview";
-import type { OrganizerRuntime } from "./use-organizer-runtime";
+import type { ValuationRuntimeCapabilities } from "./use-organizer-runtime";
 import type { WikiItem } from "./wiki-data";
 
 type ImageExportStatus = {
@@ -32,7 +34,7 @@ type ImageExportStatus = {
 };
 
 type Props = {
-  runtime: OrganizerRuntime;
+  runtime: ValuationRuntimeCapabilities;
   account: AccountInfo;
   bindings: Record<BindingKey, BindingStatus>;
   chosen: WikiItem[];
@@ -47,9 +49,6 @@ type Props = {
   setOwned: Dispatch<SetStateAction<Set<string>>>;
   setNotice: Dispatch<SetStateAction<string>>;
 };
-
-const safeFileName = (name: string) =>
-  name.replace(/[\\/:*?"<>|]/g, "-").trim() || "未命名";
 
 const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
@@ -79,6 +78,7 @@ export const useValuationExportActions = ({
   setNotice,
 }: Props) => {
   const importRef = useRef<HTMLInputElement>(null);
+  const importGenerationRef = useRef(0);
   const exportInFlightRef = useRef(false);
   const [imageExport, setImageExport] = useState<ImageExportStatus | null>(
     null,
@@ -186,6 +186,7 @@ export const useValuationExportActions = ({
     );
   };
   const importJson = async (event: ChangeEvent<HTMLInputElement>) => {
+    const generation = ++importGenerationRef.current;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -194,10 +195,39 @@ export const useValuationExportActions = ({
       return;
     }
     try {
+      const text = await file.text();
+      if (generation !== importGenerationRef.current) return;
       const imported = parseAccountBackup(
-        JSON.parse(await file.text()),
+        JSON.parse(text),
         runtime.validItemGuids,
       );
+      if (generation !== importGenerationRef.current) return;
+      const unknownNames = imported.unknownGuids
+        .slice(0, 5)
+        .map((item) => item.name || item.guid)
+        .join("、");
+      const summary = [
+        `可匯入 ${imported.imported + imported.migrated} 件`,
+        imported.unknownGuids.length
+          ? `未知 ${imported.unknownGuids.length} 件${unknownNames ? `（${unknownNames}）` : ""}`
+          : "",
+        imported.duplicates.length
+          ? `重複 ${imported.duplicates.length} 件`
+          : "",
+        imported.invalidEntries ? `無效 ${imported.invalidEntries} 筆` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const currentOwned = new Set(chosen.map((item) => item.guid));
+      if (
+        (hasAccountDraftData(account, bindings, currentOwned) ||
+          imported.unknownGuids.length > 0) &&
+        !window.confirm(`${summary}\n\n匯入會取代目前資料，確定繼續？`)
+      ) {
+        setNotice("已取消匯入，原有資料未變更");
+        return;
+      }
+      if (generation !== importGenerationRef.current) return;
       setAccount(imported.account);
       setBindings(imported.bindings);
       setOwned(new Set(imported.owned));

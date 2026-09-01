@@ -21,9 +21,36 @@ export type AccountInfo = {
   notes: string;
 };
 
+export const accountResourceLimits = {
+  candles: 99_999,
+  hearts: 99_999,
+  ascended: 99_999,
+  passes: 999,
+} as const;
+
+export type AccountResourceKey = keyof typeof accountResourceLimits;
+
+/** Returns an empty value for a missing or invalid resource quantity. */
+export const normalizeAccountResource = (
+  value: unknown,
+  key: AccountResourceKey,
+) => {
+  if (typeof value !== "string") return "";
+  const raw = value;
+  if (!/^\d+$/.test(raw)) return "";
+  const amount = Number(raw);
+  return Number.isSafeInteger(amount) && amount <= accountResourceLimits[key]
+    ? raw
+    : "";
+};
+
 export const accountResourceAmount = (
   value: string | number | undefined,
-) => Math.max(0, Number.parseInt(String(value ?? "0"), 10) || 0);
+  key: AccountResourceKey = "candles",
+) => {
+  const raw = typeof value === "number" ? String(value) : value;
+  return Number(normalizeAccountResource(raw, key)) || 0;
+};
 
 export const bindingNames: Record<BindingKey, string> = {
   google: "Google（GG）",

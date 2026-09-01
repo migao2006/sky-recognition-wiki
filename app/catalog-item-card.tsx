@@ -22,12 +22,13 @@ export const CatalogItemCard = memo(function CatalogItemCard({
 }) {
   return (
     <button
+      type="button"
       className={`item-card selectable ${selected ? "owned" : ""}`}
       onClick={() => onToggle(item.guid)}
       aria-pressed={selected}
       aria-label={`${selected ? "取消選取" : "選取"}：${displayName}`}
     >
-      <div className="image-wrap">
+      <span className="image-wrap">
         <span className="owned-check">{selected ? "✓" : "＋"}</span>
         {ultimate && (
           <span className="discontinued-badge">
@@ -46,10 +47,10 @@ export const CatalogItemCard = memo(function CatalogItemCard({
           draggable={false}
           referrerPolicy="no-referrer"
         />
-      </div>
-      <div className="card-body">
-        <h2>{displayName}</h2>
-      </div>
+      </span>
+      <span className="card-body">
+        <span className="card-title">{displayName}</span>
+      </span>
     </button>
   );
 });

@@ -34,6 +34,11 @@ type ExportShowcaseResult = {
 };
 
 const iconCache = new Map<string, Promise<HTMLImageElement | null>>();
+const exportIconBatchSize = 12;
+const exportDrawBatchSize = 48;
+
+const yieldToBrowser = () =>
+  new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 
 const loadIcon = (src: string) => {
   const cached = iconCache.get(src);
@@ -42,7 +47,10 @@ const loadIcon = (src: string) => {
   const request = new Promise<HTMLImageElement | null>((resolve) => {
     const image = new Image();
     let finished = false;
-    const timeout = setTimeout(() => finish(null), 8000);
+    const timeout = setTimeout(() => {
+      image.removeAttribute("src");
+      finish(null);
+    }, 8000);
     const finish = (value: HTMLImageElement | null) => {
       if (finished) return;
       finished = true;
@@ -52,7 +60,9 @@ const loadIcon = (src: string) => {
 
     image.crossOrigin = "anonymous";
     image.referrerPolicy = "no-referrer";
-    image.onload = () => finish(image);
+    image.onload = () => {
+      void image.decode().catch(() => undefined).then(() => finish(image));
+    };
     image.onerror = () => finish(null);
     image.src = src;
   });
@@ -68,27 +78,41 @@ const loadIcon = (src: string) => {
   return request;
 };
 
-const loadIcons = async (
+const loadPageIcons = async (
   items: WikiItem[],
-  onProgress?: ExportShowcaseOptions["onProgress"],
-  concurrency = 8,
+  reportProgress: (item: WikiItem, image: HTMLImageElement | null) => void,
 ) => {
   const icons = new Map<string, HTMLImageElement | null>();
-  let next = 0;
-  let completed = 0;
-  onProgress?.({ completed, total: items.length, phase: "loading-icons" });
-  const worker = async () => {
-    while (next < items.length) {
-      const item = items[next++];
-      icons.set(item.guid, await loadIcon(item.icon));
-      completed += 1;
-      onProgress?.({ completed, total: items.length, phase: "loading-icons" });
+  for (let start = 0; start < items.length; start += exportIconBatchSize) {
+    const batch = items.slice(start, start + exportIconBatchSize);
+    const decoded = await Promise.all(
+      batch.map(async (item) => [item.guid, await loadIcon(item.icon)] as const),
+    );
+    decoded.forEach(([guid, image], index) => {
+      icons.set(guid, image);
+      reportProgress(batch[index], image);
+    });
+    if (start + exportIconBatchSize < items.length) {
+      await yieldToBrowser();
     }
-  };
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, items.length) }, worker),
-  );
+  }
   return icons;
+};
+
+const releasePageIcons = (
+  items: WikiItem[],
+  icons: Map<string, HTMLImageElement | null>,
+) => {
+  const releasedSources = new Set<string>();
+  items.forEach((item) => {
+    const image = icons.get(item.guid);
+    if (image) image.removeAttribute("src");
+    if (!releasedSources.has(item.icon)) {
+      iconCache.delete(item.icon);
+      releasedSources.add(item.icon);
+    }
+  });
+  icons.clear();
 };
 
 const showcaseMetrics = {
@@ -207,11 +231,16 @@ export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
 
 export const planShowcasePages = (options: ExportShowcaseOptions) => {
   const groups = buildShowcaseGroups(options);
-  const { height, panelHeight, renderGroups } = buildShowcaseLayout(groups);
+  const {
+    height: layoutHeight,
+    panelHeight,
+    renderGroups,
+  } = buildShowcaseLayout(groups);
   const { width } = showcaseMetrics;
   const summaryHeight =
     options.preset === "valuation" && options.valuation ? 236 : 0;
-  const breakpoints = new Set([0, height]);
+  const totalHeight = layoutHeight + summaryHeight;
+  const breakpoints = new Set([0, totalHeight]);
   let groupTop = showcaseMetrics.pad + summaryHeight;
 
   // Prefer complete group panels. Very large groups fall back to complete icon
@@ -219,7 +248,7 @@ export const planShowcasePages = (options: ExportShowcaseOptions) => {
   renderGroups.forEach((group) => {
     const boxHeight = panelHeight(group.layout.height);
     const groupEnd = groupTop + boxHeight + showcaseMetrics.sectionGap;
-    breakpoints.add(Math.min(groupEnd, height));
+    breakpoints.add(Math.min(groupEnd, totalHeight));
     group.layout.placements.forEach((placement) => {
       const itemTop =
         groupTop +
@@ -243,8 +272,8 @@ export const planShowcasePages = (options: ExportShowcaseOptions) => {
   const sortedBreakpoints = [...breakpoints].sort((left, right) => left - right);
   const pages: { index: number; width: number; height: number; offsetY: number }[] = [];
   let offsetY = 0;
-  while (offsetY < height) {
-    const maximumEnd = Math.min(offsetY + maximumCanvasHeight, height);
+  while (offsetY < totalHeight) {
+    const maximumEnd = Math.min(offsetY + maximumCanvasHeight, totalHeight);
     const safeEnd = sortedBreakpoints.reduce(
       (best, point) =>
         point > offsetY && point <= maximumEnd ? Math.max(best, point) : best,
@@ -260,6 +289,43 @@ export const planShowcasePages = (options: ExportShowcaseOptions) => {
     offsetY = end;
   }
   return pages;
+};
+
+export const planShowcasePageItems = (options: ExportShowcaseOptions) => {
+  const groups = buildShowcaseGroups(options);
+  const { panelHeight, renderGroups } = buildShowcaseLayout(groups);
+  const summaryHeight =
+    options.preset === "valuation" && options.valuation ? 236 : 0;
+  const pages = planShowcasePages(options);
+  const pageItems = pages.map(() => [] as WikiItem[]);
+  let groupY = showcaseMetrics.pad + summaryHeight;
+
+  for (const group of renderGroups) {
+    for (const placement of group.layout.placements) {
+      const cellTop =
+        groupY +
+        showcaseMetrics.titleHeight +
+        placement.y +
+        showcaseMetrics.clusterPad +
+        showcaseMetrics.clusterTitle;
+      placement.cluster.items.forEach((item, index) => {
+        const row = Math.floor(index / placement.columns);
+        const top =
+          cellTop + row * (showcaseMetrics.cellHeight + showcaseMetrics.iconGap);
+        const bottom = top + showcaseMetrics.cellHeight;
+        const matchingPages = pages.filter(
+          (page) => top < page.offsetY + page.height && bottom > page.offsetY,
+        );
+        const targets = matchingPages.length
+          ? matchingPages
+          : pages.slice(-1);
+        targets.forEach((page) => pageItems[page.index].push(item));
+      });
+    }
+    groupY += panelHeight(group.layout.height) + showcaseMetrics.sectionGap;
+  }
+
+  return { pages, pageItems };
 };
 
 export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
@@ -301,13 +367,26 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     }
   };
 
-  const icons = await loadIcons(items, onProgress);
-  const loadedIconCount = Array.from(icons.values()).filter(Boolean).length;
-  const failedIconCount = items.length - loadedIconCount;
-  const pages = planShowcasePages(options);
+  const { pages, pageItems } = planShowcasePageItems(options);
   const images: Blob[] = [];
+  let completedIconCount = 0;
+  const completedIconGuids = new Set<string>();
+  const loadedIconGuids = new Set<string>();
+  onProgress?.({ completed: 0, total: items.length, phase: "loading-icons" });
 
   for (const page of pages) {
+    const icons = await loadPageIcons(pageItems[page.index], (item, image) => {
+      if (!completedIconGuids.has(item.guid)) {
+        completedIconGuids.add(item.guid);
+        completedIconCount = Math.min(items.length, completedIconCount + 1);
+      }
+      if (image) loadedIconGuids.add(item.guid);
+      onProgress?.({
+        completed: completedIconCount,
+        total: items.length,
+        phase: "loading-icons",
+      });
+    });
     onProgress?.({
       completed: page.index,
       total: pages.length,
@@ -373,7 +452,8 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
   }
 
   let y = pad + summaryHeight;
-  renderGroups.forEach((group) => {
+  let drawnSinceYield = 0;
+  for (const group of renderGroups) {
     const boxHeight = panelHeight(group.layout.height);
     roundRect(
       ctx,
@@ -390,8 +470,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.font = "800 20px system-ui";
     ctx.fillText(group.name, width / 2, y + 29);
 
-    group.layout.placements.forEach(
-      ({ cluster, x: clusterX, y: clusterY, w, h, columns }) => {
+    for (const { cluster, x: clusterX, y: clusterY, w, h, columns } of group.layout.placements) {
         const x = pad + panelPad + clusterX;
         const clusterTop = y + titleHeight + clusterY;
         roundRect(
@@ -409,7 +488,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
         ctx.font = "700 11px system-ui";
         ctx.fillText(cluster.name, x + clusterPad, clusterTop + 14);
 
-        cluster.items.forEach((item, index) => {
+        for (const [index, item] of cluster.items.entries()) {
           const col = index % columns;
           const row = Math.floor(index / columns);
           const rowItemCount = Math.min(
@@ -448,13 +527,20 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
             ctx.font = "700 22px system-ui";
             ctx.fillText("✦", cellX + cellWidth / 2, cellY + 36);
           }
-        });
-      },
-    );
+          drawnSinceYield += 1;
+          if (drawnSinceYield === exportDrawBatchSize) {
+            drawnSinceYield = 0;
+            await yieldToBrowser();
+          }
+        }
+    }
     y += boxHeight + sectionGap;
-  });
+  }
     ctx.restore();
     images.push(await canvasToPng(canvas));
+    releasePageIcons(pageItems[page.index], icons);
+    canvas.width = 1;
+    canvas.height = 1;
     onProgress?.({
       completed: page.index + 1,
       total: pages.length,
@@ -462,5 +548,9 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     });
   }
 
-  return { images, loadedIconCount, failedIconCount } satisfies ExportShowcaseResult;
+  return {
+    images,
+    loadedIconCount: loadedIconGuids.size,
+    failedIconCount: items.length - loadedIconGuids.size,
+  } satisfies ExportShowcaseResult;
 };

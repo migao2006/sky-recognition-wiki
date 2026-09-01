@@ -262,3 +262,60 @@ export const useOrganizerRuntime = (
 };
 
 export type OrganizerRuntime = ReturnType<typeof useOrganizerRuntime>;
+
+export type AccountRuntime = Pick<
+  OrganizerRuntime,
+  | "catalogDomain"
+  | "catalogLoadError"
+  | "loadCatalog"
+  | "wikiItems"
+  | "bundlePresetItems"
+  | "ongoingSeasonSlugs"
+  | "seasonUltimateItems"
+  | "seasonUltimateSlugs"
+  | "seasonZh"
+  | "zhItemName"
+>;
+
+export type CatalogRuntime = Pick<
+  OrganizerRuntime,
+  | "wikiItems"
+  | "closetGroups"
+  | "compareCatalogItems"
+  | "allClosetTypeSet"
+  | "isLimitedItem"
+  | "isProfessionalVideoFocus"
+  | "matchesSourceFilter"
+  | "matchesSub"
+  | "searchIndex"
+  | "seasonZh"
+  | "seasons"
+  | "sourceFilters"
+  | "sourceKind"
+  | "zhItemName"
+  | "getNextClosetSub"
+>;
+
+export type ValuationRuntimeCapabilities = Pick<
+  OrganizerRuntime,
+  | "wikiItems"
+  | "allClosetTypeSet"
+  | "isValuationFocus"
+  | "isLimitedItem"
+  | "isProfessionalVideoFocus"
+  | "seasonGraduationItems"
+  | "seasonZh"
+  | "seasons"
+  | "source"
+  | "sourceCollectionName"
+  | "uniqueByGuid"
+  | "zhItemName"
+  | "saleItemName"
+  | "validItemGuids"
+  | "saleCopyPresetGuids"
+  | "valuationDomain"
+  | "showcaseOrderOptions"
+  | "valuationRuntime"
+  | "seasonPriceBands"
+  | "valuationSampleSummary"
+>;

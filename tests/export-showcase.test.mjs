@@ -10,6 +10,7 @@ const {
   orderShowcaseItems,
   source: showcaseSource,
   measureShowcaseCanvas,
+  planShowcasePageItems,
   planShowcasePages,
 } = await loadShowcaseRuntime();
 
@@ -144,6 +145,33 @@ test("adds a compact valuation summary without changing collection layout", () =
   assert.equal(valuation.height, collection.height + 236);
 });
 
+test("includes the valuation summary in pagination without clipping items", () => {
+  const entries = [item({ guid: "valuation-cape", type: "Cape" })];
+  const settings = {
+    ...options(entries),
+    preset: "valuation",
+    valuation: {
+      midpoint: 35000,
+      range: { low: 32000, high: 38000 },
+      confidence: "高信心",
+      completeness: 100,
+      itemCount: 1,
+      highlights: ["追光季"],
+    },
+  };
+  const measured = measureShowcaseCanvas(settings);
+  const plan = planShowcasePageItems(settings);
+
+  assert.equal(
+    plan.pages.reduce((total, page) => total + page.height, 0),
+    measured.height,
+  );
+  assert.deepEqual(
+    plan.pageItems.flat().map((entry) => entry.guid),
+    ["valuation-cape"],
+  );
+});
+
 test("uses the shared valuation wording in image summaries", () => {
   assert.match(showcaseSource, /估價摘要/);
   assert.match(showcaseSource, /參考中位價/);
@@ -188,12 +216,37 @@ test("keeps a fitting showcase group together before splitting a later group", (
   );
 });
 
+test("assigns every icon to each canvas page it crosses", () => {
+  const entries = Array.from({ length: 4_000 }, (_, index) =>
+    item({ guid: `boundary-${index}`, type: "Cape", order: index }),
+  );
+  const plan = planShowcasePageItems({ ...options(entries), preset: "collection" });
+  assert.ok(plan.pages.length > 1);
+  assert.equal(
+    new Set(plan.pageItems.flat().map((entry) => entry.guid)).size,
+    entries.length,
+  );
+  assert.ok(plan.pageItems.every((entries) => entries.length > 0));
+});
+
 test("reports image load outcomes and progress through the export API", () => {
   assert.match(showcaseSource, /loadedIconCount/);
   assert.match(showcaseSource, /failedIconCount/);
   assert.match(showcaseSource, /onProgress/);
   assert.match(showcaseSource, /phase: "loading-icons"/);
   assert.match(showcaseSource, /phase: "rendering"/);
+});
+
+test("decodes and releases icon batches one export page at a time", () => {
+  assert.match(showcaseSource, /const loadPageIcons/);
+  assert.match(showcaseSource, /image\.decode\(\)/);
+  assert.match(showcaseSource, /exportIconBatchSize = 12/);
+  assert.match(showcaseSource, /exportDrawBatchSize = 48/);
+  assert.match(showcaseSource, /await yieldToBrowser\(\)/);
+  assert.match(showcaseSource, /icons\.clear\(\)/);
+  assert.match(showcaseSource, /releasePageIcons/);
+  assert.match(showcaseSource, /iconCache\.delete/);
+  assert.match(showcaseSource, /completedIconCount = Math\.min/);
 });
 
 test("keeps the complete catalog export within mobile canvas limits", async () => {

@@ -215,25 +215,25 @@ const resourceValue = (
       [0, 0],
     );
   const values = [
-    tier(accountResourceAmount(resources?.candles), [
+    tier(accountResourceAmount(resources?.candles, "candles"), [
       [200, 100, 200],
       [500, 250, 450],
       [1000, 500, 800],
       [2000, 800, 1200],
     ]),
-    tier(accountResourceAmount(resources?.hearts), [
+    tier(accountResourceAmount(resources?.hearts, "hearts"), [
       [50, 100, 200],
       [200, 200, 400],
       [500, 400, 700],
     ]),
-    tier(accountResourceAmount(resources?.ascended), [
+    tier(accountResourceAmount(resources?.ascended, "ascended"), [
       [20, 50, 100],
       [50, 100, 200],
       [100, 200, 350],
     ]),
     [
-      Math.min(accountResourceAmount(resources?.passes), 5) * 80,
-      Math.min(accountResourceAmount(resources?.passes), 5) * 150,
+      Math.min(accountResourceAmount(resources?.passes, "passes"), 5) * 80,
+      Math.min(accountResourceAmount(resources?.passes, "passes"), 5) * 150,
     ],
   ];
   return {

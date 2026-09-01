@@ -7,6 +7,8 @@ const ROOT = resolve(import.meta.dirname, "..");
 const evidencePath = resolve(ROOT, "data/hair-name-evidence.json");
 const researchPath = resolve(ROOT, "data/hair-name-research.json");
 const runtimePath = resolve(ROOT, "app/player-hair-names.json");
+const playerNamesPath = resolve(ROOT, "app/player-zh-names.json");
+const wikiNamesPath = resolve(ROOT, "app/wiki-zh-names.json");
 const write = process.argv.includes("--write");
 const normalize = (value) => String(value ?? "").trim();
 const unique = (values) => [...new Set(values.map(normalize).filter(Boolean))];
@@ -17,19 +19,33 @@ const canonicalTerm = (value) =>
     .replace(/髮型|頭/g, "")
     .replace(/[^\p{L}\p{N}]+/gu, "");
 
-const catalog = await loadRuntimeCatalog({
-  stubJsonFiles: ["player-hair-names.json"],
-});
+const catalog = await loadRuntimeCatalog();
 const hairItems = catalog.wikiItems.filter((item) => item.type === "Hair");
 const evidence = JSON.parse(await readFile(evidencePath, "utf8"));
+const [playerNames, wikiNames] = await Promise.all([
+  readFile(playerNamesPath, "utf8").then(JSON.parse),
+  readFile(wikiNamesPath, "utf8").then(JSON.parse),
+]);
 const byGuid = new Map(hairItems.map((item) => [item.guid, item]));
+
+const baselineCatalogName = (item) => {
+  const player = playerNames.items?.[item.guid];
+  const playerName = typeof player === "string" ? player : player?.displayName;
+  return (
+    playerName ??
+    wikiNames.items?.[item.guid] ??
+    // A synthetic GUID bypasses this generated hair-name snapshot while
+    // retaining the catalog's maintained name/market fallback rules.
+    catalog.zhItemName({ ...item, guid: "" })
+  );
+};
 
 for (const guid of Object.keys(evidence.items)) {
   if (!byGuid.has(guid)) throw new Error(`Hair evidence has an unknown GUID: ${guid}`);
 }
 
 const researchItems = hairItems.map((item) => {
-  const currentName = evidence.baselineNames?.[item.guid] ?? catalog.zhItemName(item);
+  const currentName = evidence.baselineNames?.[item.guid] ?? baselineCatalogName(item);
   const entry = evidence.items[item.guid] ?? null;
   const displayName = normalize(entry?.displayName) || currentName;
   const sources = entry?.sources ?? [];

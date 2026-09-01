@@ -85,15 +85,16 @@ const formatAccountTitle = (summary: SaleCopyInput["summary"]) => {
 };
 const formatResources = (resources: SaleCopyInput["resources"]) => {
   const entries = [
-    ["白蠟", resources?.candles],
-    ["愛心", resources?.hearts],
-    ["昇華蠟", resources?.ascended],
-    ["副卡", resources?.passes],
-  ].flatMap(([label, value]) => {
-    const amount = accountResourceAmount(value);
+    ["白蠟", "candles", resources?.candles],
+    ["愛心", "hearts", resources?.hearts],
+    ["昇華蠟", "ascended", resources?.ascended],
+    ["副卡", "passes", resources?.passes],
+  ] as const;
+  const rows = entries.flatMap(([label, key, value]) => {
+    const amount = accountResourceAmount(value, key);
     return amount > 0 ? [`${label} ${amount.toLocaleString("zh-TW")}`] : [];
   });
-  return entries.length ? [entries.join("｜")] : [];
+  return rows.length ? [rows.join("｜")] : [];
 };
 const fractionSymbols = new Map([
   ["1/2", "½"],

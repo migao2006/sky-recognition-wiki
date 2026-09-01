@@ -13,7 +13,7 @@ import type {
 } from "./organizer-step-state";
 import { orderShowcaseItems } from "./showcase-order";
 import { hasAccountDraftData } from "./use-account-draft";
-import type { OrganizerRuntime } from "./use-organizer-runtime";
+import type { ValuationRuntimeCapabilities } from "./use-organizer-runtime";
 import type { ValuationAnalysis } from "./valuation-analysis";
 import {
   marketAccountStyleNames,
@@ -29,7 +29,7 @@ import {
 import { useValuationExportActions } from "./use-valuation-export-actions";
 
 type Props = {
-  runtime: OrganizerRuntime;
+  runtime: ValuationRuntimeCapabilities;
   state: ValuationStepState;
   account: AccountInfo;
   setAccount: Dispatch<SetStateAction<AccountInfo>>;
@@ -130,6 +130,10 @@ export function ValuationStep({
       runtime.valuationRuntime,
       valuationAnalysis,
     ],
+  );
+  const completeness = Math.max(
+    0,
+    Math.min(100, Math.round(valuationAnalysis.completeness)),
   );
   const localizeValuationLabel = (label: string) => {
     const match = Object.entries(runtime.seasonZh).find(([slug]) =>
@@ -250,14 +254,19 @@ export function ValuationStep({
           <h2 id="valuation-title">估價分析</h2>
           <div
             className="completion-ring"
-            aria-label={`資料完整度 ${valuationAnalysis.completeness}%`}
+            role="progressbar"
+            aria-label="估價資料完整度"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={completeness}
+            aria-valuetext={`資料完整度 ${completeness}%`}
             style={
               {
-                "--completion": `${valuationAnalysis.completeness * 3.6}deg`,
+                "--completion": `${completeness * 3.6}deg`,
               } as CSSProperties
             }
           >
-            <b>{valuationAnalysis.completeness}%</b>
+            <b>{completeness}%</b>
           </div>
         </div>
         <div className="valuation-summary">

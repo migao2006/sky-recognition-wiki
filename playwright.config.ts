@@ -17,6 +17,13 @@ export default defineConfig({
         browserName: "chromium",
       },
     },
+    {
+      name: "iphone-webkit",
+      use: {
+        ...devices["iPhone 13"],
+        browserName: "webkit",
+      },
+    },
   ],
   webServer: {
     command: "npm run dev -- --hostname 127.0.0.1",

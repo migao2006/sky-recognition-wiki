@@ -39,7 +39,7 @@
 - `npm run lint`：程式風格與 React 規則檢查
 - `npm run typecheck`：TypeScript 型別檢查
 - `npm test`：驗證髮型名稱快照、正式建置與全部 Node 測試
-- `npm run test:e2e`：以 Chromium 的 iPhone 13 視窗驗證帳號資料、選物與估價流程
+- `npm run test:e2e`：以 Chromium 與 WebKit 的 iPhone 13 視窗驗證帳號資料、選物與估價流程
 
 ## 資料同步
 

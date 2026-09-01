@@ -61,8 +61,22 @@ type UseAccountDraftResult = {
   clearStoredDraft: () => void;
 };
 
-const removeStoredDraft = () =>
-  window.localStorage.removeItem(ACCOUNT_DRAFT_STORAGE_KEY);
+const storedDraftKeys = [
+  ACCOUNT_DRAFT_STORAGE_KEY,
+  ...ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS,
+];
+
+export const removeAllStoredDrafts = () => {
+  let failure: unknown;
+  storedDraftKeys.forEach((key) => {
+    try {
+      window.localStorage.removeItem(key);
+    } catch (error) {
+      failure ??= error;
+    }
+  });
+  if (failure) throw failure;
+};
 
 /** Keeps the in-progress account form on this device for thirty days. */
 export const useAccountDraft = ({
@@ -87,14 +101,16 @@ export const useAccountDraft = ({
       let available = true;
 
       try {
-        const draftKey = [
-          ACCOUNT_DRAFT_STORAGE_KEY,
-          ...ACCOUNT_LEGACY_DRAFT_STORAGE_KEYS,
-        ].find((key) => window.localStorage.getItem(key) !== null);
-        const stored = draftKey ? window.localStorage.getItem(draftKey) : null;
-        if (stored) {
-          restored = parseAccountDraft(JSON.parse(stored), validGuids);
-          if (draftKey && draftKey !== ACCOUNT_DRAFT_STORAGE_KEY) {
+        for (const draftKey of storedDraftKeys) {
+          const stored = window.localStorage.getItem(draftKey);
+          if (!stored) continue;
+          try {
+            restored = parseAccountDraft(JSON.parse(stored), validGuids);
+          } catch {
+            window.localStorage.removeItem(draftKey);
+            continue;
+          }
+          if (draftKey !== ACCOUNT_DRAFT_STORAGE_KEY) {
             window.localStorage.setItem(
               ACCOUNT_DRAFT_STORAGE_KEY,
               JSON.stringify(
@@ -107,10 +123,11 @@ export const useAccountDraft = ({
             );
             window.localStorage.removeItem(draftKey);
           }
+          break;
         }
       } catch {
         try {
-          removeStoredDraft();
+          removeAllStoredDrafts();
         } catch {
           available = false;
         }
@@ -127,7 +144,7 @@ export const useAccountDraft = ({
           setNotice("已恢復此裝置上的草稿");
         } else {
           try {
-            removeStoredDraft();
+            removeAllStoredDrafts();
           } catch {
             available = false;
           }
@@ -161,11 +178,11 @@ export const useAccountDraft = ({
             JSON.stringify(createAccountDraft({ account, bindings, owned })),
           );
         } else {
-          removeStoredDraft();
+          removeAllStoredDrafts();
         }
       } catch {
         try {
-          removeStoredDraft();
+          removeAllStoredDrafts();
         } catch {
           // Storage is unavailable; the in-memory session remains usable.
         }
@@ -178,7 +195,7 @@ export const useAccountDraft = ({
 
   const clearStoredDraft = useCallback(() => {
     try {
-      removeStoredDraft();
+      removeAllStoredDrafts();
     } catch {
       setDraftAvailable(false);
     }

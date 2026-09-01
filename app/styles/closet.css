@@ -461,17 +461,14 @@
 }
 .card-body {
   flex: 1;
+  display: block;
   min-height: 132px;
   padding: 12px 13px 14px;
   border-top: 1px solid var(--line);
   background: #0d1725d9;
 }
-.card-body > div {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.card-body h2 {
+.card-title {
+  display: block;
   min-height: 40px;
   margin: 10px 0 5px;
   color: #f7f9fc;
@@ -483,7 +480,7 @@
 .grid .item-card {
   border-radius: 13px;
   content-visibility: auto;
-  contain-intrinsic-size: auto 210px;
+  contain-intrinsic-size: auto 146px;
 }
 .grid .source-badge,
 .grid .discontinued-badge {
@@ -502,10 +499,7 @@
   min-height: 36px;
   padding: 7px;
 }
-.grid .card-body > div {
-  gap: 3px;
-}
-.grid .card-body h2 {
+.grid .card-title {
   min-height: 28px;
   margin: 6px 0 0;
   font-size: 9px;

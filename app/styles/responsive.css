@@ -234,6 +234,7 @@
   }
   .grid .item-card {
     border-radius: 10px;
+    contain-intrinsic-size: auto 120px;
   }
   .item-card:hover {
     transform: none;
@@ -255,7 +256,7 @@
     min-height: 34px;
     padding: 5px;
   }
-  .grid .card-body h2 {
+  .grid .card-title {
     min-height: auto;
     font-size: 11px;
   }

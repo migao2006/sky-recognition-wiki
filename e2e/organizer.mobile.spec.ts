@@ -3,9 +3,22 @@ import { expect, test } from "@playwright/test";
 test("supports the essential mobile organizer flow", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
+  // WebKit can expose the prerendered input briefly before React hydrates it.
+  await page.waitForTimeout(500);
 
   await page.getByLabel("帳號名稱").fill("手機測試帳號");
-  await page.waitForTimeout(400);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...Array(window.localStorage.length).keys()].some((index) => {
+          const value = window.localStorage.getItem(
+            window.localStorage.key(index) ?? "",
+          );
+          return value?.includes("手機測試帳號") ?? false;
+        }),
+      ),
+    )
+    .toBe(true);
   await page.reload();
   await expect(page.getByLabel("帳號名稱")).toHaveValue("手機測試帳號");
 
@@ -45,25 +58,34 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   });
   await expect(page.getByRole("button", { name: "複製出售文案" })).toBeVisible();
 
-  await page.locator('input[type="file"]').setInputFiles({
+  const legacyBackup = {
+    format: "sky-recognition-wiki",
+    version: 2,
+    account: {
+      name: "舊版備份",
+      accountType: "有翼",
+      bindingNote: "前號不出",
+      notes: "交易前請先核對",
+    },
+    bindings: {},
+    owned: ["instrument-harp", "unknown-guid"],
+  };
+  const backupInput = page.locator('input[type="file"]');
+  page.once("dialog", (dialog) => dialog.dismiss());
+  await backupInput.setInputFiles({
     name: "legacy-backup.json",
     mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify({
-      format: "sky-recognition-wiki",
-      version: 2,
-      account: {
-        name: "舊版備份",
-        accountType: "有翼",
-        bindingNote: "前號不出",
-        notes: "交易前請先核對",
-      },
-      bindings: {},
-      owned: ["instrument-harp", "unknown-guid"],
-    })),
+    buffer: Buffer.from(JSON.stringify(legacyBackup)),
+  });
+  await expect(page.getByText("已取消匯入，原有資料未變更")).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await backupInput.setInputFiles({
+    name: "legacy-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(legacyBackup)),
   });
   await expect(page.getByText("已匯入 0 件、遷移 1 件、略過 1 件")).toBeVisible();
 
-  const backupInput = page.locator('input[type="file"]');
   await backupInput.setInputFiles({
     name: "future-backup.json",
     mimeType: "application/json",

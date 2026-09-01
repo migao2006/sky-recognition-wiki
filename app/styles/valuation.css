@@ -371,7 +371,7 @@
   border-top-color: #8fc7ff52;
   background: #111d2e;
 }
-.item-card.selectable.owned .card-body h2 {
+.item-card.selectable.owned .card-title {
   color: #ffffff;
 }
 .owned-check {

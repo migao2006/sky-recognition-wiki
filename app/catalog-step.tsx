@@ -6,19 +6,13 @@ import {
   INITIAL_VISIBLE_ITEMS,
   type CatalogStepState,
 } from "./organizer-step-state";
-import type { OrganizerRuntime } from "./use-organizer-runtime";
+import type { ClosetSubRoute } from "./catalog-taxonomy";
+import type { CatalogRuntime } from "./use-organizer-runtime";
 import {
   isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
 } from "./valuation-items";
-
-type ClosetSubRoute = {
-  closetKey: string;
-  closetName: string;
-  subKey: string;
-  subName: string;
-};
 
 const VISIBLE_ITEM_BATCH = 40;
 
@@ -30,7 +24,7 @@ export function CatalogStep({
   onBack,
   onNext,
 }: {
-  runtime: OrganizerRuntime;
+  runtime: CatalogRuntime;
   state: CatalogStepState;
   owned: ReadonlySet<string>;
   onToggleOwned: (guid: string) => void;
@@ -183,16 +177,34 @@ export function CatalogStep({
       return;
     const nextIcons = wikiItems
       .filter((item) => matchesSub(item, nextClosetSub.subKey))
-      .slice(0, 12)
+      .slice(0, 4)
       .map((item) => item.icon);
-    const timer = window.setTimeout(() => {
+    let cancelled = false;
+    const images: HTMLImageElement[] = [];
+    const preload = () => {
+      if (cancelled) return;
       nextIcons.forEach((src) => {
         const image = new Image();
         image.referrerPolicy = "no-referrer";
         image.src = src;
+        images.push(image);
       });
-    }, 650);
-    return () => window.clearTimeout(timer);
+    };
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const idleHandle = idleWindow.requestIdleCallback?.(preload);
+    const timeoutHandle =
+      idleHandle === undefined ? window.setTimeout(preload, 650) : undefined;
+    return () => {
+      cancelled = true;
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+      images.forEach((image) => {
+        image.removeAttribute("src");
+      });
+    };
   }, [matchesSub, nextClosetSub, wikiItems]);
 
   const filtered = useMemo(() => {

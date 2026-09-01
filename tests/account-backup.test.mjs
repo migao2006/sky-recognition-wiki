@@ -115,6 +115,9 @@ test("normalizes imports and keeps only known item ids", () => {
   assert.equal(imported.bindings.steam, "none");
   assert.equal(imported.bindings.playstation, "none");
   assert.deepEqual(imported.owned, ["valid-guid"]);
+  assert.deepEqual(imported.unknownGuids, [{ guid: "missing-guid", name: "" }]);
+  assert.deepEqual(imported.duplicates, []);
+  assert.equal(imported.invalidEntries, 1);
 });
 
 test("rejects unrelated JSON files", () => {
@@ -172,9 +175,12 @@ test("migrates legacy ids, deduplicates owned items, and counts ignored entries"
     { imported: imported.imported, migrated: imported.migrated, ignored: imported.ignored },
     { imported: 0, migrated: 1, ignored: 4 },
   );
+  assert.deepEqual(imported.duplicates, ["biKOov4qJQ", "biKOov4qJQ"]);
+  assert.deepEqual(imported.unknownGuids, [{ guid: "missing", name: "" }]);
+  assert.equal(imported.invalidEntries, 1);
 });
 
-test("rejects excessively large ownership lists and limits imported text", () => {
+test("rejects excessively large ownership lists and normalizes imported text and resources", () => {
   assert.throws(
     () => parseAccountBackup({ format: "sky-recognition-wiki", account, owned: Array(5001).fill("valid-guid") }, new Set(["valid-guid"])),
     /Too many owned items/,
@@ -184,8 +190,62 @@ test("rejects excessively large ownership lists and limits imported text", () =>
     new Set(),
   );
   assert.equal(imported.account.name.length, 100);
-  assert.equal(imported.account.candles.length, 32);
+  assert.equal(imported.account.candles, "");
   assert.equal(imported.account.notes.length, 1000);
+});
+
+test("reports unknown v3 GUIDs with only their saved item snapshot names", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 3,
+      account,
+      owned: ["unknown-guid", "unknown-guid", "another-unknown"],
+      items: [
+        { guid: "unknown-guid", zhName: "備份中的中文名稱", name: "Wrong English" },
+        { guid: "another-unknown", name: "Only saved English name" },
+        { guid: "not-owned", zhName: "不可使用" },
+      ],
+    },
+    new Set(["valid-guid"]),
+  );
+  assert.deepEqual(imported.unknownGuids, [
+    { guid: "unknown-guid", name: "備份中的中文名稱" },
+    { guid: "another-unknown", name: "Only saved English name" },
+  ]);
+  assert.deepEqual(imported.duplicates, ["unknown-guid"]);
+  assert.equal(imported.ignored, 3);
+});
+
+test("accepts only bounded non-negative integer resources", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      account: {
+        ...account,
+        candles: "900",
+        hearts: "-1",
+        ascended: "10.5",
+        passes: "001",
+      },
+      owned: [],
+    },
+    new Set(),
+  );
+  assert.equal(imported.account.candles, "900");
+  assert.equal(imported.account.hearts, "");
+  assert.equal(imported.account.ascended, "");
+  assert.equal(imported.account.passes, "001");
+  const oversized = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      account: { ...account, candles: "100000", passes: "1000" },
+      owned: [],
+    },
+    new Set(),
+  );
+  assert.equal(oversized.account.candles, "");
+  assert.equal(oversized.account.passes, "");
 });
 
 test("migrates legacy backups and drafts without PlayStation bindings", () => {
