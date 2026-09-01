@@ -185,9 +185,7 @@ export default function AccountOrganizer() {
             runtime={runtime}
             state={valuationStepState}
             account={account}
-            setAccount={setAccount}
             bindings={bindings}
-            setBindings={setBindings}
             owned={owned}
             setOwned={setOwned}
             setNotice={setNotice}

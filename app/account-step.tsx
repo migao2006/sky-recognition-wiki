@@ -14,6 +14,7 @@ import {
 import { bundlePresets } from "./bundle-presets";
 import { formatMarketBindings, formatMarketPlatform } from "./market-copy";
 import { isSeasonPendant } from "./season-items";
+import { useAccountBackupActions } from "./use-account-backup-actions";
 import type { AccountRuntime } from "./use-organizer-runtime";
 
 type AccountStepProps = {
@@ -103,6 +104,16 @@ export function AccountStep({
   const loadCatalogWhenOpened = (open: boolean) => {
     if (open) safelyLoadCatalog();
   };
+  const { importRef, exportJson, importJson } = useAccountBackupActions({
+    runtime,
+    account,
+    bindings,
+    owned,
+    setAccount,
+    setBindings,
+    setOwned,
+    setNotice,
+  });
 
   return (
     <section className="account-panel">
@@ -420,6 +431,31 @@ export function AccountStep({
           </div>
         )}
       </details>
+      <details
+        className="more-exports account-backup-tools"
+        onToggle={(event) => loadCatalogWhenOpened(event.currentTarget.open)}
+      >
+        <summary>
+          <b>更多匯出方式</b>
+          <i aria-hidden="true">⌄</i>
+        </summary>
+        <div className="export-tools" aria-label="帳號匯入與匯出">
+          <button type="button" onClick={exportJson}>
+            匯出 JSON
+          </button>
+          <button type="button" onClick={() => importRef.current?.click()}>
+            匯入 JSON
+          </button>
+        </div>
+      </details>
+      <input
+        ref={importRef}
+        className="file-input"
+        type="file"
+        accept="application/json,.json"
+        aria-label="匯入 JSON 檔案"
+        onChange={importJson}
+      />
       <div className="step-actions">
         <span>
           {draftAvailable ? "草稿保存 30 天" : "草稿未保存"}

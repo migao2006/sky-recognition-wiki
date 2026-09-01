@@ -3,19 +3,13 @@
 import {
   useRef,
   useState,
-  type ChangeEvent,
   type Dispatch,
   type SetStateAction,
 } from "react";
-import {
-  ACCOUNT_BACKUP_MAX_BYTES,
-  createAccountBackup,
-  parseAccountBackup,
-} from "./account-backup";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
+import { downloadBlob } from "./browser-download";
 import { safeFileName } from "./file-name";
 import type { ShowcasePreset } from "./organizer-step-state";
-import { hasAccountDraftData } from "./use-account-draft";
 import { isChinaOnlyItem, isGraduationGift, isPaidItem } from "./valuation-items";
 import type { ValuationAnalysis, ValuationEstimate } from "./valuation-analysis";
 import {
@@ -44,21 +38,7 @@ type Props = {
   valuationEstimate: ValuationEstimate | null | undefined;
   confidenceNames: Record<SeasonConfidence, string>;
   localizeValuationLabel: (label: string) => string;
-  setAccount: Dispatch<SetStateAction<AccountInfo>>;
-  setBindings: Dispatch<SetStateAction<Record<BindingKey, BindingStatus>>>;
-  setOwned: Dispatch<SetStateAction<Set<string>>>;
   setNotice: Dispatch<SetStateAction<string>>;
-};
-
-const downloadBlob = (blob: Blob, fileName: string) => {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 export const useValuationExportActions = ({
@@ -72,13 +52,8 @@ export const useValuationExportActions = ({
   valuationEstimate,
   confidenceNames,
   localizeValuationLabel,
-  setAccount,
-  setBindings,
-  setOwned,
   setNotice,
 }: Props) => {
-  const importRef = useRef<HTMLInputElement>(null);
-  const importGenerationRef = useRef(0);
   const exportInFlightRef = useRef(false);
   const [imageExport, setImageExport] = useState<ImageExportStatus | null>(
     null,
@@ -155,96 +130,13 @@ export const useValuationExportActions = ({
       })),
     };
   };
-  const exportAccount = async () => {
-    const { buildSaleCopy } = await import("./sale-copy");
-    downloadText(buildSaleCopy(saleCopyData()), "出售文案");
-  };
-  const copySaleCopy = async () => {
-    const { buildSaleCopy } = await import("./sale-copy");
-    const text = buildSaleCopy(saleCopyData()).join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      setNotice("出售文案已複製");
-    } catch {
-      downloadText([text], "出售文案");
-      setNotice("無法複製，已改為下載文案");
-    }
-  };
-  const exportJson = () => {
-    const backup = createAccountBackup({
-      account,
-      bindings,
-      items: chosen,
-      getZhName: runtime.zhItemName,
-      getSource: runtime.source,
-    });
-    downloadBlob(
-      new Blob([JSON.stringify(backup, null, 2)], {
-        type: "application/json;charset=utf-8",
-      }),
-      `光遇帳號_${safeFileName(account.name)}_備份.json`,
-    );
-  };
-  const importJson = async (event: ChangeEvent<HTMLInputElement>) => {
-    const generation = ++importGenerationRef.current;
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    if (file.size > ACCOUNT_BACKUP_MAX_BYTES) {
-      setNotice("無法匯入：備份不可超過 5 MB");
-      return;
-    }
-    try {
-      const text = await file.text();
-      if (generation !== importGenerationRef.current) return;
-      const imported = parseAccountBackup(
-        JSON.parse(text),
-        runtime.validItemGuids,
-      );
-      if (generation !== importGenerationRef.current) return;
-      const unknownNames = imported.unknownGuids
-        .slice(0, 5)
-        .map((item) => item.name || item.guid)
-        .join("、");
-      const summary = [
-        `可匯入 ${imported.imported + imported.migrated} 件`,
-        imported.unknownGuids.length
-          ? `未知 ${imported.unknownGuids.length} 件${unknownNames ? `（${unknownNames}）` : ""}`
-          : "",
-        imported.duplicates.length
-          ? `重複 ${imported.duplicates.length} 件`
-          : "",
-        imported.invalidEntries ? `無效 ${imported.invalidEntries} 筆` : "",
-      ]
-        .filter(Boolean)
-        .join("\n");
-      const currentOwned = new Set(chosen.map((item) => item.guid));
-      if (
-        (hasAccountDraftData(account, bindings, currentOwned) ||
-          imported.unknownGuids.length > 0) &&
-        !window.confirm(`${summary}\n\n匯入會取代目前資料，確定繼續？`)
-      ) {
-        setNotice("已取消匯入，原有資料未變更");
-        return;
-      }
-      if (generation !== importGenerationRef.current) return;
-      setAccount(imported.account);
-      setBindings(imported.bindings);
-      setOwned(new Set(imported.owned));
-      setNotice(
-        `已匯入 ${imported.imported} 件、遷移 ${imported.migrated} 件、略過 ${imported.ignored} 件`,
-      );
-    } catch (error) {
-      setNotice(
-        error instanceof Error && error.message === "Unsupported account backup version"
-          ? "無法匯入：備份版本較新或不支援"
-          : "無法匯入：檔案格式不正確",
-      );
-    }
-  };
   const shareSummary = async () => {
     const { buildSaleCopy } = await import("./sale-copy");
     const summary = buildSaleCopy(saleCopyData()).join("\n");
+    if (!summary.trim()) {
+      setNotice("尚無可分享的摘要");
+      return;
+    }
     try {
       if (navigator.share) {
         await navigator.share({ title: "光遇帳號摘要", text: summary });
@@ -317,12 +209,7 @@ export const useValuationExportActions = ({
   };
 
   return {
-    importRef,
     imageExport,
-    exportAccount,
-    copySaleCopy,
-    exportJson,
-    importJson,
     shareSummary,
     exportShowcaseImage,
   };

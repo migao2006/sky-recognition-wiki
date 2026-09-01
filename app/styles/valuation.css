@@ -295,43 +295,6 @@
   flex-wrap: wrap;
   gap: 8px;
 }
-.more-exports {
-  min-width: min(620px, 100%);
-}
-.more-exports summary {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  color: #b8c6d7;
-  cursor: pointer;
-  list-style: none;
-}
-.more-exports summary::-webkit-details-marker {
-  display: none;
-}
-.more-exports[open] summary {
-  margin-bottom: 8px;
-}
-.export-tools {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.export-tools button {
-  border: 1px solid #a9cfff29;
-  background: #101724;
-  color: #d0d9e3;
-}
-.export-tools button:hover {
-  border-color: #8fc7ff5c;
-  color: #cbdff7;
-}
-.file-input {
-  display: none;
-}
 .clear-owned {
   border: 1px solid var(--line);
   background: transparent;
@@ -340,11 +303,6 @@
 .clear-owned:disabled {
   opacity: 0.35;
   cursor: default;
-}
-.export-tools .export-account {
-  border-color: #8fc7ff70;
-  background: #8fc7ff1c;
-  color: #f4f7fb;
 }
 .item-card.selectable {
   position: relative;

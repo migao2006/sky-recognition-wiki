@@ -22,6 +22,13 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await page.reload();
   await expect(page.getByLabel("帳號名稱")).toHaveValue("手機測試帳號");
 
+  await page.getByText("更多匯出方式").click();
+  await expect(page.getByRole("button", { name: "匯出 JSON" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "匯入 JSON" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "出售文案" })).toHaveCount(0);
+  await page.locator(".binding-section summary").click();
+  await page.getByLabel("已確認以上綁定狀態").check();
+
   await page.getByRole("button", { name: "下一步：選擇物品" }).click();
   await expect(page.getByRole("heading", { name: "選擇物品" })).toBeVisible({
     timeout: 30_000,
@@ -56,7 +63,33 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "估價與匯出" })).toBeVisible({
     timeout: 30_000,
   });
-  await expect(page.getByRole("button", { name: "複製出售文案" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "分享摘要" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /出售文案/ })).toHaveCount(0);
+  await expect(page.getByText("更多匯出方式")).toHaveCount(0);
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: async ({ text }: ShareData) => {
+        window.sessionStorage.setItem("shared-account-summary", text ?? "");
+      },
+    });
+  });
+  await page.getByRole("button", { name: "分享摘要" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.sessionStorage.getItem("shared-account-summary"),
+      ),
+    )
+    .toContain("✦");
+});
+
+test("imports and exports account backups from the first step", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.getByLabel("帳號名稱").fill("目前帳號");
+  await page.getByText("更多匯出方式").click();
 
   const legacyBackup = {
     format: "sky-recognition-wiki",
@@ -70,7 +103,7 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
     bindings: {},
     owned: ["instrument-harp", "unknown-guid"],
   };
-  const backupInput = page.locator('input[type="file"]');
+  const backupInput = page.getByLabel("匯入 JSON 檔案");
   page.once("dialog", (dialog) => dialog.dismiss());
   await backupInput.setInputFiles({
     name: "legacy-backup.json",
@@ -105,15 +138,14 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   });
   await expect(page.getByText("無法匯入：檔案格式不正確")).toBeVisible();
 
-  await page.getByText("更多匯出方式").click();
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "出售文案", exact: true }).click();
+  await page.getByRole("button", { name: "匯出 JSON" }).click();
   const download = await downloadPromise;
   const stream = await download.createReadStream();
   const chunks: Buffer[] = [];
   for await (const chunk of stream) chunks.push(Buffer.from(chunk));
-  const saleCopy = Buffer.concat(chunks).toString("utf8");
-  expect(saleCopy).toContain("✦ 交易說明");
-  expect(saleCopy).toContain("綁定說明｜前號不出");
-  expect(saleCopy).toContain("交易前須知｜交易前請先核對");
+  const exported = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  expect(exported.version).toBe(3);
+  expect(exported.account.name).toBe("舊版備份");
+  expect(exported.owned).toHaveLength(1);
 });

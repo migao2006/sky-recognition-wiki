@@ -274,6 +274,7 @@ export type AccountRuntime = Pick<
   | "seasonUltimateItems"
   | "seasonUltimateSlugs"
   | "seasonZh"
+  | "source"
   | "zhItemName"
 >;
 
@@ -306,12 +307,10 @@ export type ValuationRuntimeCapabilities = Pick<
   | "seasonGraduationItems"
   | "seasonZh"
   | "seasons"
-  | "source"
   | "sourceCollectionName"
   | "uniqueByGuid"
   | "zhItemName"
   | "saleItemName"
-  | "validItemGuids"
   | "saleCopyPresetGuids"
   | "valuationDomain"
   | "showcaseOrderOptions"

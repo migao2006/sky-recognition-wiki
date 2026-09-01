@@ -32,9 +32,7 @@ type Props = {
   runtime: ValuationRuntimeCapabilities;
   state: ValuationStepState;
   account: AccountInfo;
-  setAccount: Dispatch<SetStateAction<AccountInfo>>;
   bindings: Record<BindingKey, BindingStatus>;
-  setBindings: Dispatch<SetStateAction<Record<BindingKey, BindingStatus>>>;
   owned: Set<string>;
   setOwned: Dispatch<SetStateAction<Set<string>>>;
   setNotice: Dispatch<SetStateAction<string>>;
@@ -75,9 +73,7 @@ export function ValuationStep({
   runtime,
   state,
   account,
-  setAccount,
   bindings,
-  setBindings,
   owned,
   setOwned,
   setNotice,
@@ -160,12 +156,7 @@ export function ValuationStep({
   );
   const previewLimit = showcasePreset === "collection" ? 24 : 16;
   const {
-    importRef,
     imageExport,
-    exportAccount,
-    copySaleCopy,
-    exportJson,
-    importJson,
     shareSummary,
     exportShowcaseImage,
   } = useValuationExportActions({
@@ -179,9 +170,6 @@ export function ValuationStep({
     valuationEstimate,
     confidenceNames,
     localizeValuationLabel,
-    setAccount,
-    setBindings,
-    setOwned,
     setNotice,
   });
 
@@ -199,10 +187,10 @@ export function ValuationStep({
           <div className="showcase-primary-actions">
             <button
               type="button"
-              onClick={copySaleCopy}
+              onClick={shareSummary}
               disabled={!chosen.length && !account.bindingsConfirmed}
             >
-              複製出售文案
+              分享摘要
             </button>
             <button
               type="button"
@@ -477,29 +465,6 @@ export function ValuationStep({
             清除全部資料
           </button>
         </div>
-        <details className="more-exports">
-          <summary>
-            <b>更多匯出方式</b>
-            <i aria-hidden="true">⌄</i>
-          </summary>
-          <div className="export-tools" aria-label="帳號匯入與匯出">
-            <button onClick={exportAccount}>出售文案</button>
-            <button onClick={exportJson}>匯出 JSON</button>
-            <button onClick={() => importRef.current?.click()}>
-              匯入 JSON
-            </button>
-            <button className="export-account" onClick={shareSummary}>
-              分享摘要
-            </button>
-          </div>
-        </details>
-        <input
-          ref={importRef}
-          className="file-input"
-          type="file"
-          accept="application/json,.json"
-          onChange={importJson}
-        />
       </div>
     </section>
   );

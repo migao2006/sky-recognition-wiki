@@ -118,6 +118,68 @@
 .more-exports[open] summary i {
   transform: rotate(180deg);
 }
+.account-backup-tools {
+  width: 100%;
+  min-width: 0;
+  margin-top: 14px;
+  padding: 0 14px 14px;
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+}
+.more-exports.account-backup-tools summary {
+  min-height: 56px;
+  justify-content: space-between;
+}
+.account-backup-tools .export-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.account-backup-tools .export-tools button {
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.more-exports {
+  min-width: min(620px, 100%);
+}
+.more-exports summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  color: #b8c6d7;
+  cursor: pointer;
+  list-style: none;
+}
+.more-exports summary::-webkit-details-marker {
+  display: none;
+}
+.more-exports[open] summary {
+  margin-bottom: 8px;
+}
+.export-tools {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.export-tools button {
+  border: 1px solid #a9cfff29;
+  background: #101724;
+  color: #d0d9e3;
+}
+.export-tools button:hover {
+  border-color: #8fc7ff5c;
+  color: #cbdff7;
+}
+.file-input {
+  display: none;
+}
 .binding-section.has-issue {
   border-color: #e7929f55;
 }

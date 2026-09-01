@@ -8,9 +8,10 @@
 
 - `app/page.tsx`：三步驟流程協調與按需載入
 - `app/account-step.tsx`：帳號資料與綁定設定
+- `app/use-account-backup-actions.ts`：第一步的 JSON 備份匯入與匯出
 - `app/catalog-step.tsx`：衣櫃搜尋、分類與快速選取
 - `app/valuation-step.tsx`：估價與匯出頁面組裝
-- `app/use-valuation-export-actions.ts`：備份、出售文案、分享與圖片匯出動作
+- `app/use-valuation-export-actions.ts`：估價摘要分享與圖片匯出動作
 - `app/valuation-showcase-preview.tsx`：成品圖片預覽
 - `app/valuation-model-core.js`：瀏覽器估價與留出驗證共用的數值核心
 - `app/use-account-draft.ts`：本機草稿保存與還原
@@ -22,7 +23,7 @@
 - `app/wiki-data.ts`：SkyGame-Data 衣櫃物品快照
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出
-- `app/sale-copy.ts`：出售文案輸出
+- `app/sale-copy.ts`：帳號分享摘要格式
 - `app/valuation-season-bands.ts`：彙總後的季節價格帶與樣本信心
 - `scripts/audit-valuation-source.mjs`：從原始 JSONL 重算合格樣本、季節樣本數與分位數
 - `scripts/prepare-facebook-valuation-source.mjs`：將私人 Facebook 原始 JSONL 匿名成可供估價稽核的結構資料
@@ -51,7 +52,7 @@
 
 尚未進入 SkyGame-Data 正式版本的新品，只能依可追溯的上游 PR／commit 或明確 Wiki 項目建立暫時 overlay。目前梵谷「星夜之傘」與畫架取自 [SkyGame-Data PR #125](https://github.com/Silverfeelin/SkyGame-Data/pull/125)；上游合併並同步正式快照後，應遷移既有 overlay GUID 並移除對應例外。
 
-玩家名稱以官方 GUID 對應，不用英文同名或圖片猜測。顯示名優先採台灣交易社群容易辨識的說法，舊名、Wiki 名與套組俗稱保留為搜尋別名；只有具有玩家用語依據的物品才另外設定 `saleName`，此短名只用於出售文案，不改變衣櫃、搜尋、備份或整理圖片。出售文案會用估價系統已判定的最早畢業進度季、斷季程度及禮包級距產生標題，並列出已填寫的白蠟、愛心、昇華蠟與副卡數量；部分畢業可作為帳號年代起點但不算斷季，完全沒有畢業進度時不自行猜測斷季。季節部分畢業比例優先使用 `½`、`⅓`、`⅔` 等單字元分數，沒有對應字元時保留 `n/d`；物品列以 20 字為上限，四字短名通常一行四件，五至六字名稱通常一行三件，系列標題不占物品列額度。現行一般物品用語參考 2026-08-31 讀取的指定 Google Drive 資料夾 26 份出售文案。
+玩家名稱以官方 GUID 對應，不用英文同名或圖片猜測。顯示名優先採台灣交易社群容易辨識的說法，舊名、Wiki 名與套組俗稱保留為搜尋別名；只有具有玩家用語依據的物品才另外設定 `saleName`，此短名只用於帳號分享摘要，不改變衣櫃、搜尋、備份或整理圖片。分享摘要會用估價系統已判定的最早畢業進度季、斷季程度及禮包級距產生標題，並列出已填寫的白蠟、愛心、昇華蠟與副卡數量；部分畢業可作為帳號年代起點但不算斷季，完全沒有畢業進度時不自行猜測斷季。季節部分畢業比例優先使用 `½`、`⅓`、`⅔` 等單字元分數，沒有對應字元時保留 `n/d`；物品列以 20 字為上限，四字短名通常一行四件，五至六字名稱通常一行三件，系列標題不占物品列額度。現行一般物品用語參考 2026-08-31 讀取的指定 Google Drive 資料夾 26 份出售文案。
 
 ## 備份相容性
 
