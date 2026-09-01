@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   seasonPriceBands,
   valuationSampleSummary,
 } from "../app/valuation-season-bands.ts";
+import {
+  deriveSeasonBands,
+  seasonBandSeeds,
+} from "../app/valuation-season-band-core.js";
 
 const marketAggregate = JSON.parse(
   await readFile(
@@ -16,8 +21,8 @@ const marketAggregate = JSON.parse(
 test("season bands contain all thirty ordered seasons with valid price ranges", () => {
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
-    sourceRows: 1186,
-    eligibleRows: 281,
+    sourceRows: 164,
+    eligibleRows: 148,
     facebookRows: 16,
     facebookEligibleRows: 0,
     driveRows: 112,
@@ -41,6 +46,53 @@ test("season bands contain all thirty ordered seasons with valid price ranges", 
     );
     if (index) assert.ok(seasonPriceBands[index - 1].low >= band.low);
   }
+});
+
+test("browser season bands are derived from the shared blend and monotonic clamp", () => {
+  const comparableFields = (band) => ({
+    slug: band.slug,
+    low: band.low,
+    median: band.median,
+    high: band.high,
+    contributionLow: band.contributionLow,
+    contributionHigh: band.contributionHigh,
+    sampleCount: band.sampleCount,
+    effectiveWeight: band.effectiveWeight,
+  });
+  assert.deepEqual(
+    seasonPriceBands.map(comparableFields),
+    deriveSeasonBands(marketAggregate, seasonBandSeeds),
+  );
+});
+
+test("keeps the published thirty-season price bands numerically stable", () => {
+  const publishedFields = seasonPriceBands.map(
+    ({
+      slug,
+      low,
+      median,
+      high,
+      contributionLow,
+      contributionHigh,
+      sampleCount,
+      effectiveWeight,
+    }) => ({
+      slug,
+      low,
+      median,
+      high,
+      contributionLow,
+      contributionHigh,
+      sampleCount,
+      effectiveWeight,
+    }),
+  );
+  assert.equal(
+    createHash("sha256")
+      .update(JSON.stringify(publishedFields))
+      .digest("hex"),
+    "0c01cb21cf22b22dfa393d9ccf8b0cb0c4afb5f2469de0f23018153a8b742210",
+  );
 });
 
 test("sample confidence reflects direct eligible mentions", () => {

@@ -11,6 +11,24 @@ import { prepareRow } from "../scripts/prepare-facebook-valuation-source.mjs";
 const exec = promisify(execFile);
 const script = new URL("../scripts/prepare-facebook-valuation-source.mjs", import.meta.url);
 const testSalt = "test-salt-for-facebook-anonymization-32";
+const valuationModel = {
+  baseLow: 8000,
+  baseHigh: 12000,
+  breakMultiplier: 1,
+  partialDiscountLow: 0,
+  partialDiscountHigh: 0,
+  packageLow: 250,
+  packageHigh: 500,
+  packageMarketMultiplier: 1,
+  limitedLow: 100,
+  limitedHigh: 200,
+  resourceLow: 0,
+  resourceHigh: 0,
+  accountStyleMultiplier: 1,
+  bindingRisk: 1,
+  transferHighMultiplier: 1,
+  confidence: "medium",
+};
 
 const prepare = async (lines, salt = testSalt) => {
   const directory = await mkdtemp(join(tmpdir(), "sky-facebook-private-"));
@@ -141,4 +159,49 @@ test("normalizes a reversed price range before anonymized output", () => {
   }, "fixture-salt-for-facebook-anonymization-32");
   assert.equal(output.price_twd_low, 3000);
   assert.equal(output.price_twd_high, 5000);
+});
+
+test("retains a complete numeric valuation predictor using the validator schema", () => {
+  const output = prepareRow({
+    post_id: "complete-predictor",
+    group_id: "group-a",
+    valuation_model: { ...valuationModel, untrusted_note: "do not export" },
+  }, "fixture-salt-for-facebook-anonymization-32");
+  assert.deepEqual(output.valuation_model, valuationModel);
+});
+
+test("omits the full predictor when any required value is missing, non-numeric, or out of bounds", () => {
+  const invalidPredictors = [
+    Object.fromEntries(Object.entries(valuationModel).filter(([key]) => key !== "packageHigh")),
+    { ...valuationModel, packageLow: "250" },
+    { ...valuationModel, bindingRisk: 1.01 },
+    { ...valuationModel, transferHighMultiplier: 1.04 },
+    { ...valuationModel, limitedLow: -1 },
+  ];
+  for (const predictor of invalidPredictors) {
+    const output = prepareRow({ post_id: JSON.stringify(predictor), valuation_model: predictor }, "fixture-salt-for-facebook-anonymization-32");
+    assert.equal(Object.hasOwn(output, "valuation_model"), false);
+  }
+});
+
+test("never leaks private fields nested beside a valuation predictor", () => {
+  const secret = "王小明的完整出售文案";
+  const output = prepareRow({
+    post_id: "private-predictor",
+    group_id: "group-a",
+    post_url: "https://facebook.example/private-post",
+    author_name: "王小明",
+    account_name: "私人帳號名",
+    listing_text: secret,
+    valuation_model: {
+      ...valuationModel,
+      listing_text: secret,
+      author_name: "王小明",
+      post_url: "https://facebook.example/private-post",
+    },
+  }, "fixture-salt-for-facebook-anonymization-32");
+  assert.equal(JSON.stringify(output).includes(secret), false);
+  assert.equal(JSON.stringify(output).includes("王小明"), false);
+  assert.equal(JSON.stringify(output).includes("private-post"), false);
+  assert.deepEqual(Object.keys(output.valuation_model), [...Object.keys(valuationModel)]);
 });

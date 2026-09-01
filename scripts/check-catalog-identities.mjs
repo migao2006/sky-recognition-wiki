@@ -3,6 +3,21 @@ import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 const SOURCE_VERSION = "1.3.10";
 const SOURCE_URL = `https://unpkg.com/skygame-data@${SOURCE_VERSION}/assets/everything.json`;
 const FETCH_TIMEOUT_MS = 20_000;
+const visibleWardrobeSourceTypes = new Set([
+  "Cape",
+  "FaceAccessory",
+  "Furniture",
+  "Hair",
+  "HairAccessory",
+  "HeadAccessory",
+  "Held",
+  "Mask",
+  "Necklace",
+  "Outfit",
+  "OutfitShoes",
+  "Prop",
+  "Shoes",
+]);
 
 const response = await fetch(SOURCE_URL, {
   signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -19,7 +34,11 @@ if (!Array.isArray(source?.items?.items))
 
 const catalog = await loadRuntimeCatalog();
 const upstreamByGuid = new Map(source.items.items.map((item) => [item.guid, item]));
+const runtimeGuids = new Set(catalog.wikiItems.map((item) => item.guid));
 const sourceBacked = catalog.wikiItems.filter((item) => upstreamByGuid.has(item.guid));
+const missingVisibleWardrobeItems = source.items.items.filter(
+  (item) => visibleWardrobeSourceTypes.has(item.type) && !runtimeGuids.has(item.guid),
+);
 const differences = sourceBacked.flatMap((item) => {
   const upstream = upstreamByGuid.get(item.guid);
   return ["id", "order", "name", "group", "type"].flatMap((field) => {
@@ -32,11 +51,18 @@ const differences = sourceBacked.flatMap((item) => {
 
 if (!sourceBacked.length)
   throw new Error("Catalog check found no source-backed items.");
+if (missingVisibleWardrobeItems.length)
+  throw new Error(
+    "Catalog is missing SkyGame-Data visible wardrobe item(s):\n"
+      + missingVisibleWardrobeItems
+        .map((item) => `${item.guid}: ${item.type} ${item.name}`)
+        .join("\n"),
+  );
 if (differences.length)
   throw new Error(
     `Catalog identity check failed for ${differences.length} field(s).\n${differences.join("\n")}`,
   );
 
 console.log(
-  `Catalog identities are current: ${sourceBacked.length} source-backed items verified against SkyGame-Data ${SOURCE_VERSION}.`,
+  `Catalog identities are current: ${sourceBacked.length} source-backed items and ${source.items.items.filter((item) => visibleWardrobeSourceTypes.has(item.type)).length} visible wardrobe items verified against SkyGame-Data ${SOURCE_VERSION}.`,
 );

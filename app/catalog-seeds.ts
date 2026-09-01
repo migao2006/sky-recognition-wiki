@@ -54,6 +54,7 @@ export const officialHeldIdentities: Record<string, OfficialIdentity> = {
   "Blue Umbrella": { id: 735, order: 3600, guid: "Hi8NBjG271", name: "Laidback Pioneer Umbrella", group: "SeasonPass" },
   "Festival Scepter": { id: 1956, order: 3700, guid: "YYi734W-IG", name: "Festival Scepter", group: "" },
   "Camera": { id: 622, order: 4000, guid: "K_OhSP_gST", name: "Camera", group: "" },
+  "Stern Shepherd Cane": { id: 2694, order: 4200, guid: "Ll1veXMDa9", name: "Stern Shepherd Cane", group: "SeasonPass" },
   "Manatee Toy": { id: 2680, order: 4300, guid: "KYolrTZPtJ", name: "Manatee Toy", group: "" },
   "Sentry Spear": { id: 2714, order: 4400, guid: "NQsPOB-fqz", name: "Scarred Sentry Spear", group: "SeasonPass" },
   "Sentry Shield": { id: 2711, order: 4500, guid: "3kxBYG-yVK", name: "Scarred Sentry Shield", group: "" },
@@ -289,7 +290,7 @@ const heldPropSeeds: readonly HeldPropSeed[] = [
   { name: "Blue Umbrella", zh: "追光季藍傘", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d5/Mimi-4117_03_laidback_pioneer_item.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Laidback_Pioneer#Prop", section: "seasons", collection: "lightseekers", group: "SeasonPass" },
   { name: "Festival Scepter", zh: "慶典權杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/38/Festival-Scepter-prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fireworks#Festival_Scepter", section: "events", collection: "days-of-fireworks" },
   { name: "Camera", zh: "相機", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/2/23/Moments-Guide-Prop-Camera-icon-Credit-Morybel.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Moments_Guide#Camera_Prop", section: "seasons", collection: "moments" },
-  { name: "Manatee Staff", zh: "海牛手杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ef/Stern-Shepherd-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Stern_Shepherd#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
+  { name: "Stern Shepherd Cane", zh: "海牛權杖", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/e/ef/Stern-Shepherd-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Stern_Shepherd#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
   { name: "Manatee Toy", zh: "海牛公仔", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/40/Tender-Toymaker-Manatee-Figurine-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Tender_Toymaker#Prop", section: "seasons", collection: "two-embers-part-1" },
   { name: "Sentry Spear", zh: "哨兵長矛", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/4d/Scarred-Sentry-Spear-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Prop", section: "seasons", collection: "two-embers-part-1", group: "SeasonPass" },
   { name: "Sentry Shield", zh: "哨兵盾牌", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/b/bf/Scarred-Sentry-Shield-Prop-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Scarred_Sentry#Prop", section: "seasons", collection: "two-embers-part-1" },
@@ -313,7 +314,7 @@ const heldPropSeeds: readonly HeldPropSeed[] = [
   { name: "Winter Feast Snowboard", zh: "冬宴滑雪板", icon: "https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d8/Winter-Feast-Snowboard-icon.png", wiki: "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Feast#Winter_Feast_Snowboard", section: "events", collection: "days-of-feast" },
 ];
 
-const heldPropItems: WikiItem[] = heldPropSeeds.map((item, index) => {
+const heldPropItems: WikiItem[] = heldPropSeeds.map((item) => {
   const identity = officialHeldIdentities[item.name];
   // This item is a separately tracked pre-release overlay. It has no 1.3.10
   // identity yet, so keep its explicit PR GUID rather than minting one.
@@ -325,17 +326,6 @@ const heldPropItems: WikiItem[] = heldPropSeeds.map((item, index) => {
       guid: "OAGgi-B-xa",
       type: "HeldProp",
       sourceType: "Held",
-      group: item.group ?? "",
-    };
-  // Two Embers' Manatee Staff is likewise an explicit local overlay until its
-  // upstream item is available. Its existing GUID remains stable for drafts.
-  if (item.name === "Manatee Staff")
-    return {
-      ...item,
-      id: 5120 + index,
-      order: 4200,
-      guid: "held-manatee-staff",
-      type: "HeldProp",
       group: item.group ?? "",
     };
   if (!identity)

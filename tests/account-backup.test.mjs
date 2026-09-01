@@ -17,7 +17,7 @@ const loadAccountBackup = async () => {
       )});`,
   ).replace(
     'import { legacyCatalogGuidAliases } from "./catalog-legacy-guids";',
-    'const legacyCatalogGuidAliases = { "instrument-harp": "biKOov4qJQ" };',
+    'const legacyCatalogGuidAliases = { "instrument-harp": "biKOov4qJQ", "held-manatee-staff": "Ll1veXMDa9" };',
   );
   return import(asModuleUrl(moduleSource));
 };
@@ -178,6 +178,22 @@ test("migrates legacy ids, deduplicates owned items, and counts ignored entries"
   assert.deepEqual(imported.duplicates, ["biKOov4qJQ", "biKOov4qJQ"]);
   assert.deepEqual(imported.unknownGuids, [{ guid: "missing", name: "" }]);
   assert.equal(imported.invalidEntries, 1);
+});
+
+test("migrates the legacy manatee staff GUID to the upstream identity", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 2,
+      account,
+      owned: ["held-manatee-staff"],
+    },
+    new Set(["Ll1veXMDa9"]),
+  );
+
+  assert.deepEqual(imported.owned, ["Ll1veXMDa9"]);
+  assert.equal(imported.migrated, 1);
+  assert.equal(imported.ignored, 0);
 });
 
 test("rejects excessively large ownership lists and normalizes imported text and resources", () => {

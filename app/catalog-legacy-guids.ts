@@ -44,6 +44,7 @@ export const legacyCatalogGuidAliases: Readonly<Record<string, string>> = {
   "held-blue-umbrella": "Hi8NBjG271",
   "held-festival-scepter": "YYi734W-IG",
   "held-camera": "K_OhSP_gST",
+  "held-manatee-staff": "Ll1veXMDa9",
   "held-manatee-toy": "KYolrTZPtJ",
   "held-sentry-spear": "NQsPOB-fqz",
   "held-sentry-shield": "3kxBYG-yVK",

@@ -252,7 +252,7 @@ test("every visible wardrobe item has a Chinese display name", () => {
 
 test("keeps SkyGame-Data identities and every synthetic-guid migration target", () => {
   const byGuid = new Map(wikiItems.map((entry) => [entry.guid, entry]));
-  assert.equal(Object.keys(legacyCatalogGuidAliases).length, 63);
+  assert.equal(Object.keys(legacyCatalogGuidAliases).length, 64);
   for (const identity of Object.values(officialHeldIdentities)) {
     const item = byGuid.get(identity.guid);
     assert.ok(item, identity.guid);
@@ -265,6 +265,13 @@ test("keeps SkyGame-Data identities and every synthetic-guid migration target", 
   }
   for (const [legacyGuid, officialGuid] of Object.entries(legacyCatalogGuidAliases))
     assert.ok(byGuid.has(officialGuid), `${legacyGuid} -> ${officialGuid}`);
+  const manateeCane = byGuid.get("Ll1veXMDa9");
+  assert.deepEqual(
+    [manateeCane?.id, manateeCane?.order, manateeCane?.name, manateeCane?.group],
+    [2694, 4200, "Stern Shepherd Cane", "SeasonPass"],
+  );
+  assert.equal(zhItemName(manateeCane), "海牛權杖");
+  assert.equal(legacyCatalogGuidAliases["held-manatee-staff"], "Ll1veXMDa9");
 });
 
 test("uses held order only for the held closet, not cross-closet search", () => {
@@ -485,7 +492,7 @@ test("uses verified game placement categories for representative props", () => {
   for (const name of [
     "Dark Horn",
     "Laidback Pioneer Umbrella",
-    "Manatee Staff",
+    "Stern Shepherd Cane",
     "Scarred Sentry Spear",
   ]) {
     assert.equal(byName(name)?.group, "SeasonPass");

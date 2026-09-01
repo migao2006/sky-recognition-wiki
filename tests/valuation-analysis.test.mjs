@@ -1,92 +1,28 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { asModuleUrl } from "./helpers/transpile.mjs";
-import { marketCollectiblesModuleUrl } from "./helpers/market-collectibles.mjs";
-import { injectSeasonItems } from "./helpers/season-items.mjs";
-const sources = await Promise.all(
-  [
-    "account-config.ts",
-    "valuation-calibration.ts",
-    "valuation-items.ts",
-    "valuation-market.ts",
-    "valuation-season-bands.ts",
-    "valuation-model-core.js",
-    "valuation-analysis.ts",
-  ].map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")),
+import { tsImport } from "tsx/esm/api";
+import { loadValuationRuntime } from "../scripts/load-valuation-runtime.mjs";
+
+const calibrationLoaded = await tsImport(
+  "../app/valuation-calibration.ts",
+  import.meta.url,
 );
-const [config, calibration, items, valuationMarket, bands, modelCore, analysis] = sources;
-const calibrationLoaded = await import(asModuleUrl(calibration));
-const marketAggregate = JSON.parse(
-  await readFile(
-    new URL("../app/valuation-market-aggregate.json", import.meta.url),
-    "utf8",
-  ),
+const marketModule = await tsImport(
+  "../app/market-collectibles.ts",
+  import.meta.url,
 );
-const marketUrl = await marketCollectiblesModuleUrl();
-const marketModule = await import(marketUrl);
 const marketGuidByName = new Map(
   marketModule.importantMarketCollectibles.flatMap((profile) =>
     [profile.name, ...profile.aliases].map((name) => [name, profile.guid]),
   ),
 );
-const itemsUrl = asModuleUrl(
-  (await injectSeasonItems(items)).replace(
-    'import { marketCollectibleProfile } from "./market-collectibles";',
-    `const { marketCollectibleProfile } = await import(${JSON.stringify(marketUrl)});`,
+const loaded = await loadValuationRuntime();
+const marketAggregate = JSON.parse(
+  await readFile(
+    new URL("../app/valuation-market-aggregate.json", import.meta.url),
+    "utf8",
   ),
-);
-const valuationMarketUrl = asModuleUrl(
-  valuationMarket.replace(
-    /import marketAggregate[\s\S]*?;\n/,
-    `const marketAggregate = ${JSON.stringify(marketAggregate)};\n`,
-  ),
-);
-const bandsUrl = asModuleUrl(
-  bands.replace(
-    /import valuationMarketAggregate[\s\S]*?;\n/,
-    `const valuationMarketAggregate = ${JSON.stringify(marketAggregate)};\n`,
-  ),
-);
-const modelCoreUrl = asModuleUrl(modelCore);
-const loaded = await import(
-  asModuleUrl(
-    analysis
-      .replace(
-        /import \{([^;]*?)\} from "\.\/valuation-market";/,
-        (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(valuationMarketUrl)});`,
-      )
-      .replace(
-        /import \{([^;]*?)\} from "\.\/account-config";/,
-        (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(config))});`,
-      )
-      .replace(
-        /import \{([^;]*?)\} from "\.\/valuation-calibration";/,
-        (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(asModuleUrl(calibration))});`,
-      )
-      .replace(
-        /import \{([^;]*?)\} from "\.\/valuation-items";/,
-        (_, names) =>
-          `const {${names}} = await import(${JSON.stringify(itemsUrl)});`,
-      )
-      .replace(
-        /import \{([^;]*?)\} from "\.\/valuation-season-bands";/,
-        (_, names) =>
-          `const {${names.replace(/\btype\s+/g, "")}} = await import(${JSON.stringify(bandsUrl)});`,
-      )
-      .replace(
-        /import \{([^;]*?)\} from "\.\/valuation-model-core\.js";/,
-        (_, names) =>
-          `const {${names}} = await import(${JSON.stringify(modelCoreUrl)});`,
-      )
-      .replace(
-        /export \{ summarizeValuationRange \} from "\.\/valuation-model-core\.js";/,
-        `const { summarizeValuationRange } = await import(${JSON.stringify(modelCoreUrl)});\nexport { summarizeValuationRange };`,
-      ),
-  )
 );
 const { analyzeValuation, estimateValuation, summarizeValuationRange } = loaded;
 const bindings = (values = {}) => ({

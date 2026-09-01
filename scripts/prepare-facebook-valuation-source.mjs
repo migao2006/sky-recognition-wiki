@@ -2,6 +2,10 @@ import { createHmac } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
+import {
+  valuationConfidenceValues,
+  valuationModelInputKeys,
+} from "../app/valuation-model-core.js";
 
 const usage =
   "Usage: VALUATION_HASH_SALT=<secret> node scripts/prepare-facebook-valuation-source.mjs <private-facebook-source.jsonl> > work/facebook-anonymous.jsonl";
@@ -12,6 +16,7 @@ const allowedBreakClasses = new Set(["none", "slight", "medium", "big"]);
 const allowedPackageTiers = new Set(["few", "medium", "many", "hundred"]);
 const allowedAccountStyles = new Set(["simple", "regular"]);
 const allowedConfidence = new Set(["explicit", "structured", "inferred", "unknown"]);
+const allowedValuationConfidence = new Set(valuationConfidenceValues);
 const forbiddenKeys = new Set([
   "author",
   "author_name",
@@ -107,6 +112,28 @@ const standardizedExclusionReason = (row) => {
   return declared ? "explicit" : undefined;
 };
 
+// Keep the persisted replay snapshot deliberately fail-closed.  It shares the
+// canonical key and confidence lists with the browser/validator contract, but
+// does not coerce values: a private-source string such as "1000" is not a
+// verified numeric predictor.
+const valuationModel = (value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  if (!valuationModelInputKeys.every((key) => typeof value[key] === "number" && Number.isFinite(value[key])))
+    return undefined;
+  if (!allowedValuationConfidence.has(value.confidence)) return undefined;
+  if (value.baseLow <= 0 || value.baseHigh < value.baseLow) return undefined;
+  if (value.breakMultiplier <= 0 || value.accountStyleMultiplier <= 0) return undefined;
+  if (value.packageMarketMultiplier <= 0) return undefined;
+  if (value.bindingRisk < 0.7 || value.bindingRisk > 1) return undefined;
+  if (value.transferHighMultiplier < 1 || value.transferHighMultiplier > 1.03) return undefined;
+  if (["partialDiscountLow", "partialDiscountHigh", "packageLow", "packageHigh", "limitedLow", "limitedHigh", "resourceLow", "resourceHigh"].some((key) => value[key] < 0))
+    return undefined;
+  return Object.fromEntries([
+    ...valuationModelInputKeys.map((key) => [key, value[key]]),
+    ["confidence", value.confidence],
+  ]);
+};
+
 const hmac = (salt, value) =>
   createHmac("sha256", salt).update(value, "utf8").digest("hex");
 
@@ -179,6 +206,7 @@ export const prepareRow = (row, salt) => {
   put("limited_item_count", nonNegativeInteger(row.limited_item_count));
   put("anniversary_item_count", nonNegativeInteger(row.anniversary_item_count));
   put("graduation_gift_count", nonNegativeInteger(row.graduation_gift_count));
+  put("valuation_model", valuationModel(row.valuation_model));
   put("exclusion_reason", standardizedExclusionReason(row));
 
   // This guard makes future additions fail closed if a private input field is copied in.

@@ -33,9 +33,8 @@ const heldClosetGuids = [
     "Fortune Drum", "Fireworks Staff", "Blue Umbrella", "Festival Scepter",
   ]),
   "2o3CEU9QhM", "W-3Nh_yWGv", "K_OhSP_gST", "dkfdFCaemY", "OAGgi-B-xa",
-  "held-manatee-staff",
   ...officialHeldGuids([
-    "Manatee Toy", "Sentry Spear", "Sentry Shield", "Transverse Flute",
+    "Stern Shepherd Cane", "Manatee Toy", "Sentry Spear", "Sentry Shield", "Transverse Flute",
     "Days of Fortune Enchanted Umbrella", "Days of Fortune Hand Fan",
     "Days of Love Serendipitous Scepter", "Bloom Lilypad Umbrella",
     "Bloom Sunflower Umbrella", "SkyFest Jenova Fan", "Anniversary Clapboard",

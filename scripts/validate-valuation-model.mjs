@@ -16,6 +16,10 @@ import {
   valuationModelFeaturesFor,
 } from "./lib/valuation-source-core.mjs";
 import { calculateValuationModel } from "../app/valuation-model-core.js";
+import {
+  deriveSeasonBands,
+  seasonBandSeeds,
+} from "../app/valuation-season-band-core.js";
 
 const minimumEligibleAccounts = 200;
 
@@ -62,10 +66,52 @@ const packageTierFor = (row) => {
   return "few";
 };
 const multiplierFor = (aggregate, key, value) => Number(aggregate.modifiers?.[key]?.[value]?.multiplier) || 1;
+const supportedSeasonSlugsFor = (aggregate) =>
+  Object.entries(aggregate?.segments?.startSeason ?? {}).flatMap(([slug, segment]) =>
+    Number(segment?.median) > 0 ? [slug] : [],
+  );
 const hasFullModelPredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
   Number(aggregate?.provenance?.modelSchemaVersion) >= 2;
-const predict = (aggregate, sample) => {
+const supportedSeedsFor = (aggregate) => {
+  const startSeason = aggregate?.segments?.startSeason ?? {};
+  return seasonBandSeeds.filter((seed) => Object.hasOwn(startSeason, seed.slug));
+};
+
+/**
+ * Candidate aggregates store anonymous observations. Convert their declared
+ * seasons into the exact blended ranges used by the browser before replaying
+ * a persisted predictor. Missing declared seasons intentionally stay missing
+ * so the validator can reject a candidate that drops coverage.
+ */
+export const withDerivedSeasonBands = (aggregate) => {
+  const startSeason = aggregate?.segments?.startSeason;
+  if (!startSeason) return aggregate;
+  const bands = deriveSeasonBands(aggregate, supportedSeedsFor(aggregate));
+  if (!bands.length) return aggregate;
+  return {
+    ...aggregate,
+    segments: {
+      ...aggregate.segments,
+      startSeason: {
+        ...startSeason,
+        ...Object.fromEntries(
+          bands.map((band) => [
+            band.slug,
+            {
+              ...startSeason[band.slug],
+              p25: band.low,
+              median: band.median,
+              p75: band.high,
+            },
+          ]),
+        ),
+      },
+    },
+  };
+};
+
+export const predictValuationAggregate = (aggregate, sample) => {
   if (hasFullModelPredictor(aggregate)) {
     if (!sample.modelFeatures) return null;
     const segment = aggregate.segments?.startSeason?.[sample.startSeason];
@@ -150,7 +196,7 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
     const valid = holdout.flatMap((sample) => {
       if (!hasFullModelPredictor(aggregate) && !aggregate.segments?.startSeason?.[sample.startSeason]?.median)
         return [{ absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
-      const prediction = predict(aggregate, sample);
+      const prediction = predictValuationAggregate(aggregate, sample);
       if (!prediction)
         return [{ absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
       return [{ absoluteLogError: Math.abs(Math.log(prediction.price / sample.price)), ape: Math.abs(prediction.price - sample.price) / sample.price, covered: sample.price >= prediction.low && sample.price <= prediction.high, missingPrediction: false, weight: sample.weight }];
@@ -165,8 +211,13 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
       .reduce((sum, row) => sum + row.weight, 0);
     return { count: valid.length, effectiveWeight: totalWeight, missingPredictionCount, predictionCoverage: totalWeight ? 1 - missingPredictionWeight / totalWeight : null, medianAbsoluteLogError: weightedMedian(valid, "absoluteLogError"), mdape: weightedMedian(valid, "ape"), p25P75Coverage: totalWeight ? coveredWeight / totalWeight : null };
   };
-  const candidateMetrics = errorMetrics(candidate);
-  const baselineMetrics = errorMetrics(baseline);
+  const candidateMetrics = errorMetrics(withDerivedSeasonBands(candidate));
+  const baselineMetrics = errorMetrics(withDerivedSeasonBands(baseline));
+  const requiredSeasonSlugs = supportedSeasonSlugsFor(baseline);
+  const candidateSeasonSlugs = new Set(supportedSeasonSlugsFor(candidate));
+  const missingCandidateSeasons = requiredSeasonSlugs.filter(
+    (slug) => !candidateSeasonSlugs.has(slug),
+  );
   const candidateError = candidateMetrics.medianAbsoluteLogError;
   const baselineError = baselineMetrics.medianAbsoluteLogError;
   const accuracyStatus = candidateError === null || baselineError === null ? "fail" : candidateError <= baselineError * 0.9 ? "pass" : candidateError <= baselineError * 1.03 ? "needsBiasJustification" : "fail";
@@ -187,6 +238,11 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
     maximumGroupEffectiveShare: { raw: Number(sourceGroupCap.rawLargestShare.toFixed(4)), actual: Number(sourceGroupCap.cappedLargestShare.toFixed(4)), maximum: 0.6, pass: sourceGroupCap.rawLargestShare <= 0.6 },
     holdout: { actual: holdout.length, minimum: 1, pass: holdout.length > 0 },
     candidatePredictionCoverage: { actual: candidateMetrics.predictionCoverage, minimum: 1, pass: candidateMetrics.predictionCoverage === 1 },
+    candidateSeasonCoverage: {
+      required: requiredSeasonSlugs,
+      missing: missingCandidateSeasons,
+      pass: missingCandidateSeasons.length === 0,
+    },
     completeModelPredictors: {
       actual: fullPredictorRows.length,
       eligible: eligible.length,

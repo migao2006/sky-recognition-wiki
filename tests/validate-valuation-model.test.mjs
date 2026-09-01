@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validateValuationModel } from "../scripts/validate-valuation-model.mjs";
+import {
+  predictValuationAggregate,
+  validateValuationModel,
+  withDerivedSeasonBands,
+} from "../scripts/validate-valuation-model.mjs";
+import {
+  deriveSeasonBands,
+  seasonBandSeeds,
+} from "../app/valuation-season-band-core.js";
+import { calculateValuationModel } from "../app/valuation-model-core.js";
 
 const aggregate = (median, { fullModel = false, status = "unvalidated" } = {}) => ({
   schemaVersion: 4,
@@ -10,7 +19,17 @@ const aggregate = (median, { fullModel = false, status = "unvalidated" } = {}) =
     : {}),
   asOf: "2026-08-31",
   split: { splitSeed: "fixture", trainingMode: "calibration-only" },
-  segments: { startSeason: { assembly: { p25: median * 0.9, median, p75: median * 1.1 } } },
+  segments: {
+    startSeason: {
+      assembly: {
+        p25: median * 0.9,
+        median,
+        p75: median * 1.1,
+        sampleCount: 8,
+        effectiveWeight: 8,
+      },
+    },
+  },
   modifiers: { breakClass: { none: { multiplier: 1 } }, packageTier: { few: { multiplier: 1 } }, accountStyle: { regular: { multiplier: 1 } } },
 });
 const modelFeatures = {
@@ -45,8 +64,46 @@ const rows = Array.from({ length: 500 }, (_, index) => ({
   valuation_model: modelFeatures,
 }));
 
+test("validator predictor uses the browser's blended season low, midpoint, and high", () => {
+  const candidate = aggregate(10000, { fullModel: true });
+  candidate.segments.startSeason = Object.fromEntries(
+    seasonBandSeeds.map((seed, index) => [
+      seed.slug,
+      {
+        p25: 10000 - index * 100,
+        median: 11000 - index * 100,
+        p75: 12000 - index * 100,
+        sampleCount: 8,
+        effectiveWeight: 4,
+      },
+    ]),
+  );
+  const browserBand = deriveSeasonBands(candidate, seasonBandSeeds).find(
+    (band) => band.slug === "assembly",
+  );
+  assert.ok(browserBand);
+  const sample = {
+    startSeason: "assembly",
+    breakClass: "none",
+    packageTier: "few",
+    accountStyle: "regular",
+    modelFeatures,
+  };
+  const expected = calculateValuationModel({
+    ...modelFeatures,
+    baseLow: browserBand.low,
+    baseHigh: browserBand.high,
+  });
+  const actual = predictValuationAggregate(withDerivedSeasonBands(candidate), sample);
+  assert.deepEqual(actual, {
+    low: expected.low,
+    high: expected.high,
+    price: expected.midpoint,
+  });
+});
+
 test("passes a deterministic anonymous holdout when candidate materially improves error", () => {
-  const report = validateValuationModel({ candidate: aggregate(10000, { fullModel: true }), baseline: aggregate(8000), rows, splitSeed: "fixture" });
+  const report = validateValuationModel({ candidate: aggregate(14000, { fullModel: true }), baseline: aggregate(8000), rows, splitSeed: "fixture" });
   assert.equal(report.outcome, "pass");
   assert.equal(report.sourceEligibleRows, 500);
   assert.equal(report.eligibleRows, 500);
@@ -58,7 +115,7 @@ test("passes a deterministic anonymous holdout when candidate materially improve
 });
 
 test("requires a bias justification rather than automatically passing a near-neutral candidate", () => {
-  const report = validateValuationModel({ candidate: aggregate(10300, { fullModel: true }), baseline: aggregate(10500), rows, splitSeed: "fixture" });
+  const report = validateValuationModel({ candidate: aggregate(16500, { fullModel: true }), baseline: aggregate(18000), rows, splitSeed: "fixture" });
   assert.equal(report.criteria.accuracy.status, "needsBiasJustification");
   assert.equal(report.outcome, "needsBiasJustification");
 });
@@ -83,7 +140,7 @@ test("requires complete full-model predictors before a current aggregate can pas
     index === 0 ? { ...row, valuation_model: undefined } : row,
   );
   const report = validateValuationModel({
-    candidate: aggregate(10000, { fullModel: true }),
+    candidate: aggregate(20000, { fullModel: true }),
     baseline: aggregate(8000),
     rows: incomplete,
     splitSeed: "fixture",
@@ -94,7 +151,7 @@ test("requires complete full-model predictors before a current aggregate can pas
 
 test("candidate market parameters materially change full-model predictions", () => {
   const accurate = validateValuationModel({
-    candidate: aggregate(10000, { fullModel: true }),
+    candidate: aggregate(20000, { fullModel: true }),
     baseline: aggregate(8000),
     rows,
     splitSeed: "fixture",
@@ -292,6 +349,29 @@ test("penalizes a candidate that removes a difficult baseline season", () => {
   assert.equal(report.outcome, "fail");
 });
 
+test("rejects a candidate that omits a baseline season even without holdout examples", () => {
+  const baseline = aggregate(8000);
+  baseline.segments.startSeason.aurora = {
+    p25: 7000,
+    median: 8000,
+    p75: 9000,
+    sampleCount: 8,
+    effectiveWeight: 8,
+  };
+  const report = validateValuationModel({
+    candidate: aggregate(14000, { fullModel: true }),
+    baseline,
+    rows,
+    splitSeed: "fixture",
+  });
+  assert.deepEqual(report.criteria.candidateSeasonCoverage, {
+    required: ["assembly", "aurora"],
+    missing: ["aurora"],
+    pass: false,
+  });
+  assert.equal(report.outcome, "fail");
+});
+
 test("fails when a candidate drops even a minority baseline-supported season", () => {
   const baseline = aggregate(100);
   baseline.segments.startSeason.aurora = {
@@ -316,6 +396,7 @@ test("fails when a candidate drops even a minority baseline-supported season", (
   assert.ok(report.candidate.missingPredictionCount > 0);
   assert.ok(report.candidate.predictionCoverage < 1);
   assert.equal(report.criteria.candidatePredictionCoverage.pass, false);
+  assert.equal(report.criteria.candidateSeasonCoverage.pass, false);
   assert.equal(report.outcome, "fail");
 });
 
