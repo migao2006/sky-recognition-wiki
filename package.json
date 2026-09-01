@@ -19,7 +19,8 @@
     "sync:names:check": "node scripts/sync-fandom-zh-names.mjs --out dist/tmp/fandom-zh-names.json",
     "sync:names:write": "node scripts/sync-fandom-zh-names.mjs --write --out dist/tmp/fandom-zh-names.json",
     "sync:trade-names:check": "node scripts/sync-transaction-names.mjs",
-    "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write"
+    "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write",
+    "collect:wiki-market": "node scripts/collect-wiki-market-evidence.mjs"
   },
   "dependencies": {
     "next": "16.3.3",
@@ -31,8 +32,11 @@
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "cheerio": "^1.1.2",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.3",
+    "sharp": "^0.35.4",
+    "tesseract.js": "^7.0.0",
     "tsx": "4.23.13",
     "typescript": "5.9.3"
   },
