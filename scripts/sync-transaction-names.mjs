@@ -52,6 +52,8 @@ const reviewedGuidOverrides = {
   cape_0183: "bu7qgPtuB2", // Moth Cape
   cape_0189: "OfOc3xQdCQ", // Transcendent Journey Cape
   cape_0139: "YUqENRc8rQ", // Earth Cape
+  cape_0186: "4c9HLTfREP", // Nintendo Red Switch Cape
+  cape_0187: "KtlqKC7whS", // Nintendo Blue Switch Cape
   prop_0024: "K0NBv__mv8", // Voice of AURORA
   furniture_large_0035: "w7byhvh3Xa", // Days of Love Swing
   furniture_large_0036: "yWCpBlHsWa", // Days of Love Seesaw
@@ -67,13 +69,18 @@ const reviewedDisplayNameOverrides = {
   ear_accessory_0022: "枯枝角",
   cape_0189: "超凡風旅斗篷",
   cape_0139: "綠芽斗篷",
+  cape_0186: "任天堂紅斗",
+  cape_0187: "任天堂藍斗",
   furniture_large_0035: "雙人鞦韆",
   furniture_large_0036: "小蹺蹺板",
   furniture_small_0013: "王子小狐狸",
+  cape_0055: "王子圍巾斗",
 };
 
 const reviewedSaleNameOverrides = {
   cape_0189: "超凡風旅斗",
+  cape_0186: "紅斗",
+  cape_0187: "藍斗",
 };
 
 const ignoredNameParts = /(?:季節|畢業禮|畢業|裝扮|服裝|服飾|衣服|衣|長褲|褲子|褲|長裙|裙子|裙|套裝|斗篷|披風|面具|臉部配件|配件|髮型|髮飾|頭飾|耳飾|耳環|耳機|頸飾|項鍊|道具|背飾|大型家具|小型家具|家具|玩偶|公仔)/gu;
@@ -287,6 +294,7 @@ const { compareCatalogItems, matchesSub, wikiItems, zhName } = runtime;
 const wikiNames = JSON.parse(await readFile(WIKI_NAMES_PATH, "utf8"));
 const stableZhItemName = (item) => wikiNames.items[item.guid] ?? zhName(item.name);
 const allAligned = [];
+const candidatesByPrefix = new Map();
 for (const [prefix, spec] of Object.entries(categorySpecs)) {
   const sourceRows = rows.filter((row) => row.prefix === prefix);
   const candidates = wikiItems
@@ -296,6 +304,7 @@ for (const [prefix, spec] of Object.entries(categorySpecs)) {
     .sort((left, right) =>
       compareCatalogItems(left, right, spec.orderMode || "type"),
     );
+  candidatesByPrefix.set(prefix, candidates);
   allAligned.push(
     ...alignCategory(sourceRows, candidates, (row, item) =>
       nameScore(row, item, stableZhItemName),
@@ -306,9 +315,97 @@ for (const [prefix, spec] of Object.entries(categorySpecs)) {
 const itemByGuid = new Map(wikiItems.map((item) => [item.guid, item]));
 const overrideRows = new Set(Object.keys(reviewedGuidOverrides));
 const overrideGuids = new Set(Object.values(reviewedGuidOverrides));
+// Exact source-name matches do not depend on list offsets. Resolve them first
+// within the declared wardrobe category, then align only the remaining rows.
+// This keeps upstream insertions from hiding otherwise unambiguous GUIDs.
+const directMatches = [];
+for (const row of rows) {
+  if (overrideRows.has(row.id)) continue;
+  const sourceName = normalize(row.original);
+  const candidates = (candidatesByPrefix.get(row.prefix) ?? []).filter(
+    (item) => normalize(stableZhItemName(item)) === sourceName,
+  );
+  if (candidates.length === 1 && !overrideGuids.has(candidates[0].guid))
+    directMatches.push({
+      row,
+      item: candidates[0],
+      score: 1,
+      exact: true,
+      direct: true,
+    });
+}
+const directRows = new Set(directMatches.map(({ row }) => row.id));
+const directGuids = new Set(directMatches.map(({ item }) => item.guid));
+const anchoredMatches = [];
+for (const prefix of Object.keys(categorySpecs)) {
+  const sourceRows = rows.filter((row) => row.prefix === prefix);
+  const candidates = candidatesByPrefix.get(prefix) ?? [];
+  const anchors = directMatches
+    .filter(({ row }) => row.prefix === prefix)
+    .map((match) => ({
+      rowIndex: sourceRows.findIndex((row) => row.id === match.row.id),
+      itemIndex: candidates.findIndex((item) => item.guid === match.item.guid),
+    }))
+    .filter((anchor) => anchor.rowIndex >= 0 && anchor.itemIndex >= 0)
+    .sort((left, right) => left.rowIndex - right.rowIndex);
+  if (
+    anchors.some(
+      (anchor, index) =>
+        index > 0 && anchor.itemIndex <= anchors[index - 1].itemIndex,
+    )
+  )
+    continue;
+  const boundaries = [
+    { rowIndex: -1, itemIndex: -1, sentinel: true },
+    ...anchors,
+    {
+      rowIndex: sourceRows.length,
+      itemIndex: candidates.length,
+      sentinel: true,
+    },
+  ];
+  for (let index = 1; index < boundaries.length; index += 1) {
+    const left = boundaries[index - 1];
+    const right = boundaries[index];
+    const rowCount = right.rowIndex - left.rowIndex - 1;
+    const itemCount = right.itemIndex - left.itemIndex - 1;
+    const maximumGap = left.sentinel || right.sentinel ? 8 : 16;
+    if (!rowCount || rowCount !== itemCount || rowCount > maximumGap) continue;
+    for (let offset = 1; offset <= rowCount; offset += 1) {
+      const row = sourceRows[left.rowIndex + offset];
+      const item = candidates[left.itemIndex + offset];
+      if (
+        overrideRows.has(row.id) ||
+        overrideGuids.has(item.guid) ||
+        directRows.has(row.id) ||
+        directGuids.has(item.guid)
+      )
+        continue;
+      const similarity = nameScore(row, item, stableZhItemName).score;
+      anchoredMatches.push({
+        row,
+        item,
+        // Ordering confirms the position, but a minimum lexical relationship
+        // is still required so a missing item cannot shift a whole segment.
+        score: Math.min(0.85, similarity + 0.2),
+        exact: false,
+        ordered: true,
+      });
+    }
+  }
+}
+const anchoredRows = new Set(anchoredMatches.map(({ row }) => row.id));
+const anchoredGuids = new Set(anchoredMatches.map(({ item }) => item.guid));
 const inferredAligned = allAligned.filter(
-  ({ row, item }) => !overrideRows.has(row.id) && !overrideGuids.has(item.guid),
+  ({ row, item }) =>
+    !overrideRows.has(row.id) &&
+    !overrideGuids.has(item.guid) &&
+    !directRows.has(row.id) &&
+    !directGuids.has(item.guid) &&
+    !anchoredRows.has(row.id) &&
+    !anchoredGuids.has(item.guid),
 );
+inferredAligned.push(...directMatches, ...anchoredMatches);
 for (const [id, guid] of Object.entries(reviewedGuidOverrides)) {
   const row = rows.find((candidate) => candidate.id === id);
   const item = itemByGuid.get(guid);

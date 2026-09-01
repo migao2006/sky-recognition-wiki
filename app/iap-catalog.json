@@ -9,8 +9,12 @@
     {
       "guid": "_0PZEyTNxt",
       "name": "Bloom Picnic Basket",
-      "playerName": "花憩野餐提籃",
-      "aliases": [],
+      "playerName": "野餐",
+      "aliases": [
+        "野餐大型家具",
+        "花憩野餐提籃"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:1ryX2u1XO3",
       "packageName": "Bloom Picnic Basket",
       "paid": true,
@@ -187,8 +191,13 @@
     {
       "guid": "293EzlKBBS",
       "name": "Fortune Snake Cloak",
-      "playerName": "福瑞蛇披風",
-      "aliases": [],
+      "playerName": "幸運蛇斗篷",
+      "aliases": [
+        "幸運節蛇披風",
+        "幸運節蛇披風斗篷",
+        "福瑞蛇披風"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:cBTKelBA5U",
       "packageName": "Fortune Snake Coif and Cloak",
       "paid": true,
@@ -201,8 +210,14 @@
     {
       "guid": "2e97D5cOuG",
       "name": "Moonlight Frock",
-      "playerName": "月光洋裝",
-      "aliases": [],
+      "playerName": "月華服裝",
+      "aliases": [
+        "月華霓裳服裝",
+        "月華霓裳衣",
+        "月華罩袍",
+        "月光洋裝"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:0PaBo6qDUQ",
       "packageName": "Moonlight Frock and Updo",
       "paid": true,
@@ -450,8 +465,12 @@
     {
       "guid": "7oYZyU491f",
       "name": "Mini Manatee Accessory",
-      "playerName": "迷你海牛配件",
-      "aliases": [],
+      "playerName": "小海牛頭飾",
+      "aliases": [
+        "小海牛配飾髮飾",
+        "迷你海牛配件"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:RPj9qYoMDk",
       "packageName": "Mini Manatee Accessory",
       "paid": true,
@@ -534,8 +553,12 @@
     {
       "guid": "8Xr81aJbUN",
       "name": "Black and Blue Swag Hoodie",
-      "playerName": "黑色與藍色潮流連帽上衣",
-      "aliases": [],
+      "playerName": "潮流連帽斗",
+      "aliases": [
+        "潮流連帽斗篷",
+        "黑色與藍色潮流連帽上衣"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:-QMgoc3Zhp",
       "packageName": "Black and Blue Swag Hoodie",
       "paid": true,
@@ -547,8 +570,12 @@
     {
       "guid": "9dKZTaVQaT",
       "name": "Treasure Seeker's Bounty Mask",
-      "playerName": "寶藏追尋者豐饒面具",
-      "aliases": [],
+      "playerName": "尋寶面具",
+      "aliases": [
+        "尋寶獵人的獎賞面具",
+        "寶藏追尋者豐饒面具"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:_r8zDSMcf_",
       "packageName": "Treasure Seeker's Bounty",
       "paid": true,
@@ -561,8 +588,11 @@
     {
       "guid": "9ETwx3n-UZ",
       "name": "Dark Rainbow Tunic",
-      "playerName": "深色彩虹短袍",
-      "aliases": [],
+      "playerName": "黑彩虹服裝",
+      "aliases": [
+        "深色彩虹短袍"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:6d47mXYSYb",
       "packageName": "Dark Rainbow Tunic",
       "paid": true,
@@ -823,8 +853,11 @@
     {
       "guid": "bXyztrTj5R",
       "name": "Manatee Plush",
-      "playerName": "海牛玩偶",
-      "aliases": [],
+      "playerName": "小海牛玩偶",
+      "aliases": [
+        "海牛玩偶"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:G-ONZpBF7V",
       "packageName": "Manatee Plush",
       "paid": true,
@@ -916,8 +949,12 @@
     {
       "guid": "cXaPt2zi0Q",
       "name": "Spirited Manatee Tail",
-      "playerName": "活潑海牛尾巴",
-      "aliases": [],
+      "playerName": "海牛尾巴",
+      "aliases": [
+        "海牛耳尾組",
+        "活潑海牛尾巴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:4Eps86CzXw",
       "packageName": "Spirited Manatee Ensemble",
       "paid": true,
@@ -982,8 +1019,11 @@
     {
       "guid": "dEWiCE1-6D",
       "name": "Oreo Plush",
-      "playerName": "奧利奧玩偶",
-      "aliases": [],
+      "playerName": "Oreo 玩偶",
+      "aliases": [
+        "奧利奧玩偶"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:-ffdnMJH4w",
       "packageName": "Oreo Plush",
       "paid": true,
@@ -996,8 +1036,12 @@
     {
       "guid": "Dhkf_3dAhf",
       "name": "Mischief Feline Ears",
-      "playerName": "惡作劇貓咪耳朵",
-      "aliases": [],
+      "playerName": "貓咪耳朵",
+      "aliases": [
+        "貓咪耳尾",
+        "惡作劇貓咪耳朵"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:x1qjYi8ew4",
       "packageName": "Mischief Feline Accessory Duo",
       "paid": true,
@@ -1294,8 +1338,12 @@
     {
       "guid": "gEGMIX0DMp",
       "name": "Mischief Web Cape",
-      "playerName": "惡作劇蛛網斗篷",
-      "aliases": [],
+      "playerName": "蜘蛛斗",
+      "aliases": [
+        "蛛網斗篷",
+        "惡作劇蛛網斗篷"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:8J8E3NsR2j",
       "packageName": "Mischief Web Cape",
       "paid": true,
@@ -1503,8 +1551,13 @@
     {
       "guid": "Io4R50c-s1",
       "name": "Vestige of Dark Dragon Tail",
-      "playerName": "遺跡之深色龍尾巴",
-      "aliases": [],
+      "playerName": "冥龍尾巴",
+      "aliases": [
+        "冥龍耳尾組",
+        "冥龍套裝頸飾",
+        "遺跡之深色龍尾巴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:7pMdXAFM4r",
       "packageName": "Vestige of Dark Dragons",
       "paid": true,
@@ -1692,8 +1745,12 @@
     {
       "guid": "kKDtHO9xi6",
       "name": "Winter Scarf Cape",
-      "playerName": "冬日圍巾斗篷",
-      "aliases": [],
+      "playerName": "暖冬圍巾斗",
+      "aliases": [
+        "暖冬圍巾斗篷",
+        "冬日圍巾斗篷"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:WXr9EhQ7Wk",
       "packageName": "Winter Scarf Cape",
       "paid": true,
@@ -1761,8 +1818,11 @@
     {
       "guid": "KZ6aQtgCqt",
       "name": "Ocean Necklace",
-      "playerName": "海洋項鍊",
-      "aliases": [],
+      "playerName": "海螺項鍊",
+      "aliases": [
+        "海洋項鍊"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:_DCq4jxbNC",
       "packageName": "Ocean Necklace",
       "paid": true,
@@ -1979,8 +2039,13 @@
     {
       "guid": "nBIm3PkDea",
       "name": "Vestige of Dark Dragon Horns",
-      "playerName": "遺跡之深色龍角",
-      "aliases": [],
+      "playerName": "冥龍角",
+      "aliases": [
+        "遺跡之深色龍角",
+        "冥龍耳尾組",
+        "冥龍套裝耳飾"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:7pMdXAFM4r",
       "packageName": "Vestige of Dark Dragons",
       "paid": true,
@@ -2198,8 +2263,11 @@
     {
       "guid": "PpIpcfoNDH",
       "name": "Blue Pinned Cap",
-      "playerName": "藍色別針帽子",
-      "aliases": [],
+      "playerName": "藍色帽子",
+      "aliases": [
+        "藍色別針帽子"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:AFPoxs_J4q",
       "packageName": "Blue Pinned Cap",
       "paid": true,
@@ -2628,8 +2696,12 @@
     {
       "guid": "uJd-mEy1g4",
       "name": "Anniversary Tuxedo Cape",
-      "playerName": "週年燕尾服斗篷",
-      "aliases": [],
+      "playerName": "週年燕尾斗篷",
+      "aliases": [
+        "週年慶典燕尾斗篷",
+        "週年燕尾服斗篷"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:5O22WfgSu-",
       "packageName": "Anniversary Tuxedo Cape",
       "paid": true,
@@ -2642,8 +2714,12 @@
     {
       "guid": "uvx7_B9OyH",
       "name": "Mischief Raven-Feathered Cloak",
-      "playerName": "惡作劇烏鴉羽毛披風",
-      "aliases": [],
+      "playerName": "惡作劇鴉羽斗",
+      "aliases": [
+        "惡作劇鴉羽斗篷",
+        "惡作劇烏鴉羽毛披風"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:w-NTZTRfuL",
       "packageName": "Mischief Raven-Feathered Cloak",
       "paid": true,
@@ -2810,8 +2886,12 @@
     {
       "guid": "wkCxoe9zSP",
       "name": "Fortune Dragon Vestment",
-      "playerName": "福瑞龍禮服",
-      "aliases": [],
+      "playerName": "幸運龍服裝",
+      "aliases": [
+        "幸運節龍禮服",
+        "福瑞龍禮服"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:GQirzPYKk-",
       "packageName": "Days of Fortune Dragon Vestment",
       "paid": true,
@@ -2852,8 +2932,12 @@
     {
       "guid": "wXLGNti3db",
       "name": "Mischief Feline Tail",
-      "playerName": "惡作劇貓咪尾巴",
-      "aliases": [],
+      "playerName": "貓咪尾巴",
+      "aliases": [
+        "貓咪耳尾",
+        "惡作劇貓咪尾巴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:x1qjYi8ew4",
       "packageName": "Mischief Feline Accessory Duo",
       "paid": true,
@@ -2879,8 +2963,11 @@
     {
       "guid": "x-eBv-6iNk",
       "name": "Anniversary Gown",
-      "playerName": "週年禮服",
-      "aliases": [],
+      "playerName": "週年服裝",
+      "aliases": [
+        "週年禮服"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:CiplH58OIH",
       "packageName": "Anniversary Gown Ensemble",
       "paid": true,
@@ -2906,8 +2993,11 @@
     {
       "guid": "xFcmMsHvA0",
       "name": "Dark Rainbow Loafers",
-      "playerName": "深色彩虹樂福鞋",
-      "aliases": [],
+      "playerName": "黑彩虹鞋",
+      "aliases": [
+        "深色彩虹樂福鞋"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:niXRqrDBPE",
       "packageName": "Dark Rainbow Loafers",
       "paid": true,
@@ -2948,8 +3038,12 @@
     {
       "guid": "y69WKTTyw7",
       "name": "Spirited Manatee Ears",
-      "playerName": "活潑海牛耳朵",
-      "aliases": [],
+      "playerName": "海牛耳朵",
+      "aliases": [
+        "海牛耳尾組",
+        "活潑海牛耳朵"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:4Eps86CzXw",
       "packageName": "Spirited Manatee Ensemble",
       "paid": true,
@@ -2962,7 +3056,10 @@
       "guid": "YdP0vtpTMi",
       "name": "Oreo Slippers",
       "playerName": "奧利奧拖鞋",
-      "aliases": [],
+      "aliases": [
+        "Oreo 拖鞋"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:AgkdSrTUmg",
       "packageName": "Oreo Slippers",
       "paid": true,
@@ -3127,8 +3224,12 @@
     {
       "guid": "z648Yl_rsv",
       "name": "Skyfest Oreo Headband",
-      "playerName": "天空慶典奧利奧頭帶",
-      "aliases": [],
+      "playerName": "奧利奧頭帶",
+      "aliases": [
+        "Oreo 頭帶",
+        "天空慶典奧利奧頭帶"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:-dyNdYI7we",
       "packageName": "SkyFest Oreo Headband",
       "paid": true,

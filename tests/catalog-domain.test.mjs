@@ -231,6 +231,8 @@ test("reviewed transaction terms stay attached to their official guids", () => {
     ["jM8xKFwbTE", "飛蛾觸角", "飛蛾裝扮髮飾"],
     ["K0NBv__mv8", "人聲樂器", "歐若拉之聲道具"],
     ["5xJ_mCzZQy", "夏日燈籠", "夏日回憶燈籠"],
+    ["4c9HLTfREP", "紅斗", "任天堂紅斗篷"],
+    ["KtlqKC7whS", "藍斗", "任天堂藍斗篷"],
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);

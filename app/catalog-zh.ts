@@ -1138,8 +1138,8 @@ export const zhItemName = (item: WikiItem) => {
 export const saleItemName = (item: WikiItem) => {
   const marketProfile = marketCollectibleProfile(item.name, item.guid);
   return (
-    (marketProfile?.nameReviewed ? marketProfile.playerName : undefined) ??
     playerItemSaleName(item.guid) ??
+    (marketProfile?.nameReviewed ? marketProfile.playerName : undefined) ??
     (marketProfile?.curated ? marketProfile.playerName : undefined) ??
     playerHairByGuid[item.guid]?.displayName ??
     playerItemName(item.guid) ??

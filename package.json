@@ -21,7 +21,9 @@
     "sync:trade-names:check": "node scripts/sync-transaction-names.mjs",
     "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write",
     "collect:wiki-market": "node scripts/collect-wiki-market-evidence.mjs",
-    "verify:wiki-market": "node scripts/verify-wiki-market-evidence.mjs"
+    "verify:wiki-market": "node scripts/verify-wiki-market-evidence.mjs",
+    "sync:wiki-player-names:check": "node scripts/sync-wiki-player-names.mjs",
+    "sync:wiki-player-names:write": "node scripts/sync-wiki-player-names.mjs --write"
   },
   "dependencies": {
     "next": "16.3.3",

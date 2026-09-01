@@ -137,6 +137,22 @@ async function parsePage(source, title) {
   const parsed = json.parse;
   const $ = load(parsed.text ?? "");
   $("script,style,noscript,.mw-editsection,.navbox,.toc,.noprint").remove();
+  const imageLabels = [];
+  $("img[data-image-name], img[data-image-key]").each((_, element) => {
+    const image = $(element);
+    const filename = normalizeText(
+      image.attr("data-image-name") ?? image.attr("data-image-key"),
+    );
+    if (!filename) return;
+    const alt = normalizeText(image.attr("alt"));
+    const container = image.closest("td,li,figure,.gallerybox,.wikia-gallery-item");
+    const context = normalizeText(container.first().text()).slice(0, 180);
+    imageLabels.push({
+      filename,
+      ...(alt ? { alt } : {}),
+      ...(context && context !== alt ? { context } : {}),
+    });
+  });
   const evidence = [];
   $("h1,h2,h3,h4,tr,li,p,figcaption").each((_, element) => {
     const line = normalizeText($(element).text());
@@ -151,6 +167,14 @@ async function parsePage(source, title) {
     url: pageUrl(source, parsed.title ?? title),
     evidenceLines: unique(evidence).slice(0, 160),
     images: unique(parsed.images ?? []),
+    imageLabels: [
+      ...new Map(
+        imageLabels.map((entry) => [
+          `${entry.filename}|${entry.alt ?? ""}|${entry.context ?? ""}`,
+          entry,
+        ]),
+      ).values(),
+    ],
     links: (parsed.links ?? [])
       .filter((link) => link.ns === 0 && link.exists !== false)
       .map((link) => link.title),

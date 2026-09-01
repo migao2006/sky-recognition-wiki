@@ -49,7 +49,7 @@ test("generated IAP metadata covers every mapped catalog item by GUID", () => {
 
 test("reviewed IAP player terms replace machine translations by exact GUID", () => {
   const rows = new Map(iapCatalog.items.map((item) => [item.guid, item]));
-  assert.ok(Object.keys(reviewedIapNames.items).length >= 14);
+  assert.ok(Object.keys(reviewedIapNames.items).length >= 35);
   for (const [guid, reviewed] of Object.entries(reviewedIapNames.items)) {
     const row = rows.get(guid);
     assert.ok(row, guid);

@@ -97,6 +97,26 @@ const uniqueItems = (items) => [
 ];
 const pricePattern = /￥|¥|NT\$|USD|價格|价格|售價|售价/u;
 const packagePattern = /禮包|礼包|套裝禮包|套装礼包/u;
+const hasHan = /[\p{Script=Han}]/u;
+const genericImageLabel =
+  /活動門票|活动门票|升華燭|升华烛|普通蠟燭|普通蜡烛|宣傳圖|宣传图|位置圖|位置图|圖示|图标/u;
+const labelTerms = (page, image) =>
+  [
+    ...new Set(
+      (page.imageLabels ?? [])
+        .filter(
+          (label) => normalizedAsset(label.filename) === normalizedAsset(image),
+        )
+        .map((label) => (label.alt ? toTaiwan(label.alt.trim()) : null))
+        .filter(
+          (label) =>
+            label &&
+            hasHan.test(label) &&
+            Array.from(label).length <= 40 &&
+            !genericImageLabel.test(label),
+        ),
+    ),
+  ];
 
 const matches = [];
 const pages = [];
@@ -106,6 +126,7 @@ for (const source of evidence.sources ?? []) {
     for (const image of page.images ?? []) {
       const iconCandidates = iconByAsset.get(normalizedAsset(image)) ?? [];
       if (iconCandidates.length) {
+        const sourceTerms = page.region === "global" ? labelTerms(page, image) : [];
         const status =
           iconCandidates.length === 1
             ? page.region === "global"
@@ -119,8 +140,9 @@ for (const source of evidence.sources ?? []) {
           revisionId: page.revisionId,
           pageUrl: page.url,
           image,
-          sourceTerm: null,
-          convertedTerm: null,
+          sourceTerm: sourceTerms[0] ?? null,
+          sourceTerms,
+          convertedTerm: sourceTerms[0] ?? null,
           sourceType: null,
           method: "exact-icon-basename",
           status,
@@ -141,6 +163,7 @@ for (const source of evidence.sources ?? []) {
           pageUrl: page.url,
           image,
           sourceTerm: parsed.term,
+          sourceTerms: [parsed.term],
           convertedTerm: parsed.term,
           sourceType: parsed.typeLabel,
           method: "traditional-player-name",
@@ -168,6 +191,7 @@ for (const source of evidence.sources ?? []) {
         pageUrl: page.url,
         image,
         sourceTerm: matchTerm(image),
+        sourceTerms: [parsed.term],
         convertedTerm: parsed.term,
         sourceType: parsed.typeLabel,
         method: resolved.method,
