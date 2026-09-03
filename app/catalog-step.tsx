@@ -1,7 +1,15 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { CatalogItemCard } from "./catalog-item-card";
+import { shouldIdlePreload, type ConnectionHint } from "./idle-preload";
 import {
   INITIAL_VISIBLE_ITEMS,
   type CatalogStepState,
@@ -14,7 +22,7 @@ import {
   isSeasonUltimate,
 } from "./valuation-items";
 
-const VISIBLE_ITEM_BATCH = 40;
+const VISIBLE_ITEM_BATCH = 32;
 
 export function CatalogStep({
   runtime,
@@ -23,6 +31,7 @@ export function CatalogStep({
   onToggleOwned,
   onBack,
   onNext,
+  onPreloadValuation,
 }: {
   runtime: CatalogRuntime;
   state: CatalogStepState;
@@ -30,6 +39,7 @@ export function CatalogStep({
   onToggleOwned: (guid: string) => void;
   onBack: () => void;
   onNext: () => void;
+  onPreloadValuation: () => void;
 }) {
   const {
     visibleCount,
@@ -51,6 +61,18 @@ export function CatalogStep({
   } = state;
   const deferredQuery = useDeferredValue(query);
   const searchPending = query !== deferredQuery;
+  const toggleOwned = useCallback(
+    (guid: string) => {
+      onToggleOwned(guid);
+      const connection = (
+        navigator as Navigator & { connection?: ConnectionHint }
+      ).connection;
+      if (shouldIdlePreload(connection)) {
+        window.setTimeout(onPreloadValuation, 0);
+      }
+    },
+    [onPreloadValuation, onToggleOwned],
+  );
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const catalogRef = useRef<HTMLElement>(null);
@@ -392,7 +414,13 @@ export function CatalogStep({
     <section className="catalog" id="top" ref={catalogRef}>
       <div className="catalog-intro">
         <h1>選擇物品</h1>
-        <button type="button" onClick={onNext}>
+        <button
+          type="button"
+          onPointerEnter={onPreloadValuation}
+          onPointerDown={onPreloadValuation}
+          onFocus={onPreloadValuation}
+          onClick={onNext}
+        >
           前往估價
         </button>
       </div>
@@ -547,7 +575,7 @@ export function CatalogStep({
               key={card.item.guid}
               item={card.item}
               selected={owned.has(card.item.guid)}
-              onToggle={onToggleOwned}
+              onToggle={toggleOwned}
               displayName={card.displayName}
               sourceLabel={card.sourceLabel}
               ultimate={card.ultimate}
@@ -584,6 +612,9 @@ export function CatalogStep({
         </button>
         <button
           type="button"
+          onPointerEnter={onPreloadValuation}
+          onPointerDown={onPreloadValuation}
+          onFocus={onPreloadValuation}
           onClick={() => {
             if (!query.trim() && nextClosetSub) {
               selectClosetSub(nextClosetSub, true);

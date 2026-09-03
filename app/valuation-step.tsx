@@ -2,6 +2,7 @@
 
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
+import { DeferredDetails } from "./deferred-details";
 import type {
   ShowcasePreset,
   ValuationStepState,
@@ -298,11 +299,14 @@ export function ValuationStep({
         </div>
         {valuationEstimate && (
           <div className="valuation-details">
-            <details>
-              <summary>
-                <b>加減分明細</b>
-                <span>{valuationEstimate.contributions.length} 項</span>
-              </summary>
+            <DeferredDetails
+              summary={
+                <>
+                  <b>加減分明細</b>
+                  <span>{valuationEstimate.contributions.length} 項</span>
+                </>
+              }
+            >
               <div className="valuation-contributions">
                 {valuationEstimate.contributions.map((row, index) => (
                   <div key={`${row.group}-${row.label}-${index}`}>
@@ -333,32 +337,38 @@ export function ValuationStep({
                   </div>
                 ))}
               </div>
-            </details>
+            </DeferredDetails>
             {valuationEstimate.seasonRows.length > 0 && (
-              <details>
-                <summary>
-                  <b>帳號季節完成度</b>
-                  <span>{valuationEstimate.seasonRows.length} 季</span>
-                </summary>
+              <DeferredDetails
+                summary={
+                  <>
+                    <b>帳號季節完成度</b>
+                    <span>{valuationEstimate.seasonRows.length} 季</span>
+                  </>
+                }
+              >
                 <SeasonRows
                   rows={valuationEstimate.seasonRows}
                   seasonZh={runtime.seasonZh}
                   confidenceNames={confidenceNames}
                   includeCompletion
                 />
-              </details>
+              </DeferredDetails>
             )}
-            <details>
-              <summary>
-                <b>查看全部季節價位</b>
-                <span>{runtime.seasonPriceBands.length} 季</span>
-              </summary>
+            <DeferredDetails
+              summary={
+                <>
+                  <b>查看全部季節價位</b>
+                  <span>{runtime.seasonPriceBands.length} 季</span>
+                </>
+              }
+            >
               <SeasonRows
                 rows={runtime.seasonPriceBands}
                 seasonZh={runtime.seasonZh}
                 confidenceNames={confidenceNames}
               />
-            </details>
+            </DeferredDetails>
             {valuationEstimate.warnings.length > 0 && (
               <div className="valuation-warnings" role="status">
                 {valuationEstimate.warnings.map((warning) => (
@@ -368,10 +378,12 @@ export function ValuationStep({
             )}
           </div>
         )}
-        <details className="valuation-method">
-          <summary>
+        <DeferredDetails
+          className="valuation-method"
+          summary={
             <b>估價依據</b>
-          </summary>
+          }
+        >
           <p>
             {valuationEstimate && (
               <>
@@ -434,7 +446,7 @@ export function ValuationStep({
             ；另以 {runtime.valuationSampleSummary.secondaryMarketRows}{" "}
             筆國服資料校驗趨勢。
           </p>
-        </details>
+        </DeferredDetails>
       </section>
       <div className="account-actions">
         <div className="account-danger">

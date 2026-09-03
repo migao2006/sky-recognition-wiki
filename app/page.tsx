@@ -75,6 +75,26 @@ export default function AccountOrganizer() {
     void loadValuation().catch(() => undefined);
   }, [loadValuation]);
 
+  useEffect(() => {
+    if (!draftReady || runtime.catalogDomain) return;
+    const connection = (
+      navigator as Navigator & {
+        connection?: { effectiveType?: string; saveData?: boolean };
+      }
+    ).connection;
+    if (
+      connection?.saveData ||
+      /2g|3g/.test(connection?.effectiveType ?? "")
+    )
+      return;
+    const timer = window.setTimeout(safelyLoadCatalog, 1_200);
+    return () => window.clearTimeout(timer);
+  }, [
+    draftReady,
+    runtime.catalogDomain,
+    safelyLoadCatalog,
+  ]);
+
   const goToStep = (step: 1 | 2 | 3) => {
     if (step === activeStep) return;
     if (step !== 1) safelyLoadCatalog();
@@ -179,6 +199,7 @@ export default function AccountOrganizer() {
           onToggleOwned={toggleOwned}
           onBack={() => goToStep(1)}
           onNext={() => goToStep(3)}
+          onPreloadValuation={safelyLoadValuation}
         />
       )}
       {activeStep === 3 &&

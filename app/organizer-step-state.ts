@@ -4,7 +4,7 @@ import { useState } from "react";
 
 type FocusMode = "all" | "video" | "ultimate" | "limited";
 export type ShowcasePreset = "valuation" | "video" | "collection";
-export const INITIAL_VISIBLE_ITEMS = 40;
+export const INITIAL_VISIBLE_ITEMS = 32;
 
 export const useCatalogStepState = () => {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);

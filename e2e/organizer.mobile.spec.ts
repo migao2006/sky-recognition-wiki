@@ -53,6 +53,7 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await page.locator("#outside-focus-probe").evaluate((probe) => probe.remove());
   await page.keyboard.press("Escape");
   await expect(filterDialog).toBeHidden();
+  await page.getByRole("button", { name: "季節畢業" }).click();
 
   const firstItem = page.locator(".grid button").first();
   await expect(firstItem).toBeVisible();
@@ -72,6 +73,12 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await expect(page.getByRole("button", { name: "分享摘要" })).toBeVisible();
   await expect(page.getByRole("button", { name: /出售文案/ })).toHaveCount(0);
   await expect(page.getByText("更多匯出方式")).toHaveCount(0);
+  await expect(page.locator(".valuation-contributions")).toHaveCount(0);
+  await expect(page.locator(".valuation-season-table")).toHaveCount(0);
+  await page.getByText("查看全部季節價位").click();
+  await expect(page.locator(".valuation-season-table")).toBeVisible();
+  await page.getByText("估價依據").click();
+  await expect(page.locator(".valuation-method p")).toBeVisible();
   await page.evaluate(() => {
     Object.defineProperty(navigator, "share", {
       configurable: true,
