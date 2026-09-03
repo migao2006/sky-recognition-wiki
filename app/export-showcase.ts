@@ -222,23 +222,22 @@ const buildShowcaseLayout = (
   return { height, panelHeight, renderGroups };
 };
 
-export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
-  const { height } = buildShowcaseLayout(buildShowcaseGroups(options));
-  const summaryHeight =
-    options.preset === "valuation" && options.valuation ? 236 : 0;
-  return { width: showcaseMetrics.width, height: height + summaryHeight };
+type ShowcasePage = {
+  index: number;
+  width: number;
+  height: number;
+  offsetY: number;
 };
 
-export const planShowcasePages = (options: ExportShowcaseOptions) => {
-  const groups = buildShowcaseGroups(options);
-  const {
-    height: layoutHeight,
-    panelHeight,
-    renderGroups,
-  } = buildShowcaseLayout(groups);
+const showcaseSummaryHeight = (options: ExportShowcaseOptions) =>
+  options.preset === "valuation" && options.valuation ? 236 : 0;
+
+const buildShowcasePages = (
+  layout: ReturnType<typeof buildShowcaseLayout>,
+  summaryHeight: number,
+) => {
+  const { height: layoutHeight, panelHeight, renderGroups } = layout;
   const { width } = showcaseMetrics;
-  const summaryHeight =
-    options.preset === "valuation" && options.valuation ? 236 : 0;
   const totalHeight = layoutHeight + summaryHeight;
   const breakpoints = new Set([0, totalHeight]);
   let groupTop = showcaseMetrics.pad + summaryHeight;
@@ -270,7 +269,7 @@ export const planShowcasePages = (options: ExportShowcaseOptions) => {
   });
 
   const sortedBreakpoints = [...breakpoints].sort((left, right) => left - right);
-  const pages: { index: number; width: number; height: number; offsetY: number }[] = [];
+  const pages: ShowcasePage[] = [];
   let offsetY = 0;
   while (offsetY < totalHeight) {
     const maximumEnd = Math.min(offsetY + maximumCanvasHeight, totalHeight);
@@ -291,12 +290,12 @@ export const planShowcasePages = (options: ExportShowcaseOptions) => {
   return pages;
 };
 
-export const planShowcasePageItems = (options: ExportShowcaseOptions) => {
-  const groups = buildShowcaseGroups(options);
-  const { panelHeight, renderGroups } = buildShowcaseLayout(groups);
-  const summaryHeight =
-    options.preset === "valuation" && options.valuation ? 236 : 0;
-  const pages = planShowcasePages(options);
+const buildShowcasePageItems = (
+  layout: ReturnType<typeof buildShowcaseLayout>,
+  summaryHeight: number,
+  pages: ShowcasePage[],
+) => {
+  const { panelHeight, renderGroups } = layout;
   const pageItems = pages.map(() => [] as WikiItem[]);
   let groupY = showcaseMetrics.pad + summaryHeight;
 
@@ -328,9 +327,50 @@ export const planShowcasePageItems = (options: ExportShowcaseOptions) => {
   return { pages, pageItems };
 };
 
-export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
-  const { items, preset = "collection", valuation, onProgress } = options;
+const buildShowcaseLayoutPlan = (options: ExportShowcaseOptions) => {
   const groups = buildShowcaseGroups(options);
+  const layout = buildShowcaseLayout(groups);
+  const summaryHeight = showcaseSummaryHeight(options);
+
+  return {
+    layout,
+    summaryHeight,
+    width: showcaseMetrics.width,
+    height: layout.height + summaryHeight,
+  };
+};
+
+export const measureShowcaseCanvas = (options: ExportShowcaseOptions) => {
+  const plan = buildShowcaseLayoutPlan(options);
+  return { width: plan.width, height: plan.height };
+};
+
+const buildShowcasePlan = (options: ExportShowcaseOptions) => {
+  const layoutPlan = buildShowcaseLayoutPlan(options);
+  const pages = buildShowcasePages(
+    layoutPlan.layout,
+    layoutPlan.summaryHeight,
+  );
+  const pageItems = buildShowcasePageItems(
+    layoutPlan.layout,
+    layoutPlan.summaryHeight,
+    pages,
+  ).pageItems;
+
+  return { ...layoutPlan, pages, pageItems };
+};
+
+export const planShowcasePages = (options: ExportShowcaseOptions) =>
+  buildShowcasePlan(options).pages;
+
+export const planShowcasePageItems = (options: ExportShowcaseOptions) => {
+  const { pages, pageItems } = buildShowcasePlan(options);
+  return { pages, pageItems };
+};
+
+export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
+  const { items, valuation, onProgress } = options;
+  const plan = buildShowcasePlan(options);
   const {
     width,
     pad,
@@ -343,8 +383,8 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     clusterTitle,
     sectionGap,
   } = showcaseMetrics;
-  const { panelHeight, renderGroups } = buildShowcaseLayout(groups);
-  const summaryHeight = preset === "valuation" && valuation ? 236 : 0;
+  const { panelHeight, renderGroups } = plan.layout;
+  const { summaryHeight, pages, pageItems } = plan;
 
   const roundRect = (
     ctx: CanvasRenderingContext2D,
@@ -367,7 +407,6 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     }
   };
 
-  const { pages, pageItems } = planShowcasePageItems(options);
   const images: Blob[] = [];
   let completedIconCount = 0;
   const completedIconGuids = new Set<string>();

@@ -51,7 +51,7 @@ export default function AccountOrganizer() {
   const [stepAnnouncement, setStepAnnouncement] = useState("");
   const runtime = useOrganizerRuntime(setOwned);
   const { loadCatalog, loadValuation } = runtime;
-  const { draftAvailable, clearStoredDraft } = useAccountDraft({
+  const { draftAvailable, draftReady, clearStoredDraft } = useAccountDraft({
     account,
     bindings,
     owned,
@@ -124,7 +124,10 @@ export default function AccountOrganizer() {
   }, [activeStep, activeStepReady]);
 
   return (
-    <main className="app-shell">
+    <main
+      className="app-shell"
+      data-hydration-ready={draftReady ? "true" : "false"}
+    >
       <div className="visually-hidden" aria-live="polite" aria-atomic="true">
         {stepAnnouncement}
       </div>

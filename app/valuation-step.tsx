@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useMemo,
-  type CSSProperties,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 import type {
   ShowcasePreset,
@@ -241,19 +236,15 @@ export function ValuationStep({
         <div className="valuation-report-head">
           <h2 id="valuation-title">估價分析</h2>
           <div
-            className="completion-ring"
+            className="completion-badge"
             role="progressbar"
             aria-label="估價資料完整度"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={completeness}
             aria-valuetext={`資料完整度 ${completeness}%`}
-            style={
-              {
-                "--completion": `${completeness * 3.6}deg`,
-              } as CSSProperties
-            }
           >
+            <span>完整度</span>
             <b>{completeness}%</b>
           </div>
         </div>
@@ -283,29 +274,26 @@ export function ValuationStep({
                   : "選取物品後顯示價格。"}
               </p>
             )}
-            <button type="button" onClick={onBack}>
-              {valuationAnalysis.valuationItems.length
-                ? "繼續核對衣櫃"
-                : "前往選取估價物品"}
-            </button>
           </article>
           <div className="valuation-metrics">
-            <article>
-              <span>畢業禮</span>
-              <b>{valuationAnalysis.ultimates.length}</b>
-            </article>
-            <article>
-              <span>季卡項鍊</span>
-              <b>{valuationAnalysis.pendants.length}</b>
-            </article>
-            <article>
-              <span>付費物品</span>
-              <b>{valuationAnalysis.packages.length}</b>
-            </article>
-            <article>
-              <span>聯動／限定</span>
-              <b>{valuationAnalysis.limited.length}</b>
-            </article>
+            <dl>
+              <div>
+                <dt>畢業禮</dt>
+                <dd>{valuationAnalysis.ultimates.length}</dd>
+              </div>
+              <div>
+                <dt>季卡項鍊</dt>
+                <dd>{valuationAnalysis.pendants.length}</dd>
+              </div>
+              <div>
+                <dt>付費物品</dt>
+                <dd>{valuationAnalysis.packages.length}</dd>
+              </div>
+              <div>
+                <dt>聯動／限定</dt>
+                <dd>{valuationAnalysis.limited.length}</dd>
+              </div>
+            </dl>
           </div>
         </div>
         {valuationEstimate && (

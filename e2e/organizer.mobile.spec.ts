@@ -3,10 +3,10 @@ import { expect, test } from "@playwright/test";
 test("supports the essential mobile organizer flow", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
-  // WebKit can expose the prerendered input briefly before React hydrates it.
-  await page.waitForTimeout(500);
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
 
   await page.getByLabel("帳號名稱").fill("手機測試帳號");
+  await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
   await expect
     .poll(() =>
       page.evaluate(() =>
@@ -56,7 +56,13 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
 
   const firstItem = page.locator(".grid button").first();
   await expect(firstItem).toBeVisible();
+  await expect(firstItem).toHaveAccessibleName(/^選取：.+/);
+  const firstIcon = firstItem.locator("img");
+  await expect(firstIcon).toBeVisible();
+  await firstIcon.dispatchEvent("error");
+  await expect(firstItem.locator(".catalog-icon-fallback")).toBeVisible();
   await firstItem.click();
+  await expect(firstItem).toHaveAccessibleName(/^取消選取：.+/);
   await expect(page.getByText(/已選 1/)).toBeVisible();
 
   await page.getByRole("button", { name: "前往估價" }).click();
@@ -87,7 +93,7 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
 test("imports and exports account backups from the first step", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
-  await page.waitForTimeout(500);
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
   await page.getByLabel("帳號名稱").fill("目前帳號");
   await page.getByText("更多匯出方式").click();
 

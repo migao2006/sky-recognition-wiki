@@ -1,6 +1,5 @@
 import { wikiItems as baseWikiItems } from "./wiki-data";
 import type { WikiItem } from "./wiki-data";
-export { legacyCatalogGuidAliases } from "./catalog-legacy-guids";
 
 type OfficialIdentity = Pick<
   WikiItem,

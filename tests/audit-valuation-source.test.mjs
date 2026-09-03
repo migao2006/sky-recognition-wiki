@@ -1,24 +1,18 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import test from "node:test";
+import { runJsonlScript } from "./helpers/run-jsonl-script.mjs";
 
-const exec = promisify(execFile);
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 const audit = async (rows, { splitSeed } = {}) => {
-  const directory = await mkdtemp(join(tmpdir(), "sky-valuation-audit-"));
-  const source = join(directory, "source.jsonl");
-  try {
-    await writeFile(source, `${rows.map(JSON.stringify).join("\n")}\n`);
-    const options = splitSeed ? [`--split-seed=${splitSeed}`] : [];
-    const { stdout } = await exec(process.execPath, [fileURLToPath(script), ...options, source]);
-    return JSON.parse(stdout);
-  } finally { await rm(directory, { recursive: true, force: true }); }
+  const args = splitSeed ? [`--split-seed=${splitSeed}`] : [];
+  const { stdout } = await runJsonlScript({
+    script,
+    lines: rows.map(JSON.stringify),
+    args,
+    temporaryPrefix: "sky-valuation-audit-",
+  });
+  return JSON.parse(stdout);
 };
 
 test("weights structured seasonal samples by evidence and quality", async () => {

@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
+import { serializeNameSnapshot } from "./lib/name-snapshot-serializer.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const PLAYER_NAMES_PATH = resolve(ROOT, "app/player-zh-names.json");
@@ -318,26 +319,6 @@ const alignCategory = (rows, items, scoreFor) => {
 };
 
 const unique = (values) => [...new Set(values.filter(Boolean))];
-const compactEntry = (entry) => {
-  const json = JSON.stringify(entry).replaceAll(":", ": ").replaceAll(",", ", ");
-  return `{ ${json.slice(1, -1)} }`;
-};
-const serializeSnapshot = (snapshot) => {
-  const entries = Object.entries(snapshot.items);
-  const itemLines = entries.map(
-    ([guid, entry], index) =>
-      `    ${JSON.stringify(guid)}: ${compactEntry(entry)}${index + 1 < entries.length ? "," : ""}`,
-  );
-  return [
-    "{",
-    `  \"description\": ${JSON.stringify(snapshot.description)},`,
-    '  "items": {',
-    ...itemLines,
-    "  }",
-    "}",
-    "",
-  ].join("\n");
-};
 const saleNameAllowed = (row) =>
   row.grade !== "C" &&
   Array.from(row.term).length >= 2 &&
@@ -684,7 +665,7 @@ if (shouldWrite) {
   }
   snapshot.description =
     "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案，以及 2026-09-01 全物件交易用語重查清單；作者個人寫法會正規化，且只寫入唯一、高信心的單件對應。";
-  await writeFile(PLAYER_NAMES_PATH, serializeSnapshot(snapshot), "utf8");
+  await writeFile(PLAYER_NAMES_PATH, serializeNameSnapshot(snapshot), "utf8");
 }
 
 console.log(

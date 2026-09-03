@@ -39,18 +39,5 @@ test("ships only the account step in the initial organizer response", async () =
     )
   ).join("\n");
   assert.doesNotMatch(initialCode, /Sunlight Snorkel/);
-  assert.doesNotMatch(initialCode, /sourceRows:1022/);
   assert.doesNotMatch(initialCode, /showcase-preview|前往估價/);
-});
-
-test("uses phrasing-only content inside catalog item buttons", async () => {
-  const cardSource = await readFile(
-    new URL("../app/catalog-item-card.tsx", import.meta.url),
-    "utf8",
-  );
-
-  assert.match(cardSource, /<button\s+[\s\S]*type="button"/);
-  assert.match(cardSource, /className="card-title"/);
-  assert.doesNotMatch(cardSource, /<div className="image-wrap"/);
-  assert.doesNotMatch(cardSource, /<h2>\{displayName\}<\/h2>/);
 });

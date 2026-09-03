@@ -58,6 +58,7 @@ type UseAccountDraftOptions = {
 
 type UseAccountDraftResult = {
   draftAvailable: boolean;
+  draftReady: boolean;
   clearStoredDraft: () => void;
 };
 
@@ -78,6 +79,24 @@ const clearStoredDrafts = () => {
   if (failure) throw failure;
 };
 
+type DraftSnapshot = Pick<
+  UseAccountDraftOptions,
+  "account" | "bindings" | "owned"
+> & {
+  hasData: HasAccountDraftData;
+};
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
+const DRAFT_SAVE_DEBOUNCE_MS = 350;
+const DRAFT_IDLE_TIMEOUT_MS = 1_000;
+
 /** Keeps the in-progress account form on this device for thirty days. */
 export const useAccountDraft = ({
   account,
@@ -93,6 +112,67 @@ export const useAccountDraft = ({
   const [draftReady, setDraftReady] = useState(false);
   const [draftAvailable, setDraftAvailable] = useState(true);
   const skipNextDraftSave = useRef(false);
+  const draftReadyRef = useRef(false);
+  const draftAvailableRef = useRef(true);
+  const snapshotRef = useRef<DraftSnapshot>({
+    account,
+    bindings,
+    owned,
+    hasData,
+  });
+  const saveTimerRef = useRef<number | undefined>(undefined);
+  const idleSaveRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    snapshotRef.current = { account, bindings, owned, hasData };
+  }, [account, bindings, hasData, owned]);
+
+  const cancelScheduledSave = useCallback(() => {
+    if (saveTimerRef.current !== undefined) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = undefined;
+    }
+    if (idleSaveRef.current !== undefined) {
+      const idleWindow = window as IdleWindow;
+      idleWindow.cancelIdleCallback?.(idleSaveRef.current);
+      idleSaveRef.current = undefined;
+    }
+  }, []);
+
+  const saveCurrentDraft = useCallback(() => {
+    if (!draftReadyRef.current || !draftAvailableRef.current) return;
+    const snapshot = snapshotRef.current;
+
+    try {
+      if (snapshot.hasData(snapshot.account, snapshot.bindings, snapshot.owned)) {
+        window.localStorage.setItem(
+          ACCOUNT_DRAFT_STORAGE_KEY,
+          JSON.stringify(
+            createAccountDraft({
+              account: snapshot.account,
+              bindings: snapshot.bindings,
+              owned: snapshot.owned,
+            }),
+          ),
+        );
+      } else {
+        clearStoredDrafts();
+      }
+    } catch {
+      try {
+        clearStoredDrafts();
+      } catch {
+        // Storage is unavailable; the in-memory session remains usable.
+      }
+      draftAvailableRef.current = false;
+      setDraftAvailable(false);
+    }
+  }, []);
+
+  const flushScheduledSave = useCallback(() => {
+    cancelScheduledSave();
+    saveCurrentDraft();
+  }, [cancelScheduledSave, saveCurrentDraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -151,7 +231,9 @@ export const useAccountDraft = ({
         }
       }
       setDraftAvailable(available);
+      draftAvailableRef.current = available;
       setDraftReady(true);
+      draftReadyRef.current = true;
     }, 0);
 
     return () => {
@@ -170,36 +252,45 @@ export const useAccountDraft = ({
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      try {
-        if (hasData(account, bindings, owned)) {
-          window.localStorage.setItem(
-            ACCOUNT_DRAFT_STORAGE_KEY,
-            JSON.stringify(createAccountDraft({ account, bindings, owned })),
-          );
-        } else {
-          clearStoredDrafts();
-        }
-      } catch {
-        try {
-          clearStoredDrafts();
-        } catch {
-          // Storage is unavailable; the in-memory session remains usable.
-        }
-        setDraftAvailable(false);
+    saveTimerRef.current = window.setTimeout(() => {
+      saveTimerRef.current = undefined;
+      const idleWindow = window as IdleWindow;
+      if (idleWindow.requestIdleCallback) {
+        idleSaveRef.current = idleWindow.requestIdleCallback(
+          () => {
+            idleSaveRef.current = undefined;
+            saveCurrentDraft();
+          },
+          { timeout: DRAFT_IDLE_TIMEOUT_MS },
+        );
+      } else {
+        saveCurrentDraft();
       }
-    }, 350);
+    }, DRAFT_SAVE_DEBOUNCE_MS);
 
-    return () => window.clearTimeout(timer);
-  }, [account, bindings, draftAvailable, draftReady, hasData, owned]);
+    return cancelScheduledSave;
+  }, [account, bindings, cancelScheduledSave, draftAvailable, draftReady, owned, saveCurrentDraft]);
+
+  useEffect(() => {
+    const flushWhenHidden = () => {
+      if (document.visibilityState === "hidden") flushScheduledSave();
+    };
+    window.addEventListener("pagehide", flushScheduledSave);
+    document.addEventListener("visibilitychange", flushWhenHidden);
+    return () => {
+      window.removeEventListener("pagehide", flushScheduledSave);
+      document.removeEventListener("visibilitychange", flushWhenHidden);
+    };
+  }, [flushScheduledSave]);
 
   const clearStoredDraft = useCallback(() => {
+    cancelScheduledSave();
     try {
       clearStoredDrafts();
     } catch {
       setDraftAvailable(false);
     }
-  }, []);
+  }, [cancelScheduledSave]);
 
-  return { draftAvailable, clearStoredDraft };
+  return { draftAvailable, draftReady, clearStoredDraft };
 };

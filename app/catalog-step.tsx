@@ -288,7 +288,7 @@ export function CatalogStep({
           Math.min(count + VISIBLE_ITEM_BATCH, filtered.length),
         );
       },
-      { rootMargin: "700px 0px" },
+      { rootMargin: "350px 0px" },
     );
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();

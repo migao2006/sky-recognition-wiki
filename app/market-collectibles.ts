@@ -417,8 +417,3 @@ export const marketCollectibleProfile = (name: string, guid?: string) => {
   }
   return profileByName.get(name) ?? profileByAlias.get(name) ?? null;
 };
-
-export const marketProfileNamesForSeries = (series: string) =>
-  [...profileByName.values()]
-    .filter((profile) => profile.series === series)
-    .map((profile) => profile.name);

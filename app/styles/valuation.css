@@ -13,40 +13,40 @@
   color: #f3f7fc;
   font-size: 24px;
 }
-.completion-ring {
-  --completion: 0deg;
-  width: 72px;
-  height: 72px;
-  position: relative;
+.completion-badge {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
   flex: none;
-  display: grid;
-  place-content: center;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, #0d1320 57%, transparent 59%),
-    conic-gradient(#8fc7ff var(--completion), #ffffff12 0);
+  border: 1px solid #8fc7ff47;
+  border-radius: 999px;
+  background: #8fc7ff12;
   text-align: center;
 }
-.completion-ring b {
-  font-size: 17px;
+.completion-badge span {
+  color: #9dbbe0;
+  font-size: 10px;
+  font-weight: 800;
+}
+.completion-badge b {
+  color: #e6f1ff;
+  font-size: 13px;
 }
 .valuation-summary {
   display: grid;
-  grid-template-columns: 1.15fr 1.85fr;
-  gap: 12px;
+  gap: 10px;
 }
 .valuation-verdict,
-.valuation-metrics article {
+.valuation-metrics > dl > div {
   border: 1px solid var(--glass-line);
   background: var(--glass-soft);
 }
 .valuation-verdict {
-  min-height: 166px;
-  padding: 18px;
-  border: 0;
-  border-right: 1px solid var(--glass-line);
-  border-radius: 0;
-  background: transparent;
+  min-height: 0;
+  padding: 15px 16px;
+  border-radius: 15px;
 }
 .valuation-verdict > span {
   color: #8aafd9;
@@ -60,50 +60,39 @@
   font-size: 17px;
 }
 .valuation-verdict p {
-  margin: 0 0 15px;
+  margin: 7px 0 0;
   color: #b5bfcc;
   font-size: 12px;
   line-height: 1.65;
 }
-.valuation-verdict a,
-.valuation-verdict button {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  padding: 0 12px;
-  border: 1px solid #8fc7ff5c;
-  border-radius: 10px;
-  background: #8fc7ff13;
-  color: #a9cfff;
-  font-size: 11px;
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-}
 .valuation-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  min-width: 0;
 }
-.valuation-metrics article {
-  min-height: 78px;
+.valuation-metrics dl {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.valuation-metrics dl > div {
+  min-height: 58px;
+  display: flex;
   align-items: center;
-  gap: 3px 10px;
-  padding: 13px 15px;
-  border-radius: 15px;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 9px 11px;
+  border-radius: 12px;
 }
-.valuation-metrics span {
+.valuation-metrics dt {
   color: #aeb8c6;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 750;
 }
-.valuation-metrics b {
-  grid-row: 1/3;
-  grid-column: 2;
+.valuation-metrics dd {
+  margin: 0;
   color: #f4f7fb;
-  font-size: 26px;
+  font-size: 20px;
+  font-weight: 800;
 }
 .valuation-method {
   margin: 14px 2px 0;
@@ -138,7 +127,7 @@
   text-underline-offset: 2px;
 }
 .valuation-verdict .model-price {
-  margin: 7px 0 2px;
+  margin: 5px 0 2px;
   color: #9fc9fb;
   font-size: 31px;
   font-weight: 820;

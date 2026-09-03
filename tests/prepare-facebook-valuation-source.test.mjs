@@ -1,14 +1,8 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import test from "node:test";
 import { prepareRow } from "../scripts/prepare-facebook-valuation-source.mjs";
+import { runJsonlScript } from "./helpers/run-jsonl-script.mjs";
 
-const exec = promisify(execFile);
 const script = new URL("../scripts/prepare-facebook-valuation-source.mjs", import.meta.url);
 const testSalt = "test-salt-for-facebook-anonymization-32";
 const valuationModel = {
@@ -31,17 +25,13 @@ const valuationModel = {
 };
 
 const prepare = async (lines, salt = testSalt) => {
-  const directory = await mkdtemp(join(tmpdir(), "sky-facebook-private-"));
-  const source = join(directory, "private.jsonl");
-  try {
-    await writeFile(source, `${lines.join("\n")}\n`);
-    const { stdout } = await exec(process.execPath, [fileURLToPath(script), source], {
-      env: { ...process.env, VALUATION_HASH_SALT: salt },
-    });
-    return stdout.trim().split("\n").filter(Boolean).map(JSON.parse);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
+  const { stdout } = await runJsonlScript({
+    script,
+    lines,
+    env: { ...process.env, VALUATION_HASH_SALT: salt },
+    temporaryPrefix: "sky-facebook-private-",
+  });
+  return stdout.trim().split("\n").filter(Boolean).map(JSON.parse);
 };
 
 test("anonymizes private Facebook fields while retaining only valuation structure", async () => {
@@ -114,33 +104,29 @@ test("keeps only standardized exclusion reasons for China, foreign currency, and
 });
 
 test("fails with a source line number for malformed JSON", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "sky-facebook-private-error-"));
-  const source = join(directory, "private.jsonl");
-  try {
-    await writeFile(source, '{"post_id":"one"}\nnot-json\n');
-    await assert.rejects(
-      exec(process.execPath, [fileURLToPath(script), source], { env: { ...process.env, VALUATION_HASH_SALT: testSalt } }),
-      (error) => /private\.jsonl:2: invalid JSON/.test(`${error.stderr}\n${error.message}`),
-    );
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
+  await assert.rejects(
+    runJsonlScript({
+      script,
+      lines: ['{"post_id":"one"}', "not-json"],
+      env: { ...process.env, VALUATION_HASH_SALT: testSalt },
+      temporaryPrefix: "sky-facebook-private-error-",
+    }),
+    (error) => /source\.jsonl:2: invalid JSON/.test(`${error.stderr}\n${error.message}`),
+  );
 });
 
 test("requires a sufficiently long salt instead of writing reversible identifiers", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "sky-facebook-private-salt-"));
-  const source = join(directory, "private.jsonl");
-  try {
-    await writeFile(source, '{"post_id":"one"}\n');
-    const environment = { ...process.env };
-    delete environment.VALUATION_HASH_SALT;
-    await assert.rejects(
-      exec(process.execPath, [fileURLToPath(script), source], { env: environment }),
-      (error) => /VALUATION_HASH_SALT must be at least 32 characters/.test(`${error.stderr}\n${error.message}`),
-    );
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
+  const environment = { ...process.env };
+  delete environment.VALUATION_HASH_SALT;
+  await assert.rejects(
+    runJsonlScript({
+      script,
+      lines: ['{"post_id":"one"}'],
+      env: environment,
+      temporaryPrefix: "sky-facebook-private-salt-",
+    }),
+    (error) => /VALUATION_HASH_SALT must be at least 32 characters/.test(`${error.stderr}\n${error.message}`),
+  );
 });
 
 test("rejects salts shorter than 32 characters", () => {

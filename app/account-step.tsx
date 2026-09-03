@@ -12,6 +12,7 @@ import {
   type BindingStatus,
 } from "./account-config";
 import { bundlePresets } from "./bundle-presets";
+import { CatalogIcon } from "./catalog-icon";
 import { formatMarketBindings, formatMarketPlatform } from "./market-copy";
 import { isSeasonPendant } from "./season-items";
 import { useAccountBackupActions } from "./use-account-backup-actions";
@@ -129,7 +130,7 @@ export function AccountStep({
             onChange={(event) =>
               setAccount({ ...account, name: event.target.value })
             }
-            placeholder="例如：追光大斷禮包號"
+            placeholder="例如：追光帳號"
           />
         </label>
         <label>
@@ -278,7 +279,7 @@ export function AccountStep({
                 onChange={(event) =>
                   setAccount({ ...account, bindingNote: event.target.value })
                 }
-                placeholder="例如：ɢᴄ 前號不出、ɢɢ 私用、ғʙ 遺失"
+                placeholder="例如：前號不出"
               />
             </label>
           </div>
@@ -343,16 +344,7 @@ export function AccountStep({
                             onClick={() => onToggleOwned(item.guid)}
                           >
                             <span className="season-ultimate-icon">
-                              {/* External catalog icons must keep their source URL and referrer policy. */}
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={item.icon}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                draggable={false}
-                                referrerPolicy="no-referrer"
-                              />
+                              <CatalogIcon src={item.icon} />
                               <i aria-hidden="true">{selected ? "✓" : ""}</i>
                             </span>
                             <small>{name}</small>

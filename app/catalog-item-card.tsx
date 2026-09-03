@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { CatalogIcon } from "./catalog-icon";
 import type { WikiItem } from "./wiki-data";
 
 export const CatalogItemCard = memo(function CatalogItemCard({
@@ -36,17 +37,7 @@ export const CatalogItemCard = memo(function CatalogItemCard({
           </span>
         )}
         <span className="source-badge">{sourceLabel}</span>
-        {/* External catalog icons must keep their source URL and referrer policy. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.icon}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          fetchPriority="low"
-          draggable={false}
-          referrerPolicy="no-referrer"
-        />
+        <CatalogIcon src={item.icon} />
       </span>
       <span className="card-body">
         <span className="card-title">{displayName}</span>

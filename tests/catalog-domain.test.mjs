@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { legacyCatalogGuidAliases } from "../app/catalog-legacy-guids.ts";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const {
@@ -11,7 +12,6 @@ const {
   getNextClosetSub,
   graduationSeasonSlugs,
   heldClosetOrder,
-  legacyCatalogGuidAliases,
   isProfessionalVideoFocus,
   matchesSub,
   matchesSourceFilter,

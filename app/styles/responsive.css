@@ -228,6 +228,9 @@
     white-space: nowrap;
     font-size: 20px;
   }
+  .result-status b {
+    padding: 4px 7px;
+  }
   .grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 7px;
@@ -235,6 +238,13 @@
   .grid .item-card {
     border-radius: 10px;
     contain-intrinsic-size: auto 120px;
+    box-shadow: none;
+  }
+  .grid .image-wrap:after {
+    display: none;
+  }
+  .grid .image-wrap img {
+    filter: none;
   }
   .item-card:hover {
     transform: none;
@@ -379,10 +389,6 @@
   .valuation-report-head h2 {
     font-size: 21px;
   }
-  .completion-ring {
-    width: 66px;
-    height: 66px;
-  }
   .valuation-verdict {
     min-height: 0;
     padding: 15px;
@@ -392,19 +398,6 @@
   }
   .valuation-verdict p {
     font-size: 11px;
-  }
-  .valuation-metrics {
-    gap: 8px;
-  }
-  .valuation-metrics article {
-    min-height: 73px;
-    padding: 11px;
-  }
-  .valuation-metrics span {
-    font-size: 10px;
-  }
-  .valuation-metrics b {
-    font-size: 21px;
   }
   .valuation-method {
     font-size: 12px;

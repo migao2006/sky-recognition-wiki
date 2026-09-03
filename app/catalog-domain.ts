@@ -10,11 +10,7 @@ export {
   isSeasonPendant,
   isSeasonUltimate,
 } from "./season-items";
-export {
-  legacyCatalogGuidAliases,
-  officialHeldIdentities,
-  wikiItems,
-} from "./catalog-seeds";
+export { officialHeldIdentities, wikiItems } from "./catalog-seeds";
 export {
   allClosetTypeSet,
   closetGroups,

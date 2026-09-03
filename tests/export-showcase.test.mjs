@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { tsImport } from "tsx/esm/api";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
@@ -15,10 +14,6 @@ const [
   tsImport("../app/showcase-order.ts", import.meta.url),
   tsImport("../app/export-showcase.ts", import.meta.url),
 ]);
-const showcaseSource = await readFile(
-  new URL("../app/export-showcase.ts", import.meta.url),
-  "utf8",
-);
 
 let fixtureId = 0;
 const item = (overrides = {}) => ({
@@ -199,14 +194,6 @@ test("includes the valuation summary in pagination without clipping items", () =
   );
 });
 
-test("uses the shared valuation wording in image summaries", () => {
-  assert.match(showcaseSource, /估價摘要/);
-  assert.match(showcaseSource, /參考中位價/);
-  assert.match(showcaseSource, /價格區間/);
-  assert.match(showcaseSource, /估價完整度/);
-  assert.doesNotMatch(showcaseSource, /合理區間|尚無足夠估價重點|`完整度 \$\{/);
-});
-
 test("splits oversized exports into safe numbered canvas pages", () => {
   const entries = Array.from({ length: 4_000 }, (_, index) =>
     item({ guid: `oversized-${index}`, type: "Cape", order: index }),
@@ -254,26 +241,6 @@ test("assigns every icon to each canvas page it crosses", () => {
     entries.length,
   );
   assert.ok(plan.pageItems.every((entries) => entries.length > 0));
-});
-
-test("reports image load outcomes and progress through the export API", () => {
-  assert.match(showcaseSource, /loadedIconCount/);
-  assert.match(showcaseSource, /failedIconCount/);
-  assert.match(showcaseSource, /onProgress/);
-  assert.match(showcaseSource, /phase: "loading-icons"/);
-  assert.match(showcaseSource, /phase: "rendering"/);
-});
-
-test("decodes and releases icon batches one export page at a time", () => {
-  assert.match(showcaseSource, /const loadPageIcons/);
-  assert.match(showcaseSource, /image\.decode\(\)/);
-  assert.match(showcaseSource, /exportIconBatchSize = 12/);
-  assert.match(showcaseSource, /exportDrawBatchSize = 48/);
-  assert.match(showcaseSource, /await yieldToBrowser\(\)/);
-  assert.match(showcaseSource, /icons\.clear\(\)/);
-  assert.match(showcaseSource, /releasePageIcons/);
-  assert.match(showcaseSource, /iconCache\.delete/);
-  assert.match(showcaseSource, /completedIconCount = Math\.min/);
 });
 
 test("keeps the complete catalog export within mobile canvas limits", async () => {

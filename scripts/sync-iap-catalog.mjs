@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
+import { buildIapCatalogRows } from "./lib/iap-catalog-sync.mjs";
 import {
   assertSnapshotNotShrunk,
   writeFileAtomically,
@@ -14,36 +15,6 @@ const allowShrink = process.argv.includes("--allow-shrink");
 const FETCH_TIMEOUT_MS = 20_000;
 const reviewedNames = JSON.parse(await readFile(REVIEWED_NAMES_PATH, "utf8"));
 
-const classifySeries = (name, packageName, collection) => {
-  const text = `${name} ${packageName} ${collection}`.toLowerCase();
-  if (/nine.?colored|九色鹿/.test(text)) return "九色鹿";
-  if (/nintendo/.test(text)) return "Nintendo";
-  if (/little prince/.test(text)) return "小王子";
-  if (/aurora/.test(text)) return "AURORA";
-  if (/kizuna/.test(text)) return "絆愛";
-  if (/cinnamoroll/.test(text)) return "大耳狗";
-  if (/moomin/.test(text)) return "姆明";
-  if (/journey/.test(text)) return "風之旅人";
-  if (/playstation/.test(text)) return "PlayStation";
-  return "付費禮包";
-};
-
-const platformFor = (name, packageName) => {
-  const text = `${name} ${packageName}`.toLowerCase();
-  if (/nintendo/.test(text)) return "nintendo";
-  if (/playstation/.test(text)) return "playstation";
-  if (/steam/.test(text)) return "steam";
-  if (/twitch/.test(text)) return "twitch";
-  return undefined;
-};
-
-const availabilityFor = (name, packageName) => {
-  const text = `${name} ${packageName}`.toLowerCase();
-  if (/netease|china|guo?fu|国服|國服/.test(text)) return "china";
-  return platformFor(name, packageName) ? "platform" : "global";
-};
-
-const stableKey = (iap) => `iap:${iap.guid}`;
 
 // Exact data from Silverfeelin/SkyGame-Data PR #125 while it awaits merge.
 const pendingUpstreamIaps = [
@@ -63,7 +34,6 @@ const pendingUpstreamItems = [
     type: "Held",
   },
 ];
-const ignoredIapItemTypes = new Set(["Special"]);
 
 const fetchJson = async (url, label) => {
   let response;
@@ -119,10 +89,7 @@ for (const pending of pendingUpstreamIaps) {
 }
 uniqueMap(iaps, "IAP");
 const catalog = await loadRuntimeCatalog();
-const upstreamByGuid = uniqueMap(
-  [...source.items.items, ...pendingUpstreamItems],
-  "item",
-);
+uniqueMap([...source.items.items, ...pendingUpstreamItems], "item");
 const localByGuid = new Map(catalog.wikiItems.map((item) => [item.guid, item]));
 if (localByGuid.size !== catalog.wikiItems.length)
   throw new Error("Runtime catalog contains duplicate item GUIDs.");
@@ -140,87 +107,15 @@ for (const [guid, entry] of Object.entries(reviewedNames.items ?? {})) {
 }
 
 // SkyGame-Data intentionally lists some items in both standalone and bundle
-// IAPs. Select the smallest/least expensive offer deterministically and retain
-// every alternative key in the generated row. This is distinct from malformed
-// duplicate GUIDs, which are rejected above.
-const offerRank = (iap) => [
-  iap.items.length,
-  Number.isFinite(Number(iap.price)) ? Number(iap.price) : Number.MAX_SAFE_INTEGER,
-  iap.guid,
-];
-const compareOffers = (left, right) => {
-  const leftRank = offerRank(left);
-  const rightRank = offerRank(right);
-  return leftRank[0] - rightRank[0] || leftRank[1] - rightRank[1] || leftRank[2].localeCompare(rightRank[2]);
-};
-const offersByItem = new Map();
-for (const iap of iaps) {
-  for (const guid of iap.items) {
-    const offers = offersByItem.get(guid) ?? [];
-    offers.push(iap);
-    offersByItem.set(guid, offers);
-  }
-}
-for (const offers of offersByItem.values()) offers.sort(compareOffers);
-
-const rows = [];
-const unresolved = [];
-
-for (const iap of iaps) {
-  for (const upstreamGuid of iap.items ?? []) {
-    const offers = offersByItem.get(upstreamGuid) ?? [];
-    if (offers[0] !== iap) continue;
-    const upstream = upstreamByGuid.get(upstreamGuid);
-    if (!upstream) {
-      unresolved.push(`${iap.name}: unknown upstream item ${upstreamGuid}`);
-      continue;
-    }
-    const local = localByGuid.get(upstreamGuid);
-    if (!local) {
-      if (ignoredIapItemTypes.has(upstream.type)) continue;
-      unresolved.push(`${iap.name}: ${upstream.name} (${upstreamGuid}) is absent from the runtime catalog`);
-      continue;
-    }
-    const platform = platformFor(local.name, iap.name);
-    const generatedPlayerName = catalog.zhName(local.name);
-    const reviewedName = reviewedNames.items?.[local.guid];
-    const playerName = reviewedName?.playerName ?? generatedPlayerName;
-    const aliases = Array.from(
-      new Set([
-        ...(upstream?.name && upstream.name !== local.name ? [upstream.name] : []),
-        ...(reviewedName?.aliases ?? []),
-        ...(reviewedName && generatedPlayerName !== playerName
-          ? [generatedPlayerName]
-          : []),
-      ]),
-    ).filter((alias) => alias !== playerName);
-    rows.push({
-      guid: local.guid,
-      name: local.name,
-      playerName,
-      aliases,
-      ...(reviewedName ? { nameReviewed: true } : {}),
-      packageKey: stableKey(iap),
-      packageName: iap.name,
-      paid: Number(iap.price) > 0,
-      series: classifySeries(local.name, iap.name, local.collection),
-      availability: availabilityFor(local.name, iap.name),
-      ...(platform ? { platform } : {}),
-      importance: "standard",
-      returning: "unknown",
-      ...(offers.length > 1
-        ? { alternativePackageCount: offers.length - 1 }
-        : {}),
-    });
-  }
-}
-
-if (unresolved.length)
-  throw new Error(
-    `IAP sync refused: ${unresolved.length} exact GUID mappings are unresolved.\n${unresolved.join("\n")}`,
-  );
-
-rows.sort((a, b) => a.guid.localeCompare(b.guid));
+// IAPs. The shared mapper selects the smallest/least expensive offer and
+// refuses any item GUID that cannot be resolved in the runtime catalog.
+const { rows, offersByItem } = buildIapCatalogRows({
+  iaps,
+  upstreamItems: [...source.items.items, ...pendingUpstreamItems],
+  catalogItems: catalog.wikiItems,
+  zhName: catalog.zhName,
+  reviewedNames: reviewedNames.items,
+});
 const payload = {
   source: "SkyGame-Data",
   sourceUrl,

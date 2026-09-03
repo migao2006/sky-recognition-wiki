@@ -8,6 +8,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import * as OpenCC from "opencc-js";
 import { tsImport } from "tsx/esm/api";
+import { serializeNameSnapshot } from "./lib/name-snapshot-serializer.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const VERIFICATION_PATH = resolve(
@@ -225,24 +226,6 @@ const report = {
 await mkdir(resolve(ROOT, "dist", "tmp"), { recursive: true });
 await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
-const compactEntry = (entry) =>
-  `{ ${JSON.stringify(entry).slice(1, -1).replaceAll(":", ": ").replaceAll(",", ", ")} }`;
-const serializeSnapshot = (snapshot) => {
-  const entries = Object.entries(snapshot.items);
-  return [
-    "{",
-    `  "description": ${JSON.stringify(snapshot.description)},`,
-    '  "items": {',
-    ...entries.map(
-      ([guid, entry], index) =>
-        `    ${JSON.stringify(guid)}: ${compactEntry(entry)}${index + 1 < entries.length ? "," : ""}`,
-    ),
-    "  }",
-    "}",
-    "",
-  ].join("\n");
-};
-
 if (shouldWrite) {
   for (const row of planned) {
     const current = playerNames.items[row.guid];
@@ -265,8 +248,8 @@ if (shouldWrite) {
   playerNames.description =
     "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及以官方 icon 精確核對的國際服中文 Wiki 圖片標籤；國服名稱不會自動寫入。";
   await Promise.all([
-    writeFile(PLAYER_NAMES_PATH, serializeSnapshot(playerNames), "utf8"),
-    writeFile(REVIEWED_IAP_PATH, serializeSnapshot(reviewedIap), "utf8"),
+    writeFile(PLAYER_NAMES_PATH, serializeNameSnapshot(playerNames), "utf8"),
+    writeFile(REVIEWED_IAP_PATH, serializeNameSnapshot(reviewedIap), "utf8"),
   ]);
 }
 
