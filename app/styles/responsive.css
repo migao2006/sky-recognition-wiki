@@ -58,9 +58,6 @@
     display: contents;
   }
   .discovery-primary {
-    position: sticky;
-    z-index: 30;
-    top: 8px;
     grid-template-columns: minmax(0, 1fr) 108px;
     gap: 8px;
     margin: 0 -4px 8px;
@@ -176,9 +173,6 @@
     grid-column: 1/-1;
   }
   .closet-nav {
-    position: sticky;
-    z-index: 24;
-    top: 78px;
     display: flex;
     gap: 8px;
     margin: 0 -12px;

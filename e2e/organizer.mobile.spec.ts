@@ -33,6 +33,11 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "選擇物品" })).toBeVisible({
     timeout: 30_000,
   });
+  await expect(page.locator(".discovery-primary")).toHaveCSS(
+    "position",
+    "static",
+  );
+  await expect(page.locator(".closet-nav")).toHaveCSS("position", "static");
 
   await page.getByRole("button", { name: /篩選/ }).first().click();
   const filterDialog = page.getByRole("dialog", { name: "篩選物品" });
