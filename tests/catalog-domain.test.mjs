@@ -112,7 +112,7 @@ test("uses reviewed player terms instead of generated IAP translations", () => {
 
 test("keeps established short player terms for collaboration Hair", () => {
   for (const [guid, expected] of [
-    ["MHArTLwxyq", "林克"],
+    ["MHArTLwxyq", "林克髮型"],
     ["FLMn1Hib7k", "絆愛髮"],
     ["8P8dL_Zp8q", "風之旅人"],
     ["TfItBIVTeP", "超凡風之旅人"],
@@ -169,6 +169,45 @@ test("player-friendly names use known catalog guids", async () => {
     assert.equal(new Set(aliases).size, aliases.length, guid);
     assert.ok(aliases.every((alias) => alias.trim()), guid);
     assert.ok(aliases.every((alias) => alias !== entry.displayName), guid);
+  }
+});
+
+test("uses the reviewed Facebook transaction short names by official guid", () => {
+  for (const [guid, saleName] of [
+    ["EsxTOk-gmG", "彩虹連體褲"],
+    ["LrI5FQ8vdi", "小白鞋"],
+    ["uw30fc8L-C", "幸運褶紋裙"],
+    ["gLeirt4C--", "矮人面具"],
+    ["GYWFafVVd_", "阿努"],
+    ["DS5QeApzvs", "拾光眼鏡"],
+    ["_qNmWZx0rp", "鍋蓋頭"],
+    ["V0Y7dn2l4H", "情人節雙馬尾"],
+    ["MHArTLwxyq", "林克髮型"],
+    ["cbWKMsAh7H", "大羽毛"],
+    ["jc8Pyt7eLR", "蝴蝶花紀念品"],
+    ["eruG9WiyJZ", "貝殼髮飾"],
+    ["DDW1lEoGj0", "捲耳頭飾"],
+    ["i9-S4tuhpn", "畫筆髮箍"],
+    ["FlOSNmw_38", "魔法耳墜"],
+    ["0F90DHi6Er", "九色鹿角"],
+    ["OPjLSqWOhA", "鯤斗"],
+    ["w1EkwcgG88", "不死鳥"],
+    ["yjuL6T_ZOo", "王子圍巾斗"],
+    ["dncileSEYL", "星球夾克"],
+    ["FjxHIvszIu", "破碎鯤斗"],
+    ["Gp3p9OdxMA", "歐洛拉藍翅膀"],
+    ["tz-IwazQ7k", "星夜斗篷"],
+    ["meld4SQL8l", "五週年斗篷"],
+    ["4D33RG4tNB", "蝙蝠斗"],
+    ["OAGgi-B-xa", "星夜雨傘"],
+    ["4CYafmMUql", "夏日陽傘"],
+    ["9Wqllerxa-", "幸運絨毛坐騎"],
+    ["nrNcYrcZXy", "狐狸玩偶"],
+  ]) {
+    const entry = wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(entry, guid);
+    assert.equal(saleItemName(entry), saleName, guid);
+    assert.ok(zhItemSearchNames(entry).includes(saleName), `${guid}: ${saleName}`);
   }
 });
 
