@@ -23,6 +23,13 @@ export const breakClasses = ["none", "slight", "medium", "big"];
 export const packageTiers = ["few", "medium", "many", "hundred"];
 export const accountStyles = ["simple", "regular"];
 
+export const isExcludedFromModel = (row) => {
+  const explicit = row?.exclude_from_model;
+  const normalized = String(explicit ?? "").trim().toLowerCase();
+  return explicit === true || explicit === 1 || normalized === "true" ||
+    Boolean(String(row?.exclusion_reason ?? "").trim());
+};
+
 // These classifications are based only on normalized numeric source fields.
 // Listing-language fallbacks belong to the ingestion/audit layer so validators
 // never recreate market attributes from seller prose.

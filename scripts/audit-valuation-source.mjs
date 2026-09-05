@@ -9,6 +9,7 @@ import {
   breakClassFor as sharedBreakClassFor,
   evidenceWeights,
   groupKeyFor,
+  isExcludedFromModel,
   packageTiers,
   packageTierFor,
   preferredRow,
@@ -156,7 +157,7 @@ const auditBreakClassFor = (row) => {
 };
 const accountStyleFor = (row) => accountStyles.includes(row.account_style) ? row.account_style : null;
 const invalidReason = (row) => {
-  if (String(row.exclusion_reason ?? "").trim()) return "explicit";
+  if (isExcludedFromModel(row)) return "explicit";
   if (!priceRangeFor(row)) return "invalid_price";
   const text = `${row.region ?? ""} ${row.currency ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
   if (/國服|中國服|陸服|\b(?:cn|china)\b/i.test(text)) return "china";

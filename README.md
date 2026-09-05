@@ -84,6 +84,8 @@ Wiki 蒐集可用 `--source=fandom-zh` 或 `--source=bwiki-zh-cn` 分站更新�
 
 Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化時設定未提交的 `VALUATION_HASH_SALT`，再將輸出資料送入估價稽核：
 
+實體徽章、實體周邊、多帳號合售或其他無法拆分帳號價格的刊登，必須在私人來源標記 `exclude_from_model: true`。匿名化只保留布林標記與受控的排除原因，不保留賣家備註；稽核與 validator 都會硬排除這些資料，不能拿來校準任何季節價格。
+
 `$env:VALUATION_HASH_SALT = "至少 32 字元的本機專用隨機字串"; node scripts/prepare-facebook-valuation-source.mjs work/facebook-private.jsonl > work/facebook-anonymous.jsonl`
 
 輸出不含貼文原文、網址、作者或留言，只保留價格、季節、禮包與匿名雜湊等結構欄位。

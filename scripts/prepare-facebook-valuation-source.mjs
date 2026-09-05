@@ -102,6 +102,12 @@ const seasons = (value) => {
 
 const standardizedExclusionReason = (row) => {
   const declared = String(row.exclusion_reason ?? "").trim();
+  const normalizedDeclared = declared.toLowerCase();
+  const safeExplicitReasons = new Set([
+    "physical_badges_bundled",
+    "multiple_accounts_bundled",
+    "external_assets_bundled",
+  ]);
   const context = `${row.region ?? ""} ${row.currency ?? ""} ${declared}`.toLowerCase();
   if (/國服|中國服|陸服|\b(?:cn|china)\b/.test(context)) return "china";
   if (/人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/.test(context)) return "foreign_currency";
@@ -109,7 +115,8 @@ const standardizedExclusionReason = (row) => {
     .map(finiteNumber)
     .some((price) => price !== undefined && price > 0);
   if (!hasPrice) return "missing_price";
-  return declared ? "explicit" : undefined;
+  if (safeExplicitReasons.has(normalizedDeclared)) return normalizedDeclared;
+  return declared || row.exclude_from_model === true ? "explicit" : undefined;
 };
 
 // Keep the persisted replay snapshot deliberately fail-closed.  It shares the
@@ -207,6 +214,7 @@ export const prepareRow = (row, salt) => {
   put("anniversary_item_count", nonNegativeInteger(row.anniversary_item_count));
   put("graduation_gift_count", nonNegativeInteger(row.graduation_gift_count));
   put("valuation_model", valuationModel(row.valuation_model));
+  put("exclude_from_model", row.exclude_from_model === true ? true : undefined);
   put("exclusion_reason", standardizedExclusionReason(row));
 
   // This guard makes future additions fail closed if a private input field is copied in.

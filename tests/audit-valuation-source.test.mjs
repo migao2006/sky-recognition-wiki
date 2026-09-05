@@ -48,6 +48,21 @@ test("deduplicates hashes and excludes foreign, China, and invalid records", asy
   assert.deepEqual([result.seasons.aurora.excludedCount, result.seasons.aurora.duplicateCount], [4, 1]);
 });
 
+test("hard-excludes a confounded listing even when its price is otherwise valid", async () => {
+  const result = await audit([{
+    post_hash: "badges-bundled",
+    published_at: recent,
+    price_twd: 5000,
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    start_season_slug: "nesting",
+    exclude_from_model: true,
+  }]);
+  assert.equal(result.eligibleRows, 0);
+  assert.equal(result.excludedRows, 1);
+  assert.equal(result.segments.startSeason.nesting.sampleCount, 0);
+});
+
 test("keeps old listing text and account features compatible without leaking them", async () => {
   const result = await audit([{ price_twd: 18500, evidence_kind: "ask", evidence_quality: "high", published_at: recent, listing_text: "追光畢出售", account_features: "大傘" }]);
   assert.equal(result.seasons.lightseekers.median, 18500);

@@ -103,6 +103,31 @@ test("keeps only standardized exclusion reasons for China, foreign currency, and
   assert.equal(JSON.stringify(rows).includes("王小明"), false);
 });
 
+test("preserves a safe hard exclusion without leaking a private reason", async () => {
+  const rows = await prepare([
+    JSON.stringify({
+      post_id: "badges",
+      group_id: "g",
+      price_twd: 5000,
+      exclude_from_model: true,
+      exclusion_reason: "physical_badges_bundled",
+    }),
+    JSON.stringify({
+      post_id: "private-reason",
+      group_id: "g",
+      price_twd: 6000,
+      exclude_from_model: true,
+      exclusion_reason: "賣家姓名與私訊內容",
+    }),
+  ]);
+  assert.deepEqual(rows.map((row) => row.exclude_from_model), [true, true]);
+  assert.deepEqual(
+    rows.map((row) => row.exclusion_reason),
+    ["physical_badges_bundled", "explicit"],
+  );
+  assert.equal(JSON.stringify(rows).includes("賣家姓名"), false);
+});
+
 test("fails with a source line number for malformed JSON", async () => {
   await assert.rejects(
     runJsonlScript({

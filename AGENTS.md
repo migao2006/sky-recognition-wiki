@@ -46,6 +46,7 @@
 - IAP 同步只能以官方 GUID 精確配對，不得退回英文名、中文名或圖片模糊配對；未解析項目必須使 check 失敗。
 - 備份 v3 優先寫官方 GUID；上游尚未收錄的物品只能使用有來源註記的 overlay GUID。舊人工 GUID 相容性集中於輕量 `catalog-legacy-guids.ts`，不得讓草稿載入完整 catalog。
 - 估價 aggregate 未滿 200 個唯一帳號、3 個社團、原始最大社團占比超過 60%，缺完整 predictor、網站與 validator 的季節價格帶／完整數值輸出 parity 未通過，或 holdout 未通過時，只能標記 `legacy-unvalidated`／`unvalidated`，不得顯示高信心或修改文件降低門檻。
+- 實體徽章或周邊、多帳號合售及其他無法拆分帳號本體價格的行情列，必須標記 `exclude_from_model: true`；匿名化、稽核與 validator 均須保留並執行此硬排除，不得用混合總價校準季節或禮包價值。
 
 ## 文件維護是 Definition of Done
 

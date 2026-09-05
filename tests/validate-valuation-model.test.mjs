@@ -149,6 +149,20 @@ test("requires complete full-model predictors before a current aggregate can pas
   assert.equal(report.outcome, "fail");
 });
 
+test("does not validate against rows explicitly excluded from the model", () => {
+  const excluded = rows.map((row, index) =>
+    index === 0 ? { ...row, exclude_from_model: true } : row,
+  );
+  const report = validateValuationModel({
+    candidate: aggregate(14000, { fullModel: true }),
+    baseline: aggregate(8000),
+    rows: excluded,
+    splitSeed: "fixture",
+  });
+  assert.equal(report.sourceEligibleRows, rows.length - 1);
+  assert.equal(report.eligibleRows, rows.length - 1);
+});
+
 test("candidate market parameters materially change full-model predictions", () => {
   const accurate = validateValuationModel({
     candidate: aggregate(20000, { fullModel: true }),

@@ -6,6 +6,7 @@ import {
   breakClassFor,
   evidenceWeights,
   inHoldout,
+  isExcludedFromModel,
   marketGroupFor,
   packageTierFor,
   postKeyFor,
@@ -132,7 +133,7 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
   const asOf = new Date(`${candidate.asOf ?? baseline.asOf ?? "1970-01-01"}T23:59:59.999Z`);
   if (!Number.isFinite(asOf.getTime())) throw new Error("candidate or baseline requires a valid asOf date");
   const sourceCandidates = rows.flatMap((row) => {
-    if (String(row.exclusion_reason ?? "").trim()) return [];
+    if (isExcludedFromModel(row)) return [];
     if (!Object.hasOwn(evidenceWeights, row.evidence_kind) || !Object.hasOwn(qualityWeights, row.evidence_quality ?? "medium")) return [];
     if (/^(?:cn|china|國服|中國服|陸服)$/i.test(String(row.region ?? "").trim())) return [];
     if (/^(?:cny|rmb|usd|hkd)$/i.test(String(row.currency ?? "").trim())) return [];
