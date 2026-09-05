@@ -3,26 +3,40 @@ import {
   accountKeyFor,
   accountStyles,
   applyGroupCap,
+  breakClasses,
   breakClassFor,
   evidenceWeights,
+  hasReplayableSeasonProgress,
   inHoldout,
   isExcludedFromModel,
   marketGroupFor,
+  packageTiers,
   packageTierFor,
   postKeyFor,
   preferredSample,
   priceFor,
   qualityWeights,
   sampleWeightFor,
+  seasonProgressParts,
   valuationModelFeaturesFor,
 } from "./lib/valuation-source-core.mjs";
 import { calculateValuationModel } from "../app/valuation-model-core.js";
 import {
+  adjustConfidenceForEvidence,
+  confidenceForEffectiveWeight,
   deriveSeasonBands,
+  replaySeasonProgressEndSlug,
   seasonBandSeeds,
+  seasonGraduationGiftCounts,
 } from "../app/valuation-season-band-core.js";
 
 const minimumEligibleAccounts = 200;
+const orderedSeasonSlugs = seasonBandSeeds.map((seed) => seed.slug);
+const replaySeasonProgressOptions = {
+  orderedSeasonSlugs,
+  requiredEndSlug: replaySeasonProgressEndSlug,
+  graduationGiftCounts: seasonGraduationGiftCounts,
+};
 
 const weightedMedian = (rows, valueKey) => {
   const ordered = [...rows].sort((left, right) => left[valueKey] - right[valueKey]);
@@ -37,7 +51,8 @@ const weightedMedian = (rows, valueKey) => {
 };
 const startSeasonFor = (row, aggregate) => {
   const explicit = String(row.start_season_slug ?? "").trim().toLowerCase();
-  if (aggregate.segments?.startSeason?.[explicit]?.median) return explicit;
+  if (explicit)
+    return aggregate.segments?.startSeason?.[explicit]?.median ? explicit : null;
   if (!row.season_progress || typeof row.season_progress !== "object") return null;
   for (const slug of Object.keys(aggregate.segments?.startSeason ?? {})) {
     const value = row.season_progress[slug];
@@ -48,6 +63,11 @@ const startSeasonFor = (row, aggregate) => {
   return null;
 };
 const multiplierFor = (aggregate, key, value) => Number(aggregate.modifiers?.[key]?.[value]?.multiplier) || 1;
+const strictMultiplierFor = (aggregate, key, value, allowedValues) => {
+  if (!allowedValues.includes(value)) return null;
+  const multiplier = Number(aggregate.modifiers?.[key]?.[value]?.multiplier);
+  return Number.isFinite(multiplier) && multiplier > 0 ? multiplier : null;
+};
 const supportedSeasonSlugsFor = (aggregate) =>
   Object.entries(aggregate?.segments?.startSeason ?? {}).flatMap(([slug, segment]) =>
     Number(segment?.median) > 0 ? [slug] : [],
@@ -55,6 +75,10 @@ const supportedSeasonSlugsFor = (aggregate) =>
 const hasFullModelPredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
   Number(aggregate?.provenance?.modelSchemaVersion) >= 2;
+const hasReplayableCandidatePredictor = (aggregate) =>
+  aggregate?.provenance?.predictorSchema === "valuation_model" &&
+  Number(aggregate?.provenance?.modelSchemaVersion) >= 3 &&
+  aggregate?.provenance?.seasonProgressEndSlug === replaySeasonProgressEndSlug;
 const supportedSeedsFor = (aggregate) => {
   const startSeason = aggregate?.segments?.startSeason ?? {};
   return seasonBandSeeds.filter((seed) => Object.hasOwn(startSeason, seed.slug));
@@ -85,6 +109,9 @@ export const withDerivedSeasonBands = (aggregate) => {
               p25: band.low,
               median: band.median,
               p75: band.high,
+              contributionLow: band.contributionLow,
+              contributionHigh: band.contributionHigh,
+              effectiveWeight: band.effectiveWeight,
             },
           ]),
         ),
@@ -93,16 +120,81 @@ export const withDerivedSeasonBands = (aggregate) => {
   };
 };
 
-export const predictValuationAggregate = (aggregate, sample) => {
+const partialDiscountFor = (aggregate, row) => {
+  if (!hasReplayableSeasonProgress(row, replaySeasonProgressOptions)) return null;
+  let low = 0;
+  let high = 0;
+  for (const [slug, value] of Object.entries(row.season_progress)) {
+    const progress = seasonProgressParts(value);
+    if (
+      !progress ||
+      progress.expected <= 0 ||
+      progress.selected < 0 ||
+      progress.selected > progress.expected
+    )
+      return null;
+    if (!progress.selected || progress.selected === progress.expected) continue;
+    const band = aggregate.segments?.startSeason?.[slug];
+    if (!Number.isFinite(band?.contributionLow) || !Number.isFinite(band?.contributionHigh))
+      return null;
+    const missingRatio = 1 - progress.selected / progress.expected;
+    low += band.contributionLow * missingRatio;
+    high += band.contributionHigh * missingRatio;
+  }
+  return { low, high };
+};
+
+export const predictValuationAggregate = (
+  aggregate,
+  sample,
+  { assumeValidated = aggregate?.validationStatus === "validated" } = {},
+) => {
   if (hasFullModelPredictor(aggregate)) {
     if (!sample.modelFeatures) return null;
+    if (
+      Number(aggregate?.provenance?.modelSchemaVersion) >= 3 &&
+      !hasReplayableCandidatePredictor(aggregate)
+    )
+      return null;
     const segment = aggregate.segments?.startSeason?.[sample.startSeason];
     if (!segment?.median) return null;
-    const packageMultiplier = multiplierFor(
-      aggregate,
-      "packageTier",
-      sample.packageTier,
-    );
+    const replayCandidate = hasReplayableCandidatePredictor(aggregate);
+    if (
+      replayCandidate &&
+      String(sample.row?.start_season_slug ?? "").trim().toLowerCase() !==
+        sample.startSeason
+    )
+      return null;
+    const breakMultiplier = replayCandidate
+      ? strictMultiplierFor(aggregate, "breakClass", sample.breakClass, breakClasses)
+      : multiplierFor(aggregate, "breakClass", sample.breakClass);
+    const packageMultiplier = replayCandidate
+      ? strictMultiplierFor(aggregate, "packageTier", sample.packageTier, packageTiers)
+      : multiplierFor(aggregate, "packageTier", sample.packageTier);
+    const accountStyleMultiplier = replayCandidate
+      ? strictMultiplierFor(aggregate, "accountStyle", sample.accountStyle, accountStyles)
+      : multiplierFor(aggregate, "accountStyle", sample.accountStyle);
+    if (
+      breakMultiplier === null ||
+      packageMultiplier === null ||
+      accountStyleMultiplier === null
+    )
+      return null;
+    const partialDiscount = replayCandidate
+      ? partialDiscountFor(aggregate, sample.row)
+      : {
+          low: sample.modelFeatures.partialDiscountLow,
+          high: sample.modelFeatures.partialDiscountHigh,
+        };
+    if (!partialDiscount) return null;
+    const confidence = replayCandidate
+      ? adjustConfidenceForEvidence({
+          aggregate,
+          confidence: confidenceForEffectiveWeight(segment.effectiveWeight),
+          evidence: segment,
+          validated: assumeValidated,
+        })
+      : sample.modelFeatures.confidence;
     const summary = calculateValuationModel({
       ...sample.modelFeatures,
       // Schema v2 stores the catalog-derived additive terms, but the market
@@ -111,7 +203,9 @@ export const predictValuationAggregate = (aggregate, sample) => {
       // produced by a different aggregate embedded in source rows.
       baseLow: segment.p25 ?? segment.median,
       baseHigh: segment.p75 ?? segment.median,
-      breakMultiplier: multiplierFor(aggregate, "breakClass", sample.breakClass),
+      breakMultiplier,
+      partialDiscountLow: partialDiscount.low,
+      partialDiscountHigh: partialDiscount.high,
       packageLow:
         (sample.modelFeatures.packageLow /
           sample.modelFeatures.packageMarketMultiplier) *
@@ -120,11 +214,13 @@ export const predictValuationAggregate = (aggregate, sample) => {
         (sample.modelFeatures.packageHigh /
           sample.modelFeatures.packageMarketMultiplier) *
         packageMultiplier,
-      accountStyleMultiplier: multiplierFor(aggregate, "accountStyle", sample.accountStyle),
+      accountStyleMultiplier,
+      confidence,
     });
     return { price: summary.midpoint, low: summary.low, high: summary.high };
   }
-  const segment = aggregate.segments.startSeason[sample.startSeason];
+  const segment = aggregate.segments?.startSeason?.[sample.startSeason];
+  if (!segment?.median) return null;
   const modifier = multiplierFor(aggregate, "breakClass", sample.breakClass) * multiplierFor(aggregate, "packageTier", sample.packageTier) * multiplierFor(aggregate, "accountStyle", sample.accountStyle);
   return { price: segment.median * modifier, low: (segment.p25 ?? segment.median) * modifier, high: (segment.p75 ?? segment.median) * modifier };
 };
@@ -173,12 +269,11 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
   });
   const eligible = candidates;
   const holdout = eligible.filter((sample) => inHoldout(sample.accountGroup, splitSeed));
-  const fullPredictorRows = eligible.filter((sample) => sample.modelFeatures);
-  const errorMetrics = (aggregate) => {
+  const errorMetrics = (aggregate, options) => {
     const valid = holdout.flatMap((sample) => {
       if (!hasFullModelPredictor(aggregate) && !aggregate.segments?.startSeason?.[sample.startSeason]?.median)
         return [{ absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
-      const prediction = predictValuationAggregate(aggregate, sample);
+      const prediction = predictValuationAggregate(aggregate, sample, options);
       if (!prediction)
         return [{ absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
       return [{ absoluteLogError: Math.abs(Math.log(prediction.price / sample.price)), ape: Math.abs(prediction.price - sample.price) / sample.price, covered: sample.price >= prediction.low && sample.price <= prediction.high, missingPrediction: false, weight: sample.weight }];
@@ -193,8 +288,13 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
       .reduce((sum, row) => sum + row.weight, 0);
     return { count: valid.length, effectiveWeight: totalWeight, missingPredictionCount, predictionCoverage: totalWeight ? 1 - missingPredictionWeight / totalWeight : null, medianAbsoluteLogError: weightedMedian(valid, "absoluteLogError"), mdape: weightedMedian(valid, "ape"), p25P75Coverage: totalWeight ? coveredWeight / totalWeight : null };
   };
-  const candidateMetrics = errorMetrics(withDerivedSeasonBands(candidate));
-  const baselineMetrics = errorMetrics(withDerivedSeasonBands(baseline));
+  const replayCandidate = withDerivedSeasonBands(candidate);
+  const replayBaseline = withDerivedSeasonBands(baseline);
+  const replayablePredictorRows = eligible.filter((sample) =>
+    predictValuationAggregate(replayCandidate, sample, { assumeValidated: true }),
+  );
+  const candidateMetrics = errorMetrics(replayCandidate, { assumeValidated: true });
+  const baselineMetrics = errorMetrics(replayBaseline);
   const requiredSeasonSlugs = supportedSeasonSlugsFor(baseline);
   const candidateSeasonSlugs = new Set(supportedSeasonSlugsFor(candidate));
   const missingCandidateSeasons = requiredSeasonSlugs.filter(
@@ -213,7 +313,7 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
         candidate.split?.trainingMode === "calibration-only" &&
         candidate.split?.splitSeed === splitSeed &&
         candidate.schemaVersion >= 4 &&
-        hasFullModelPredictor(candidate),
+        hasReplayableCandidatePredictor(candidate),
     },
     minimumEligibleRows: { actual: sourceEligible.length, minimum: minimumEligibleAccounts, pass: sourceEligible.length >= minimumEligibleAccounts },
     marketGroups: { actual: sourceGroupCap.groupCount, minimum: 3, pass: sourceGroupCap.groupCount >= 3 },
@@ -226,11 +326,12 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
       pass: missingCandidateSeasons.length === 0,
     },
     completeModelPredictors: {
-      actual: fullPredictorRows.length,
+      actual: replayablePredictorRows.length,
       eligible: eligible.length,
-      missing: eligible.length - fullPredictorRows.length,
+      missing: eligible.length - replayablePredictorRows.length,
       minimum: 1,
-      pass: eligible.length > 0 && fullPredictorRows.length === eligible.length,
+      pass:
+        eligible.length > 0 && replayablePredictorRows.length === eligible.length,
     },
     coverage: { actual: candidateMetrics.p25P75Coverage, minimum: 0.5, maximum: 0.9, pass: candidateMetrics.p25P75Coverage !== null && candidateMetrics.p25P75Coverage >= 0.5 && candidateMetrics.p25P75Coverage <= 0.9 },
     accuracy: { status: accuracyStatus, candidateMedianAbsoluteLogError: candidateError, baselineMedianAbsoluteLogError: baselineError },

@@ -31,15 +31,34 @@ test("does not treat another flag as a missing source value", () => {
 });
 import {
   deriveSeasonBands,
+  replaySeasonProgressEndSlug,
   seasonBandSeeds,
 } from "../app/valuation-season-band-core.js";
 import { calculateValuationModel } from "../app/valuation-model-core.js";
+
+const completeSeasonProgress = (startSlug, overrides = {}) => {
+  const startIndex = seasonBandSeeds.findIndex((seed) => seed.slug === startSlug);
+  const endIndex = seasonBandSeeds.findIndex(
+    (seed) => seed.slug === replaySeasonProgressEndSlug,
+  );
+  return Object.fromEntries(
+    seasonBandSeeds
+      .slice(startIndex, endIndex + 1)
+      .map(({ slug }) => [slug, overrides[slug] ?? "畢"]),
+  );
+};
 
 const aggregate = (median, { fullModel = false, status = "unvalidated" } = {}) => ({
   schemaVersion: 4,
   validationStatus: status,
   ...(fullModel
-    ? { provenance: { modelSchemaVersion: 2, predictorSchema: "valuation_model" } }
+    ? {
+        provenance: {
+          modelSchemaVersion: 3,
+          predictorSchema: "valuation_model",
+          seasonProgressEndSlug: replaySeasonProgressEndSlug,
+        },
+      }
     : {}),
   asOf: "2026-08-31",
   split: { splitSeed: "fixture", trainingMode: "calibration-only" },
@@ -85,6 +104,8 @@ const rows = Array.from({ length: 500 }, (_, index) => ({
   computed_break_class: "none",
   computed_package_tier: "few",
   account_style: "regular",
+  season_progress: completeSeasonProgress("assembly"),
+  season_progress_end_slug: replaySeasonProgressEndSlug,
   valuation_model: modelFeatures,
 }));
 
@@ -111,6 +132,11 @@ test("validator predictor uses the browser's blended season low, midpoint, and h
     breakClass: "none",
     packageTier: "few",
     accountStyle: "regular",
+    row: {
+      start_season_slug: "assembly",
+      season_progress: completeSeasonProgress("assembly"),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
     modelFeatures,
   };
   const expected = calculateValuationModel({
@@ -124,6 +150,177 @@ test("validator predictor uses the browser's blended season low, midpoint, and h
     high: expected.high,
     price: expected.midpoint,
   });
+});
+
+test("schema v3 replays partial-season discounts and confidence from the candidate", () => {
+  const candidate = aggregate(10000, { fullModel: true });
+  Object.assign(candidate.segments.startSeason.assembly, {
+    evidenceBreakdown: { sold: 8 },
+    qualityBreakdown: { high: 8 },
+    sourceBreakdown: { first: 4, second: 4 },
+  });
+  const replay = withDerivedSeasonBands(candidate);
+  const segment = replay.segments.startSeason.assembly;
+  const staleFeatures = {
+    ...modelFeatures,
+    partialDiscountLow: 9999,
+    partialDiscountHigh: 9999,
+    confidence: "low",
+  };
+  const sample = {
+    startSeason: "assembly",
+    breakClass: "none",
+    packageTier: "few",
+    accountStyle: "regular",
+    row: {
+      start_season_slug: "assembly",
+      season_progress: completeSeasonProgress("assembly", { assembly: "1/4" }),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    modelFeatures: staleFeatures,
+  };
+  const expected = calculateValuationModel({
+    ...staleFeatures,
+    baseLow: segment.p25,
+    baseHigh: segment.p75,
+    partialDiscountLow: segment.contributionLow * 0.75,
+    partialDiscountHigh: segment.contributionHigh * 0.75,
+    confidence: "high",
+  });
+  assert.deepEqual(
+    predictValuationAggregate(replay, sample, { assumeValidated: true }),
+    { low: expected.low, high: expected.high, price: expected.midpoint },
+  );
+  assert.equal(
+    predictValuationAggregate(replay, { ...sample, row: {} }, {
+      assumeValidated: true,
+    }),
+    null,
+  );
+});
+
+test("schema v3 rejects unknown, incomplete, or mismatched season progress", () => {
+  const replay = withDerivedSeasonBands(aggregate(10000, { fullModel: true }));
+  const sample = {
+    startSeason: "assembly",
+    breakClass: "none",
+    packageTier: "few",
+    accountStyle: "regular",
+    modelFeatures,
+  };
+  const missingMiddle = completeSeasonProgress("assembly");
+  delete missingMiddle.duets;
+  const invalidRows = [
+    {
+      start_season_slug: "assembly",
+      season_progress: {
+        ...completeSeasonProgress("assembly"),
+        "not-a-season": "畢",
+      },
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    {
+      start_season_slug: "assembly",
+      season_progress: missingMiddle,
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    {
+      start_season_slug: "rhythm",
+      season_progress: completeSeasonProgress("rhythm"),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    {
+      start_season_slug: "assembly",
+      season_progress: completeSeasonProgress("assembly"),
+      season_progress_end_slug: "assembly",
+    },
+    {
+      start_season_slug: "assembly",
+      season_progress: completeSeasonProgress("assembly", { assembly: "0" }),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    ...["1/2", "1/999"].map((assembly) => ({
+      start_season_slug: "assembly",
+      season_progress: completeSeasonProgress("assembly", { assembly }),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    })),
+  ];
+  for (const row of invalidRows)
+    assert.equal(
+      predictValuationAggregate(replay, { ...sample, row }, {
+        assumeValidated: true,
+      }),
+      null,
+    );
+});
+
+test("never substitutes a later season for an explicit unsupported start", () => {
+  const baseline = aggregate(8000);
+  const candidate = aggregate(10000, { fullModel: true });
+  for (const value of [baseline, candidate]) {
+    value.segments.startSeason.gratitude = {
+      p25: null,
+      median: null,
+      p75: null,
+      sampleCount: 0,
+      effectiveWeight: 0,
+    };
+    value.segments.startSeason.lightseekers = {
+      p25: 9000,
+      median: 10000,
+      p75: 11000,
+      sampleCount: 5,
+      effectiveWeight: 5,
+    };
+  }
+  const explicitGratitude = {
+    ...rows[0],
+    start_season_slug: "gratitude",
+    season_progress: completeSeasonProgress("gratitude"),
+    season_progress_end_slug: replaySeasonProgressEndSlug,
+  };
+  const report = validateValuationModel({
+    candidate,
+    baseline,
+    rows: [explicitGratitude],
+    splitSeed: "fixture",
+  });
+  assert.equal(report.sourceEligibleRows, 1);
+  assert.equal(report.eligibleRows, 0);
+  assert.equal(report.criteria.completeModelPredictors.actual, 0);
+});
+
+test("schema v3 requires valid replay classifications and candidate modifiers", () => {
+  const candidate = withDerivedSeasonBands(aggregate(10000, { fullModel: true }));
+  const sample = {
+    startSeason: "assembly",
+    breakClass: "none",
+    packageTier: "few",
+    accountStyle: "regular",
+    row: {
+      start_season_slug: "assembly",
+      season_progress: completeSeasonProgress("assembly"),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    modelFeatures,
+  };
+  for (const changes of [
+    { breakClass: null },
+    { packageTier: "unknown" },
+    { accountStyle: undefined },
+  ])
+    assert.equal(
+      predictValuationAggregate(candidate, { ...sample, ...changes }, {
+        assumeValidated: true,
+      }),
+      null,
+    );
+  const missingModifier = structuredClone(candidate);
+  delete missingModifier.modifiers.breakClass.none;
+  assert.equal(
+    predictValuationAggregate(missingModifier, sample, { assumeValidated: true }),
+    null,
+  );
 });
 
 test("passes a deterministic anonymous holdout when candidate materially improves error", () => {
@@ -157,6 +354,20 @@ test("never promotes legacy data even if it otherwise resembles a passing aggreg
   });
   assert.equal(report.outcome, "legacy-unvalidated");
   assert.equal(report.criteria.candidateProvenance.pass, false);
+});
+
+test("rejects a candidate that declares a shortened season replay scope", () => {
+  const shortened = aggregate(14000, { fullModel: true });
+  shortened.provenance.seasonProgressEndSlug = "assembly";
+  const report = validateValuationModel({
+    candidate: shortened,
+    baseline: aggregate(8000),
+    rows,
+    splitSeed: "fixture",
+  });
+  assert.equal(report.criteria.candidateProvenance.pass, false);
+  assert.equal(report.criteria.completeModelPredictors.actual, 0);
+  assert.equal(report.outcome, "fail");
 });
 
 test("requires complete full-model predictors before a current aggregate can pass", () => {
@@ -269,6 +480,7 @@ test("counts valid unique accounts toward the sample gate even without comparabl
   const sparseRows = rows.slice(0, 200).map((row, index) => ({
     ...row,
     start_season_slug: index < 120 ? "assembly" : null,
+    season_progress: index < 120 ? row.season_progress : {},
   }));
   const report = validateValuationModel({
     candidate: aggregate(100),
@@ -286,6 +498,7 @@ test("checks source concentration before excluding accounts without comparable s
     ...row,
     group_hash: index < 140 ? "dominant" : index < 170 ? "second" : "third",
     start_season_slug: index < 140 ? null : "assembly",
+    season_progress: index < 140 ? {} : row.season_progress,
   }));
   const report = validateValuationModel({
     candidate: aggregate(100),

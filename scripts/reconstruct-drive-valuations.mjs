@@ -3,6 +3,11 @@ import { readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 import { loadValuationRuntime } from "./load-valuation-runtime.mjs";
+import {
+  bindingsForStatus,
+  extractCompleteBindings,
+  extractResourceEvidence,
+} from "./lib/listing-account-evidence.mjs";
 
 const argument = (name, fallback) => {
   const index = process.argv.indexOf(name);
@@ -39,17 +44,6 @@ const assertPrivatePath = (path, label) => {
 const lines = (text) => text.split(/\r?\n/u).filter(Boolean).map(JSON.parse);
 const hashTerm = (term) =>
   createHash("sha256").update(term).digest("hex").slice(0, 16);
-const bindingKeys = [
-  "google",
-  "nintendo",
-  "gameCenter",
-  "facebook",
-  "steam",
-  "twitch",
-  "playstation",
-];
-const bindings = (status) =>
-  Object.fromEntries(bindingKeys.map((key) => [key, status]));
 const quantile = (values, ratio) => {
   if (!values.length) return null;
   const sorted = [...values].sort((left, right) => left - right);
@@ -68,6 +62,11 @@ const intervalGap = (leftLow, leftHigh, rightLow, rightHigh) => {
   if (leftHigh < rightLow) return rightLow - leftHigh;
   if (rightHigh < leftLow) return leftLow - rightHigh;
   return 0;
+};
+const sameStringSet = (left, right) => {
+  if (left.length !== right.length) return false;
+  const sortedRight = [...right].sort();
+  return [...left].sort().every((value, index) => value === sortedRight[index]);
 };
 
 const [documents, marketRows, catalog, valuation] = await Promise.all([
@@ -94,6 +93,8 @@ const reconstructed = documents.map((document) => {
     (document.content_base64
       ? Buffer.from(document.content_base64, "base64").toString("utf8")
       : "");
+  const bindingEvidence = extractCompleteBindings(content);
+  const resourceEvidence = extractResourceEvidence(content);
   const resolution = resolver.scan(content);
   const textGuids = new Set(
     resolution.matched.map((match) => match.candidates[0].guid),
@@ -116,13 +117,20 @@ const reconstructed = documents.map((document) => {
       bindingNote: "",
       domain: valuationDomain,
     });
-  const optimistic = chosen.length
-    ? valuation.estimateValuation({ analysis: analyze(bindings("none")) })
+  const estimateFor = (selectedBindings) =>
+    chosen.length
+      ? valuation.estimateValuation({
+          analysis: analyze(selectedBindings),
+          resources: resourceEvidence.complete ? resourceEvidence.resources : {},
+        })
+      : null;
+  const knownEstimate = bindingEvidence
+    ? estimateFor(bindingEvidence.bindings)
     : null;
-  const restricted = chosen.length
-    ? valuation.estimateValuation({ analysis: analyze(bindings("keep")) })
-    : null;
-  const exactPaidCount = chosen.filter(catalog.isPaidItem).length;
+  const optimistic = knownEstimate ?? estimateFor(bindingsForStatus("none"));
+  const restricted = knownEstimate ?? estimateFor(bindingsForStatus("keep"));
+  const exactPaidItemCount = chosen.filter(catalog.isPaidItem).length;
+  const exactPaidCount = optimistic?.marketProfile?.canonicalPackageCount ?? 0;
   const declaredPaidCount = market?.paid_package_count ?? null;
   const paidCoverage = declaredPaidCount
     ? Math.min(1, exactPaidCount / declaredPaidCount)
@@ -131,6 +139,23 @@ const reconstructed = documents.map((document) => {
     term_hash: hashTerm(match.normalized),
     candidate_guids: match.candidates.map((item) => item.guid),
   }));
+  const confirmedOwnedGuids = Array.isArray(market?.confirmed_owned_guids)
+    ? [...new Set(market.confirmed_owned_guids.filter((guid) => itemByGuid.has(guid)))]
+    : null;
+  const inventoryComplete =
+    Boolean(confirmedOwnedGuids) &&
+    confirmedOwnedGuids.length === market.confirmed_owned_guids.length &&
+    sameStringSet(confirmedOwnedGuids, [...owned]) &&
+    ambiguity.length === 0 &&
+    declaredPaidCount !== null &&
+    exactPaidCount === declaredPaidCount;
+  const missingFields = [
+    ...(!inventoryComplete ? ["inventory"] : []),
+    ...(!bindingEvidence ? ["bindings"] : []),
+    ...(!resourceEvidence.complete ? ["resources"] : []),
+  ];
+  const modelFeaturesReady =
+    missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
   const envelope =
     optimistic && restricted
       ? {
@@ -167,13 +192,19 @@ const reconstructed = documents.map((document) => {
     unmatched_segment_count: resolution.unmatched.length,
     confirmed_group_count: resolution.groups.length,
     exact_paid_count: exactPaidCount,
+    exact_paid_item_count: exactPaidItemCount,
     declared_paid_count: declaredPaidCount,
     paid_coverage: paidCoverage,
     unresolved_declared_paid_count:
       declaredPaidCount === null
         ? null
         : Math.max(0, declaredPaidCount - exactPaidCount),
-    missing_fields: ["bindings", "resources"],
+    binding_evidence: bindingEvidence?.kind ?? null,
+    resource_fields: resourceEvidence.observed,
+    inventory_complete: inventoryComplete,
+    missing_fields: missingFields,
+    model_features_ready: modelFeaturesReady,
+    valuation_model: modelFeaturesReady ? knownEstimate.modelFeatures : undefined,
     comparison_class: comparisonClass,
     estimate_envelope: envelope,
     listing_overlaps_estimate: listingOverlapsEstimate,
@@ -223,6 +254,21 @@ const summarizeKinds = (rows) =>
       ],
     ),
   );
+const summarizeCompleteness = (rows) => ({
+  count: rows.length,
+  explicit_bindings: rows.filter((row) => row.binding_evidence).length,
+  explicit_resources: rows.filter(
+    (row) => !row.missing_fields.includes("resources"),
+  ).length,
+  confirmed_inventory: rows.filter((row) => row.inventory_complete).length,
+  model_features_ready: rows.filter((row) => row.model_features_ready).length,
+  missing_by_field: Object.fromEntries(
+    ["inventory", "bindings", "resources"].map((field) => [
+      field,
+      rows.filter((row) => row.missing_fields.includes(field)).length,
+    ]),
+  ),
+});
 const summary = {
   document_count: documents.length,
   priced_document_count: comparable.length,
@@ -233,6 +279,10 @@ const summary = {
   guid_count: {
     median: quantile(reconstructed.map((row) => row.owned_guids.length), 0.5),
     maximum: Math.max(...reconstructed.map((row) => row.owned_guids.length)),
+  },
+  evidence_completeness: {
+    all_documents: summarizeCompleteness(reconstructed),
+    priced_documents: summarizeCompleteness(comparable),
   },
   name_resolution: {
     text_guid_median: quantile(
@@ -253,6 +303,7 @@ const summary = {
     "Prices are listings or quick-sale asks, not verified completed sales.",
     "Unknown bindings are evaluated as an optimistic/restricted envelope.",
     "Unknown resources contribute no value.",
+    "Model features are emitted only after an exact confirmed GUID list, matching canonical package count, complete binding evidence, and all four resource fields.",
     "Ambiguous names never enter owned GUIDs.",
     "Overlap and interval gaps are exploratory listing-fit measures, not model accuracy metrics.",
   ],

@@ -13,7 +13,6 @@ import {
 import {
   classifyAccountStyle,
   classifyBreakClass,
-  capConfidenceForMarketValidation,
   marketAccountStyleMultiplier,
   marketBreakMultiplier,
   marketPackageMultiplier,
@@ -40,6 +39,10 @@ import {
 } from "./valuation-season-bands";
 import type { WikiItem } from "./wiki-data";
 import { calculateValuationModel } from "./valuation-model-core.js";
+import {
+  adjustConfidenceForEvidence,
+  valuationEvidenceProfile,
+} from "./valuation-season-band-core.js";
 
 export type ValuationDomain = {
   isValuationFocus: (item: WikiItem) => boolean;
@@ -283,64 +286,6 @@ const isPlatformTransferable = (
     return true;
   warnings.push(`${platform} 未標示可出或綁定異常，該平台${label}不列入參考價格。`);
   return false;
-};
-
-const evidenceProfileFor = (evidence: {
-  sampleCount: number;
-  evidenceBreakdown: Record<string, number>;
-  qualityBreakdown?: Record<string, number>;
-  sourceBreakdown?: Record<string, number>;
-} | undefined) => {
-  const total = evidence?.sampleCount ?? 0;
-  const stages = evidence?.evidenceBreakdown ?? {};
-  const quality = evidence?.qualityBreakdown ?? {};
-  const sources = Object.values(
-    evidence?.sourceBreakdown ?? valuationMarketAggregate.sourceBreakdown ?? {},
-  );
-  const sourceConcentration = total
-    ? Math.max(0, ...sources) / total
-    : 1;
-  const sold = stages.sold ?? 0;
-  const listed = (stages.ask ?? 0) + (stages.quick_sale ?? 0);
-  const auxiliary = (stages.professional_estimate ?? 0) + (stages.comment ?? 0);
-  const highQuality = quality.high ?? 0;
-  const hasQualityData = Boolean(evidence?.qualityBreakdown);
-  const evidenceQuality =
-    hasQualityData &&
-    total >= 8 && highQuality / total >= 0.7 && sourceConcentration <= 0.75
-      ? "strong"
-      : total >= 5 && sourceConcentration <= 0.9
-        ? "mixed"
-        : "limited";
-  const priceStage = sold
-    ? listed || auxiliary
-      ? "混合參考"
-      : "成交樣本"
-    : listed
-      ? auxiliary
-        ? "混合參考"
-        : "刊登樣本"
-      : "低資訊參考";
-  return { evidenceQuality, priceStage, sourceConcentration } as const;
-};
-
-const confidenceForEvidence = (
-  confidence: SeasonConfidence,
-  profile: ReturnType<typeof evidenceProfileFor>,
-): SeasonConfidence => {
-  const rank: Record<SeasonConfidence, number> = {
-    inferred: 0,
-    low: 1,
-    medium: 2,
-    high: 3,
-  };
-  let next = rank[confidence];
-  if (profile.evidenceQuality === "mixed") next = Math.min(next, 2);
-  if (profile.evidenceQuality === "limited") next = Math.min(next, 1);
-  if (profile.priceStage === "刊登樣本") next = Math.min(next, 2);
-  if (profile.priceStage === "低資訊參考") next = Math.min(next, 1);
-  if (profile.sourceConcentration > 0.9) next = Math.min(next, 1);
-  return (["inferred", "low", "medium", "high"] as const)[next];
 };
 
 export const estimateValuation = ({
@@ -600,12 +545,16 @@ export const estimateValuation = ({
         analysis.startSeasonSlug as keyof typeof valuationMarketAggregate.segments.startSeason
       ]
     : undefined;
-  const evidenceProfile = evidenceProfileFor(startEvidence);
-  const evidenceConfidence = confidenceForEvidence(
-    startBand?.confidence ?? "inferred",
-    evidenceProfile,
-  );
-  const confidence = capConfidenceForMarketValidation(evidenceConfidence);
+  const evidenceProfile = valuationEvidenceProfile({
+    aggregate: valuationMarketAggregate,
+    evidence: startEvidence,
+  });
+  const confidence = adjustConfidenceForEvidence({
+    aggregate: valuationMarketAggregate,
+    confidence: startBand?.confidence ?? "inferred",
+    evidence: startEvidence,
+    validated: marketValidation.isValidated,
+  }) as SeasonConfidence;
   const transferHighMultiplier =
     Object.values(analysis.bindings).some((value) => value === "transfer") &&
     !analysis.issueCount &&

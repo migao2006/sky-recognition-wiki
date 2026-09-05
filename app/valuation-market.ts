@@ -48,13 +48,6 @@ export const marketValidation = {
       : "資料不足・參考估價",
 } as const;
 
-export const capConfidenceForMarketValidation = <T extends "high" | "medium" | "low" | "inferred">(
-  confidence: T,
-): T | "low" | "inferred" => {
-  if (marketValidation.isValidated || confidence === "inferred") return confidence;
-  return confidence === "high" || confidence === "medium" ? "low" : confidence;
-};
-
 export const classifyBreakClass = (
   completion: ReadonlyMap<string, { selected: number; expected: number }>,
 ) => {

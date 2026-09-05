@@ -6,6 +6,11 @@ import {
   valuationModelInputKeys,
 } from "../app/valuation-model-core.js";
 import {
+  replaySeasonProgressEndSlug,
+  seasonBandSeeds,
+  seasonGraduationGiftCounts,
+} from "../app/valuation-season-band-core.js";
+import {
   accountKeyFor,
   accountStyles,
   applyGroupCap as applySharedGroupCap,
@@ -13,6 +18,7 @@ import {
   breakClassFor as sharedBreakClassFor,
   evidenceWeights,
   groupKeyFor,
+  hasReplayableSeasonProgress,
   isExcludedFromModel,
   packageTiers,
   packageTierFor,
@@ -38,6 +44,12 @@ const sourcePaths = args.filter(
     !value.startsWith("--as-of=") &&
     !value.startsWith("--split-seed="),
 );
+const orderedSeasonSlugs = seasonBandSeeds.map((seed) => seed.slug);
+const replaySeasonProgressOptions = {
+  orderedSeasonSlugs,
+  requiredEndSlug: replaySeasonProgressEndSlug,
+  graduationGiftCounts: seasonGraduationGiftCounts,
+};
 if (!sourcePaths.length)
   throw new Error(
     "Usage: node scripts/audit-valuation-source.mjs [--as-of=YYYY-MM-DD] [--split-seed=value] [--include-holdout] <source.jsonl> [...more.jsonl]",
@@ -475,13 +487,19 @@ const sourceRowsBySource = Object.fromEntries(
       rows.filter((row) => sourceFor(row) === source).length,
     ]),
 );
-const predictorFields = [...valuationModelInputKeys, "confidence"];
+const predictorFields = [
+  ...valuationModelInputKeys,
+  "confidence",
+  "season_progress",
+];
 const missingPredictorFields = (row) => {
   const predictor = row?.valuation_model;
   if (!predictor || typeof predictor !== "object" || Array.isArray(predictor))
     return predictorFields;
   return predictorFields.filter((field) =>
-    field === "confidence"
+    field === "season_progress"
+      ? !hasReplayableSeasonProgress(row, replaySeasonProgressOptions)
+      : field === "confidence"
       ? !valuationConfidenceValues.includes(predictor[field])
       : typeof predictor[field] !== "number" || !Number.isFinite(predictor[field]),
   );
@@ -524,8 +542,9 @@ console.log(JSON.stringify({
   schemaVersion: 4,
   validationStatus: "unvalidated",
   provenance: {
-    modelSchemaVersion: 2,
+    modelSchemaVersion: 3,
     predictorSchema: "valuation_model",
+    seasonProgressEndSlug: replaySeasonProgressEndSlug,
     validation: "requires validate-valuation-model full holdout pass before publishing as validated",
   },
   asOf: referenceDate.toISOString().slice(0, 10),

@@ -33,9 +33,117 @@ export const seasonBandSeeds = [
   { slug: "dear-van-gogh", prior: 700, sampleCount: 3, p25: 5000, p75: 22000 },
 ];
 
+// Schema-v3 predictor snapshots are rebuilt against the latest completed
+// season in the catalog. Keep this in sync with catalog-derived graduation
+// data; the catalog tests intentionally fail when a season completes or its
+// graduation-gift inventory changes.
+export const replaySeasonProgressEndSlug = "carnival";
+export const seasonGraduationGiftCounts = Object.freeze({
+  gratitude: 1,
+  lightseekers: 1,
+  belonging: 1,
+  rhythm: 2,
+  enchantment: 2,
+  sanctuary: 2,
+  prophecy: 2,
+  dreams: 2,
+  assembly: 4,
+  "the-little-prince": 3,
+  flight: 2,
+  abyss: 3,
+  performance: 3,
+  shattering: 2,
+  aurora: 3,
+  remembrance: 2,
+  passage: 2,
+  moments: 3,
+  revival: 2,
+  "nine-colored-deer": 3,
+  nesting: 2,
+  duets: 3,
+  moomin: 3,
+  radiance: 2,
+  "blue-bird": 2,
+  "two-embers-part-1": 2,
+  migration: 3,
+  lightmending: 3,
+  carnival: 2,
+  "dear-van-gogh": 3,
+});
+
 const roundHundred = (value) => Math.round(value / 100) * 100;
 const logBlend = (left, right, rightWeight) =>
   Math.exp(Math.log(left) * (1 - rightWeight) + Math.log(right) * rightWeight);
+
+export const confidenceForEffectiveWeight = (effectiveWeight) =>
+  effectiveWeight >= 12
+    ? "high"
+    : effectiveWeight >= 5
+      ? "medium"
+      : effectiveWeight > 0
+        ? "low"
+        : "inferred";
+
+/**
+ * @returns {{
+ *   evidenceQuality: "strong" | "mixed" | "limited";
+ *   priceStage: "成交樣本" | "刊登樣本" | "混合參考" | "低資訊參考";
+ *   sourceConcentration: number;
+ * }}
+ */
+export const valuationEvidenceProfile = ({ aggregate, evidence }) => {
+  const total = Number(evidence?.sampleCount) || 0;
+  const stages = evidence?.evidenceBreakdown ?? {};
+  const quality = evidence?.qualityBreakdown ?? {};
+  const sources = Object.values(
+    evidence?.sourceBreakdown ?? aggregate?.sourceBreakdown ?? {},
+  ).map(Number);
+  const sourceConcentration = total ? Math.max(0, ...sources) / total : 1;
+  const sold = Number(stages.sold) || 0;
+  const listed = (Number(stages.ask) || 0) + (Number(stages.quick_sale) || 0);
+  const auxiliary =
+    (Number(stages.professional_estimate) || 0) + (Number(stages.comment) || 0);
+  const highQuality = Number(quality.high) || 0;
+  const evidenceQuality =
+    evidence?.qualityBreakdown &&
+    total >= 8 &&
+    highQuality / total >= 0.7 &&
+    sourceConcentration <= 0.75
+      ? "strong"
+      : total >= 5 && sourceConcentration <= 0.9
+        ? "mixed"
+        : "limited";
+  const priceStage = sold
+    ? listed || auxiliary
+      ? "混合參考"
+      : "成交樣本"
+    : listed
+      ? auxiliary
+        ? "混合參考"
+        : "刊登樣本"
+      : "低資訊參考";
+  return { evidenceQuality, priceStage, sourceConcentration };
+};
+
+export const adjustConfidenceForEvidence = ({
+  aggregate,
+  confidence,
+  evidence,
+  validated,
+}) => {
+  const { evidenceQuality, priceStage, sourceConcentration } =
+    valuationEvidenceProfile({ aggregate, evidence });
+  const rank = { inferred: 0, low: 1, medium: 2, high: 3 };
+  let next = rank[confidence] ?? 0;
+  if (evidenceQuality === "mixed") next = Math.min(next, 2);
+  if (evidenceQuality === "limited") next = Math.min(next, 1);
+  if (priceStage === "刊登樣本") next = Math.min(next, 2);
+  if (priceStage === "低資訊參考") next = Math.min(next, 1);
+  if (sourceConcentration > 0.9) next = Math.min(next, 1);
+  const adjusted = ["inferred", "low", "medium", "high"][next];
+  if (validated || adjusted === "inferred") return adjusted;
+  return adjusted === "high" || adjusted === "medium" ? "low" : adjusted;
+};
 const combineObserved = (original, market, originalWeight, marketWeight) => {
   if (!original) return market ?? undefined;
   if (!market) return original;

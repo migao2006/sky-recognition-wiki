@@ -51,6 +51,7 @@ test("anonymizes private Facebook fields while retaining only valuation structur
     evidence_quality: "high",
     start_season_slug: "lightseekers",
     season_progress: { rhythm: "畢", lightseekers: "2 / 2" },
+    season_progress_end_slug: "rhythm",
     computed_break_class: "slight",
     missing_season_count: 2,
     completion_ratio: 0.8,
@@ -61,7 +62,7 @@ test("anonymizes private Facebook fields while retaining only valuation structur
   assert.deepEqual(Object.keys(row), [
     "schema_version", "source", "post_hash", "group_hash", "account_fingerprint",
     "published_at", "price_twd", "price_kind", "evidence_kind", "evidence_quality",
-    "start_season_slug", "season_progress", "computed_break_class", "missing_season_count",
+    "start_season_slug", "season_progress", "season_progress_end_slug", "computed_break_class", "missing_season_count",
     "completion_ratio", "paid_package_count", "computed_package_tier", "account_style",
   ]);
   assert.match(row.post_hash, /^[a-f0-9]{64}$/);
@@ -72,6 +73,7 @@ test("anonymizes private Facebook fields while retaining only valuation structur
     assert.equal(output.includes(secret), false);
   assert.equal(row.published_at, "2026-08-30T04:00:00.000Z");
   assert.deepEqual(row.season_progress, { lightseekers: "2/2", rhythm: "畢" });
+  assert.equal(row.season_progress_end_slug, "rhythm");
 });
 
 test("does not invent an account identity when a relist cannot be linked", async () => {

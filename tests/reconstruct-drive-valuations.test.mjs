@@ -23,7 +23,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
   const rows = [
     {
       post_hash: "private-partial-season-id",
-      content_base64: Buffer.from("星夜之傘", "utf8").toString("base64"),
+      content_base64: Buffer.from("星夜之傘｜無綁｜白蠟 0｜愛心 0｜昇華蠟 0｜副卡 0", "utf8").toString("base64"),
     },
     {
       post_hash: "private-complete-season-id",
@@ -37,6 +37,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       price_twd_low: 3000,
       price_twd_high: 3500,
       paid_package_count: 1,
+      confirmed_owned_guids: ["OAGgi-B-xa"],
       season_progress: { prophecy: "1/3" },
     },
     {
@@ -80,13 +81,32 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       .map(JSON.parse);
     assert.equal(reconstructed[0].season_guid_count, 0);
     assert.equal(reconstructed[0].exact_text_guid_count, 1);
+    assert.equal(reconstructed[0].binding_evidence, "none");
+    assert.deepEqual(reconstructed[0].resource_fields.sort(), [
+      "ascended",
+      "candles",
+      "hearts",
+      "passes",
+    ]);
+    assert.equal(reconstructed[0].inventory_complete, true);
+    assert.equal(reconstructed[0].model_features_ready, true);
+    assert.ok(reconstructed[0].valuation_model);
     assert.ok(reconstructed[1].season_guid_count > 0);
+    assert.deepEqual(reconstructed[1].missing_fields.sort(), [
+      "bindings",
+      "inventory",
+      "resources",
+    ]);
     assert.ok(reconstructed.every((row) => !Reflect.has(row, "post_hash")));
     assert.ok(
       reconstructed.every((row) => row.document_hash.length === 16),
     );
     const report = JSON.parse(await readFile(summary, "utf8"));
     assert.equal(report.document_count, 2);
+    assert.equal(
+      report.evidence_completeness.priced_documents.model_features_ready,
+      1,
+    );
     assert.equal(report.by_price_kind_all_partial.ask.count, 1);
     assert.equal(report.by_price_kind_all_partial.quick_sale.count, 1);
   } finally {

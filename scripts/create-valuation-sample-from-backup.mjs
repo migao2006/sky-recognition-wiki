@@ -4,6 +4,7 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { tsImport } from "tsx/esm/api";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 import { loadValuationRuntime } from "./load-valuation-runtime.mjs";
+import { replaySeasonProgressEndSlug } from "../app/valuation-season-band-core.js";
 
 const argument = (name, fallback) => {
   const index = process.argv.indexOf(name);
@@ -89,6 +90,12 @@ const seasonProgress = Object.fromEntries(
       : `${progress.selected}/${progress.expected}`,
   ]),
 );
+const seasonProgressEndSlug = [...analysis.seasonCompletion.keys()].at(-1) ?? null;
+if (seasonProgressEndSlug !== replaySeasonProgressEndSlug) {
+  throw new Error(
+    `Catalog replay scope ended at ${seasonProgressEndSlug ?? "none"}; expected ${replaySeasonProgressEndSlug}`,
+  );
+}
 const row = {
   schema_version: 1,
   source: "manual_backup",
@@ -108,6 +115,7 @@ const row = {
   start_season_slug: analysis.startSeasonSlug,
   start_season_confidence: "structured",
   season_progress: seasonProgress,
+  season_progress_end_slug: seasonProgressEndSlug,
   computed_break_class: estimate.marketProfile.breakClass,
   missing_season_count: estimate.marketProfile.missingSeasons,
   completion_ratio: estimate.marketProfile.completionRatio,

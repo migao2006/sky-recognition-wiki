@@ -23,6 +23,83 @@ export const breakClasses = ["none", "slight", "medium", "big"];
 export const packageTiers = ["few", "medium", "many", "hundred"];
 export const accountStyles = ["simple", "regular"];
 
+export const seasonProgressParts = (value) => {
+  if (value && typeof value === "object") {
+    const selected = Number(value.selected);
+    const expected = Number(value.expected);
+    return Number.isInteger(selected) && Number.isInteger(expected)
+      ? { selected, expected }
+      : null;
+  }
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (["畢", "全畢", "complete", "completed", "full"].includes(normalized))
+    return { selected: 1, expected: 1 };
+  if (["", "0", "⁰", "none", "no", "false", "-"].includes(normalized))
+    return { selected: 0, expected: 1 };
+  const ratio = normalized.match(/^(\d+)\s*\/\s*(\d+)$/u);
+  return ratio
+    ? { selected: Number(ratio[1]), expected: Number(ratio[2]) }
+    : null;
+};
+
+export const hasReplayableSeasonProgress = (
+  row,
+  { orderedSeasonSlugs, requiredEndSlug, graduationGiftCounts } = {},
+) => {
+  const progress = row?.season_progress;
+  if (!progress || typeof progress !== "object" || Array.isArray(progress))
+    return false;
+  if (!Array.isArray(orderedSeasonSlugs) || !orderedSeasonSlugs.length)
+    return false;
+  const startSlug = String(row?.start_season_slug ?? "").trim().toLowerCase();
+  const endSlug = String(row?.season_progress_end_slug ?? "").trim().toLowerCase();
+  const startIndex = orderedSeasonSlugs.indexOf(startSlug);
+  const endIndex = orderedSeasonSlugs.indexOf(endSlug);
+  if (
+    startIndex < 0 ||
+    endIndex < startIndex ||
+    endSlug !== requiredEndSlug ||
+    !graduationGiftCounts ||
+    typeof graduationGiftCounts !== "object"
+  )
+    return false;
+  const expectedSlugs = orderedSeasonSlugs.slice(startIndex, endIndex + 1);
+  const actualSlugs = Object.keys(progress);
+  if (
+    actualSlugs.length !== expectedSlugs.length ||
+    expectedSlugs.some((slug) => !Object.hasOwn(progress, slug))
+  )
+    return false;
+  const valid = expectedSlugs.every((slug) => {
+    const value = progress[slug];
+    const parts = seasonProgressParts(value);
+    if (
+      !parts ||
+      parts.expected <= 0 ||
+      parts.selected < 0 ||
+      parts.selected > parts.expected
+    )
+      return false;
+    const hasExplicitDenominator =
+      (value && typeof value === "object") ||
+      /^\d+\s*\/\s*\d+$/u.test(String(value ?? "").trim());
+    return (
+      (!hasExplicitDenominator ||
+        parts.expected === graduationGiftCounts[slug]) &&
+      Number.isInteger(graduationGiftCounts[slug]) &&
+      graduationGiftCounts[slug] > 0
+    );
+  });
+  if (!valid) return false;
+  const startProgress = seasonProgressParts(progress[startSlug]);
+  return Boolean(
+    startProgress &&
+      startProgress.expected > 0 &&
+      startProgress.selected > 0 &&
+      startProgress.selected <= startProgress.expected,
+  );
+};
+
 export const isExcludedFromModel = (row) => {
   const explicit = row?.exclude_from_model;
   const normalized = String(explicit ?? "").trim().toLowerCase();

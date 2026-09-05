@@ -68,6 +68,10 @@ test("creates a private replayable predictor from a complete backup", async () =
     assert.equal(row.price_twd, 3500);
     assert.equal(row.evidence_kind, "professional_estimate");
     assert.equal(row.start_season_slug, "moments");
+    assert.equal(
+      row.season_progress_end_slug,
+      Object.keys(row.season_progress).at(-1),
+    );
     assert.equal(row.post_hash.length, 64);
     assert.equal(row.account_fingerprint.length, 64);
     assert.ok(valuationModelInputKeys.every((key) => Number.isFinite(row.valuation_model[key])));

@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { legacyCatalogGuidAliases } from "../app/catalog-legacy-guids.ts";
+import {
+  replaySeasonProgressEndSlug,
+  seasonGraduationGiftCounts,
+} from "../app/valuation-season-band-core.js";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const {
@@ -685,6 +689,16 @@ test("uses verified game placement categories for representative props", () => {
 test("keeps the verified Lightseekers graduation gift in valuation order", () => {
   assert.equal(graduationSeasonSlugs.includes("lightseekers"), true);
   assert.ok((seasonGraduationItems.get("lightseekers")?.length ?? 0) > 0);
+});
+
+test("keeps validator season replay counts aligned with the live catalog", () => {
+  assert.equal(graduationSeasonSlugs.at(-1), replaySeasonProgressEndSlug);
+  assert.deepEqual(
+    Object.fromEntries(
+      [...seasonGraduationItems].map(([slug, items]) => [slug, items.length]),
+    ),
+    seasonGraduationGiftCounts,
+  );
 });
 
 test("classifies representative catalog sources", () => {

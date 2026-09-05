@@ -202,6 +202,7 @@ export const prepareRow = (row, salt) => {
   put("start_season_slug", normalizedSlug(row.start_season_slug));
   put("start_season_confidence", enumValue(row.start_season_confidence, allowedConfidence));
   put("season_progress", seasonProgress(row.season_progress));
+  put("season_progress_end_slug", normalizedSlug(row.season_progress_end_slug));
   put("seasons", seasons(row.seasons));
   put("computed_break_class", enumValue(row.computed_break_class, allowedBreakClasses));
   put("missing_season_count", nonNegativeInteger(row.missing_season_count));

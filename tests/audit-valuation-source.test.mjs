@@ -2,9 +2,24 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { runJsonlScript } from "./helpers/run-jsonl-script.mjs";
 import { valuationModelInputKeys } from "../app/valuation-model-core.js";
+import {
+  replaySeasonProgressEndSlug,
+  seasonBandSeeds,
+} from "../app/valuation-season-band-core.js";
 
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
+const completeSeasonProgress = (startSlug) => {
+  const startIndex = seasonBandSeeds.findIndex((seed) => seed.slug === startSlug);
+  const endIndex = seasonBandSeeds.findIndex(
+    (seed) => seed.slug === replaySeasonProgressEndSlug,
+  );
+  return Object.fromEntries(
+    seasonBandSeeds
+      .slice(startIndex, endIndex + 1)
+      .map(({ slug }) => [slug, "畢"]),
+  );
+};
 const audit = async (rows, { splitSeed } = {}) => {
   const args = splitSeed ? [`--split-seed=${splitSeed}`] : [];
   const { stdout } = await runJsonlScript({
@@ -79,6 +94,8 @@ test("reports strict predictor gaps by field and source", async () => {
       evidence_kind: "professional_estimate",
       evidence_quality: "medium",
       start_season_slug: "moments",
+      season_progress: completeSeasonProgress("moments"),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
       valuation_model: completePredictor,
     },
     {

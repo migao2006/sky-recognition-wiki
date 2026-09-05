@@ -2,6 +2,7 @@ import valuationMarketAggregate from "./valuation-market-aggregate.json" with {
   type: "json",
 };
 import {
+  confidenceForEffectiveWeight,
   deriveSeasonBands,
   seasonBandSeeds,
 } from "./valuation-season-band-core.js";
@@ -47,15 +48,6 @@ export const valuationSampleSummary = {
   asOf: valuationMarketAggregate.asOf,
 } as const;
 
-const confidenceFor = (effectiveWeight: number): SeasonConfidence =>
-  effectiveWeight >= 12
-    ? "high"
-    : effectiveWeight >= 5
-      ? "medium"
-      : effectiveWeight > 0
-        ? "low"
-        : "inferred";
-
 export const seasonPriceBands: readonly SeasonPriceBand[] = deriveSeasonBands(
   valuationMarketAggregate,
   seasonBandSeeds,
@@ -67,7 +59,7 @@ export const seasonPriceBands: readonly SeasonPriceBand[] = deriveSeasonBands(
       professionalEstimate: 0,
       commentSignal: 0,
     },
-    confidence: confidenceFor(band.effectiveWeight),
+    confidence: confidenceForEffectiveWeight(band.effectiveWeight),
     asOf: valuationSampleSummary.asOf,
   };
 });
