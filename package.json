@@ -20,6 +20,7 @@
     "sync:names:write": "node scripts/sync-fandom-zh-names.mjs --write --out dist/tmp/fandom-zh-names.json",
     "sync:trade-names:check": "node scripts/sync-transaction-names.mjs",
     "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write",
+    "collect:market-listings": "node scripts/collect-public-market-listings.mjs",
     "collect:wiki-market": "node scripts/collect-wiki-market-evidence.mjs",
     "verify:wiki-market": "node scripts/verify-wiki-market-evidence.mjs",
     "sync:wiki-player-names:check": "node scripts/sync-wiki-player-names.mjs",

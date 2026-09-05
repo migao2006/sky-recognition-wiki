@@ -29,6 +29,7 @@
 - `scripts/audit-valuation-source.mjs`：從原始 JSONL 重算合格樣本、季節樣本數與分位數
 - `scripts/prepare-facebook-valuation-source.mjs`：將私人 Facebook 原始 JSONL 匿名成可供估價稽核的結構資料
 - `scripts/reconstruct-drive-valuations.mjs`：將私人出售文案中的唯一名稱與確認套組還原成官方 GUID，並以網站估價流程逐筆重播
+- `scripts/collect-public-market-listings.mjs`：蒐集公開刊登價並保留原幣與官方匯率換算台幣欄位
 
 ## 本機開發
 
@@ -92,3 +93,9 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 目前正式彙總只有 164 筆可追溯原始列、148 筆合格帳號，狀態為 `legacy-unvalidated`；網站只顯示這組可追溯樣本數，仍提供低信心參考估價，但不得顯示為完整市場驗證。新樣本必須保存完整 `valuation_model` v2 predictor（包含信心與所有乘數），validator 會以候選的共用季節價格帶及市場乘數重播同一數值核心；通過 holdout 後才可改為 `validated`。
 
 估價中的禮包、限定與資源只計入二手帳號市場可保留的部分價值。拾光季起始或更晚、目前進行中季節，以及無法確認早期季節證據的帳號使用較低的附加價值上限，避免禮包數量把簡號推到早期稀有帳號的價格帶；起始畢業季在拾光以前的帳號保留原本的稀有度校正，完全沒有畢業禮時才以最早季卡項鍊判斷年代。此分段目前同樣屬 `legacy-unvalidated` 參考規則，需待足量同型成交樣本與 holdout 驗證後才能視為正式市場模型。
+
+## 公開市場刊登價
+
+`npm run collect:market-listings` 會將淘手游國服帳號與 FunPay 國際市場的公開刊登資料寫入被 Git 忽略的 `work/market-listings/snapshots/`。每次執行建立獨立快照，預設讀取淘手游 40 頁、補抓前 120 筆商品詳情，並保留來源市場、原幣價格、刊登時間、已移除聯絡方式的公開帳號描述及平台識別碼；不保存賣家姓名、聯絡資料、個人頁面或完整網頁。最小化 JSON 解析快取預設保留六小時，失敗後可續跑；需要刷新時加入 `--refresh`。可用 `-- --taoshouyou-pages=10 --taoshouyou-details=100 --concurrency=2 --delay-ms=3000 --cache-hours=6` 調整範圍與全域請求速率。摘要的 `source_health` 會分別檢查匯率、FunPay 與淘手游；請求失敗、站點空殼、內部分頁缺口或必要來源空資料都會令快照不完整。只有至少讀取 40 頁、確認分頁結尾且所有來源健康時，才會以 `latest_eligible: true` 更新 `latest.json`。
+
+台幣換算使用臺灣期貨交易所 `DailyForeignExchangeRates` 對應刊登日期以前最近一個匯率日，輸出欄位為 `price_twd_fx`。這只代表匯率換算值：所有資料仍標記為 `ask` 刊登價，不能當成交價，也不能把國服或國際市場的絕對金額直接併入台灣估價。蒐集器會以各來源原幣價格的對數中位數與 MAD 標記極端 `price_outlier`，保留原始列但不將其列為 `ratio_candidate`。後續市場校準應在起季、斷季、禮包級距與綁定條件相近的帳號間，估計 `台灣刊登／成交台幣 ÷ 外站匯率換算台幣` 的穩健中位比例；樣本不足的分組不得單獨發布。
