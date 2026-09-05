@@ -21,6 +21,7 @@
     "sync:trade-names:check": "node scripts/sync-transaction-names.mjs",
     "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write",
     "collect:market-listings": "node scripts/collect-public-market-listings.mjs",
+    "recognize:wardrobe": "node scripts/recognize-wardrobe-image.mjs",
     "consolidate:market-listings": "node scripts/consolidate-market-listing-snapshots.mjs",
     "collect:wiki-market": "node scripts/collect-wiki-market-evidence.mjs",
     "verify:wiki-market": "node scripts/verify-wiki-market-evidence.mjs",
