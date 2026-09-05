@@ -68,6 +68,24 @@ export type ValuationSeasonRow = SeasonPriceBand & {
   expected: number;
   completion: number;
 };
+export type ValuationModelFeatures = {
+  baseLow: number;
+  baseHigh: number;
+  breakMultiplier: number;
+  partialDiscountLow: number;
+  partialDiscountHigh: number;
+  packageLow: number;
+  packageHigh: number;
+  packageMarketMultiplier: number;
+  limitedLow: number;
+  limitedHigh: number;
+  resourceLow: number;
+  resourceHigh: number;
+  accountStyleMultiplier: number;
+  bindingRisk: number;
+  transferHighMultiplier: number;
+  confidence: SeasonConfidence;
+};
 export type ValuationEstimate = {
   range: { low: number; high: number; currency: "TWD" };
   midpoint: number;
@@ -75,6 +93,8 @@ export type ValuationEstimate = {
   contributions: ValuationContribution[];
   warnings: string[];
   seasonRows: ValuationSeasonRow[];
+  /** Exact numeric inputs used by the browser calculation for model replay. */
+  modelFeatures?: ValuationModelFeatures;
   marketProfile: {
     breakClass: MarketBreakClass;
     packageTier: PackageTierKey;
@@ -592,7 +612,7 @@ export const estimateValuation = ({
     !analysis.keepCount
       ? 1.03
       : 1;
-  const summary = calculateValuationModel({
+  const modelFeatures: ValuationModelFeatures = {
     baseLow,
     baseHigh,
     breakMultiplier,
@@ -608,7 +628,9 @@ export const estimateValuation = ({
     bindingRisk: risk,
     transferHighMultiplier,
     confidence,
-  });
+    packageMarketMultiplier,
+  };
+  const summary = calculateValuationModel(modelFeatures);
   if (!analysis.startSeasonSlug)
     warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
   if (!marketValidation.isValidated)
@@ -620,6 +642,7 @@ export const estimateValuation = ({
     contributions,
     warnings: [...new Set(warnings)],
     seasonRows,
+    modelFeatures,
     marketProfile: {
       breakClass: breakProfile.key,
       packageTier: packageTier.key,

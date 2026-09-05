@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { tsImport } from "tsx/esm/api";
 import { loadValuationRuntime } from "../scripts/load-valuation-runtime.mjs";
+import { calculateValuationModel } from "../app/valuation-model-core.js";
 
 const calibrationLoaded = await tsImport(
   "../app/valuation-calibration.ts",
@@ -107,6 +108,11 @@ test("v2 returns a price range and does not treat a pendant as graduation", () =
   assert.ok(result.midpoint >= result.range.low);
   assert.ok(result.midpoint <= result.range.high);
   assert.ok(result.range.high >= result.range.low);
+  assert.deepEqual(calculateValuationModel(result.modelFeatures), {
+    low: result.range.low,
+    high: result.range.high,
+    midpoint: result.midpoint,
+  });
   assert.equal(result.seasonRows[0].selected, 1);
   assert.ok(
     result.contributions.some((row) =>

@@ -29,6 +29,7 @@
 - `scripts/audit-valuation-source.mjs`：從原始 JSONL 重算合格樣本、季節樣本數與分位數
 - `scripts/prepare-facebook-valuation-source.mjs`：將私人 Facebook 原始 JSONL 匿名成可供估價稽核的結構資料
 - `scripts/reconstruct-drive-valuations.mjs`：將私人出售文案中的唯一名稱與確認套組還原成官方 GUID，並以網站估價流程逐筆重播
+- `scripts/create-valuation-sample-from-backup.mjs`：將完整帳號備份與人工／成交價格轉成含完整 predictor 的匿名本機樣本
 - `scripts/recognize-wardrobe-image.mjs`：將衣櫃截圖格子比對成官方 GUID 候選，低信心結果只供人工複核
 - `scripts/collect-public-market-listings.mjs`：蒐集公開刊登價並保留原幣與官方匯率換算台幣欄位
 
@@ -88,6 +89,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 輸出不含貼文原文、網址、作者或留言，只保留價格、季節、禮包與匿名雜湊等結構欄位。
 
 私人 Google Drive 文案同樣只可放在被 Git 忽略的 `work/`。逐筆 GUID 還原使用 `node scripts/reconstruct-drive-valuations.mjs`；腳本只接受唯一名稱與已明確定義的玩家套組，同名物品不會猜測，缺少逐件名稱的禮包也不會依數量杜撰。產生的逐筆結果與摘要仍留在 `work/`，只能用來比較刊登價是否落在估價區間，不能視為成交價驗證或直接發布成正式模型。
+
+已由網站匯出的完整帳號備份可用 `npm run prepare:valuation-sample -- --backup <備份.json> --price-twd <人工或成交價> --evidence-kind professional_estimate --out work/sample.jsonl` 產生可重播的匿名樣本。執行前必須在本機設定至少 32 字元的 `VALUATION_HASH_SALT`；工具只接受 `sold` 或 `professional_estimate`，備份必須確認所有綁定、不得包含未知或被略過的 GUID，且輸出強制留在 `work/`。帳號指紋以 HMAC 產生，帳號名稱、備註與原始檔案路徑不會寫入樣本。
 
 衣櫃截圖可用 `npm run recognize:wardrobe -- <圖片> --grid=左,上,格寬,格高,欄數,列數,水平間距,垂直間距 --out=work/wardrobe-candidates.json` 產生官方 GUID 候選。工具只在圖示相似度至少 0.93、且第一名比第二名至少高 0.03 時標記 `accepted`；其餘一律標記 `review` 或 `unreadable`，必須對照原圖人工確認，輸出也不會自動改寫 catalog、帳號備份或估價樣本。
 
