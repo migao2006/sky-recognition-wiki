@@ -368,6 +368,9 @@ const anonymousCap = applyAnonymousCap(
   identifiedTraining.length ? [...groupCap.samples, ...anonymousTraining] : groupCap.samples,
 );
 const eligible = anonymousCap.samples;
+const calibrationEligible = eligible.filter((sample) =>
+  isCalibrationAccount(sample.accountKey),
+);
 const eligibleByRecordId = new Map(eligible.map((sample) => [sample.recordId, sample]));
 for (const candidate of selectedCandidates) {
   if (!includeHoldout && !isCalibrationAccount(candidate.sample.accountKey)) continue;
@@ -510,11 +513,11 @@ console.log(JSON.stringify({
     splitSeed,
     trainingMode: includeHoldout ? "all-eligible" : "calibration-only",
     trainingRows: eligible.length,
-    calibrationRows: calibrationOnly.length,
+    calibrationRows: calibrationEligible.length,
     holdoutRows: holdout.length,
     anonymousCalibrationRows: eligible.filter((sample) => !sample.accountKey).length,
     trainingEffectiveWeight: Number(eligible.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
-    calibrationEffectiveWeight: Number(calibrationOnly.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
+    calibrationEffectiveWeight: Number(calibrationEligible.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
     holdoutEffectiveWeight: Number(holdout.reduce((sum, sample) => sum + sample.weight, 0).toFixed(3)),
   },
   groupConcentration: {

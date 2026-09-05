@@ -22,9 +22,9 @@ test("season bands contain all thirty ordered seasons with valid price ranges", 
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
     sourceRows: 164,
-    eligibleRows: 148,
+    eligibleRows: 162,
     facebookRows: 16,
-    facebookEligibleRows: 0,
+    facebookEligibleRows: 14,
     driveRows: 112,
     driveEligibleRows: 112,
     marketplaceRows: 36,
@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "0c01cb21cf22b22dfa393d9ccf8b0cb0c4afb5f2469de0f23018153a8b742210",
+    "b836d6ff76b3be28a730b5cab3c8a0d1723bf24f41b2b8b8fe6fba9b95d0a324",
   );
 });
 
@@ -104,9 +104,9 @@ test("sample confidence reflects direct eligible mentions", () => {
     }),
     [
       ["gratitude", 0, "inferred"],
-      ["rhythm", 18, "high"],
-      ["enchantment", 35, "high"],
-      ["carnival", 16, "high"],
+      ["rhythm", 19, "medium"],
+      ["enchantment", 40, "high"],
+      ["carnival", 17, "high"],
     ],
   );
   assert.equal(bySlug.get("sanctuary")?.sampleCount, 10);
@@ -129,14 +129,16 @@ test("client summary contains no raw listing text", () => {
   assert.equal(/listing|description|seller|title/i.test(serialized), false);
 });
 
-test("anonymous market aggregate excludes samples that do not affect calibration", () => {
+test("anonymous market aggregate keeps the current audited source summary", () => {
+  assert.equal(marketAggregate.schemaVersion, 4);
+  assert.equal(marketAggregate.validationStatus, "unvalidated");
   assert.equal(marketAggregate.sourceRows, 164);
-  assert.equal(marketAggregate.eligibleRows, 148);
+  assert.equal(marketAggregate.eligibleRows, 162);
   assert.deepEqual(marketAggregate.sourceBreakdown, {
     "8591_hk": 33,
     "8591_tw": 1,
     carousell_tw: 2,
-    facebook: 0,
+    facebook: 14,
     google_drive: 112,
   });
   assert.deepEqual(marketAggregate.sourceRowsBySource, {
@@ -160,7 +162,7 @@ test("anonymous market aggregate excludes samples that do not affect calibration
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 47, medium: 53, many: 28, hundred: 12 },
+    { few: 22, medium: 53, many: 28, hundred: 12 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 15);
 });

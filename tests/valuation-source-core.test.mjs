@@ -37,4 +37,34 @@ test("classifies normalized paid-package counts consistently for audit and valid
   assert.equal(packageTierFor({ paid_package_count: 40 }), "many");
   assert.equal(packageTierFor({ paid_package_count: 100 }), "hundred");
   assert.equal(packageTierFor({ paid_package_count: -1 }), null);
+  assert.equal(
+    packageTierFor({ paid_package_count: 1, computed_package_tier: "hundred" }),
+    "few",
+  );
+  assert.equal(packageTierFor({ computed_package_tier: "medium" }), "medium");
+  assert.equal(
+    packageTierFor({ paid_package_count: null, computed_package_tier: "many" }),
+    "many",
+  );
+  assert.equal(
+    packageTierFor({ paid_package_count: "", computed_package_tier: "hundred" }),
+    "hundred",
+  );
+  assert.equal(
+    packageTierFor({ paid_package_count: "invalid", computed_package_tier: "many" }),
+    null,
+  );
+  assert.equal(
+    packageTierFor({ paid_package_count: -1, computed_package_tier: "many" }),
+    null,
+  );
+  assert.equal(
+    packageTierFor({ paid_package_count: "  ", computed_package_tier: "many" }),
+    null,
+  );
+  assert.equal(
+    packageTierFor({ paid_package_count: false, computed_package_tier: "many" }),
+    null,
+  );
+  assert.equal(packageTierFor({ paid_package_count: 1.5 }), null);
 });

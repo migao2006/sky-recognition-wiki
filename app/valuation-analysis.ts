@@ -421,8 +421,9 @@ export const estimateValuation = ({
     });
   }
   const packageMap = new Map<string, WikiItem>();
-  // Market samples describe the account's paid-item total, while the actual
-  // price contribution below remains deduplicated to one row per real pack.
+  // Keep the raw item count for diagnostics, but price tiers and caps must use
+  // one entry per real package. Multi-item sets otherwise cross tier boundaries
+  // merely because one purchase contains several catalog records.
   const transferablePaidItems = analysis.packages.filter((item) => {
     if (isChinaOnlyItem(item)) {
       warnings.push("國服限定物品不列入國際服參考價格。");
@@ -437,8 +438,9 @@ export const estimateValuation = ({
     const key = canonicalPackageKey(item);
     if (key) packageMap.set(key, item);
   });
-  const packageTier = classifyPackageTier(paidItemCount);
-  const salePackageTier = classifySalePackageTier(packageMap.size);
+  const canonicalPackageCount = packageMap.size;
+  const packageTier = classifyPackageTier(canonicalPackageCount);
+  const salePackageTier = classifySalePackageTier(canonicalPackageCount);
   const packageMarketMultiplier = marketPackageMultiplier(packageTier.key);
   const packageWeightTotal = [...packageMap.values()].reduce(
     (sum, item) => sum + packageValuationMultiplier(item),
@@ -510,7 +512,7 @@ export const estimateValuation = ({
     0,
   );
   const capContext = { conservative: analysis.conservativeAddOnCaps };
-  const packageCap = packageValueCap(paidItemCount, capContext);
+  const packageCap = packageValueCap(canonicalPackageCount, capContext);
   const limitedCap = limitedValueCap(limitedKeys.size, capContext);
   const packageLow = Math.min(rawPackageLow, packageCap.low);
   const packageHigh = Math.min(rawPackageHigh, packageCap.high);
@@ -536,7 +538,7 @@ export const estimateValuation = ({
   if (resource.low || resource.high)
     contributions.push({ group: "resource", label: "帳號資源", ...resource });
   const accountStyle = classifyAccountStyle({
-    paidItemCount,
+    paidItemCount: canonicalPackageCount,
     graduationCount: analysis.ultimates.length,
     seasonCount: analysis.seasonCompletion.size,
   });
@@ -628,7 +630,7 @@ export const estimateValuation = ({
       completionRatio: breakProfile.completionRatio,
       effectiveSample: startEvidence?.sampleCount ?? 0,
       paidItemCount,
-      canonicalPackageCount: packageMap.size,
+      canonicalPackageCount,
       ...evidenceProfile,
     },
   };

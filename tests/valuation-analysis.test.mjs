@@ -380,7 +380,7 @@ test("partial graduation is below full graduation without a second break penalty
   );
 });
 
-test("market package tier uses paid item count while package value stays deduplicated", () => {
+test("market package tier and value count one real package only once", () => {
   const items = Array.from({ length: 100 }, (_, index) =>
     item({
       name: `Same Pack Item ${index}`,
@@ -398,11 +398,26 @@ test("market package tier uses paid item count while package value stays dedupli
       ...items,
     ]),
   });
+  const singleItemResult = estimateValuation({
+    analysis: analyze([
+      item({
+        name: "Enchantment Ultimate",
+        group: "Ultimate",
+        section: "seasons",
+        collection: "enchantment",
+      }),
+      items[0],
+    ]),
+  });
   assert.ok(result);
+  assert.ok(singleItemResult);
   assert.equal(result.marketProfile.paidItemCount, 100);
   assert.equal(result.marketProfile.canonicalPackageCount, 1);
-  assert.equal(result.marketProfile.packageTier, "hundred");
+  assert.equal(result.marketProfile.packageTier, "few");
   assert.equal(result.marketProfile.salePackageTier, "few");
+  assert.equal(result.marketProfile.accountStyle, "simple");
+  assert.deepEqual(result.range, singleItemResult.range);
+  assert.equal(result.midpoint, singleItemResult.midpoint);
   assert.equal(
     result.contributions.filter((row) => row.group === "package").length,
     1,
@@ -448,7 +463,7 @@ test("package calibration stays monotonic across tier boundaries", () => {
   }
 });
 
-test("sale package wording uses conservative unique-package thresholds without changing valuation tiers", () => {
+test("sale package wording uses conservative unique-package thresholds", () => {
   const { classifySalePackageTier } = calibrationLoaded;
   assert.equal(classifySalePackageTier(0).key, "few");
   assert.equal(classifySalePackageTier(59).key, "few");
@@ -640,10 +655,10 @@ test("unbound platform items count while unavailable paid items do not", () => {
     }),
   );
   const excluded = [
-    item({
-      name: "Nintendo Pack",
+    ...Array.from({ length: 4 }, (_, index) => item({
+      name: `Nintendo Pack Item ${index}`,
       wiki: "https://wiki.test/Nintendo_Pack",
-    }),
+    })),
     item({
       name: "國服限定 Pack",
       wiki: "https://wiki.test/China_Pack",
@@ -656,13 +671,17 @@ test("unbound platform items count while unavailable paid items do not", () => {
 
   assert.ok(baseline && mixed);
   assert.equal(baseline.marketProfile.paidItemCount, 14);
-  assert.equal(mixed.marketProfile.paidItemCount, 15);
+  assert.equal(mixed.marketProfile.paidItemCount, 18);
+  assert.equal(mixed.marketProfile.canonicalPackageCount, 15);
   assert.equal(baseline.marketProfile.packageTier, "few");
   assert.equal(mixed.marketProfile.packageTier, "medium");
   const mixedPackageLabels = mixed.contributions
     .filter((row) => row.group === "package")
     .map((row) => row.label);
-  assert.ok(mixedPackageLabels.includes("Nintendo Pack"));
+  assert.equal(
+    mixedPackageLabels.filter((label) => label.startsWith("Nintendo Pack Item")).length,
+    1,
+  );
   assert.equal(mixedPackageLabels.includes("國服限定 Pack"), false);
 
   const unavailable = estimateValuation({
@@ -670,5 +689,6 @@ test("unbound platform items count while unavailable paid items do not", () => {
   });
   assert.ok(unavailable);
   assert.equal(unavailable.marketProfile.paidItemCount, 14);
+  assert.equal(unavailable.marketProfile.canonicalPackageCount, 14);
   assert.equal(unavailable.marketProfile.packageTier, "few");
 });

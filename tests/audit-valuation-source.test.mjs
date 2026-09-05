@@ -403,7 +403,7 @@ test("keeps identical market rows distinct while applying group weights", async 
   assert.equal(result.split.trainingEffectiveWeight, 2.5);
   assert.equal(
     result.split.calibrationEffectiveWeight + result.split.holdoutEffectiveWeight,
-    3,
+    result.split.trainingEffectiveWeight,
   );
 });
 

@@ -37,13 +37,24 @@ export const breakClassFor = (row) => {
   return "big";
 };
 export const packageTierFor = (row) => {
-  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
-  const count = Number(row.paid_package_count);
-  if (!Number.isFinite(count) || count < 0) return null;
-  if (count >= 100) return "hundred";
-  if (count >= 40) return "many";
-  if (count >= 15) return "medium";
-  return "few";
+  const rawCount = row.paid_package_count;
+  const hasCount = rawCount !== undefined && rawCount !== null && rawCount !== "";
+  if (hasCount) {
+    const count =
+      typeof rawCount === "number" && Number.isInteger(rawCount)
+        ? rawCount
+        : typeof rawCount === "string" && /^\d+$/.test(rawCount.trim())
+          ? Number(rawCount.trim())
+          : NaN;
+    if (!Number.isSafeInteger(count) || count < 0) return null;
+    if (count >= 100) return "hundred";
+    if (count >= 40) return "many";
+    if (count >= 15) return "medium";
+    return "few";
+  }
+  return packageTiers.includes(row.computed_package_tier)
+    ? row.computed_package_tier
+    : null;
 };
 
 // A source row may carry this normalized snapshot when it was collected from
