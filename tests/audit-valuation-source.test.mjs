@@ -3,12 +3,37 @@ import test from "node:test";
 import { runJsonlScript } from "./helpers/run-jsonl-script.mjs";
 import { valuationModelInputKeys } from "../app/valuation-model-core.js";
 import {
+  modelEvidenceSignatureFor,
+} from "../scripts/lib/valuation-source-core.mjs";
+import {
   replaySeasonProgressEndSlug,
   seasonBandSeeds,
 } from "../app/valuation-season-band-core.js";
 
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
+const testHashSalt = "audit-test-hash-salt-32-characters-minimum";
+const signEvidenceRow = (row) => {
+  const completeRow = {
+    ...row,
+    model_evidence: {
+      bindings: {
+        google: "none",
+        nintendo: "none",
+        gameCenter: "none",
+        facebook: "none",
+        steam: "none",
+        twitch: "none",
+        playstation: "none",
+      },
+      resources: { candles: 100, hearts: 10, ascended: 5, passes: 0 },
+    },
+  };
+  return {
+    ...completeRow,
+    evidence_signature: modelEvidenceSignatureFor(completeRow, testHashSalt),
+  };
+};
 const completeSeasonProgress = (startSlug) => {
   const startIndex = seasonBandSeeds.findIndex((seed) => seed.slug === startSlug);
   const endIndex = seasonBandSeeds.findIndex(
@@ -26,6 +51,7 @@ const audit = async (rows, { splitSeed } = {}) => {
     script,
     lines: rows.map(JSON.stringify),
     args,
+    env: { ...process.env, VALUATION_HASH_SALT: testHashSalt },
     temporaryPrefix: "sky-valuation-audit-",
   });
   return JSON.parse(stdout);
@@ -64,6 +90,29 @@ test("deduplicates hashes and excludes foreign, China, and invalid records", asy
   assert.deepEqual([result.seasons.aurora.excludedCount, result.seasons.aurora.duplicateCount], [4, 1]);
 });
 
+test("deduplicates the same inventory snapshot even under different account ids", async () => {
+  const snapshotHash = "d".repeat(64);
+  const result = await audit([
+    { post_hash: "snapshot-one", account_fingerprint: "a".repeat(64), snapshot_hash: snapshotHash, published_at: recent, price_twd: 10000, evidence_kind: "ask", evidence_quality: "high", start_season_slug: "gratitude" },
+    { post_hash: "snapshot-two", account_fingerprint: "b".repeat(64), snapshot_hash: snapshotHash, published_at: recent, price_twd: 90000, evidence_kind: "ask", evidence_quality: "high", start_season_slug: "gratitude" },
+  ]);
+  assert.equal(result.eligibleRows, 1);
+  assert.equal(result.duplicateSnapshotRows, 1);
+});
+
+test("rejects numeric-string point prices at the same strict boundary as validation", async () => {
+  const result = await audit([{
+    post_hash: "string-price",
+    published_at: recent,
+    price_twd: "10000",
+    evidence_kind: "ask",
+    evidence_quality: "high",
+    season_progress: { assembly: "畢" },
+  }]);
+  assert.equal(result.eligibleRows, 0);
+  assert.equal(result.excludedRows, 1);
+});
+
 test("hard-excludes a confounded listing even when its price is otherwise valid", async () => {
   const result = await audit([{
     post_hash: "badges-bundled",
@@ -85,10 +134,16 @@ test("reports strict predictor gaps by field and source", async () => {
   );
   completePredictor.confidence = "low";
   const result = await audit([
-    {
+    signEvidenceRow({
       source: "manual_backup",
       post_hash: "complete-predictor",
-      account_fingerprint: "complete-account",
+      account_fingerprint: "a".repeat(64),
+      snapshot_hash: "b".repeat(64),
+      identity_namespace: "c".repeat(64),
+      account_identity_scheme: "stable-hmac-v1",
+      inventory_complete: true,
+      bindings_complete: true,
+      valuation_model_schema_version: 3,
       published_at: recent,
       price_twd: 4000,
       evidence_kind: "professional_estimate",
@@ -97,7 +152,7 @@ test("reports strict predictor gaps by field and source", async () => {
       season_progress: completeSeasonProgress("moments"),
       season_progress_end_slug: replaySeasonProgressEndSlug,
       valuation_model: completePredictor,
-    },
+    }),
     {
       source: "facebook",
       post_hash: "partial-predictor",
@@ -139,6 +194,36 @@ test("reports strict predictor gaps by field and source", async () => {
     facebook: { eligibleRows: 2, completeRows: 0, missingRows: 2, coverage: 0 },
     manual_backup: { eligibleRows: 1, completeRows: 1, missingRows: 0, coverage: 1 },
   });
+});
+
+test("uses the shared predictor semantics instead of counting invalid numeric ranges", async () => {
+  const invalidPredictor = Object.fromEntries(
+    valuationModelInputKeys.map((field) => [field, 1]),
+  );
+  invalidPredictor.baseLow = 2;
+  invalidPredictor.baseHigh = 1;
+  invalidPredictor.confidence = "low";
+  const result = await audit([{
+    source: "manual_backup",
+    post_hash: "invalid-semantic-predictor",
+    account_fingerprint: "a".repeat(64),
+    snapshot_hash: "b".repeat(64),
+    identity_namespace: "c".repeat(64),
+    account_identity_scheme: "stable-hmac-v1",
+    inventory_complete: true,
+    bindings_complete: true,
+    valuation_model_schema_version: 3,
+    published_at: recent,
+    price_twd: 4000,
+    evidence_kind: "professional_estimate",
+    evidence_quality: "medium",
+    start_season_slug: "moments",
+    season_progress: completeSeasonProgress("moments"),
+    season_progress_end_slug: replaySeasonProgressEndSlug,
+    valuation_model: invalidPredictor,
+  }]);
+  assert.equal(result.predictorCoverage.completeRows, 0);
+  assert.equal(result.predictorCoverage.missingByField.valuation_model_semantics, 1);
 });
 
 test("keeps old listing text and account features compatible without leaking them", async () => {

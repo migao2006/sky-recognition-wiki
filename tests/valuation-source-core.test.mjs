@@ -175,3 +175,26 @@ test("newer observed backup evidence wins when publication dates are unavailable
 
   assert.equal(preferredRow(older, newer), newer);
 });
+
+test("same-time predictor ties resolve deterministically regardless of source order", () => {
+  const common = {
+    evidence_kind: "professional_estimate",
+    observed_at: "2026-09-06T16:00:00.000Z",
+    account_fingerprint: "a".repeat(64),
+    snapshot_hash: "b".repeat(64),
+    identity_namespace: "c".repeat(64),
+    account_identity_scheme: "stable-hmac-v1",
+    inventory_complete: true,
+    bindings_complete: true,
+    valuation_model_schema_version: 3,
+    season_progress: { carnival: "畢" },
+    season_progress_end_slug: "carnival",
+  };
+  const first = { ...common, valuation_model: completeModel };
+  const second = {
+    ...common,
+    valuation_model: { ...completeModel, packageHigh: 100 },
+  };
+
+  assert.equal(preferredRow(first, second), preferredRow(second, first));
+});

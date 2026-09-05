@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import {
   hasCompleteValuationModelFeatures,
   valuationModelInputKeys,
@@ -27,6 +27,141 @@ export const qualityWeights = { high: 1, medium: 0.75, low: 0.5 };
 export const breakClasses = ["none", "slight", "medium", "big"];
 export const packageTiers = ["few", "medium", "many", "hundred"];
 export const accountStyles = ["simple", "regular"];
+export const modelEvidenceBindingKeys = [
+  "google",
+  "nintendo",
+  "gameCenter",
+  "facebook",
+  "steam",
+  "twitch",
+  "playstation",
+];
+export const modelEvidenceResourceLimits = {
+  candles: 99_999,
+  hearts: 99_999,
+  ascended: 99_999,
+  passes: 999,
+};
+export const modelEvidenceFields = [
+  "account_fingerprint",
+  "snapshot_hash",
+  "identity_namespace",
+  "valuation_model_schema_version",
+  "account_identity_scheme",
+  "inventory_complete",
+  "bindings_complete",
+  "model_evidence",
+  "evidence_signature",
+];
+
+export const canonicalJson = (value) => {
+  if (value === undefined) return "null";
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) =>
+      `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+};
+export const hasCompleteModelEvidenceSnapshot = (row) => {
+  const evidence = row?.model_evidence;
+  if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) return false;
+  const bindings = evidence.bindings;
+  const resources = evidence.resources;
+  const bindingStatuses = new Set(["none", "transfer", "keep", "issue"]);
+  if (
+    !bindings ||
+    typeof bindings !== "object" ||
+    Array.isArray(bindings) ||
+    Object.keys(bindings).length !== modelEvidenceBindingKeys.length ||
+    modelEvidenceBindingKeys.some(
+      (key) => !Object.hasOwn(bindings, key) || !bindingStatuses.has(bindings[key]),
+    )
+  ) return false;
+  const resourceKeys = Object.keys(modelEvidenceResourceLimits);
+  return Boolean(
+    resources &&
+    typeof resources === "object" &&
+    !Array.isArray(resources) &&
+    Object.keys(resources).length === resourceKeys.length &&
+    resourceKeys.every((key) =>
+      Object.hasOwn(resources, key) &&
+      Number.isSafeInteger(resources[key]) &&
+      resources[key] >= 0 &&
+      resources[key] <= modelEvidenceResourceLimits[key]),
+  );
+};
+const modelEvidencePayload = (row) => ({
+  schema_version: row?.schema_version ?? null,
+  source: row?.source ?? null,
+  post_hash: row?.post_hash ?? null,
+  post_fingerprint: row?.post_fingerprint ?? null,
+  group_hash: row?.group_hash ?? null,
+  market_group_hash: row?.market_group_hash ?? null,
+  source_group_hash: row?.source_group_hash ?? null,
+  account_group_hash: row?.account_group_hash ?? null,
+  account_hash: row?.account_hash ?? null,
+  account_fingerprint: row?.account_fingerprint ?? null,
+  snapshot_hash: row?.snapshot_hash ?? null,
+  identity_namespace: row?.identity_namespace ?? null,
+  account_identity_scheme: row?.account_identity_scheme ?? null,
+  valuation_model_schema_version: row?.valuation_model_schema_version ?? null,
+  inventory_complete: row?.inventory_complete ?? null,
+  bindings_complete: row?.bindings_complete ?? null,
+  model_evidence: row?.model_evidence ?? null,
+  published_at: row?.published_at ?? null,
+  observed_at: row?.observed_at ?? null,
+  price_twd: row?.price_twd ?? null,
+  price_twd_low: row?.price_twd_low ?? null,
+  price_twd_high: row?.price_twd_high ?? null,
+  price_kind: row?.price_kind ?? null,
+  evidence_kind: row?.evidence_kind ?? null,
+  evidence_quality: row?.evidence_quality ?? null,
+  region: row?.region ?? null,
+  currency: row?.currency ?? null,
+  listing_text: row?.listing_text ?? null,
+  account_features: row?.account_features ?? null,
+  exclude_from_model: row?.exclude_from_model ?? null,
+  exclusion_reason: row?.exclusion_reason ?? null,
+  start_season_slug: row?.start_season_slug ?? null,
+  start_season_confidence: row?.start_season_confidence ?? null,
+  season_progress: row?.season_progress ?? null,
+  season_progress_end_slug: row?.season_progress_end_slug ?? null,
+  computed_break_class: row?.computed_break_class ?? null,
+  missing_season_count: row?.missing_season_count ?? null,
+  completion_ratio: row?.completion_ratio ?? null,
+  paid_package_count: row?.paid_package_count ?? null,
+  computed_package_tier: row?.computed_package_tier ?? null,
+  limited_item_count: row?.limited_item_count ?? null,
+  graduation_gift_count: row?.graduation_gift_count ?? null,
+  account_style: row?.account_style ?? null,
+  valuation_model: row?.valuation_model ?? null,
+});
+export const modelEvidenceSignatureFor = (row, hashSalt) => {
+  if (typeof hashSalt !== "string" || hashSalt.length < 32) return null;
+  return createHmac("sha256", hashSalt)
+    .update(`model-evidence-v1:${canonicalJson(modelEvidencePayload(row))}`, "utf8")
+    .digest("hex");
+};
+export const hasCompleteModelEvidenceShape = (row) =>
+  /^[a-f0-9]{64}$/u.test(String(row?.account_fingerprint ?? "")) &&
+  /^[a-f0-9]{64}$/u.test(String(row?.snapshot_hash ?? "")) &&
+  /^[a-f0-9]{64}$/u.test(String(row?.identity_namespace ?? "")) &&
+  row?.valuation_model_schema_version === 3 &&
+  row?.account_identity_scheme === "stable-hmac-v1" &&
+  row?.inventory_complete === true &&
+  row?.bindings_complete === true &&
+  hasCompleteModelEvidenceSnapshot(row) &&
+  /^[a-f0-9]{64}$/u.test(String(row?.evidence_signature ?? ""));
+export const hasCompleteModelEvidence = (row, { hashSalt } = {}) => {
+  if (!hasCompleteModelEvidenceShape(row)) return false;
+  const expected = modelEvidenceSignatureFor(row, hashSalt);
+  if (!expected) return false;
+  return timingSafeEqual(
+    Buffer.from(row.evidence_signature, "hex"),
+    Buffer.from(expected, "hex"),
+  );
+};
 
 export const seasonProgressParts = (value) => {
   if (value && typeof value === "object") {
@@ -152,8 +287,14 @@ export const packageTierFor = (row) => {
 export const valuationModelFeaturesFor = (row) => {
   const value = row.valuation_model ?? row.valuationModel ?? row.model_features;
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (
+    valuationModelInputKeys.some(
+      (key) => typeof value[key] !== "number" || !Number.isFinite(value[key]),
+    )
+  )
+    return null;
   const result = Object.fromEntries(
-    valuationModelInputKeys.map((key) => [key, Number(value[key])]),
+    valuationModelInputKeys.map((key) => [key, value[key]]),
   );
   result.confidence = value.confidence;
   if (!hasCompleteValuationModelFeatures(result)) return null;
@@ -166,8 +307,6 @@ export const valuationModelFeaturesFor = (row) => {
   return result;
 };
 
-const numberOrNull = (value) =>
-  Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
 const positiveNumber = (value, coerce) => {
   const number = coerce ? Number(value) : value;
   return Number.isFinite(number) && number > 0 ? number : null;
@@ -209,16 +348,22 @@ export const timeWeightFor = (row, referenceDate) => {
   return 0.25;
 };
 export const sampleWeightFor = (row, referenceDate) => {
-  const explicit = numberOrNull(row.effective_weight ?? row.sample_weight);
-  if (explicit) return explicit;
   const priceKind = row.price_kind ?? row.evidence_kind ?? "ask";
+  const priceKindWeight = row.price_kind
+    ? (priceKindWeights[priceKind] ?? 0.75)
+    : 1;
   return (evidenceWeights[row.evidence_kind] ?? 0) *
-    (priceKindWeights[priceKind] ?? 0.75) *
+    priceKindWeight *
     qualityWeights[row.evidence_quality ?? "medium"] *
     timeWeightFor(row, referenceDate);
 };
 export const accountKeyFor = (row, { trim = true } = {}) => {
-  const value = row.account_group_hash ?? row.account_hash ?? row.account_fingerprint;
+  const stableFingerprint = String(row?.account_fingerprint ?? "").trim();
+  const value =
+    row?.account_identity_scheme === "stable-hmac-v1" &&
+    /^[a-f0-9]{64}$/u.test(stableFingerprint)
+      ? stableFingerprint
+      : row.account_group_hash ?? row.account_hash ?? row.account_fingerprint;
   return value === undefined || value === null || String(value).trim() === ""
     ? null
     : trim ? String(value).trim() : String(value);
@@ -230,12 +375,13 @@ export const postKeyFor = (row, { trim = true } = {}) => {
     : trim ? String(value).trim() : String(value);
 };
 export const groupKeyFor = (row) => {
-  const groupHash = String(row.group_hash ?? "").trim();
+  const groupHash = String(
+    row.group_hash ?? row.market_group_hash ?? row.source_group_hash ?? "",
+  ).trim();
   if (groupHash) return `group:${groupHash}`;
   return `source:${String(row.source ?? row.__sourceHint ?? "unknown").trim() || "unknown"}`;
 };
-export const marketGroupFor = (row) =>
-  String(row.group_hash ?? row.market_group_hash ?? row.source_group_hash ?? row.source ?? "unknown");
+export const marketGroupFor = groupKeyFor;
 export const sourceFor = (row) => {
   const value = String(row.source ?? row.__sourceHint ?? "unknown").trim().toLowerCase();
   if (/facebook|\bfb\b/.test(value)) return "facebook";
@@ -246,6 +392,13 @@ export const sourceFor = (row) => {
 };
 const evidenceRank = (kind) =>
   ({ sold: 5, quick_sale: 4, ask: 3, professional_estimate: 2, comment: 1 })[kind] ?? 0;
+const stableValuationModel = (row) => {
+  const value = row.valuation_model ?? row.valuationModel ?? row.model_features;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return Object.fromEntries(
+    [...valuationModelInputKeys, "confidence"].map((key) => [key, value[key] ?? null]),
+  );
+};
 export const stableRowKey = (row, { accountTrim = true } = {}) =>
   createHash("sha256")
     .update(JSON.stringify({
@@ -260,7 +413,15 @@ export const stableRowKey = (row, { accountTrim = true } = {}) =>
       group_key: groupKeyFor(row),
       start_season_slug: row.start_season_slug ?? "",
       season_progress: row.season_progress ?? null,
+      season_progress_end_slug: row.season_progress_end_slug ?? "",
       paid_package_count: row.paid_package_count ?? "",
+      account_identity_scheme: row.account_identity_scheme ?? "",
+      identity_namespace: row.identity_namespace ?? "",
+      snapshot_hash: row.snapshot_hash ?? "",
+      inventory_complete: row.inventory_complete ?? null,
+      bindings_complete: row.bindings_complete ?? null,
+      valuation_model_schema_version: row.valuation_model_schema_version ?? null,
+      valuation_model: stableValuationModel(row),
     }))
     .digest("hex");
 const replayEvidenceScore = (row) => {
@@ -270,7 +431,7 @@ const replayEvidenceScore = (row) => {
       ? Object.keys(progress).length
       : 0;
   return (
-    (valuationModelFeaturesFor(row) ? 100 : 0) +
+    (valuationModelFeaturesFor(row) && hasCompleteModelEvidenceShape(row) ? 100 : 0) +
     (hasReplayableSeasonProgress(row, {
       orderedSeasonSlugs: seasonBandSeeds.map((seed) => seed.slug),
       requiredEndSlug: replaySeasonProgressEndSlug,

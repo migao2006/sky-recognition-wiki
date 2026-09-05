@@ -1,15 +1,21 @@
+import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import {
   accountKeyFor,
   accountStyles,
   applyGroupCap,
   breakClasses,
   breakClassFor,
+  canonicalJson,
   evidenceWeights,
+  groupKeyFor,
+  hasCompleteModelEvidence,
   hasReplayableSeasonProgress,
   inHoldout,
   isExcludedFromModel,
-  marketGroupFor,
   packageTiers,
   packageTierFor,
   postKeyFor,
@@ -31,12 +37,40 @@ import {
 } from "../app/valuation-season-band-core.js";
 
 const minimumEligibleAccounts = 200;
+export const officialValuationSplitSeed = "sky-valuation-v3";
+const minimumHoldoutShare = 0.15;
+const maximumHoldoutShare = 0.25;
+const minimumEligiblePerDimension = 5;
+const minimumHoldoutPerDimension = 2;
+const maximumDimensionMedianLogError = Math.log(2);
 const orderedSeasonSlugs = seasonBandSeeds.map((seed) => seed.slug);
 const replaySeasonProgressOptions = {
   orderedSeasonSlugs,
   requiredEndSlug: replaySeasonProgressEndSlug,
   graduationGiftCounts: seasonGraduationGiftCounts,
 };
+export const officialValuationBaselineDigest =
+  "0cac6ae051ea3a2c80adb89a8a3442398d7520da9ac1a4f09a8aa72fd0d2988c";
+const execFileAsync = promisify(execFile);
+const auditScriptPath = fileURLToPath(
+  new URL("./audit-valuation-source.mjs", import.meta.url),
+);
+const candidateModelArtifact = (candidate) => ({
+  schemaVersion: candidate?.schemaVersion ?? null,
+  asOf: candidate?.asOf ?? null,
+  provenance: candidate?.provenance ?? null,
+  split: candidate?.split ?? null,
+  segments: candidate?.segments ?? null,
+  modifiers: candidate?.modifiers ?? null,
+});
+export const valuationModelArtifactDigest = (aggregate) =>
+  createHash("sha256")
+    .update(canonicalJson(candidateModelArtifact(aggregate)))
+    .digest("hex");
+export const candidateMatchesRebuild = (candidate, rebuiltCandidate) =>
+  Boolean(rebuiltCandidate) &&
+  canonicalJson(candidateModelArtifact(candidate)) ===
+    canonicalJson(candidateModelArtifact(rebuiltCandidate));
 
 const weightedMedian = (rows, valueKey) => {
   const ordered = [...rows].sort((left, right) => left[valueKey] - right[valueKey]);
@@ -49,16 +83,15 @@ const weightedMedian = (rows, valueKey) => {
   }
   return ordered.at(-1)?.[valueKey] ?? null;
 };
-const startSeasonFor = (row, aggregate) => {
+const startSeasonFor = (row) => {
   const explicit = String(row.start_season_slug ?? "").trim().toLowerCase();
-  if (explicit)
-    return aggregate.segments?.startSeason?.[explicit]?.median ? explicit : null;
+  if (explicit) return orderedSeasonSlugs.includes(explicit) ? explicit : null;
   if (!row.season_progress || typeof row.season_progress !== "object") return null;
-  for (const slug of Object.keys(aggregate.segments?.startSeason ?? {})) {
+  for (const slug of orderedSeasonSlugs) {
     const value = row.season_progress[slug];
     if (value === undefined || value === null || value === false || value === 0) continue;
     if (/^(?:0|0\s*\/\s*\d+|⁰|none|no|false|-)?$/i.test(String(value).trim())) continue;
-    if (aggregate.segments.startSeason[slug]?.median) return slug;
+    return slug;
   }
   return null;
 };
@@ -72,6 +105,28 @@ const supportedSeasonSlugsFor = (aggregate) =>
   Object.entries(aggregate?.segments?.startSeason ?? {}).flatMap(([slug, segment]) =>
     Number(segment?.median) > 0 ? [slug] : [],
   );
+const dimensionCoverageFor = (eligible, holdout, values, selector) => {
+  const counts = Object.fromEntries(values.map((value) => [value, {
+    eligible: eligible.filter((sample) => selector(sample) === value).length,
+    holdout: holdout.filter((sample) => selector(sample) === value).length,
+  }]));
+  return {
+    minimumEligible: minimumEligiblePerDimension,
+    minimumHoldout: minimumHoldoutPerDimension,
+    counts,
+    missingEligible: values.filter(
+      (value) => counts[value].eligible < minimumEligiblePerDimension,
+    ),
+    missingHoldout: values.filter(
+      (value) => counts[value].holdout < minimumHoldoutPerDimension,
+    ),
+  };
+};
+const missingModifierValues = (candidate, key, values) =>
+  values.filter((value) => {
+    const multiplier = candidate.modifiers?.[key]?.[value]?.multiplier;
+    return typeof multiplier !== "number" || !Number.isFinite(multiplier) || multiplier <= 0;
+  });
 const hasFullModelPredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
   Number(aggregate?.provenance?.modelSchemaVersion) >= 2;
@@ -225,19 +280,59 @@ export const predictValuationAggregate = (
   return { price: segment.median * modifier, low: (segment.p25 ?? segment.median) * modifier, high: (segment.p75 ?? segment.median) * modifier };
 };
 
-export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = "sky-valuation-v3" }) => {
+export const validateValuationModel = ({
+  candidate,
+  baseline,
+  rows,
+  splitSeed = officialValuationSplitSeed,
+  rebuiltCandidate = null,
+  hashSalt = process.env.VALUATION_HASH_SALT ?? "",
+  expectedBaselineDigest = officialValuationBaselineDigest,
+}) => {
   const asOf = new Date(`${candidate.asOf ?? baseline.asOf ?? "1970-01-01"}T23:59:59.999Z`);
   if (!Number.isFinite(asOf.getTime())) throw new Error("candidate or baseline requires a valid asOf date");
+  const claimedModelEvidenceRows = rows.filter((row) =>
+    row?.account_identity_scheme === "stable-hmac-v1" ||
+    row?.evidence_signature !== undefined ||
+    row?.model_evidence !== undefined,
+  );
+  const invalidModelEvidenceRows = claimedModelEvidenceRows.filter(
+    (row) => !hasCompleteModelEvidence(row, { hashSalt }),
+  );
+  const authenticatedRows = rows.filter((row) =>
+    hasCompleteModelEvidence(row, { hashSalt }),
+  );
+  const authenticatedPostKeys = new Set(authenticatedRows.map(postKeyFor).filter(Boolean));
+  const authenticatedAccountKeys = new Set(authenticatedRows.map(accountKeyFor).filter(Boolean));
+  const authenticatedSnapshotHashes = new Set(
+    authenticatedRows
+      .map((row) => String(row.snapshot_hash ?? "").trim().toLowerCase())
+      .filter((value) => /^[a-f0-9]{64}$/u.test(value)),
+  );
+  const unsignedIdentityCollisions = rows.filter((row) => {
+    if (hasCompleteModelEvidence(row, { hashSalt })) return false;
+    const snapshotHash = String(row.snapshot_hash ?? "").trim().toLowerCase();
+    return (
+      authenticatedPostKeys.has(postKeyFor(row)) ||
+      authenticatedAccountKeys.has(accountKeyFor(row)) ||
+      (/^[a-f0-9]{64}$/u.test(snapshotHash) &&
+        authenticatedSnapshotHashes.has(snapshotHash))
+    );
+  });
   const sourceCandidates = rows.flatMap((row) => {
     if (isExcludedFromModel(row)) return [];
     if (!Object.hasOwn(evidenceWeights, row.evidence_kind) || !Object.hasOwn(qualityWeights, row.evidence_quality ?? "medium")) return [];
-    if (/^(?:cn|china|國服|中國服|陸服)$/i.test(String(row.region ?? "").trim())) return [];
-    if (/^(?:cny|rmb|usd|hkd)$/i.test(String(row.currency ?? "").trim())) return [];
-    const price = priceFor(row);
+    const eligibilityText = `${row.region ?? ""} ${row.currency ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
+    if (/國服|中國服|陸服|\b(?:cn|china)\b/i.test(eligibilityText)) return [];
+    if (/人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/i.test(eligibilityText)) return [];
+    const price = priceFor(row, {
+      coercePoint: false,
+      coerceRange: true,
+    });
     const weight = sampleWeightFor(row, asOf);
-    const accountGroup = accountKeyFor(row, { trim: false });
+    const accountGroup = accountKeyFor(row);
     if (!price || !weight || !accountGroup) return [];
-    return [{ row, price, weight, accountGroup, postGroup: postKeyFor(row, { trim: false }), marketGroup: marketGroupFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0, modelFeatures: valuationModelFeaturesFor(row) }];
+    return [{ row, price, weight, accountGroup, postGroup: postKeyFor(row), marketGroup: groupKeyFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0, modelFeatures: hasCompleteModelEvidence(row, { hashSalt }) ? valuationModelFeaturesFor(row) : null }];
   });
   const sourceWithoutPostIdentity = [];
   const sourceByPost = new Map();
@@ -249,7 +344,7 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
     const previous = sourceByPost.get(sample.postGroup);
     sourceByPost.set(
       sample.postGroup,
-      previous ? preferredSample(previous, sample, { accountTrim: false }) : sample,
+      previous ? preferredSample(previous, sample) : sample,
     );
   });
   const sourceByAccount = new Map();
@@ -257,27 +352,45 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
     const previous = sourceByAccount.get(sample.accountGroup);
     sourceByAccount.set(
       sample.accountGroup,
-      previous ? preferredSample(previous, sample, { accountTrim: false }) : sample,
+      previous ? preferredSample(previous, sample) : sample,
     );
   });
-  const sourceEligible = [...sourceByAccount.values()];
-  const sourceGroupCap = applyGroupCap(sourceEligible, "marketGroup");
-  const candidates = sourceGroupCap.samples.flatMap((sample) => {
-    const startSeason = startSeasonFor(sample.row, baseline);
-    if (!startSeason || !baseline.segments?.startSeason?.[startSeason]?.median) return [];
+  const sourceBySnapshot = new Map();
+  const sourceWithoutSnapshot = [];
+  for (const sample of sourceByAccount.values()) {
+    const snapshotHash = String(sample.row.snapshot_hash ?? "").trim().toLowerCase();
+    if (!/^[a-f0-9]{64}$/u.test(snapshotHash)) {
+      sourceWithoutSnapshot.push(sample);
+      continue;
+    }
+    const previous = sourceBySnapshot.get(snapshotHash);
+    sourceBySnapshot.set(
+      snapshotHash,
+      previous ? preferredSample(previous, sample) : sample,
+    );
+  }
+  const sourceEligible = [...sourceWithoutSnapshot, ...sourceBySnapshot.values()];
+  const comparableCandidates = sourceEligible.flatMap((sample) => {
+    const startSeason = startSeasonFor(sample.row);
+    if (!startSeason) return [];
     return [{ ...sample, startSeason, breakClass: breakClassFor(sample.row), packageTier: packageTierFor(sample.row), accountStyle: accountStyles.includes(sample.row.account_style) ? sample.row.account_style : null }];
   });
-  const eligible = candidates;
+  const comparableGroupCap = applyGroupCap(comparableCandidates, "marketGroup");
+  const eligible = comparableGroupCap.samples;
   const holdout = eligible.filter((sample) => inHoldout(sample.accountGroup, splitSeed));
-  const errorMetrics = (aggregate, options) => {
-    const valid = holdout.flatMap((sample) => {
+  const holdoutGroupCap = applyGroupCap(holdout, "marketGroup");
+  const minimumHoldoutAccounts = Math.ceil(eligible.length * minimumHoldoutShare);
+  const maximumHoldoutAccounts = Math.floor(eligible.length * maximumHoldoutShare);
+  const errorDetails = (aggregate, options) =>
+    holdout.flatMap((sample) => {
       if (!hasFullModelPredictor(aggregate) && !aggregate.segments?.startSeason?.[sample.startSeason]?.median)
-        return [{ absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
+        return [{ sample, absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
       const prediction = predictValuationAggregate(aggregate, sample, options);
       if (!prediction)
-        return [{ absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
-      return [{ absoluteLogError: Math.abs(Math.log(prediction.price / sample.price)), ape: Math.abs(prediction.price - sample.price) / sample.price, covered: sample.price >= prediction.low && sample.price <= prediction.high, missingPrediction: false, weight: sample.weight }];
+        return [{ sample, absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
+      return [{ sample, absoluteLogError: Math.abs(Math.log(prediction.price / sample.price)), ape: Math.abs(prediction.price - sample.price) / sample.price, covered: sample.price >= prediction.low && sample.price <= prediction.high, missingPrediction: false, weight: sample.weight }];
     });
+  const summarizeErrors = (valid) => {
     const totalWeight = valid.reduce((sum, row) => sum + row.weight, 0);
     const coveredWeight = valid
       .filter((row) => row.covered)
@@ -286,44 +399,205 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
     const missingPredictionWeight = valid
       .filter((row) => row.missingPrediction)
       .reduce((sum, row) => sum + row.weight, 0);
-    return { count: valid.length, effectiveWeight: totalWeight, missingPredictionCount, predictionCoverage: totalWeight ? 1 - missingPredictionWeight / totalWeight : null, medianAbsoluteLogError: weightedMedian(valid, "absoluteLogError"), mdape: weightedMedian(valid, "ape"), p25P75Coverage: totalWeight ? coveredWeight / totalWeight : null };
+    const orderedErrors = valid
+      .map(({ absoluteLogError }) => absoluteLogError)
+      .sort((left, right) => left - right);
+    const upperMedianAbsoluteLogError = orderedErrors.length
+      ? orderedErrors[Math.floor(orderedErrors.length / 2)]
+      : null;
+    const maximumAbsoluteLogError = orderedErrors.at(-1) ?? null;
+    return { count: valid.length, effectiveWeight: totalWeight, missingPredictionCount, predictionCoverage: totalWeight ? 1 - missingPredictionWeight / totalWeight : null, medianAbsoluteLogError: weightedMedian(valid, "absoluteLogError"), upperMedianAbsoluteLogError, maximumAbsoluteLogError, mdape: weightedMedian(valid, "ape"), p25P75Coverage: totalWeight ? coveredWeight / totalWeight : null };
   };
   const replayCandidate = withDerivedSeasonBands(candidate);
   const replayBaseline = withDerivedSeasonBands(baseline);
   const replayablePredictorRows = eligible.filter((sample) =>
     predictValuationAggregate(replayCandidate, sample, { assumeValidated: true }),
   );
-  const candidateMetrics = errorMetrics(replayCandidate, { assumeValidated: true });
-  const baselineMetrics = errorMetrics(replayBaseline);
-  const requiredSeasonSlugs = supportedSeasonSlugsFor(baseline);
+  const completeEvidenceRows = eligible.filter((sample) =>
+    hasCompleteModelEvidence(sample.row, { hashSalt }),
+  );
+  const identityNamespaces = new Set(
+    completeEvidenceRows.map((sample) => sample.row.identity_namespace),
+  );
+  const candidateErrorDetails = errorDetails(replayCandidate, { assumeValidated: true });
+  const baselineErrorDetails = errorDetails(replayBaseline);
+  const candidateMetrics = summarizeErrors(candidateErrorDetails);
+  const baselineMetrics = summarizeErrors(baselineErrorDetails);
+  const replayEndIndex = orderedSeasonSlugs.indexOf(replaySeasonProgressEndSlug);
+  const validationSeasonSlugs = replayEndIndex >= 0
+    ? orderedSeasonSlugs.slice(0, replayEndIndex + 1)
+    : [];
+  const requiredSeasonSlugs = validationSeasonSlugs;
   const candidateSeasonSlugs = new Set(supportedSeasonSlugsFor(candidate));
   const missingCandidateSeasons = requiredSeasonSlugs.filter(
     (slug) => !candidateSeasonSlugs.has(slug),
   );
   const candidateError = candidateMetrics.medianAbsoluteLogError;
   const baselineError = baselineMetrics.medianAbsoluteLogError;
+  const seasonDimensionCoverage = dimensionCoverageFor(
+    eligible,
+    holdout,
+    validationSeasonSlugs,
+    (sample) => sample.startSeason,
+  );
+  const modifierDimensionCoverage = {
+    breakClass: dimensionCoverageFor(
+      eligible,
+      holdout,
+      breakClasses,
+      (sample) => sample.breakClass,
+    ),
+    packageTier: dimensionCoverageFor(
+      eligible,
+      holdout,
+      packageTiers,
+      (sample) => sample.packageTier,
+    ),
+    accountStyle: dimensionCoverageFor(
+      eligible,
+      holdout,
+      accountStyles,
+      (sample) => sample.accountStyle,
+    ),
+  };
+  const missingCandidateModifiers = {
+    breakClass: missingModifierValues(candidate, "breakClass", breakClasses),
+    packageTier: missingModifierValues(candidate, "packageTier", packageTiers),
+    accountStyle: missingModifierValues(candidate, "accountStyle", accountStyles),
+  };
+  const dimensionAccuracyFor = (values, selector) => {
+    const metrics = Object.fromEntries(values.map((value) => {
+      const candidateValueMetrics = summarizeErrors(
+        candidateErrorDetails.filter(({ sample }) => selector(sample) === value),
+      );
+      const baselineValueMetrics = summarizeErrors(
+        baselineErrorDetails.filter(({ sample }) => selector(sample) === value),
+      );
+      const candidateValueError = candidateValueMetrics.upperMedianAbsoluteLogError;
+      const baselineValueError = baselineValueMetrics.upperMedianAbsoluteLogError;
+      return [value, {
+        candidate: candidateValueMetrics,
+        baseline: baselineValueMetrics,
+        pass:
+          candidateValueMetrics.count >= minimumHoldoutPerDimension &&
+          candidateValueMetrics.predictionCoverage === 1 &&
+          candidateValueMetrics.p25P75Coverage !== null &&
+          candidateValueMetrics.p25P75Coverage >= 0.5 &&
+          candidateValueError !== null &&
+          candidateValueError <= maximumDimensionMedianLogError &&
+          baselineValueError !== null &&
+          candidateValueError <= baselineValueError * 1.15 + 0.05,
+      }];
+    }));
+    return {
+      maximumMedianLogError: Number(maximumDimensionMedianLogError.toFixed(4)),
+      metrics,
+      failing: values.filter((value) => !metrics[value].pass),
+    };
+  };
+  const seasonDimensionAccuracy = dimensionAccuracyFor(
+    validationSeasonSlugs,
+    (sample) => sample.startSeason,
+  );
+  const modifierDimensionAccuracy = {
+    breakClass: dimensionAccuracyFor(breakClasses, (sample) => sample.breakClass),
+    packageTier: dimensionAccuracyFor(packageTiers, (sample) => sample.packageTier),
+    accountStyle: dimensionAccuracyFor(accountStyles, (sample) => sample.accountStyle),
+  };
   const accuracyStatus = candidateError === null || baselineError === null ? "fail" : candidateError <= baselineError * 0.9 ? "pass" : candidateError <= baselineError * 1.03 ? "needsBiasJustification" : "fail";
   const criteria = {
+    baselineProvenance: {
+      actualDigest: valuationModelArtifactDigest(baseline),
+      expectedDigest: expectedBaselineDigest,
+      pass: valuationModelArtifactDigest(baseline) === expectedBaselineDigest,
+    },
+    authenticatedModelEvidence: {
+      claimed: claimedModelEvidenceRows.length,
+      invalid: invalidModelEvidenceRows.length,
+      pass:
+        claimedModelEvidenceRows.length > 0 &&
+        invalidModelEvidenceRows.length === 0,
+    },
+    unsignedIdentityCollisions: {
+      actual: unsignedIdentityCollisions.length,
+      maximum: 0,
+      pass: unsignedIdentityCollisions.length === 0,
+    },
+    candidateRebuild: {
+      pass: candidateMatchesRebuild(candidate, rebuiltCandidate),
+    },
     candidateProvenance: {
       schemaVersion: candidate.schemaVersion ?? null,
       trainingMode: candidate.split?.trainingMode ?? null,
       candidateSplitSeed: candidate.split?.splitSeed ?? null,
       expectedSplitSeed: splitSeed,
+      requiredSplitSeed: officialValuationSplitSeed,
       pass:
         candidate.split?.trainingMode === "calibration-only" &&
+        splitSeed === officialValuationSplitSeed &&
         candidate.split?.splitSeed === splitSeed &&
         candidate.schemaVersion >= 4 &&
         hasReplayableCandidatePredictor(candidate),
     },
-    minimumEligibleRows: { actual: sourceEligible.length, minimum: minimumEligibleAccounts, pass: sourceEligible.length >= minimumEligibleAccounts },
-    marketGroups: { actual: sourceGroupCap.groupCount, minimum: 3, pass: sourceGroupCap.groupCount >= 3 },
-    maximumGroupEffectiveShare: { raw: Number(sourceGroupCap.rawLargestShare.toFixed(4)), actual: Number(sourceGroupCap.cappedLargestShare.toFixed(4)), maximum: 0.6, pass: sourceGroupCap.rawLargestShare <= 0.6 },
-    holdout: { actual: holdout.length, minimum: 1, pass: holdout.length > 0 },
+    minimumEligibleRows: { actual: eligible.length, minimum: minimumEligibleAccounts, pass: eligible.length >= minimumEligibleAccounts },
+    marketGroups: { actual: comparableGroupCap.groupCount, minimum: 3, pass: comparableGroupCap.groupCount >= 3 },
+    maximumGroupEffectiveShare: { raw: Number(comparableGroupCap.rawLargestShare.toFixed(4)), actual: Number(comparableGroupCap.cappedLargestShare.toFixed(4)), maximum: 0.6, pass: comparableGroupCap.rawLargestShare <= 0.6 },
+    holdoutMarketGroups: {
+      actual: holdoutGroupCap.groupCount,
+      minimum: 3,
+      pass: holdoutGroupCap.groupCount >= 3,
+    },
+    holdoutMaximumGroupEffectiveShare: {
+      raw: Number(holdoutGroupCap.rawLargestShare.toFixed(4)),
+      maximum: 0.6,
+      pass: holdoutGroupCap.rawLargestShare <= 0.6,
+    },
+    holdout: {
+      actual: holdout.length,
+      minimum: minimumHoldoutAccounts,
+      maximum: maximumHoldoutAccounts,
+      share: eligible.length ? Number((holdout.length / eligible.length).toFixed(4)) : 0,
+      pass:
+        eligible.length >= minimumEligibleAccounts &&
+        holdout.length >= minimumHoldoutAccounts &&
+        holdout.length <= maximumHoldoutAccounts,
+    },
     candidatePredictionCoverage: { actual: candidateMetrics.predictionCoverage, minimum: 1, pass: candidateMetrics.predictionCoverage === 1 },
     candidateSeasonCoverage: {
       required: requiredSeasonSlugs,
       missing: missingCandidateSeasons,
       pass: missingCandidateSeasons.length === 0,
+    },
+    candidateModifierCoverage: {
+      missing: missingCandidateModifiers,
+      pass: Object.values(missingCandidateModifiers).every(
+        (values) => values.length === 0,
+      ),
+    },
+    seasonHoldoutCoverage: {
+      ...seasonDimensionCoverage,
+      pass:
+        validationSeasonSlugs.length > 0 &&
+        seasonDimensionCoverage.missingEligible.length === 0 &&
+        seasonDimensionCoverage.missingHoldout.length === 0,
+    },
+    modifierHoldoutCoverage: {
+      dimensions: modifierDimensionCoverage,
+      pass: Object.values(modifierDimensionCoverage).every(
+        (coverage) =>
+          coverage.missingEligible.length === 0 &&
+          coverage.missingHoldout.length === 0,
+      ),
+    },
+    seasonAccuracy: {
+      ...seasonDimensionAccuracy,
+      pass: seasonDimensionAccuracy.failing.length === 0,
+    },
+    modifierAccuracy: {
+      dimensions: modifierDimensionAccuracy,
+      pass: Object.values(modifierDimensionAccuracy).every(
+        ({ failing }) => failing.length === 0,
+      ),
     },
     completeModelPredictors: {
       actual: replayablePredictorRows.length,
@@ -332,6 +606,14 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
       minimum: 1,
       pass:
         eligible.length > 0 && replayablePredictorRows.length === eligible.length,
+    },
+    identityNamespaceConsistency: {
+      actual: identityNamespaces.size,
+      maximum: 1,
+      pass:
+        eligible.length > 0 &&
+        completeEvidenceRows.length === eligible.length &&
+        identityNamespaces.size === 1,
     },
     coverage: { actual: candidateMetrics.p25P75Coverage, minimum: 0.5, maximum: 0.9, pass: candidateMetrics.p25P75Coverage !== null && candidateMetrics.p25P75Coverage >= 0.5 && candidateMetrics.p25P75Coverage <= 0.9 },
     accuracy: { status: accuracyStatus, candidateMedianAbsoluteLogError: candidateError, baselineMedianAbsoluteLogError: baselineError },
@@ -369,7 +651,26 @@ if (isMain) {
   const { candidatePath, baselinePath, sourcePaths, splitSeed } = parseValidationArgs(process.argv.slice(2));
   if (!candidatePath || !baselinePath || sourcePaths.length === 0) throw new Error(usage);
   const rows = (await Promise.all(sourcePaths.map(readJsonLines))).flat();
-  const report = validateValuationModel({ candidate: JSON.parse(await readFile(candidatePath, "utf8")), baseline: JSON.parse(await readFile(baselinePath, "utf8")), rows, splitSeed });
+  const candidate = JSON.parse(await readFile(candidatePath, "utf8"));
+  const auditArgs = [
+    auditScriptPath,
+    `--as-of=${candidate.asOf}`,
+    `--split-seed=${officialValuationSplitSeed}`,
+    ...sourcePaths,
+  ];
+  const { stdout: rebuiltOutput } = await execFileAsync(
+    process.execPath,
+    auditArgs,
+    { maxBuffer: 4 * 1024 * 1024 },
+  );
+  const rebuiltCandidate = JSON.parse(rebuiltOutput);
+  const report = validateValuationModel({
+    candidate,
+    rebuiltCandidate,
+    baseline: JSON.parse(await readFile(baselinePath, "utf8")),
+    rows,
+    splitSeed,
+  });
   console.log(JSON.stringify(report, null, 2));
   process.exitCode = report.outcome === "pass" ? 0 : report.outcome === "needsBiasJustification" ? 2 : 1;
 }

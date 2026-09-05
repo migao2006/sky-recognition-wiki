@@ -18,19 +18,22 @@ import {
   breakClassFor as sharedBreakClassFor,
   evidenceWeights,
   groupKeyFor,
+  hasCompleteModelEvidence,
+  hasCompleteModelEvidenceSnapshot,
   hasReplayableSeasonProgress,
   isExcludedFromModel,
+  modelEvidenceFields,
   packageTiers,
   packageTierFor,
   preferredRow,
   priceFor as sharedPriceFor,
-  priceKindWeights,
   priceRangeFor as sharedPriceRangeFor,
+  sampleWeightFor,
   sourceFor,
   stableRowKey,
-  timeWeightFor,
   timestampFor,
   qualityWeights,
+  valuationModelFeaturesFor,
 } from "./lib/valuation-source-core.mjs";
 
 const args = process.argv.slice(2);
@@ -38,6 +41,7 @@ const asOfArg = args.find((value) => value.startsWith("--as-of="));
 const splitSeedArg = args.find((value) => value.startsWith("--split-seed="));
 const includeHoldout = args.includes("--include-holdout");
 const splitSeed = splitSeedArg?.slice("--split-seed=".length) || "sky-valuation-v3";
+const valuationHashSalt = process.env.VALUATION_HASH_SALT ?? "";
 const sourcePaths = args.filter(
   (value) =>
     value !== "--include-holdout" &&
@@ -313,14 +317,10 @@ for (const row of postRows.values()) {
     continue;
   }
   const kind = row.evidence_kind;
-  const priceKind = row.price_kind ?? kind;
   const startSeason = startSeasonFor(row);
-  const priceKindWeight = row.price_kind
-    ? (priceKindWeights[priceKind] ?? 0.75)
-    : 1;
   const sample = {
     price: priceFor(row),
-    weight: evidenceWeights[kind] * priceKindWeight * qualityWeights[row.evidence_quality ?? "medium"] * timeWeightFor(row, referenceDate),
+    weight: sampleWeightFor(row, referenceDate),
     kind,
     quality: row.evidence_quality ?? "medium",
     source: sourceFor(row),
@@ -369,7 +369,29 @@ for (const candidate of eligibleCandidates) {
 }
 selectedCandidates.push(...relistedByAccount.values());
 
-const uncappedSamples = selectedCandidates.map(({ sample }) => sample);
+const deduplicatedCandidates = [];
+const bySnapshot = new Map();
+let duplicateSnapshotRows = 0;
+for (const candidate of selectedCandidates) {
+  const snapshotHash = String(candidate.row.snapshot_hash ?? "").trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/u.test(snapshotHash)) {
+    deduplicatedCandidates.push(candidate);
+    continue;
+  }
+  const existing = bySnapshot.get(snapshotHash);
+  if (!existing) {
+    bySnapshot.set(snapshotHash, candidate);
+    continue;
+  }
+  duplicateSnapshotRows += 1;
+  bySnapshot.set(
+    snapshotHash,
+    preferredRow(existing.row, candidate.row) === candidate.row ? candidate : existing,
+  );
+}
+deduplicatedCandidates.push(...bySnapshot.values());
+
+const uncappedSamples = deduplicatedCandidates.map(({ sample }) => sample);
 const allEligible = uncappedSamples;
 const identifiedAccountRows = new Set(
   allEligible.map((sample) => sample.accountKey).filter(Boolean),
@@ -389,7 +411,7 @@ const calibrationEligible = eligible.filter((sample) =>
   isCalibrationAccount(sample.accountKey),
 );
 const eligibleByRecordId = new Map(eligible.map((sample) => [sample.recordId, sample]));
-for (const candidate of selectedCandidates) {
+for (const candidate of deduplicatedCandidates) {
   if (!includeHoldout && !isCalibrationAccount(candidate.sample.accountKey)) continue;
   candidate.slugs.forEach((slug) => seasonMetrics[slug].samples.push(
     eligibleByRecordId.get(candidate.sample.recordId) ?? candidate.sample,
@@ -490,19 +512,43 @@ const sourceRowsBySource = Object.fromEntries(
 const predictorFields = [
   ...valuationModelInputKeys,
   "confidence",
+  "valuation_model_semantics",
   "season_progress",
+  ...modelEvidenceFields,
 ];
 const missingPredictorFields = (row) => {
   const predictor = row?.valuation_model;
   if (!predictor || typeof predictor !== "object" || Array.isArray(predictor))
     return predictorFields;
-  return predictorFields.filter((field) =>
+  const missing = predictorFields.filter((field) =>
+    field === "valuation_model_semantics"
+      ? false
+      :
     field === "season_progress"
       ? !hasReplayableSeasonProgress(row, replaySeasonProgressOptions)
+      : field === "account_fingerprint" || field === "snapshot_hash" || field === "identity_namespace"
+      ? !/^[a-f0-9]{64}$/u.test(String(row[field] ?? ""))
+      : field === "account_identity_scheme"
+      ? row[field] !== "stable-hmac-v1"
+      : field === "valuation_model_schema_version"
+      ? row[field] !== 3
+      : field === "inventory_complete" || field === "bindings_complete"
+      ? row[field] !== true
+      : field === "model_evidence"
+      ? !hasCompleteModelEvidenceSnapshot(row)
+      : field === "evidence_signature"
+      ? !hasCompleteModelEvidence(row, { hashSalt: valuationHashSalt })
       : field === "confidence"
       ? !valuationConfidenceValues.includes(predictor[field])
       : typeof predictor[field] !== "number" || !Number.isFinite(predictor[field]),
   );
+  const hasMissingModelField = missing.some(
+    (field) => field === "confidence" || valuationModelInputKeys.includes(field),
+  );
+  if (!hasMissingModelField && !valuationModelFeaturesFor(row)) {
+    missing.push("valuation_model_semantics");
+  }
+  return missing;
 };
 const predictorCandidates = selectedCandidates
   .filter(({ sample }) =>
@@ -553,6 +599,7 @@ console.log(JSON.stringify({
   excludedRows,
   duplicateRows: duplicatePostRows,
   duplicatePostRows,
+  duplicateSnapshotRows,
   relistedAccountRows,
   uniqueAccountRows: identifiedAccountRows,
   anonymousEligibleRows,

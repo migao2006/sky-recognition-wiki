@@ -5,6 +5,7 @@ import { tsImport } from "tsx/esm/api";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 import { loadValuationRuntime } from "./load-valuation-runtime.mjs";
 import { replaySeasonProgressEndSlug } from "../app/valuation-season-band-core.js";
+import { modelEvidenceSignatureFor } from "./lib/valuation-source-core.mjs";
 
 const argument = (name, fallback) => {
   const index = process.argv.indexOf(name);
@@ -16,14 +17,22 @@ const priceTwd = Number(argument("--price-twd"));
 const evidenceKind = argument("--evidence-kind", "professional_estimate");
 const evidenceQuality = argument("--evidence-quality", "medium");
 const groupId = argument("--group-id", "manual-account-backup");
+const accountId = argument("--account-id")?.trim().toLowerCase() ?? "";
+const inventoryComplete = argument("--inventory-complete");
 const observedAt = new Date(argument("--observed-at", new Date().toISOString()));
 const workRoot = resolve(import.meta.dirname, "..", "work");
 const hashSalt = process.env.VALUATION_HASH_SALT?.trim() ?? "";
 
 if (!backupPath || !Number.isFinite(priceTwd) || priceTwd <= 0) {
   throw new Error(
-    "Usage: node scripts/create-valuation-sample-from-backup.mjs --backup <backup.json> --price-twd <amount> [--evidence-kind professional_estimate] [--evidence-quality medium] [--group-id manual-account-backup] [--observed-at ISO] [--out work/sample.jsonl]",
+    "Usage: node scripts/create-valuation-sample-from-backup.mjs --backup <backup.json> --price-twd <amount> --account-id <stable-private-id> --inventory-complete yes [--evidence-kind professional_estimate] [--evidence-quality medium] [--group-id manual-account-backup] [--observed-at ISO] [--out work/sample.jsonl]",
   );
+}
+if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(accountId)) {
+  throw new Error("--account-id must be a stable private UUID v4, never a name or account login");
+}
+if (inventoryComplete !== "yes") {
+  throw new Error("--inventory-complete yes is required after manually confirming the full wardrobe");
 }
 if (!["sold", "professional_estimate"].includes(evidenceKind)) {
   throw new Error("--evidence-kind must be sold or professional_estimate");
@@ -40,15 +49,36 @@ if (!outputFromWork || outputFromWork.startsWith("..") || isAbsolute(outputFromW
   throw new Error("--out must point to a file inside work/");
 }
 
-const [catalog, valuation, backupRuntime, backupText] = await Promise.all([
+const [catalog, valuation, backupRuntime, accountConfig, backupText] = await Promise.all([
   loadRuntimeCatalog(),
   loadValuationRuntime(),
   tsImport("../app/account-backup.ts", import.meta.url),
+  tsImport("../app/account-config.ts", import.meta.url),
   readFile(resolve(backupPath), "utf8"),
 ]);
 const validGuids = new Set(catalog.wikiItems.map((item) => item.guid));
 const itemByGuid = new Map(catalog.wikiItems.map((item) => [item.guid, item]));
-const imported = backupRuntime.parseAccountBackup(JSON.parse(backupText), validGuids);
+const rawBackup = JSON.parse(backupText);
+if (rawBackup?.version !== 3) {
+  throw new Error("A current version 3 account backup is required for model evidence");
+}
+const rawBindings = rawBackup?.bindings;
+const validBindingStatuses = new Set(
+  accountConfig.bindingOptions.map((option) => option.key),
+);
+const incompleteBindings = accountConfig.bindingKeys.filter(
+  (key) =>
+    !rawBindings ||
+    typeof rawBindings !== "object" ||
+    !Object.hasOwn(rawBindings, key) ||
+    !validBindingStatuses.has(rawBindings[key]),
+);
+if (incompleteBindings.length) {
+  throw new Error(
+    `Backup must explicitly include every binding state: ${incompleteBindings.join(", ")}`,
+  );
+}
+const imported = backupRuntime.parseAccountBackup(rawBackup, validGuids);
 if (imported.ignored || imported.unknownGuids.length || imported.invalidEntries) {
   throw new Error(`Backup contains ${imported.ignored} ignored or unknown owned-item entries`);
 }
@@ -95,7 +125,8 @@ const accountSnapshot = JSON.stringify({
   resources,
   accountType: imported.account.accountType,
 });
-const accountFingerprint = stableHash("account", accountSnapshot);
+const accountFingerprint = stableHash("account", accountId);
+const snapshotHash = stableHash("snapshot", accountSnapshot);
 const seasonProgress = Object.fromEntries(
   [...analysis.seasonCompletion.entries()].map(([slug, progress]) => [
     slug,
@@ -115,10 +146,22 @@ const row = {
   source: "manual_backup",
   post_hash: stableHash(
     "sample",
-    `${accountFingerprint}:${priceTwd}:${evidenceKind}:${observedAt.toISOString()}`,
+    `${accountFingerprint}:${snapshotHash}:${priceTwd}:${evidenceKind}:${observedAt.toISOString()}`,
   ),
   group_hash: stableHash("group", groupId),
   account_fingerprint: accountFingerprint,
+  account_identity_scheme: "stable-hmac-v1",
+  identity_namespace: stableHash("namespace", "valuation-account-identity-v1"),
+  snapshot_hash: snapshotHash,
+  inventory_complete: true,
+  bindings_complete: true,
+  valuation_model_schema_version: 3,
+  model_evidence: {
+    bindings: Object.fromEntries(
+      accountConfig.bindingKeys.map((key) => [key, imported.bindings[key]]),
+    ),
+    resources,
+  },
   observed_at: observedAt.toISOString(),
   price_twd: priceTwd,
   price_kind: evidenceKind,
@@ -140,6 +183,7 @@ const row = {
   graduation_gift_count: analysis.ultimates.length,
   valuation_model: estimate.modelFeatures,
 };
+row.evidence_signature = modelEvidenceSignatureFor(row, hashSalt);
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(row)}\n`, "utf8");
 console.log(JSON.stringify({
