@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assessCollectionHealth,
+  internalRetryPageNumbers,
   convertToTwd,
   extractNumberedSeasonEvidence,
   extractSeasonMentions,
@@ -114,6 +115,18 @@ test("collection health rejects tail failures and empty required sources", () =>
   assert.equal(emptyFunpay.snapshotComplete, false);
   assert.equal(emptyFunpay.sourceHealth.funpay.healthy, false);
   assert.equal(emptyFunpay.sourceHealth.taifex.healthy, false);
+});
+
+test("retries only failed or empty pages inside the discovered page range", () => {
+  assert.deepEqual(internalRetryPageNumbers([
+    { page: 1, status: "ok" },
+    { page: 2, status: "empty" },
+    { page: 3, status: "request_failed" },
+    { page: 4, status: "unhealthy" },
+    { page: 5, status: "ok" },
+    { page: 6, status: "empty" },
+    { page: 7, status: "request_failed" },
+  ]), [2, 3, 4]);
 });
 
 test("parses Taoshouyou detail fields and account description", () => {

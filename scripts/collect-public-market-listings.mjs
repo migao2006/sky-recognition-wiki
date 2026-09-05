@@ -523,6 +523,19 @@ const mapLimit = async (values, concurrency, delayMs, mapper) => {
   return output;
 };
 
+export const internalRetryPageNumbers = (pageResults) => {
+  const lastSuccessfulPage = Math.max(
+    0,
+    ...pageResults
+      .filter((result) => result.status === "ok")
+      .map((result) => result.page),
+  );
+  return pageResults
+    .filter((result) => result.page < lastSuccessfulPage && result.status !== "ok")
+    .map((result) => result.page)
+    .sort((left, right) => left - right);
+};
+
 const main = async () => {
   const options = parseArgs(process.argv.slice(2));
   const collectedAt = new Date().toISOString();
@@ -534,7 +547,7 @@ const main = async () => {
   const funpayHtml = await fetchText(FUNPAY_URL);
   const funpay = parseFunpay(funpayHtml);
   const pages = Array.from({ length: options.taoshouyouPages }, (_, index) => index + 1);
-  const taoshouyouPageResults = await mapLimit(pages, options.concurrency, 0, async (page) => {
+  const collectTaoshouyouPage = async (page, refresh = options.refresh, suffix = "") => {
     const sourceUrl = taoshouyouPageUrl(page);
     const cachePath = path.join(cacheDirectory, "taoshouyou-pages", `${page}.json`);
     try {
@@ -542,7 +555,7 @@ const main = async () => {
         `${READER_PREFIX}${sourceUrl}`,
         cachePath,
         (markdown) => inspectTaoshouyouList(markdown, page),
-        { ...options, rateLimit },
+        { ...options, refresh, rateLimit },
       );
       const inspected = Array.isArray(cached.value)
         ? { rows: cached.value, healthy: cached.value.length > 0 }
@@ -552,13 +565,32 @@ const main = async () => {
       if (status !== "ok") {
         await rm(cachePath, { force: true });
       }
-      process.stderr.write(`taoshouyou page ${page}: ${rows.length} (${status})\n`);
+      process.stderr.write(`taoshouyou page ${page}${suffix}: ${rows.length} (${status})\n`);
       return { page, rows, status };
     } catch (error) {
-      process.stderr.write(`taoshouyou page ${page} skipped: ${error.message}\n`);
+      process.stderr.write(`taoshouyou page ${page}${suffix} skipped: ${error.message}\n`);
       return { page, rows: [], status: "request_failed" };
     }
-  });
+  };
+  let taoshouyouPageResults = await mapLimit(
+    pages,
+    options.concurrency,
+    0,
+    (page) => collectTaoshouyouPage(page),
+  );
+  const retryPages = internalRetryPageNumbers(taoshouyouPageResults);
+  if (retryPages.length) {
+    const retries = await mapLimit(
+      retryPages,
+      options.concurrency,
+      0,
+      (page) => collectTaoshouyouPage(page, true, " retry"),
+    );
+    const retryByPage = new Map(retries.map((result) => [result.page, result]));
+    taoshouyouPageResults = taoshouyouPageResults.map(
+      (result) => retryByPage.get(result.page) ?? result,
+    );
+  }
   let taoshouyou = taoshouyouPageResults.flatMap((result) => result.rows);
   const health = assessCollectionHealth({
     rates,
