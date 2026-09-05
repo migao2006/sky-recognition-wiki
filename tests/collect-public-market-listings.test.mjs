@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   assessCollectionHealth,
   convertToTwd,
+  extractNumberedSeasonEvidence,
   extractSeasonMentions,
   extractSeasonGraduation,
   inspectTaoshouyouList,
@@ -129,6 +130,35 @@ test("extracts explicit season mentions without treating signature items as seas
   assert.deepEqual(
     extractSeasonMentions("012 - Prophecy - Dreams - Assembly - Little Prince - Flight"),
     ["prophecy", "dreams", "assembly", "the-little-prince", "flight"],
+  );
+});
+
+test("maps numbered FunPay seasons without treating counts or scheduled seasons as evidence", () => {
+  assert.deepEqual(
+    extractNumberedSeasonEvidence("SCOTL261 | Seasons: 6, 8, 11, 13, 14, 29, and 30. - Season of Sanctuary"),
+    {
+      mentions: ["sanctuary", "dreams", "flight", "performance", "shattering", "carnival", "dear-van-gogh"],
+      full: [],
+    },
+  );
+  assert.deepEqual(
+    extractNumberedSeasonEvidence("END GAME - Seasons: Full Seasons 6 7 8 10 18 19 20 to 29 (30 on schedule)"),
+    {
+      mentions: [
+        "sanctuary", "prophecy", "dreams", "the-little-prince", "moments", "revival", "nine-colored-deer",
+        "nesting", "duets", "moomin", "radiance", "blue-bird", "two-embers-part-1", "migration",
+        "lightmending", "carnival",
+      ],
+      full: [
+        "sanctuary", "prophecy", "dreams", "the-little-prince", "moments", "revival", "nine-colored-deer",
+        "nesting", "duets", "moomin", "radiance", "blue-bird", "two-embers-part-1", "migration",
+        "lightmending", "carnival",
+      ],
+    },
+  );
+  assert.deepEqual(
+    extractNumberedSeasonEvidence("Completed 23 seasons from Rhythm to Carnival. Rhythm 50%"),
+    { mentions: [], full: [] },
   );
 });
 

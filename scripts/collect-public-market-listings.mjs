@@ -38,6 +38,46 @@ const seasonMentionPatterns = [
   ["carnival", /狂欢(?:季|毕业|毕)|狂歡(?:季|畢業|畢)|\b(?:season of )?carnival(?: season)?\b/i, /(?:狂欢|狂歡)(?:季)?/],
   ["dear-van-gogh", /(?:致)?梵高(?:季|毕业|毕)|(?:致)?梵谷(?:季|畢業|畢)|\b(?:season of )?dear van gogh(?: season)?\b/i, /(?:致)?(?:梵高|梵谷)(?:季)?/],
 ];
+const seasonSlugs = seasonMentionPatterns.map(([slug]) => slug);
+
+const numberedSeasonSlugs = (value) => {
+  const normalized = String(value ?? "")
+    .replace(/\(\s*\d{1,2}\s+on schedule\s*\)/gi, "")
+    .split(/\s+-\s+|\|/u, 1)[0];
+  const numbers = new Set();
+  for (const match of normalized.matchAll(/(\d{1,2})\s+to\s+(\d{1,2})|\d{1,2}/gi)) {
+    if (match[1] && match[2]) {
+      const start = Number(match[1]);
+      const end = Number(match[2]);
+      if (start >= 1 && end <= seasonSlugs.length && start <= end) {
+        for (let number = start; number <= end; number += 1) numbers.add(number);
+      }
+      continue;
+    }
+    const number = Number(match[0]);
+    if (number >= 1 && number <= seasonSlugs.length) numbers.add(number);
+  }
+  return [...numbers].sort((left, right) => left - right).map((number) => seasonSlugs[number - 1]);
+};
+
+export const extractNumberedSeasonEvidence = (value) => {
+  if (typeof value !== "string") return { mentions: [], full: [] };
+  const mentions = new Set();
+  const full = new Set();
+  const sections = [
+    ...value.matchAll(/\b(full\s+)?seasons?\s*:\s*(?:full\s+seasons?\s*)?([0-9][^.]*)/gi),
+    ...value.matchAll(/\b(full)\s+seasons?\s+([0-9][^.]*)/gi),
+  ];
+  for (const section of sections) {
+    const slugs = numberedSeasonSlugs(section[2]);
+    slugs.forEach((slug) => mentions.add(slug));
+    if (section[1]) slugs.forEach((slug) => full.add(slug));
+  }
+  return {
+    mentions: seasonSlugs.filter((slug) => mentions.has(slug)),
+    full: seasonSlugs.filter((slug) => full.has(slug)),
+  };
+};
 
 export const extractSeasonMentions = (...values) => {
   const text = values.filter((value) => typeof value === "string").join(" ");
@@ -564,8 +604,16 @@ const main = async () => {
     };
   });
   const funpayWithSeasons = funpay.map((row) => {
-    const seasonMentions = extractSeasonMentions(row.title);
-    return seasonMentions.length ? { ...row, season_mentions: seasonMentions } : row;
+    const numbered = extractNumberedSeasonEvidence(row.title);
+    const mentionSet = new Set([...extractSeasonMentions(row.title), ...numbered.mentions]);
+    const seasonMentions = seasonSlugs.filter((slug) => mentionSet.has(slug));
+    return {
+      ...row,
+      ...(seasonMentions.length ? { season_mentions: seasonMentions } : {}),
+      ...(numbered.full.length ? {
+        season_graduation_mentions: numbered.full.map((slug) => ({ slug, status: "full" })),
+      } : {}),
+    };
   });
   const snapshotComplete = health.snapshotComplete;
   const unique = new Map();
