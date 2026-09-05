@@ -60,7 +60,19 @@ test("flags a zero-MAD extreme and never accepts an unsupported currency", () =>
   assert.equal(rows[6].ratio_candidate, false);
 });
 
-test("only account rows with valid FX contribute to comparable-price statistics", () => {
+test("keeps same-currency relative evidence when historical FX is unavailable", () => {
+  const rows = markPriceOutliers(Array.from({ length: 5 }, (_, index) => ({
+    source: "market",
+    currency_original: "CNY",
+    price_original: 100 + index,
+    account_candidate: true,
+  })));
+  assert.equal(rows[0].relative_price_candidate, true);
+  assert.equal(rows[0].ratio_candidate, false);
+  assert.ok(rows[0].quality_flags.includes("missing_fx"));
+});
+
+test("only account rows contribute to same-currency comparable-price statistics", () => {
   const account = Array.from({ length: 4 }, (_, index) => ({
     source: "market", currency_original: "CNY", price_original: 100 + index,
     price_twd_fx: 450 + index, fx_twd_per_unit: 4.5, account_candidate: true,

@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promise
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import * as cheerio from "cheerio";
+import { consolidateMarketListingSnapshots } from "./consolidate-market-listing-snapshots.mjs";
 
 const TAIFEX_URL = "https://openapi.taifex.com.tw/v1/DailyForeignExchangeRates";
 const FUNPAY_URL = "https://funpay.com/en/lots/3774/";
@@ -402,9 +403,7 @@ const median = (values) => {
 
 export const markPriceOutliers = (rows) => {
   const comparableRows = rows.filter((row) => row.account_candidate
-    && row.price_original > 0
-    && Number.isFinite(row.price_twd_fx)
-    && Number.isFinite(row.fx_twd_per_unit));
+    && row.price_original > 0);
   const groups = Map.groupBy(comparableRows, (row) => `${row.source}:${row.currency_original}`);
   const stats = new Map([...groups].map(([key, group]) => {
     const logs = group.map((row) => Math.log(row.price_original)).filter(Number.isFinite);
@@ -431,6 +430,7 @@ export const markPriceOutliers = (rows) => {
     return {
       ...row,
       price_outlier: priceOutlier,
+      relative_price_candidate: row.account_candidate && enoughComparableRows && !priceOutlier,
       ratio_candidate: row.account_candidate && hasFx && enoughComparableRows && !priceOutlier,
       quality_flags: qualityFlags,
     };
@@ -632,6 +632,7 @@ const main = async () => {
     const graduated = rows.filter((row) => row.season_graduation_mentions?.some((entry) => entry.slug === slug));
     return [slug, {
       listings: matching.length,
+      relative_price_candidates: matching.filter((row) => row.relative_price_candidate).length,
       ratio_candidates: matching.filter((row) => row.ratio_candidate).length,
       explicit_graduation: graduated.filter((row) => row.season_graduation_mentions
         .some((entry) => entry.slug === slug && entry.status === "full")).length,
@@ -649,6 +650,7 @@ const main = async () => {
     snapshot_complete: snapshotComplete,
     total: rows.length,
     account_candidates: rows.filter((row) => row.account_candidate).length,
+    relative_price_candidates: rows.filter((row) => row.relative_price_candidate).length,
     ratio_candidates: rows.filter((row) => row.ratio_candidate).length,
     price_outliers: rows.filter((row) => row.price_outlier).length,
     enriched_taoshouyou_details: rows.filter((row) => row.source === "taoshouyou" && row.description).length,
@@ -669,6 +671,7 @@ const main = async () => {
   if (health.latestEligible) {
     await writeAtomic(path.join(outputDirectory, "latest.json"), `${JSON.stringify({ snapshot_id: snapshotId, snapshot_directory: path.relative(outputDirectory, snapshotDirectory) }, null, 2)}\n`);
   }
+  await consolidateMarketListingSnapshots(outputDirectory);
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 };
 
