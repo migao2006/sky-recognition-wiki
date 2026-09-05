@@ -13,6 +13,7 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 const testHashSalt = "audit-test-hash-salt-32-characters-minimum";
+const testHoldoutSecret = "audit-test-holdout-secret-32-characters-minimum";
 const signEvidenceRow = (row) => {
   const completeRow = {
     ...row,
@@ -51,7 +52,11 @@ const audit = async (rows, { splitSeed } = {}) => {
     script,
     lines: rows.map(JSON.stringify),
     args,
-    env: { ...process.env, VALUATION_HASH_SALT: testHashSalt },
+    env: {
+      ...process.env,
+      VALUATION_HASH_SALT: testHashSalt,
+      VALUATION_HOLDOUT_SECRET: testHoldoutSecret,
+    },
     temporaryPrefix: "sky-valuation-audit-",
   });
   return JSON.parse(stdout);

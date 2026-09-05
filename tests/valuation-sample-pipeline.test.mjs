@@ -26,6 +26,8 @@ const commandOptions = {
   env: {
     ...process.env,
     VALUATION_HASH_SALT: "pipeline-test-valuation-salt-32-characters-minimum",
+    VALUATION_HOLDOUT_SECRET:
+      "pipeline-test-holdout-secret-32-characters-minimum",
   },
 };
 

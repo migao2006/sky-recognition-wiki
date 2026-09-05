@@ -2,10 +2,42 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   breakClassFor,
+  holdoutSplitCommitmentFor,
+  inHoldout,
   packageTierFor,
   preferredRow,
   preferredSample,
+  valuationDatasetDigestFor,
 } from "../scripts/lib/valuation-source-core.mjs";
+
+test("freezes source content independently of row order", () => {
+  const rows = [{ id: 1, price: 100 }, { id: 2, price: 200 }];
+  assert.equal(
+    valuationDatasetDigestFor(rows),
+    valuationDatasetDigestFor([...rows].reverse()),
+  );
+  assert.notEqual(
+    valuationDatasetDigestFor(rows),
+    valuationDatasetDigestFor([{ id: 1, price: 101 }, rows[1]]),
+  );
+});
+
+test("private split commitments change the holdout assignment", () => {
+  const first = "first-private-holdout-secret-32-characters";
+  const second = "second-private-holdout-secret-32-characters";
+  assert.notEqual(
+    holdoutSplitCommitmentFor("sky-valuation-v3", first),
+    holdoutSplitCommitmentFor("sky-valuation-v3", second),
+  );
+  const assignments = Array.from({ length: 100 }, (_, index) => {
+    const identity = index.toString(16).padStart(64, "0");
+    return [
+      inHoldout(identity, "sky-valuation-v3", { splitSecret: first }),
+      inHoldout(identity, "sky-valuation-v3", { splitSecret: second }),
+    ];
+  });
+  assert.ok(assignments.some(([left, right]) => left !== right));
+});
 
 const completeModel = {
   baseLow: 1000,

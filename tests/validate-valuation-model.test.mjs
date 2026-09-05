@@ -13,19 +13,38 @@ import {
   accountStyles,
   breakClasses,
   hasCompleteModelEvidence,
-  inHoldout,
+  holdoutSplitCommitmentFor,
+  inHoldout as sharedInHoldout,
   modelEvidenceSignatureFor,
   packageTiers,
+  valuationDatasetDigestFor,
 } from "../scripts/lib/valuation-source-core.mjs";
 
 const testHashSalt = "validator-test-hash-salt-32-characters-minimum";
-const validateValuationModel = (options) => validateModelWithoutRebuild({
-  ...options,
-  rebuiltCandidate: options.rebuiltCandidate ?? options.candidate,
-  hashSalt: testHashSalt,
-  expectedBaselineDigest:
-    options.expectedBaselineDigest ?? valuationModelArtifactDigest(options.baseline),
-});
+const testHoldoutSecret = "validator-test-holdout-secret-32-characters-minimum";
+const inHoldout = (accountKey, seed = officialValuationSplitSeed) =>
+  sharedInHoldout(accountKey, seed, { splitSecret: testHoldoutSecret });
+const validateValuationModel = (options) => {
+  const candidate = structuredClone(options.candidate);
+  candidate.split = {
+    ...candidate.split,
+    strategy: "secret-hmac-v1",
+    datasetDigest: valuationDatasetDigestFor(options.rows),
+    splitCommitment: holdoutSplitCommitmentFor(
+      options.splitSeed ?? officialValuationSplitSeed,
+      testHoldoutSecret,
+    ),
+  };
+  return validateModelWithoutRebuild({
+    ...options,
+    candidate,
+    rebuiltCandidate: options.rebuiltCandidate ?? candidate,
+    hashSalt: testHashSalt,
+    splitSecret: testHoldoutSecret,
+    expectedBaselineDigest:
+      options.expectedBaselineDigest ?? valuationModelArtifactDigest(options.baseline),
+  });
+};
 
 test("parses repeated validation source files", () => {
   assert.deepEqual(parseValidationArgs([
@@ -453,6 +472,38 @@ test("passes a deterministic anonymous holdout when candidate materially improve
   assert.equal(/"account-|"market-|price_twd/.test(JSON.stringify(report)), false);
 });
 
+test("requires a separate private holdout secret and frozen dataset digest", () => {
+  const candidate = aggregate(14000, { fullModel: true });
+  const baseline = aggregate(8000);
+  candidate.split = {
+    ...candidate.split,
+    strategy: "secret-hmac-v1",
+    datasetDigest: valuationDatasetDigestFor(rows),
+    splitCommitment: holdoutSplitCommitmentFor(
+      officialValuationSplitSeed,
+      testHoldoutSecret,
+    ),
+  };
+  const common = {
+    candidate,
+    rebuiltCandidate: candidate,
+    baseline,
+    rows,
+    hashSalt: testHashSalt,
+    expectedBaselineDigest: valuationModelArtifactDigest(baseline),
+  };
+  const missingSecret = validateModelWithoutRebuild({
+    ...common,
+    splitSecret: "",
+  });
+  const reusedEvidenceSecret = validateModelWithoutRebuild({
+    ...common,
+    splitSecret: testHashSalt,
+  });
+  assert.equal(missingSecret.criteria.candidateProvenance.pass, false);
+  assert.equal(reusedEvidenceSecret.criteria.candidateProvenance.pass, false);
+});
+
 test("rejects a cherry-picked holdout containing only one of two hundred accounts", () => {
   const selectedFingerprints = [];
   let candidateIndex = 10_000;
@@ -836,13 +887,11 @@ test("candidate market parameters materially change full-model predictions", () 
     candidate: aggregate(20000, { fullModel: true }),
     baseline: aggregate(8000),
     rows,
-    splitSeed: "fixture",
   });
   const distorted = validateValuationModel({
     candidate: aggregate(999999, { fullModel: true }),
     baseline: aggregate(8000),
     rows,
-    splitSeed: "fixture",
   });
   assert.notDeepEqual(distorted.candidate, accurate.candidate);
   assert.ok(

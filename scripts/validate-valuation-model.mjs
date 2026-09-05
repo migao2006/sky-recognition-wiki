@@ -14,6 +14,7 @@ import {
   groupKeyFor,
   hasCompleteModelEvidence,
   hasReplayableSeasonProgress,
+  holdoutSplitCommitmentFor,
   inHoldout,
   isExcludedFromModel,
   packageTiers,
@@ -25,6 +26,7 @@ import {
   sampleWeightFor,
   seasonProgressParts,
   valuationModelFeaturesFor,
+  valuationDatasetDigestFor,
 } from "./lib/valuation-source-core.mjs";
 import { calculateValuationModel } from "../app/valuation-model-core.js";
 import {
@@ -287,10 +289,13 @@ export const validateValuationModel = ({
   splitSeed = officialValuationSplitSeed,
   rebuiltCandidate = null,
   hashSalt = process.env.VALUATION_HASH_SALT ?? "",
+  splitSecret = process.env.VALUATION_HOLDOUT_SECRET ?? "",
   expectedBaselineDigest = officialValuationBaselineDigest,
 }) => {
   const asOf = new Date(`${candidate.asOf ?? baseline.asOf ?? "1970-01-01"}T23:59:59.999Z`);
   if (!Number.isFinite(asOf.getTime())) throw new Error("candidate or baseline requires a valid asOf date");
+  const datasetDigest = valuationDatasetDigestFor(rows);
+  const splitCommitment = holdoutSplitCommitmentFor(splitSeed, splitSecret);
   const claimedModelEvidenceRows = rows.filter((row) =>
     row?.account_identity_scheme === "stable-hmac-v1" ||
     row?.evidence_signature !== undefined ||
@@ -377,7 +382,11 @@ export const validateValuationModel = ({
   });
   const comparableGroupCap = applyGroupCap(comparableCandidates, "marketGroup");
   const eligible = comparableGroupCap.samples;
-  const holdout = eligible.filter((sample) => inHoldout(sample.accountGroup, splitSeed));
+  const holdout = eligible.filter((sample) => inHoldout(
+    sample.accountGroup,
+    splitSeed,
+    { splitSecret },
+  ));
   const holdoutGroupCap = applyGroupCap(holdout, "marketGroup");
   const minimumHoldoutAccounts = Math.ceil(eligible.length * minimumHoldoutShare);
   const maximumHoldoutAccounts = Math.floor(eligible.length * maximumHoldoutShare);
@@ -532,10 +541,20 @@ export const validateValuationModel = ({
       candidateSplitSeed: candidate.split?.splitSeed ?? null,
       expectedSplitSeed: splitSeed,
       requiredSplitSeed: officialValuationSplitSeed,
+      strategy: candidate.split?.strategy ?? null,
+      datasetDigest: candidate.split?.datasetDigest ?? null,
+      expectedDatasetDigest: datasetDigest,
+      splitCommitment: candidate.split?.splitCommitment ?? null,
+      expectedSplitCommitment: splitCommitment,
       pass:
         candidate.split?.trainingMode === "calibration-only" &&
         splitSeed === officialValuationSplitSeed &&
         candidate.split?.splitSeed === splitSeed &&
+        candidate.split?.strategy === "secret-hmac-v1" &&
+        splitSecret.length >= 32 &&
+        splitSecret !== hashSalt &&
+        candidate.split?.datasetDigest === datasetDigest &&
+        candidate.split?.splitCommitment === splitCommitment &&
         candidate.schemaVersion >= 4 &&
         hasReplayableCandidatePredictor(candidate),
     },

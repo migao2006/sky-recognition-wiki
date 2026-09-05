@@ -63,6 +63,26 @@ export const canonicalJson = (value) => {
   }
   return JSON.stringify(value);
 };
+export const valuationDatasetDigestFor = (rows) => {
+  const canonicalRows = rows.map((row) => Object.fromEntries(
+    Object.entries(row ?? {}).filter(([key]) => !key.startsWith("__")),
+  ));
+  return createHash("sha256")
+    .update(canonicalRows.map(canonicalJson).sort().join("\n"), "utf8")
+    .digest("hex");
+};
+const holdoutKeyFor = (seed, splitSecret) =>
+  typeof splitSecret === "string" && splitSecret.length >= 32
+    ? createHmac("sha256", splitSecret)
+        .update(`holdout-split-v1:${seed}`, "utf8")
+        .digest("hex")
+    : seed;
+export const holdoutSplitCommitmentFor = (seed, splitSecret) =>
+  typeof splitSecret === "string" && splitSecret.length >= 32
+    ? createHash("sha256")
+        .update(holdoutKeyFor(seed, splitSecret), "utf8")
+        .digest("hex")
+    : null;
 export const hasCompleteModelEvidenceSnapshot = (row) => {
   const evidence = row?.model_evidence;
   if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) return false;
@@ -460,8 +480,11 @@ export const preferredSample = (left, right, { accountTrim = true } = {}) => {
     stableRowKey(left.row, { accountTrim }),
   ) < 0 ? right : left;
 };
-export const inHoldout = (accountKey, seed) =>
-  createHash("sha256").update(`${seed}:${accountKey}`).digest().readUInt32BE(0) % 10 >= 8;
+export const inHoldout = (accountKey, seed, { splitSecret = "" } = {}) =>
+  createHash("sha256")
+    .update(`${holdoutKeyFor(seed, splitSecret)}:${accountKey}`)
+    .digest()
+    .readUInt32BE(0) % 10 >= 8;
 export const applyGroupCap = (samples, key = "groupKey") => {
   const weights = new Map();
   samples.forEach((sample) =>

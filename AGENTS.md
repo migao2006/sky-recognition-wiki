@@ -46,7 +46,7 @@
 - IAP 同步只能以官方 GUID 精確配對，不得退回英文名、中文名或圖片模糊配對；未解析項目必須使 check 失敗。
 - 備份 v3 優先寫官方 GUID；上游尚未收錄的物品只能使用有來源註記的 overlay GUID。舊人工 GUID 相容性集中於輕量 `catalog-legacy-guids.ts`，不得讓草稿載入完整 catalog。
 - 估價 aggregate 未滿 200 個唯一帳號、3 個社團、原始最大社團占比超過 60%，缺 model schema v3 完整 predictor，或缺少由非零起季到模型指定最新已完成季逐季完整、符合官方 slug 與畢業禮總數的結構化進度，網站與 validator 的季節價格帶／完整數值輸出 parity 未通過，或 holdout 未通過時，只能標記 `legacy-unvalidated`／`unvalidated`，不得顯示高信心或修改文件降低門檻。正式 holdout 固定使用 `sky-valuation-v3` 種子，且必須占可比較帳號的 15%～25%；不得用自訂 seed 或刻意挑選身份縮小保留組。候選模型必須能由相同來源的 calibration rows 完整重建，且每個已完成季、斷季、禮包與帳號型態分類都要有至少 5 個可比較帳號及 2 個 holdout，並逐季、逐類別通過誤差與 prediction coverage；來源自帶權重不得參與正式驗證。
-- 正式 holdout 本身也必須至少涵蓋 3 個市場群組，且任一群組的原始有效權重不得超過 60%；全資料來源多樣不能代替 holdout 的來源代表性。validator 必須核對固定 production baseline 摘要，逐季範圍必須來自 canonical season seeds；不得由外部 baseline 縮短驗證範圍。未簽名列與已驗證列發生貼文、帳號或快照碰撞時必須 hard fail，不得先以去重淘汰已驗證列。
+- 正式 holdout 本身也必須至少涵蓋 3 個市場群組，且任一群組的原始有效權重不得超過 60%；全資料來源多樣不能代替 holdout 的來源代表性。validator 必須核對固定 production baseline 摘要，逐季範圍必須來自 canonical season seeds；不得由外部 baseline 縮短驗證範圍。未簽名列與已驗證列發生貼文、帳號或快照碰撞時必須 hard fail，不得先以去重淘汰已驗證列。正式切分必須在資料凍結後使用獨立的私密 `VALUATION_HOLDOUT_SECRET`，不得與證據簽章 salt 共用；候選必須保存可核對的資料集摘要與不可逆切分承諾，公開 seed 直接分組只能視為 legacy。
 - 由帳號備份建立正式估價樣本時，必須人工確認衣櫃完整、使用目前 v3 備份、明確保存七個平台綁定與四項資源，並以長期穩定且不含個資的私密帳號代號產生匿名身份；不得用會隨衣櫃、綁定或資源變動的快照雜湊冒充帳號身份。帳號身份與快照雜湊必須分開，且同一資料集持續使用同一私密 salt；來源文字等所有會改變納入資格的欄位必須一併簽章，完全相同的快照只能計一次，避免重複帳號及 holdout 洩漏。
 - 實體徽章或周邊、多帳號合售及其他無法拆分帳號本體價格的行情列，必須標記 `exclude_from_model: true`；匿名化、稽核與 validator 均須保留並執行此硬排除，不得用混合總價校準季節或禮包價值。
 

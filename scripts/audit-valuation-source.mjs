@@ -1,5 +1,4 @@
 import { createReadStream } from "node:fs";
-import { createHash } from "node:crypto";
 import { createInterface } from "node:readline";
 import {
   valuationConfidenceValues,
@@ -21,6 +20,8 @@ import {
   hasCompleteModelEvidence,
   hasCompleteModelEvidenceSnapshot,
   hasReplayableSeasonProgress,
+  holdoutSplitCommitmentFor,
+  inHoldout,
   isExcludedFromModel,
   modelEvidenceFields,
   packageTiers,
@@ -34,6 +35,7 @@ import {
   timestampFor,
   qualityWeights,
   valuationModelFeaturesFor,
+  valuationDatasetDigestFor,
 } from "./lib/valuation-source-core.mjs";
 
 const args = process.argv.slice(2);
@@ -42,6 +44,7 @@ const splitSeedArg = args.find((value) => value.startsWith("--split-seed="));
 const includeHoldout = args.includes("--include-holdout");
 const splitSeed = splitSeedArg?.slice("--split-seed=".length) || "sky-valuation-v3";
 const valuationHashSalt = process.env.VALUATION_HASH_SALT ?? "";
+const valuationHoldoutSecret = process.env.VALUATION_HOLDOUT_SECRET ?? "";
 const sourcePaths = args.filter(
   (value) =>
     value !== "--include-holdout" &&
@@ -229,11 +232,9 @@ const summarize = (samples, includeEvidenceProfile = false) => {
 };
 const isCalibrationAccount = (accountKey) => {
   if (!accountKey) return true;
-  const bucket = Number.parseInt(
-    createHash("sha256").update(`${splitSeed}:${accountKey}`).digest("hex").slice(0, 8),
-    16,
-  ) % 10;
-  return bucket < 8;
+  return !inHoldout(accountKey, splitSeed, {
+    splitSecret: valuationHoldoutSecret,
+  });
 };
 const applyGroupCap = (samples) => {
   const result = applySharedGroupCap(samples);
@@ -275,6 +276,12 @@ for (const sourcePath of sourcePaths)
             ? "google_drive"
             : "unknown",
       });
+
+const datasetDigest = valuationDatasetDigestFor(rows);
+const splitCommitment = holdoutSplitCommitmentFor(
+  splitSeed,
+  valuationHoldoutSecret,
+);
 
 const referenceCandidates = rows.flatMap((row) =>
   [row.observed_at, row.published_at]
@@ -626,6 +633,9 @@ console.log(JSON.stringify({
   },
   split: {
     splitSeed,
+    strategy: splitCommitment ? "secret-hmac-v1" : "public-seed-legacy",
+    datasetDigest,
+    splitCommitment,
     trainingMode: includeHoldout ? "all-eligible" : "calibration-only",
     trainingRows: eligible.length,
     calibrationRows: calibrationEligible.length,
