@@ -20,7 +20,6 @@ export const localizedPriceValue = (value) => {
   if (!compact) return undefined;
   const comma = compact.lastIndexOf(",");
   const dot = compact.lastIndexOf(".");
-  const decimal = comma > dot ? "," : ".";
   const decimalIndex = Math.max(comma, dot);
   const fractionalLength = decimalIndex >= 0 ? compact.length - decimalIndex - 1 : 0;
   const hasDecimal = decimalIndex >= 0 && fractionalLength > 0 && fractionalLength <= 2;
