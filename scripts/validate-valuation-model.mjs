@@ -394,10 +394,10 @@ export const validateValuationModel = ({
   const errorDetails = (aggregate, options) =>
     holdout.flatMap((sample) => {
       if (!hasFullModelPredictor(aggregate) && !aggregate.segments?.startSeason?.[sample.startSeason]?.median)
-        return [{ sample, absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
+        return [{ sample, absoluteLogError: null, ape: null, covered: false, missingPrediction: true, weight: sample.weight }];
       const prediction = predictValuationAggregate(aggregate, sample, options);
       if (!prediction)
-        return [{ sample, absoluteLogError: Math.log(10), ape: 9, covered: false, missingPrediction: true, weight: sample.weight }];
+        return [{ sample, absoluteLogError: null, ape: null, covered: false, missingPrediction: true, weight: sample.weight }];
       return [{ sample, absoluteLogError: Math.abs(Math.log(prediction.price / sample.price)), ape: Math.abs(prediction.price - sample.price) / sample.price, covered: sample.price >= prediction.low && sample.price <= prediction.high, missingPrediction: false, weight: sample.weight }];
     });
   const summarizeErrors = (valid) => {
@@ -409,14 +409,20 @@ export const validateValuationModel = ({
     const missingPredictionWeight = valid
       .filter((row) => row.missingPrediction)
       .reduce((sum, row) => sum + row.weight, 0);
-    const orderedErrors = valid
+    const evaluated = valid.filter(
+      (row) =>
+        !row.missingPrediction &&
+        Number.isFinite(row.absoluteLogError) &&
+        Number.isFinite(row.ape),
+    );
+    const orderedErrors = evaluated
       .map(({ absoluteLogError }) => absoluteLogError)
       .sort((left, right) => left - right);
     const upperMedianAbsoluteLogError = orderedErrors.length
       ? orderedErrors[Math.floor(orderedErrors.length / 2)]
       : null;
     const maximumAbsoluteLogError = orderedErrors.at(-1) ?? null;
-    return { count: valid.length, effectiveWeight: totalWeight, missingPredictionCount, predictionCoverage: totalWeight ? 1 - missingPredictionWeight / totalWeight : null, medianAbsoluteLogError: weightedMedian(valid, "absoluteLogError"), upperMedianAbsoluteLogError, maximumAbsoluteLogError, mdape: weightedMedian(valid, "ape"), p25P75Coverage: totalWeight ? coveredWeight / totalWeight : null };
+    return { count: valid.length, evaluatedPredictionCount: evaluated.length, effectiveWeight: totalWeight, missingPredictionCount, predictionCoverage: totalWeight ? 1 - missingPredictionWeight / totalWeight : null, medianAbsoluteLogError: weightedMedian(evaluated, "absoluteLogError"), upperMedianAbsoluteLogError, maximumAbsoluteLogError, mdape: weightedMedian(evaluated, "ape"), p25P75Coverage: totalWeight ? coveredWeight / totalWeight : null };
   };
   const replayCandidate = withDerivedSeasonBands(candidate);
   const replayBaseline = withDerivedSeasonBands(baseline);

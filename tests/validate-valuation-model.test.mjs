@@ -1151,7 +1151,7 @@ test("normalizes reversed price ranges like calibration", () => {
   assert.deepEqual(reversed.baseline, normal.baseline);
 });
 
-test("penalizes a candidate that removes a difficult baseline season", () => {
+test("rejects missing candidate seasons without inventing model error", () => {
   const candidate = aggregate(10000);
   candidate.segments.startSeason = {};
   const report = validateValuationModel({
@@ -1161,10 +1161,10 @@ test("penalizes a candidate that removes a difficult baseline season", () => {
     splitSeed: "fixture",
   });
   assert.equal(report.eligibleRows, 500);
-  assert.ok(
-    report.candidate.medianAbsoluteLogError >
-      report.baseline.medianAbsoluteLogError,
-  );
+  assert.equal(report.candidate.evaluatedPredictionCount, 0);
+  assert.equal(report.candidate.medianAbsoluteLogError, null);
+  assert.equal(report.candidate.predictionCoverage, 0);
+  assert.ok(report.baseline.medianAbsoluteLogError !== null);
   assert.equal(report.outcome, "fail");
 });
 
@@ -1222,6 +1222,29 @@ test("fails when a candidate drops even a minority baseline-supported season", (
   assert.ok(report.candidate.predictionCoverage < 1);
   assert.equal(report.criteria.candidatePredictionCoverage.pass, false);
   assert.equal(report.criteria.candidateSeasonCoverage.pass, false);
+  assert.equal(report.outcome, "fail");
+});
+
+test("reports missing predictions separately from measured model error", () => {
+  const noPredictorRows = rows.map((row) => {
+    const unsigned = { ...row };
+    delete unsigned.evidence_signature;
+    delete unsigned.valuation_model;
+    return unsigned;
+  });
+  const report = validateValuationModel({
+    candidate: aggregate(100, { fullModel: true }),
+    baseline: aggregate(100, { fullModel: true }),
+    rows: noPredictorRows,
+    splitSeed: "fixture",
+  });
+
+  assert.ok(report.candidate.missingPredictionCount > 0);
+  assert.equal(report.candidate.evaluatedPredictionCount, 0);
+  assert.equal(report.candidate.medianAbsoluteLogError, null);
+  assert.equal(report.candidate.mdape, null);
+  assert.equal(report.criteria.candidatePredictionCoverage.pass, false);
+  assert.equal(report.criteria.accuracy.status, "fail");
   assert.equal(report.outcome, "fail");
 });
 
