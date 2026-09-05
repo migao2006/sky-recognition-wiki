@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { runJsonlScript } from "./helpers/run-jsonl-script.mjs";
+import { valuationModelInputKeys } from "../app/valuation-model-core.js";
 
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
@@ -61,6 +62,66 @@ test("hard-excludes a confounded listing even when its price is otherwise valid"
   assert.equal(result.eligibleRows, 0);
   assert.equal(result.excludedRows, 1);
   assert.equal(result.segments.startSeason.nesting.sampleCount, 0);
+});
+
+test("reports strict predictor gaps by field and source", async () => {
+  const completePredictor = Object.fromEntries(
+    valuationModelInputKeys.map((field) => [field, 1]),
+  );
+  completePredictor.confidence = "low";
+  const result = await audit([
+    {
+      source: "manual_backup",
+      post_hash: "complete-predictor",
+      account_fingerprint: "complete-account",
+      published_at: recent,
+      price_twd: 4000,
+      evidence_kind: "professional_estimate",
+      evidence_quality: "medium",
+      start_season_slug: "moments",
+      valuation_model: completePredictor,
+    },
+    {
+      source: "facebook",
+      post_hash: "partial-predictor",
+      account_fingerprint: "partial-account",
+      published_at: recent,
+      price_twd: 3500,
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "performance",
+      valuation_model: { ...completePredictor, packageLow: "1" },
+    },
+    {
+      source: "facebook",
+      post_hash: "missing-predictor",
+      account_fingerprint: "missing-account",
+      published_at: recent,
+      price_twd: 3000,
+      evidence_kind: "ask",
+      evidence_quality: "high",
+      start_season_slug: "flight",
+    },
+  ]);
+  assert.deepEqual(
+    {
+      eligibleRows: result.predictorCoverage.eligibleRows,
+      completeRows: result.predictorCoverage.completeRows,
+      missingRows: result.predictorCoverage.missingRows,
+      coverage: result.predictorCoverage.coverage,
+    },
+    { eligibleRows: 3, completeRows: 1, missingRows: 2, coverage: 0.3333 },
+  );
+  assert.equal(
+    result.predictorCoverage.scope,
+    "identified accounts with structured start-season evidence",
+  );
+  assert.equal(result.predictorCoverage.missingByField.packageLow, 2);
+  assert.equal(result.predictorCoverage.missingByField.confidence, 1);
+  assert.deepEqual(result.predictorCoverage.bySource, {
+    facebook: { eligibleRows: 2, completeRows: 0, missingRows: 2, coverage: 0 },
+    manual_backup: { eligibleRows: 1, completeRows: 1, missingRows: 0, coverage: 1 },
+  });
 });
 
 test("keeps old listing text and account features compatible without leaking them", async () => {

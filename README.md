@@ -96,7 +96,7 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 衣櫃截圖可用 `npm run recognize:wardrobe -- <圖片> --grid=左,上,格寬,格高,欄數,列數,水平間距,垂直間距 --out=work/wardrobe-candidates.json` 產生官方 GUID 候選。工具只在圖示相似度至少 0.93、且第一名比第二名至少高 0.03 時標記 `accepted`；其餘一律標記 `review` 或 `unreadable`，必須對照原圖人工確認，輸出也不會自動改寫 catalog、帳號備份或估價樣本。
 
-先用 `audit-valuation-source.mjs` 產生只含 80% 帳號群組的候選彙總，再用 `validate-valuation-model.mjs` 對固定 20% 保留組比較現行模型。網站與 validator 共用相同的 seed 混合、先驗強度、跨季單調校正及完整數值核心；驗證通過後，改加 `--include-holdout` 重算全樣本正式彙總。未滿 200 個唯一有效帳號、少於 3 個社團、單一社團權重超過 60%，缺少完整 predictor、網站／validator parity 不一致，或誤差／區間覆蓋未達門檻時不得發布。樣本數門檻計算所有通過來源規則的唯一帳號；誤差只在具有可比較起季資料的帳號上計算。
+先用 `audit-valuation-source.mjs` 產生只含 80% 帳號群組的候選彙總，再用 `validate-valuation-model.mjs` 對固定 20% 保留組比較現行模型。稽核結果的 `predictorCoverage` 只計算具帳號識別與結構化起季的候選列，並列出完整 predictor 比例、逐欄缺口與各來源覆蓋率，供下一輪優先補齊可重播樣本；正式 validator 還會排除基準彙總中沒有可比較起季中位數的列。網站與 validator 共用相同的 seed 混合、先驗強度、跨季單調校正及完整數值核心；驗證通過後，改加 `--include-holdout` 重算全樣本正式彙總。未滿 200 個唯一有效帳號、少於 3 個社團、單一社團權重超過 60%，缺少完整 predictor、網站／validator parity 不一致，或誤差／區間覆蓋未達門檻時不得發布。樣本數門檻計算所有通過來源規則的唯一帳號；誤差只在具有可比較起季資料的帳號上計算。
 
 目前正式彙總只有 164 筆可追溯原始列、162 筆合格資料列，狀態為 `unvalidated`；網站只顯示這組可追溯樣本數，仍提供低信心參考估價，但不得顯示為完整市場驗證。禮包校準分組會優先使用唯一真實禮包數；缺少數量時只接受既有的有效級距，兩者皆無才排除，不會再把未知數量當成少禮。新樣本必須保存完整 `valuation_model` v2 predictor（包含信心與所有乘數），validator 會以候選的共用季節價格帶及市場乘數重播同一數值核心；通過 holdout 後才可改為 `validated`。
 

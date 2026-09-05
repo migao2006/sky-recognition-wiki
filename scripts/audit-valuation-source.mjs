@@ -2,6 +2,10 @@ import { createReadStream } from "node:fs";
 import { createHash } from "node:crypto";
 import { createInterface } from "node:readline";
 import {
+  valuationConfidenceValues,
+  valuationModelInputKeys,
+} from "../app/valuation-model-core.js";
+import {
   accountKeyFor,
   accountStyles,
   applyGroupCap as applySharedGroupCap,
@@ -471,6 +475,50 @@ const sourceRowsBySource = Object.fromEntries(
       rows.filter((row) => sourceFor(row) === source).length,
     ]),
 );
+const predictorFields = [...valuationModelInputKeys, "confidence"];
+const missingPredictorFields = (row) => {
+  const predictor = row?.valuation_model;
+  if (!predictor || typeof predictor !== "object" || Array.isArray(predictor))
+    return predictorFields;
+  return predictorFields.filter((field) =>
+    field === "confidence"
+      ? !valuationConfidenceValues.includes(predictor[field])
+      : typeof predictor[field] !== "number" || !Number.isFinite(predictor[field]),
+  );
+};
+const predictorCandidates = selectedCandidates
+  .filter(({ sample }) =>
+    sample.accountKey && sample.startSeason && sample.startSeasonFactor > 0,
+  )
+  .map(({ row }) => ({
+    source: sourceFor(row),
+    missing: missingPredictorFields(row),
+  }));
+const completePredictorRows = predictorCandidates.filter(
+  ({ missing }) => !missing.length,
+).length;
+const missingByField = Object.fromEntries(
+  predictorFields.map((field) => [
+    field,
+    predictorCandidates.filter(({ missing }) => missing.includes(field)).length,
+  ]),
+);
+const predictorSourceCoverage = Object.fromEntries(
+  [...new Set(predictorCandidates.map(({ source }) => source))]
+    .sort()
+    .map((source) => {
+      const sourceRows = predictorCandidates.filter(
+        (candidate) => candidate.source === source,
+      );
+      const completeRows = sourceRows.filter(({ missing }) => !missing.length).length;
+      return [source, {
+        eligibleRows: sourceRows.length,
+        completeRows,
+        missingRows: sourceRows.length - completeRows,
+        coverage: Number((completeRows / sourceRows.length).toFixed(4)),
+      }];
+    }),
+);
 
 console.log(JSON.stringify({
   schemaVersion: 4,
@@ -527,6 +575,19 @@ console.log(JSON.stringify({
     cap: 0.6,
     capped: groupCap.capped,
     sampleScope: identifiedTraining.length ? "identified-accounts" : "legacy-anonymous",
+  },
+  predictorCoverage: {
+    schema: "valuation_model",
+    scope: "identified accounts with structured start-season evidence",
+    requiredFields: predictorFields,
+    eligibleRows: predictorCandidates.length,
+    completeRows: completePredictorRows,
+    missingRows: predictorCandidates.length - completePredictorRows,
+    coverage: Number(
+      (completePredictorRows / Math.max(1, predictorCandidates.length)).toFixed(4),
+    ),
+    missingByField,
+    bySource: predictorSourceCoverage,
   },
   sourceRowsBySource,
   sourceBreakdown,

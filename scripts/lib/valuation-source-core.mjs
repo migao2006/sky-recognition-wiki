@@ -155,7 +155,8 @@ export const sourceFor = (row) => {
   const value = String(row.source ?? row.__sourceHint ?? "unknown").trim().toLowerCase();
   if (/facebook|\bfb\b/.test(value)) return "facebook";
   if (/drive|google/.test(value)) return "google_drive";
-  if (["8591_hk", "8591_tw", "carousell_tw"].includes(value)) return value;
+  if (["8591_hk", "8591_tw", "carousell_tw", "manual_backup"].includes(value))
+    return value;
   return "unknown";
 };
 const evidenceRank = (kind) =>
