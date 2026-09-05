@@ -247,18 +247,28 @@ export const validateValuationModel = ({ candidate, baseline, rows, splitSeed = 
   return { schemaVersion: 2, split: { seed: splitSeed, method: "sha256 account-group 20% holdout" }, sourceEligibleRows: sourceEligible.length, eligibleRows: eligible.length, holdoutRows: holdout.length, candidate: candidateMetrics, baseline: baselineMetrics, criteria, outcome };
 };
 
-const usage = "Usage: node scripts/validate-valuation-model.mjs --candidate <aggregate.json> --baseline <aggregate.json> --source <anonymous-source.jsonl> [--split-seed=value]";
+const usage = "Usage: node scripts/validate-valuation-model.mjs --candidate <aggregate.json> --baseline <aggregate.json> --source <anonymous-source.jsonl> [--source <anonymous-source.jsonl> ...] [--split-seed=value]";
 const readJsonLines = async (path) => (await readFile(path, "utf8")).split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line));
-const readFlag = (args, name) => { const index = args.indexOf(name); return index === -1 ? null : args[index + 1]; };
+const isFlagValue = (value) => value && !value.startsWith("--");
+const readFlag = (args, name) => { const index = args.indexOf(name); return index !== -1 && isFlagValue(args[index + 1]) ? args[index + 1] : null; };
+const readFlags = (args, name) => args.flatMap((value, index) => value === name && isFlagValue(args[index + 1]) ? [args[index + 1]] : []);
+
+export const parseValidationArgs = (args) => {
+  const seedArg = args.find((value) => value.startsWith("--split-seed="));
+  return {
+    candidatePath: readFlag(args, "--candidate"),
+    baselinePath: readFlag(args, "--baseline"),
+    sourcePaths: readFlags(args, "--source"),
+    splitSeed: seedArg?.slice("--split-seed=".length),
+  };
+};
+
 const isMain = process.argv[1] && new URL(`file:${process.argv[1]}`).href === import.meta.url;
 if (isMain) {
-  const args = process.argv.slice(2);
-  const candidatePath = readFlag(args, "--candidate");
-  const baselinePath = readFlag(args, "--baseline");
-  const sourcePath = readFlag(args, "--source");
-  const seedArg = args.find((value) => value.startsWith("--split-seed="));
-  if (!candidatePath || !baselinePath || !sourcePath) throw new Error(usage);
-  const report = validateValuationModel({ candidate: JSON.parse(await readFile(candidatePath, "utf8")), baseline: JSON.parse(await readFile(baselinePath, "utf8")), rows: await readJsonLines(sourcePath), splitSeed: seedArg?.slice("--split-seed=".length) });
+  const { candidatePath, baselinePath, sourcePaths, splitSeed } = parseValidationArgs(process.argv.slice(2));
+  if (!candidatePath || !baselinePath || sourcePaths.length === 0) throw new Error(usage);
+  const rows = (await Promise.all(sourcePaths.map(readJsonLines))).flat();
+  const report = validateValuationModel({ candidate: JSON.parse(await readFile(candidatePath, "utf8")), baseline: JSON.parse(await readFile(baselinePath, "utf8")), rows, splitSeed });
   console.log(JSON.stringify(report, null, 2));
   process.exitCode = report.outcome === "pass" ? 0 : report.outcome === "needsBiasJustification" ? 2 : 1;
 }

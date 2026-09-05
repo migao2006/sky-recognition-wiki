@@ -1,10 +1,34 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  parseValidationArgs,
   predictValuationAggregate,
   validateValuationModel,
   withDerivedSeasonBands,
 } from "../scripts/validate-valuation-model.mjs";
+
+test("parses repeated validation source files", () => {
+  assert.deepEqual(parseValidationArgs([
+    "--candidate", "candidate.json",
+    "--source", "one.jsonl",
+    "--baseline", "baseline.json",
+    "--source", "two.jsonl",
+    "--split-seed=custom",
+  ]), {
+    candidatePath: "candidate.json",
+    baselinePath: "baseline.json",
+    sourcePaths: ["one.jsonl", "two.jsonl"],
+    splitSeed: "custom",
+  });
+});
+
+test("does not treat another flag as a missing source value", () => {
+  assert.deepEqual(parseValidationArgs([
+    "--candidate", "candidate.json",
+    "--source",
+    "--baseline", "baseline.json",
+  ]).sourcePaths, []);
+});
 import {
   deriveSeasonBands,
   seasonBandSeeds,
