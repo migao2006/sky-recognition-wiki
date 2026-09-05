@@ -39,12 +39,14 @@ test("keeps complete evidence consistent from backup through audit and validatio
   const candidatePath = new URL(`valuation-pipeline-${id}-candidate.json`, work);
   const backup = {
     format: "sky-recognition-wiki",
-    version: 3,
+    version: 4,
     exportedAt: "2026-09-05T00:00:00.000Z",
     account: {
       name: "private pipeline fixture",
       accountType: "有翼",
       bindingsConfirmed: true,
+      wardrobeConfirmed: true,
+      identityId: "123e4567-e89b-42d3-a456-426614174000",
       candles: "900",
       hearts: "100",
       ascended: "90",
@@ -70,8 +72,6 @@ test("keeps complete evidence consistent from backup through audit and validatio
       creator,
       "--backup", fileURLToPath(backupPath),
       "--price-twd", "3500",
-      "--account-id", "123e4567-e89b-42d3-a456-426614174000",
-      "--inventory-complete", "yes",
       "--observed-at", "2026-09-05T00:00:00.000Z",
       "--out", fileURLToPath(samplePath),
     ], commandOptions);

@@ -371,6 +371,31 @@
   margin-top: 28px;
   border-radius: 20px;
 }
+.wardrobe-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--glass);
+  color: #c7d2e1;
+  cursor: pointer;
+}
+.wardrobe-confirm input {
+  width: 18px;
+  height: 18px;
+  accent-color: #8fc7ff;
+}
+.wardrobe-confirm span {
+  display: grid;
+  gap: 2px;
+}
+.wardrobe-confirm small {
+  color: #9eabbc;
+  font-size: 12px;
+}
 .quick-select + .step-actions {
   margin-top: 10px;
 }

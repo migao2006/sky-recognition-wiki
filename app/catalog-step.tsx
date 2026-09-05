@@ -29,6 +29,8 @@ export function CatalogStep({
   state,
   owned,
   onToggleOwned,
+  wardrobeConfirmed,
+  onWardrobeConfirmedChange,
   onBack,
   onNext,
   onPreloadValuation,
@@ -37,6 +39,8 @@ export function CatalogStep({
   state: CatalogStepState;
   owned: ReadonlySet<string>;
   onToggleOwned: (guid: string) => void;
+  wardrobeConfirmed: boolean;
+  onWardrobeConfirmedChange: (confirmed: boolean) => void;
   onBack: () => void;
   onNext: () => void;
   onPreloadValuation: () => void;
@@ -606,6 +610,17 @@ export function CatalogStep({
           </button>
         </div>
       )}
+      <label className="wardrobe-confirm">
+        <input
+          type="checkbox"
+          checked={wardrobeConfirmed}
+          onChange={(event) => onWardrobeConfirmedChange(event.target.checked)}
+        />
+        <span>
+          <b>已逐項確認完整衣櫃</b>
+          <small>此確認會寫入備份，供正式估價樣本使用。</small>
+        </span>
+      </label>
       <div className="step-actions catalog-next">
         <button type="button" className="secondary" onClick={onBack}>
           返回帳號資料

@@ -13,12 +13,29 @@ export type AccountInfo = {
   name: string;
   accountType: string;
   bindingsConfirmed: boolean;
+  /** Set only after the owner has checked the complete wardrobe. */
+  wardrobeConfirmed: boolean;
+  /** Private, random, stable account identity used only in local backups. */
+  identityId: string;
   candles: string;
   hearts: string;
   ascended: string;
   passes: string;
   bindingNote: string;
   notes: string;
+};
+
+const UUID_V4_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+export const isAccountIdentityId = (value: unknown): value is string =>
+  typeof value === "string" && UUID_V4_PATTERN.test(value);
+
+/** Creates a browser-safe, private identifier without deriving it from account data. */
+export const createAccountIdentityId = () => {
+  const randomUuid = globalThis.crypto?.randomUUID?.();
+  if (randomUuid && isAccountIdentityId(randomUuid)) return randomUuid;
+  throw new Error("Secure UUID v4 generation is unavailable");
 };
 
 export const accountResourceLimits = {

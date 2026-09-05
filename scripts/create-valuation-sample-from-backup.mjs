@@ -17,22 +17,15 @@ const priceTwd = Number(argument("--price-twd"));
 const evidenceKind = argument("--evidence-kind", "professional_estimate");
 const evidenceQuality = argument("--evidence-quality", "medium");
 const groupId = argument("--group-id", "manual-account-backup");
-const accountId = argument("--account-id")?.trim().toLowerCase() ?? "";
-const inventoryComplete = argument("--inventory-complete");
+const suppliedAccountId = argument("--account-id")?.trim().toLowerCase() ?? "";
 const observedAt = new Date(argument("--observed-at", new Date().toISOString()));
 const workRoot = resolve(import.meta.dirname, "..", "work");
 const hashSalt = process.env.VALUATION_HASH_SALT?.trim() ?? "";
 
 if (!backupPath || !Number.isFinite(priceTwd) || priceTwd <= 0) {
   throw new Error(
-    "Usage: node scripts/create-valuation-sample-from-backup.mjs --backup <backup.json> --price-twd <amount> --account-id <stable-private-id> --inventory-complete yes [--evidence-kind professional_estimate] [--evidence-quality medium] [--group-id manual-account-backup] [--observed-at ISO] [--out work/sample.jsonl]",
+    "Usage: node scripts/create-valuation-sample-from-backup.mjs --backup <backup.json> --price-twd <amount> [--evidence-kind professional_estimate] [--evidence-quality medium] [--group-id manual-account-backup] [--observed-at ISO] [--out work/sample.jsonl]",
   );
-}
-if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(accountId)) {
-  throw new Error("--account-id must be a stable private UUID v4, never a name or account login");
-}
-if (inventoryComplete !== "yes") {
-  throw new Error("--inventory-complete yes is required after manually confirming the full wardrobe");
 }
 if (!["sold", "professional_estimate"].includes(evidenceKind)) {
   throw new Error("--evidence-kind must be sold or professional_estimate");
@@ -59,31 +52,29 @@ const [catalog, valuation, backupRuntime, accountConfig, backupText] = await Pro
 const validGuids = new Set(catalog.wikiItems.map((item) => item.guid));
 const itemByGuid = new Map(catalog.wikiItems.map((item) => [item.guid, item]));
 const rawBackup = JSON.parse(backupText);
-if (rawBackup?.version !== 3) {
-  throw new Error("A current version 3 account backup is required for model evidence");
-}
-const rawBindings = rawBackup?.bindings;
-const validBindingStatuses = new Set(
-  accountConfig.bindingOptions.map((option) => option.key),
-);
-const incompleteBindings = accountConfig.bindingKeys.filter(
-  (key) =>
-    !rawBindings ||
-    typeof rawBindings !== "object" ||
-    !Object.hasOwn(rawBindings, key) ||
-    !validBindingStatuses.has(rawBindings[key]),
-);
-if (incompleteBindings.length) {
-  throw new Error(
-    `Backup must explicitly include every binding state: ${incompleteBindings.join(", ")}`,
-  );
+if (rawBackup?.version !== 4) {
+  throw new Error("A current version 4 account backup is required for model evidence");
 }
 const imported = backupRuntime.parseAccountBackup(rawBackup, validGuids);
 if (imported.ignored || imported.unknownGuids.length || imported.invalidEntries) {
   throw new Error(`Backup contains ${imported.ignored} ignored or unknown owned-item entries`);
 }
+if (!imported.bindingsComplete) {
+  throw new Error(
+    `Backup must explicitly include every binding state: ${imported.incompleteBindingKeys.join(", ")}`,
+  );
+}
 if (!imported.account.bindingsConfirmed) {
   throw new Error("Backup binding states must be explicitly confirmed");
+}
+if (imported.identityGenerated) {
+  throw new Error("Backup must contain its original v4 account identity");
+}
+if (!imported.account.wardrobeConfirmed) {
+  throw new Error("Backup wardrobe must be explicitly confirmed in the organizer");
+}
+if (suppliedAccountId && suppliedAccountId !== imported.account.identityId) {
+  throw new Error("--account-id does not match the backup identity and cannot override it");
 }
 const resourceEntries = [
   ["candles", imported.account.candles],
@@ -125,7 +116,7 @@ const accountSnapshot = JSON.stringify({
   resources,
   accountType: imported.account.accountType,
 });
-const accountFingerprint = stableHash("account", accountId);
+const accountFingerprint = stableHash("account", imported.account.identityId);
 const snapshotHash = stableHash("snapshot", accountSnapshot);
 const seasonProgress = Object.fromEntries(
   [...analysis.seasonCompletion.entries()].map(([slug, progress]) => [

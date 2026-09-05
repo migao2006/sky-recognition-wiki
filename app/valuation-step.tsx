@@ -34,6 +34,7 @@ type Props = {
   setNotice: Dispatch<SetStateAction<string>>;
   onBack: () => void;
   onClearAll: () => void;
+  onOwnershipChanged: () => void;
 };
 
 const formatTwd = (value: number) =>
@@ -75,6 +76,7 @@ export function ValuationStep({
   setNotice,
   onBack,
   onClearAll,
+  onOwnershipChanged,
 }: Props) {
   const { showcasePreset, setShowcasePreset } = state;
   const chosen = useMemo(
@@ -453,7 +455,10 @@ export function ValuationStep({
           <button
             className="clear-owned"
             disabled={!owned.size}
-            onClick={() => setOwned(new Set())}
+            onClick={() => {
+              setOwned(new Set());
+              onOwnershipChanged();
+            }}
           >
             清除已選物品
           </button>

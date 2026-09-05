@@ -33,6 +33,7 @@ export const hasAccountDraftData: HasAccountDraftData = (
   owned.size > 0 ||
   account.accountType !== "有翼" ||
   account.bindingsConfirmed ||
+  account.wardrobeConfirmed ||
   [
     account.name,
     account.candles,

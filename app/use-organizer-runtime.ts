@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -55,7 +56,9 @@ const emptyValuationSampleSummary = {
 };
 
 export const useOrganizerRuntime = (
+  owned: Set<string>,
   setOwned: Dispatch<SetStateAction<Set<string>>>,
+  onOwnedItemsRemoved: () => void,
 ) => {
   const [catalogDomain, setCatalogDomain] = useState<CatalogDomain | null>(
     null,
@@ -66,6 +69,10 @@ export const useOrganizerRuntime = (
   const [valuationLoadError, setValuationLoadError] = useState(false);
   const catalogPromise = useRef<Promise<CatalogDomain> | null>(null);
   const valuationPromise = useRef<Promise<ValuationRuntime> | null>(null);
+  const ownedRef = useRef(owned);
+  useEffect(() => {
+    ownedRef.current = owned;
+  }, [owned]);
 
   const loadCatalog = useCallback(() => {
     if (!catalogPromise.current) {
@@ -73,12 +80,14 @@ export const useOrganizerRuntime = (
       catalogPromise.current = import("./catalog-domain")
         .then((module) => {
           const validGuids = new Set(module.wikiItems.map((item) => item.guid));
-          setOwned((previous) => {
-            const filtered = new Set(
-              [...previous].filter((guid) => validGuids.has(guid)),
-            );
-            return filtered.size === previous.size ? previous : filtered;
-          });
+          const previous = ownedRef.current;
+          const filtered = new Set(
+            [...previous].filter((guid) => validGuids.has(guid)),
+          );
+          if (filtered.size !== previous.size) {
+            setOwned(filtered);
+            onOwnedItemsRemoved();
+          }
           setCatalogDomain(module);
           return module;
         })
@@ -89,7 +98,7 @@ export const useOrganizerRuntime = (
         });
     }
     return catalogPromise.current;
-  }, [setOwned]);
+  }, [onOwnedItemsRemoved, setOwned]);
 
   const loadValuation = useCallback(() => {
     if (!valuationPromise.current) {

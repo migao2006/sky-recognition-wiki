@@ -95,6 +95,25 @@ test("deduplicates hashes and excludes foreign, China, and invalid records", asy
   assert.deepEqual([result.seasons.aurora.excludedCount, result.seasons.aurora.duplicateCount], [4, 1]);
 });
 
+test("filters an invalid relist before deduplicating the same post", async () => {
+  const result = await audit([
+    { post_hash: "same-post", published_at: "2026-09-01T00:00:00.000Z", price_twd: 10000, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },
+    { post_hash: "same-post", published_at: "2026-09-02T00:00:00.000Z", price_twd: 90000, evidence_kind: "ask", evidence_quality: "high", region: "國服", season_progress: { aurora: "畢" } },
+  ]);
+
+  assert.deepEqual([result.eligibleRows, result.excludedRows, result.duplicateRows], [1, 1, 0]);
+  assert.equal(result.seasons.aurora.median, 10000);
+});
+
+test("deduplicates the legacy post fingerprint alias", async () => {
+  const result = await audit([
+    { post_fingerprint: "legacy-post", published_at: recent, price_twd: 10000, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },
+    { post_fingerprint: "legacy-post", published_at: recent, price_twd: 90000, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },
+  ]);
+
+  assert.deepEqual([result.eligibleRows, result.duplicateRows], [1, 1]);
+});
+
 test("deduplicates the same inventory snapshot even under different account ids", async () => {
   const snapshotHash = "d".repeat(64);
   const result = await audit([

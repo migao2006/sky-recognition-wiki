@@ -25,6 +25,7 @@ import {
   qualityWeights,
   sampleWeightFor,
   seasonProgressParts,
+  timestampFor,
   valuationModelFeaturesFor,
   valuationDatasetDigestFor,
 } from "./lib/valuation-source-core.mjs";
@@ -337,7 +338,7 @@ export const validateValuationModel = ({
     const weight = sampleWeightFor(row, asOf);
     const accountGroup = accountKeyFor(row);
     if (!price || !weight || !accountGroup) return [];
-    return [{ row, price, weight, accountGroup, postGroup: postKeyFor(row), marketGroup: groupKeyFor(row), evidenceKind: row.evidence_kind, publishedAt: new Date(row.published_at ?? row.observed_at ?? 0).getTime() || 0, modelFeatures: hasCompleteModelEvidence(row, { hashSalt }) ? valuationModelFeaturesFor(row) : null }];
+    return [{ row, price, weight, accountGroup, postGroup: postKeyFor(row), marketGroup: groupKeyFor(row), evidenceKind: row.evidence_kind, publishedAt: timestampFor(row), modelFeatures: hasCompleteModelEvidence(row, { hashSalt }) ? valuationModelFeaturesFor(row) : null }];
   });
   const sourceWithoutPostIdentity = [];
   const sourceByPost = new Map();

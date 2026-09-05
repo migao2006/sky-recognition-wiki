@@ -163,7 +163,11 @@ test("imports and exports account backups from the first step", async ({ page })
   const chunks: Buffer[] = [];
   for await (const chunk of stream) chunks.push(Buffer.from(chunk));
   const exported = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  expect(exported.version).toBe(3);
+  expect(exported.version).toBe(4);
   expect(exported.account.name).toBe("舊版備份");
+  expect(exported.account.wardrobeConfirmed).toBe(false);
+  expect(exported.account.identityId).toMatch(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+  );
   expect(exported.owned).toHaveLength(1);
 });

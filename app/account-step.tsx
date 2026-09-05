@@ -28,6 +28,7 @@ type AccountStepProps = {
   owned: ReadonlySet<string>;
   setOwned: React.Dispatch<React.SetStateAction<Set<string>>>;
   onToggleOwned: (guid: string) => void;
+  onOwnershipChanged: () => void;
   setNotice: React.Dispatch<React.SetStateAction<string>>;
   draftAvailable: boolean;
   runtime: AccountRuntime;
@@ -42,6 +43,7 @@ export function AccountStep({
   owned,
   setOwned,
   onToggleOwned,
+  onOwnershipChanged,
   setNotice,
   draftAvailable,
   runtime,
@@ -89,6 +91,7 @@ export function AccountStep({
       ids.forEach((id) => (complete ? next.delete(id) : next.add(id)));
       return next;
     });
+    onOwnershipChanged();
     setNotice(
       complete
         ? `已取消「${label}」${ids.length} 件`

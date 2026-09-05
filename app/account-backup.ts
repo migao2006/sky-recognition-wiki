@@ -1,7 +1,9 @@
 import {
   bindingKeys,
   bindingOptions,
+  createAccountIdentityId,
   emptyBindings,
+  isAccountIdentityId,
   normalizeAccountResource,
   type AccountInfo,
   type BindingKey,
@@ -11,8 +13,8 @@ import { legacyCatalogGuidAliases } from "./catalog-legacy-guids";
 import type { WikiItem } from "./wiki-data";
 
 const BACKUP_FORMAT = "sky-recognition-wiki";
-const BACKUP_VERSION = 3;
-const LEGACY_BACKUP_VERSIONS = new Set([1, 2]);
+const BACKUP_VERSION = 4;
+const LEGACY_BACKUP_VERSIONS = new Set([1, 2, 3]);
 export const ACCOUNT_BACKUP_MAX_BYTES = 5 * 1024 * 1024;
 const ACCOUNT_BACKUP_MAX_OWNED_ITEMS = 5_000;
 
@@ -47,6 +49,14 @@ type AccountImportResult = {
   duplicates: string[];
   /** Entries in owned that are not strings. */
   invalidEntries: number;
+  /** The source backup version; 0 is the pre-versioned legacy format. */
+  backupVersion: number;
+  /** Every current binding key was explicitly stored with a valid state. */
+  bindingsComplete: boolean;
+  /** Binding keys absent or invalid in the source file, before compatibility defaults. */
+  incompleteBindingKeys: BindingKey[];
+  /** True when a legacy file lacked a stable identity and one was created locally. */
+  identityGenerated: boolean;
 };
 
 type DraftOptions = {
@@ -66,8 +76,11 @@ const text = (value: unknown, maxLength: number) =>
 
 type BackupItemSnapshot = { guid: string; name: string };
 
-const v3ItemSnapshots = (backup: UnknownRecord): Map<string, string> => {
-  if (backup.version !== BACKUP_VERSION || !Array.isArray(backup.items)) {
+const versionedItemSnapshots = (backup: UnknownRecord): Map<string, string> => {
+  if (
+    (backup.version !== 3 && backup.version !== BACKUP_VERSION) ||
+    !Array.isArray(backup.items)
+  ) {
     return new Map();
   }
   const snapshots = new Map<string, string>();
@@ -147,11 +160,18 @@ const parseAccountData = (
   ) {
     throw new Error("Invalid account backup");
   }
-  supportedVersion(backup);
+  const backupVersion = supportedVersion(backup);
   if (rawOwned.length > ACCOUNT_BACKUP_MAX_OWNED_ITEMS) {
     throw new Error("Too many owned items in account backup");
   }
 
+  const incompleteBindingKeys = bindingKeys.filter(
+    (key) =>
+      !rawBindings ||
+      !Object.hasOwn(rawBindings, key) ||
+      !bindingOptions.some((option) => option.key === rawBindings[key]),
+  );
+  const bindingsComplete = incompleteBindingKeys.length === 0;
   const bindings = emptyBindings();
   bindingKeys.forEach((key) => {
     const bindingValue =
@@ -164,6 +184,13 @@ const parseAccountData = (
 
   const importedType = text(rawAccount.accountType, 100) || "有翼";
   const rawBindingsConfirmed = rawAccount.bindingsConfirmed;
+  const rawIdentityId = rawAccount.identityId;
+  const sourceIdentityId =
+    backupVersion === BACKUP_VERSION && isAccountIdentityId(rawIdentityId)
+      ? rawIdentityId.toLowerCase()
+      : null;
+  const identityGenerated = sourceIdentityId === null;
+  const identityId = sourceIdentityId ?? createAccountIdentityId();
   const account: AccountInfo = {
     name: text(rawAccount.name, 100),
     accountType: importedType.includes("無翼") ? "無翼" : "有翼",
@@ -171,6 +198,10 @@ const parseAccountData = (
       typeof rawBindingsConfirmed === "boolean"
         ? rawBindingsConfirmed
         : Object.values(bindings).some((status) => status !== "none"),
+    // A pre-v4 backup cannot establish that its old inventory was checked.
+    wardrobeConfirmed:
+      backupVersion === BACKUP_VERSION && rawAccount.wardrobeConfirmed === true,
+    identityId,
     candles: normalizeAccountResource(rawAccount.candles, "candles"),
     hearts: normalizeAccountResource(rawAccount.hearts, "hearts"),
     ascended: normalizeAccountResource(rawAccount.ascended, "ascended"),
@@ -185,7 +216,7 @@ const parseAccountData = (
   let invalidEntries = 0;
   const unknownGuids: BackupItemSnapshot[] = [];
   const duplicates: string[] = [];
-  const snapshots = v3ItemSnapshots(backup);
+  const snapshots = versionedItemSnapshots(backup);
   rawOwned.forEach((rawGuid) => {
     if (typeof rawGuid !== "string") {
       invalidEntries += 1;
@@ -212,6 +243,20 @@ const parseAccountData = (
   });
 
   const ignored = unknownGuids.length + duplicates.length + invalidEntries;
+  // Any compatibility repair or dropped entry changes what the imported
+  // wardrobe means. Require the user to inspect it again before the next v4
+  // export can become formal model evidence.
+  if (
+    identityGenerated ||
+    !bindingsComplete ||
+    migrated > 0 ||
+    ignored > 0
+  ) {
+    account.wardrobeConfirmed = false;
+  }
+  if (!bindingsComplete) {
+    account.bindingsConfirmed = false;
+  }
   return {
     account,
     bindings,
@@ -222,6 +267,10 @@ const parseAccountData = (
     unknownGuids,
     duplicates,
     invalidEntries,
+    backupVersion,
+    bindingsComplete,
+    incompleteBindingKeys,
+    identityGenerated,
   };
 };
 

@@ -20,18 +20,17 @@ const commandOptions = {
     VALUATION_HASH_SALT: "test-only-valuation-salt-32-characters-minimum",
   },
 };
-const requiredEvidenceArgs = [
-  "--account-id", "123e4567-e89b-42d3-a456-426614174000",
-  "--inventory-complete", "yes",
-];
+const requiredEvidenceArgs = [];
 const completeBackup = () => ({
   format: "sky-recognition-wiki",
-  version: 3,
+  version: 4,
   exportedAt: "2026-09-05T00:00:00.000Z",
   account: {
     name: "must not leak",
     accountType: "有翼",
     bindingsConfirmed: true,
+    wardrobeConfirmed: true,
+    identityId: "123e4567-e89b-42d3-a456-426614174000",
     candles: "900",
     hearts: "100",
     ascended: "90",
@@ -163,25 +162,59 @@ test("requires explicitly confirmed binding states", async () => {
   }
 });
 
-test("requires explicit full-wardrobe confirmation and a stable private account id", async () => {
+test("requires a v4 backup with explicit full-wardrobe confirmation", async () => {
   await assert.rejects(
     execFileAsync(process.execPath, [
       script,
       "--backup", "missing.json",
       "--price-twd", "3500",
-      "--inventory-complete", "yes",
     ], commandOptions),
-    /--account-id/u,
+    /ENOENT/u,
   );
-  await assert.rejects(
-    execFileAsync(process.execPath, [
-      script,
-      "--backup", "missing.json",
-      "--price-twd", "3500",
-      "--account-id", "123e4567-e89b-42d3-a456-426614174000",
-    ], commandOptions),
-    /--inventory-complete yes/u,
-  );
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const backupPath = new URL(`valuation-unconfirmed-wardrobe-${id}.json`, work);
+  const outputPath = new URL(`valuation-unconfirmed-wardrobe-${id}.jsonl`, work);
+  const backup = completeBackup();
+  backup.account.wardrobeConfirmed = false;
+  try {
+    await writeFile(backupPath, `${JSON.stringify(backup)}\n`, "utf8");
+    await assert.rejects(
+      execFileAsync(process.execPath, [
+        script,
+        "--backup", fileURLToPath(backupPath),
+        "--price-twd", "3500",
+        "--out", fileURLToPath(outputPath),
+      ], commandOptions),
+      /wardrobe must be explicitly confirmed/u,
+    );
+    backup.account.wardrobeConfirmed = true;
+    backup.version = 3;
+    await writeFile(backupPath, `${JSON.stringify(backup)}\n`, "utf8");
+    await assert.rejects(
+      execFileAsync(process.execPath, [
+        script,
+        "--backup", fileURLToPath(backupPath),
+        "--price-twd", "3500",
+        "--out", fileURLToPath(outputPath),
+      ], commandOptions),
+      /version 4/u,
+    );
+    backup.version = 4;
+    backup.account.identityId = "not-a-uuid";
+    await writeFile(backupPath, `${JSON.stringify(backup)}\n`, "utf8");
+    await assert.rejects(
+      execFileAsync(process.execPath, [
+        script,
+        "--backup", fileURLToPath(backupPath),
+        "--price-twd", "3500",
+        "--out", fileURLToPath(outputPath),
+      ], commandOptions),
+      /original v4 account identity/u,
+    );
+  } finally {
+    await Promise.all([backupPath, outputPath].map((file) => rm(file, { force: true })));
+  }
 });
 
 test("rejects a confirmed backup when any current binding key is absent or invalid", async () => {
@@ -220,7 +253,7 @@ test("rejects a confirmed backup when any current binding key is absent or inval
   }
 });
 
-test("keeps one anonymous account identity across changing snapshots", async () => {
+test("keeps the backup identity across changing snapshots and rejects CLI overrides", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();
   const firstBackupPath = new URL(`valuation-stable-first-${id}.json`, work);
@@ -235,7 +268,6 @@ test("keeps one anonymous account identity across changing snapshots", async () 
     "--backup", fileURLToPath(backupPath),
     "--price-twd", "3500",
     "--account-id", accountId,
-    "--inventory-complete", "yes",
     "--observed-at", "2026-09-05T00:00:00.000Z",
     "--out", fileURLToPath(outputPath),
   ], commandOptions);
@@ -260,6 +292,14 @@ test("keeps one anonymous account identity across changing snapshots", async () 
     );
     assert.equal(first.account_fingerprint, second.account_fingerprint);
     assert.notEqual(first.snapshot_hash, second.snapshot_hash);
+    await assert.rejects(
+      run(
+        secondBackupPath,
+        secondOutputPath,
+        "223e4567-e89b-42d3-a456-426614174000",
+      ),
+      /cannot override/u,
+    );
   } finally {
     await Promise.all(
       [firstBackupPath, secondBackupPath, firstOutputPath, secondOutputPath]

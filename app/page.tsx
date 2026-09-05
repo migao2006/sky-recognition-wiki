@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AccountStep } from "./account-step";
 import {
+  createAccountIdentityId,
   emptyBindings,
   type AccountInfo,
   type BindingKey,
@@ -30,6 +31,8 @@ const emptyAccount = (): AccountInfo => ({
   name: "",
   accountType: "有翼",
   bindingsConfirmed: false,
+  wardrobeConfirmed: false,
+  identityId: createAccountIdentityId(),
   candles: "",
   hearts: "",
   ascended: "",
@@ -40,7 +43,7 @@ const emptyAccount = (): AccountInfo => ({
 
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
-  const { owned, setOwned, toggleOwned } = useOwnedItems();
+  const { owned, setOwned, toggleOwned: toggleOwnedItem } = useOwnedItems();
   const [account, setAccount] = useState<AccountInfo>(emptyAccount);
   const [bindings, setBindings] =
     useState<Record<BindingKey, BindingStatus>>(emptyBindings);
@@ -49,8 +52,26 @@ export default function AccountOrganizer() {
   const valuationStepState = useValuationStepState();
   const announcedStep = useRef<1 | 2 | 3>(1);
   const [stepAnnouncement, setStepAnnouncement] = useState("");
-  const runtime = useOrganizerRuntime(setOwned);
+  const invalidateWardrobeConfirmation = useCallback(() => {
+    setAccount((previous) =>
+      previous.wardrobeConfirmed
+        ? { ...previous, wardrobeConfirmed: false }
+        : previous,
+    );
+  }, []);
+  const runtime = useOrganizerRuntime(
+    owned,
+    setOwned,
+    invalidateWardrobeConfirmation,
+  );
   const { loadCatalog, loadValuation } = runtime;
+  const toggleOwned = useCallback(
+    (guid: string) => {
+      toggleOwnedItem(guid);
+      invalidateWardrobeConfirmation();
+    },
+    [invalidateWardrobeConfirmation, toggleOwnedItem],
+  );
   const { draftAvailable, draftReady, clearStoredDraft } = useAccountDraft({
     account,
     bindings,
@@ -185,6 +206,7 @@ export default function AccountOrganizer() {
           owned={owned}
           setOwned={setOwned}
           onToggleOwned={toggleOwned}
+          onOwnershipChanged={invalidateWardrobeConfirmation}
           setNotice={setNotice}
           draftAvailable={draftAvailable}
           runtime={runtime}
@@ -197,6 +219,10 @@ export default function AccountOrganizer() {
           state={catalogStepState}
           owned={owned}
           onToggleOwned={toggleOwned}
+          wardrobeConfirmed={account.wardrobeConfirmed}
+          onWardrobeConfirmedChange={(wardrobeConfirmed) =>
+            setAccount((previous) => ({ ...previous, wardrobeConfirmed }))
+          }
           onBack={() => goToStep(1)}
           onNext={() => goToStep(3)}
           onPreloadValuation={safelyLoadValuation}
@@ -215,6 +241,7 @@ export default function AccountOrganizer() {
             setNotice={setNotice}
             onBack={() => goToStep(2)}
             onClearAll={clearAllData}
+            onOwnershipChanged={invalidateWardrobeConfirmation}
           />
         )}
 

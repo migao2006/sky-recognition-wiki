@@ -14,6 +14,8 @@ const account = {
   name: "測試帳號",
   accountType: "有翼",
   bindingsConfirmed: true,
+  wardrobeConfirmed: true,
+  identityId: "123e4567-e89b-42d3-a456-426614174000",
   candles: "12",
   hearts: "3",
   ascended: "1",
@@ -54,7 +56,7 @@ test("creates a stable versioned account backup", () => {
   });
 
   assert.equal(backup.format, "sky-recognition-wiki");
-  assert.equal(backup.version, 3);
+  assert.equal(backup.version, 4);
   assert.equal(backup.exportedAt, "2026-08-25T00:00:00.000Z");
   assert.deepEqual(backup.owned, ["valid-guid"]);
   assert.deepEqual(backup.items[0], {
@@ -115,8 +117,8 @@ test("rejects unrelated JSON files", () => {
   );
 });
 
-test("migrates v1, v2, and versionless backups but rejects future versions", () => {
-  for (const version of [undefined, 1, 2]) {
+test("migrates v1, v2, v3, and versionless backups but rejects future versions", () => {
+  for (const version of [undefined, 1, 2, 3]) {
     const imported = parseAccountBackup(
       {
         format: "sky-recognition-wiki",
@@ -265,7 +267,100 @@ test("migrates legacy backups and drafts without PlayStation bindings", () => {
 
   assert.equal(imported.bindings.playstation, "none");
   assert.equal(draft.bindings.playstation, "none");
-  assert.equal(imported.account.bindingsConfirmed, true);
+  assert.equal(imported.account.bindingsConfirmed, false);
+  assert.equal(imported.account.wardrobeConfirmed, false);
+});
+
+test("records source binding completeness and never upgrades legacy wardrobe confirmation", () => {
+  const legacy = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 3,
+      account: { ...account, wardrobeConfirmed: true },
+      bindings: { google: "none", nintendo: "none" },
+      owned: [],
+    },
+    new Set(),
+  );
+  assert.equal(legacy.backupVersion, 3);
+  assert.equal(legacy.account.wardrobeConfirmed, false);
+  assert.equal(legacy.account.bindingsConfirmed, false);
+  assert.equal(legacy.bindingsComplete, false);
+  assert.deepEqual(legacy.incompleteBindingKeys, [
+    "gameCenter", "facebook", "steam", "twitch", "playstation",
+  ]);
+  assert.equal(legacy.identityGenerated, true);
+
+  const current = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 4,
+      account,
+      bindings: {
+        google: "none",
+        nintendo: "none",
+        gameCenter: "none",
+        facebook: "none",
+        steam: "none",
+        twitch: "none",
+        playstation: "none",
+      },
+      owned: [],
+    },
+    new Set(),
+  );
+  assert.equal(current.backupVersion, 4);
+  assert.equal(current.account.wardrobeConfirmed, true);
+  assert.equal(current.bindingsComplete, true);
+  assert.deepEqual(current.incompleteBindingKeys, []);
+  assert.equal(current.identityGenerated, false);
+});
+
+test("generates a stable-format identity for a legacy import without treating it as confirmed", () => {
+  const imported = parseAccountBackup(
+    {
+      format: "sky-recognition-wiki",
+      version: 3,
+      account: { ...account, identityId: undefined, wardrobeConfirmed: true },
+      owned: [],
+    },
+    new Set(),
+  );
+  assert.match(imported.account.identityId, /^[0-9a-f]{8}-[0-9a-f]{4}-4/u);
+  assert.equal(imported.identityGenerated, true);
+  assert.equal(imported.account.wardrobeConfirmed, false);
+});
+
+test("clears a v4 wardrobe confirmation when import normalization changes evidence", () => {
+  const current = {
+    format: "sky-recognition-wiki",
+    version: 4,
+    account,
+    bindings: {
+      google: "none",
+      nintendo: "none",
+      gameCenter: "none",
+      facebook: "none",
+      steam: "none",
+      twitch: "none",
+      playstation: "none",
+    },
+  };
+  const unknown = parseAccountBackup(
+    { ...current, owned: ["unknown-guid"] },
+    new Set(),
+  );
+  assert.equal(unknown.account.wardrobeConfirmed, false);
+
+  const missingIdentity = parseAccountBackup(
+    {
+      ...current,
+      account: { ...account, identityId: "" },
+      owned: [],
+    },
+    new Set(),
+  );
+  assert.equal(missingIdentity.account.wardrobeConfirmed, false);
 });
 
 test("creates and restores a compact account draft", () => {

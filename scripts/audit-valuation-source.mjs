@@ -26,6 +26,7 @@ import {
   modelEvidenceFields,
   packageTiers,
   packageTierFor,
+  postKeyFor,
   preferredRow,
   priceFor as sharedPriceFor,
   priceRangeFor as sharedPriceRangeFor,
@@ -297,8 +298,15 @@ if (!Number.isFinite(referenceDate.getTime()))
 const seasonMetrics = Object.fromEntries([...patterns.keys()].map((slug) => [slug, { samples: [], excludedCount: 0, duplicateCount: 0 }]));
 const postRows = new Map();
 let duplicatePostRows = 0;
+let excludedRows = 0;
 for (const row of rows) {
-  const hash = String(row.post_hash ?? "").trim();
+  const slugs = seasonSlugsFor(row);
+  if (invalidReason(row)) {
+    excludedRows += 1;
+    slugs.forEach((slug) => (seasonMetrics[slug].excludedCount += 1));
+    continue;
+  }
+  const hash = postKeyFor(row);
   if (!hash) {
     postRows.set(`row:${postRows.size}`, row);
     continue;
@@ -315,14 +323,8 @@ for (const row of rows) {
 }
 
 const eligibleCandidates = [];
-let excludedRows = 0;
 for (const row of postRows.values()) {
   const slugs = seasonSlugsFor(row);
-  if (invalidReason(row)) {
-    excludedRows += 1;
-    slugs.forEach((slug) => (seasonMetrics[slug].excludedCount += 1));
-    continue;
-  }
   const kind = row.evidence_kind;
   const startSeason = startSeasonFor(row);
   const sample = {
