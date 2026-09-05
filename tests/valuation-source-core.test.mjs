@@ -159,3 +159,19 @@ test("newer evidence still wins over an older richer replay snapshot", () => {
 
   assert.equal(preferredRow(older, newer), newer);
 });
+
+test("newer observed backup evidence wins when publication dates are unavailable", () => {
+  const older = {
+    evidence_kind: "professional_estimate",
+    observed_at: "2026-09-05T16:00:00.000Z",
+    season_progress: { moments: "畢" },
+    season_progress_end_slug: "carnival",
+    valuation_model: completeModel,
+  };
+  const newer = {
+    evidence_kind: "professional_estimate",
+    observed_at: "2026-09-06T16:00:00.000Z",
+  };
+
+  assert.equal(preferredRow(older, newer), newer);
+});
