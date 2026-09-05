@@ -3,6 +3,11 @@ import {
   hasCompleteValuationModelFeatures,
   valuationModelInputKeys,
 } from "../../app/valuation-model-core.js";
+import {
+  replaySeasonProgressEndSlug,
+  seasonBandSeeds,
+  seasonGraduationGiftCounts,
+} from "../../app/valuation-season-band-core.js";
 
 export const evidenceWeights = {
   ask: 1,
@@ -255,11 +260,29 @@ export const stableRowKey = (row, { accountTrim = true } = {}) =>
       paid_package_count: row.paid_package_count ?? "",
     }))
     .digest("hex");
+const replayEvidenceScore = (row) => {
+  const progress = row?.season_progress;
+  const progressEntries =
+    progress && typeof progress === "object" && !Array.isArray(progress)
+      ? Object.keys(progress).length
+      : 0;
+  return (
+    (valuationModelFeaturesFor(row) ? 100 : 0) +
+    (hasReplayableSeasonProgress(row, {
+      orderedSeasonSlugs: seasonBandSeeds.map((seed) => seed.slug),
+      requiredEndSlug: replaySeasonProgressEndSlug,
+      graduationGiftCounts: seasonGraduationGiftCounts,
+    }) ? 20 : 0) +
+    Math.min(progressEntries, 19)
+  );
+};
 export const preferredRow = (left, right) => {
   const evidenceDifference = evidenceRank(right.evidence_kind) - evidenceRank(left.evidence_kind);
   if (evidenceDifference) return evidenceDifference > 0 ? right : left;
   const timeDifference = timestampFor(right) - timestampFor(left);
   if (timeDifference) return timeDifference > 0 ? right : left;
+  const replayEvidenceDifference = replayEvidenceScore(right) - replayEvidenceScore(left);
+  if (replayEvidenceDifference) return replayEvidenceDifference > 0 ? right : left;
   return stableRowKey(right).localeCompare(stableRowKey(left)) < 0 ? right : left;
 };
 export const preferredSample = (left, right, { accountTrim = true } = {}) => {
@@ -267,6 +290,8 @@ export const preferredSample = (left, right, { accountTrim = true } = {}) => {
   if (evidenceDifference) return evidenceDifference > 0 ? right : left;
   if (right.publishedAt !== left.publishedAt)
     return right.publishedAt > left.publishedAt ? right : left;
+  const replayEvidenceDifference = replayEvidenceScore(right.row) - replayEvidenceScore(left.row);
+  if (replayEvidenceDifference) return replayEvidenceDifference > 0 ? right : left;
   return stableRowKey(right.row, { accountTrim }).localeCompare(
     stableRowKey(left.row, { accountTrim }),
   ) < 0 ? right : left;

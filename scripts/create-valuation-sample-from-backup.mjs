@@ -55,6 +55,20 @@ if (imported.ignored || imported.unknownGuids.length || imported.invalidEntries)
 if (!imported.account.bindingsConfirmed) {
   throw new Error("Backup binding states must be explicitly confirmed");
 }
+const resourceEntries = [
+  ["candles", imported.account.candles],
+  ["hearts", imported.account.hearts],
+  ["ascended", imported.account.ascended],
+  ["passes", imported.account.passes],
+];
+const missingResources = resourceEntries
+  .filter(([, value]) => !/^\d+$/u.test(String(value)))
+  .map(([key]) => key);
+if (missingResources.length) {
+  throw new Error(
+    `Backup resources must be explicitly confirmed: ${missingResources.join(", ")}`,
+  );
+}
 const chosen = imported.owned.map((guid) => itemByGuid.get(guid)).filter(Boolean);
 if (!chosen.length) throw new Error("Backup has no recognized owned items");
 const domain = { ...catalog, getZhName: catalog.zhItemName };
@@ -65,10 +79,10 @@ const analysis = valuation.analyzeValuation({
   domain,
 });
 const resources = {
-  candles: imported.account.candles,
-  hearts: imported.account.hearts,
-  ascended: imported.account.ascended,
-  passes: imported.account.passes,
+  candles: Number(imported.account.candles),
+  hearts: Number(imported.account.hearts),
+  ascended: Number(imported.account.ascended),
+  passes: Number(imported.account.passes),
 };
 const estimate = valuation.estimateValuation({ analysis, resources });
 if (!estimate?.modelFeatures) throw new Error("Backup could not produce a complete valuation predictor");

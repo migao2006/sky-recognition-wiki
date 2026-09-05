@@ -20,39 +20,40 @@ const commandOptions = {
     VALUATION_HASH_SALT: "test-only-valuation-salt-32-characters-minimum",
   },
 };
+const completeBackup = () => ({
+  format: "sky-recognition-wiki",
+  version: 3,
+  exportedAt: "2026-09-05T00:00:00.000Z",
+  account: {
+    name: "must not leak",
+    accountType: "有翼",
+    bindingsConfirmed: true,
+    candles: "900",
+    hearts: "100",
+    ascended: "90",
+    passes: "0",
+    bindingNote: "must not leak",
+    notes: "must not leak",
+  },
+  bindings: {
+    google: "none",
+    nintendo: "none",
+    gameCenter: "none",
+    facebook: "none",
+    steam: "none",
+    twitch: "none",
+    playstation: "none",
+  },
+  owned: ["W-3Nh_yWGv"],
+  items: [],
+});
 
 test("creates a private replayable predictor from a complete backup", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();
   const backupPath = new URL(`valuation-sample-${id}.json`, work);
   const outputPath = new URL(`valuation-sample-${id}.jsonl`, work);
-  const backup = {
-    format: "sky-recognition-wiki",
-    version: 3,
-    exportedAt: "2026-09-05T00:00:00.000Z",
-    account: {
-      name: "must not leak",
-      accountType: "有翼",
-      bindingsConfirmed: true,
-      candles: "900",
-      hearts: "100",
-      ascended: "90",
-      passes: "0",
-      bindingNote: "must not leak",
-      notes: "must not leak",
-    },
-    bindings: {
-      google: "none",
-      nintendo: "none",
-      gameCenter: "none",
-      facebook: "none",
-      steam: "none",
-      twitch: "none",
-      playstation: "none",
-    },
-    owned: ["W-3Nh_yWGv"],
-    items: [],
-  };
+  const backup = completeBackup();
   try {
     await writeFile(backupPath, `${JSON.stringify(backup)}\n`, "utf8");
     await execFileAsync(process.execPath, [
@@ -76,6 +77,29 @@ test("creates a private replayable predictor from a complete backup", async () =
     assert.equal(row.account_fingerprint.length, 64);
     assert.ok(valuationModelInputKeys.every((key) => Number.isFinite(row.valuation_model[key])));
     assert.ok(!JSON.stringify(row).includes("must not leak"));
+  } finally {
+    await Promise.all([backupPath, outputPath].map((file) => rm(file, { force: true })));
+  }
+});
+
+test("rejects a backup with any unconfirmed resource field", async () => {
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const backupPath = new URL(`valuation-missing-resource-${id}.json`, work);
+  const outputPath = new URL(`valuation-missing-resource-${id}.jsonl`, work);
+  const backup = completeBackup();
+  backup.account.passes = "";
+  try {
+    await writeFile(backupPath, `${JSON.stringify(backup)}\n`, "utf8");
+    await assert.rejects(
+      execFileAsync(process.execPath, [
+        script,
+        "--backup", fileURLToPath(backupPath),
+        "--price-twd", "3500",
+        "--out", fileURLToPath(outputPath),
+      ], commandOptions),
+      /resources must be explicitly confirmed: passes/u,
+    );
   } finally {
     await Promise.all([backupPath, outputPath].map((file) => rm(file, { force: true })));
   }
