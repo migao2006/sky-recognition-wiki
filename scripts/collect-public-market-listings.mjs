@@ -6,6 +6,70 @@ import * as cheerio from "cheerio";
 const TAIFEX_URL = "https://openapi.taifex.com.tw/v1/DailyForeignExchangeRates";
 const FUNPAY_URL = "https://funpay.com/en/lots/3774/";
 const TAOSHOUYOU_FIRST_PAGE = "https://www.taoshouyou.com/game/guang__-15256-0-1";
+const seasonMentionPatterns = [
+  ["gratitude", /感恩(?:季|毕业|畢業|毕|畢)|\b(?:season of )?gratitude(?: season)?\b/i, /感恩(?:季)?/],
+  ["lightseekers", /追光(?:季|毕业|畢業|毕|畢)|\b(?:season of )?lightseekers?(?: season)?\b/i, /追光(?:季)?/],
+  ["belonging", /归属(?:季|毕业|毕)|歸屬(?:季|畢業|畢)|\b(?:season of )?belonging(?: season)?\b/i, /(?:归属|歸屬)(?:季)?/],
+  ["rhythm", /音韵(?:季|毕业|毕)|音韻(?:季|畢業|畢)|\b(?:season of )?rh(?:ythm|ymth)(?: season)?\b/i, /(?:音韵|音韻)(?:季)?/],
+  ["enchantment", /魔法(?:季|毕业|畢業|毕|畢)|\b(?:season of )?enchantment(?: season)?\b/i, /魔法(?:季)?/],
+  ["sanctuary", /圣岛(?:季|毕业|毕)|聖島(?:季|畢業|畢)|\b(?:season of )?sanctuary(?: season)?\b/i, /(?:圣岛|聖島)(?:季)?/],
+  ["prophecy", /预言(?:季|毕业|毕)|預言(?:季|畢業|畢)|\b(?:season of )?prophecy(?: season)?\b/i, /(?:预言|預言)(?:季)?/],
+  ["dreams", /梦想(?:季|毕业|毕)|夢想(?:季|畢業|畢)|\b(?:season of )?dreams?(?: season)?\b/i, /(?:梦想|夢想)(?:季)?/],
+  ["assembly", /(?:集结|重组)(?:季|毕业|毕)|(?:集結|重組)(?:季|畢業|畢)|\b(?:season of )?assembly(?: season)?\b/i, /(?:集结|集結|重组|重組)(?:季)?/],
+  ["the-little-prince", /小王子(?:季|毕业|畢業|毕|畢)|\b(?:season of )?(?:the )?little prince(?: season)?\b/i, /(?:小王子|王子)(?:季)?/],
+  ["flight", /(?:风行|飞行|飛行)(?:季|毕业|畢業|毕|畢)|\b(?:season of )?flight(?: season)?\b/i, /(?:风行|飛行|飞行)(?:季)?/],
+  ["abyss", /(?:潜海|深渊)(?:季|毕业|毕)|(?:潛海|深淵)(?:季|畢業|畢)|\b(?:season of )?(?:abyss|deep sea)(?: season)?\b/i, /(?:潜海|潛海|深渊|深淵)(?:季)?/],
+  ["performance", /表演(?:季|毕业|畢業|毕|畢)|\b(?:season of )?performance(?: season)?\b/i, /表演(?:季)?/],
+  ["shattering", /(?:破晓|破碎)(?:季|毕业|毕)|(?:破曉|破碎)(?:季|畢業|畢)|\b(?:season of )?shattering(?: season)?\b/i, /(?:破晓|破曉|破碎)(?:季)?/],
+  ["aurora", /(?:欧若拉|歐若拉|极光|極光)(?:季|毕业|畢業|毕|畢)|\b(?:season of )?aurora(?: season)?\b/i, /(?:欧若拉|歐若拉|极光|極光)(?:季)?/],
+  ["remembrance", /(?:追忆|缅怀)(?:季|毕业|毕)|(?:追憶|緬懷)(?:季|畢業|畢)|\b(?:season of )?remembrance(?: season)?\b/i, /(?:追忆|追憶|缅怀|緬懷)(?:季)?/],
+  ["passage", /夜行(?:季|毕业|畢業|毕|畢)|\b(?:season of )?passage(?: season)?\b/i, /夜行(?:季)?/],
+  ["moments", /拾光(?:季|毕业|畢業|毕|畢)|\b(?:season of )?moments?(?: season)?\b/i, /拾光(?:季)?/],
+  ["revival", /归巢(?:季|毕业|毕)|歸巢(?:季|畢業|畢)|\b(?:season of )?revival(?: season)?\b/i, /(?:归巢|歸巢)(?:季)?/],
+  ["nine-colored-deer", /九色鹿(?:季|毕业|畢業|毕|畢)|\b(?:season of )?(?:the )?nine[ -]colou?red deer(?: season)?\b/i, /九色鹿(?:季)?/],
+  ["nesting", /筑巢(?:季|毕业|毕)|築巢(?:季|畢業|畢)|\b(?:season of )?nesting(?: season)?\b/i, /(?:筑巢|築巢)(?:季)?/],
+  ["duets", /(?:二重奏|协奏)(?:季|毕业|毕)|協奏(?:季|畢業|畢)|\b(?:season of )?duets?(?: season)?\b/i, /(?:二重奏|协奏|協奏)(?:季)?/],
+  ["moomin", /姆明(?:季|毕业|畢業|毕|畢)|\b(?:season of )?moomin(?: season)?\b/i, /姆明(?:季)?/],
+  ["radiance", /(?:彩染|染色)(?:季|毕业|毕)|(?:彩染|染色)(?:季|畢業|畢)|\b(?:season of )?radiance(?: season)?\b/i, /(?:彩染|染色)(?:季)?/],
+  ["blue-bird", /青鸟(?:季|毕业|毕)|青鳥(?:季|畢業|畢)|\b(?:season of )?(?:the )?blue bird(?: season)?\b/i, /(?:青鸟|青鳥)(?:季)?/],
+  ["two-embers-part-1", /(?:双星|暮星)(?:季|毕业|毕)|(?:雙星|暮星)(?:季|畢業|畢)|\b(?:season of )?(?:the )?two embers(?: part 1)?(?: season)?\b/i, /(?:双星|雙星|暮星)(?:季)?/],
+  ["migration", /迁徙(?:季|毕业|毕)|遷徙(?:季|畢業|畢)|\b(?:season of )?migration(?: season)?\b/i, /(?:迁徙|遷徙)(?:季)?/],
+  ["lightmending", /织光(?:季|毕业|毕)|織光(?:季|畢業|畢)|\b(?:season of )?lightmending(?: season)?\b/i, /(?:织光|織光)(?:季)?/],
+  ["carnival", /狂欢(?:季|毕业|毕)|狂歡(?:季|畢業|畢)|\b(?:season of )?carnival(?: season)?\b/i, /(?:狂欢|狂歡)(?:季)?/],
+  ["dear-van-gogh", /(?:致)?梵高(?:季|毕业|毕)|(?:致)?梵谷(?:季|畢業|畢)|\b(?:season of )?dear van gogh(?: season)?\b/i, /(?:致)?(?:梵高|梵谷)(?:季)?/],
+];
+
+export const extractSeasonMentions = (...values) => {
+  const text = values.filter((value) => typeof value === "string").join(" ");
+  return seasonMentionPatterns
+    .filter(([, pattern]) => pattern.test(text))
+    .map(([slug]) => slug);
+};
+
+export const extractSeasonGraduation = (value) => {
+  if (typeof value !== "string") return [];
+  const section = value.match(
+    /(?:毕业|畢業)季(?:节|節)\s*[：:]\s*(.*?)(?=(?:毕业|畢業)(?:季(?:节|節))?物品|热门礼包|熱門禮包|礼包|禮包|资源|資源|已毕业地图|已畢業地圖|$)/i,
+  )?.[1];
+  if (!section) return [];
+  return seasonMentionPatterns.flatMap(([slug, , graduationPattern]) => {
+    const match = graduationPattern.exec(section);
+    if (!match) return [];
+    const before = section.slice(Math.max(0, match.index - 4), match.index);
+    const after = section.slice(match.index + match[0].length, match.index + match[0].length + 10);
+    if (/未(?:毕业|畢業)\s*$/.test(before)
+      || /^\s*(?:季)?卡/.test(after)
+      || /^\s*未(?:毕业|畢業)/.test(after)) return [];
+    const ratio = after.match(/^\s*(\d+)\s*\/\s*(\d+)/);
+    const numerator = ratio ? Number(ratio[1]) : null;
+    const denominator = ratio ? Number(ratio[2]) : null;
+    if (ratio && (numerator === 0 || denominator === 0 || numerator > denominator)) return [];
+    const partial = /半\s*$/.test(before)
+      || /^半(?:毕业|畢業)?/.test(after)
+      || (ratio && numerator < denominator);
+    return [{ slug, status: partial ? "partial" : "full" }];
+  });
+};
 const READER_PREFIX = "https://r.jina.ai/";
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -481,10 +545,31 @@ const main = async () => {
     }
   });
   const detailById = new Map(details);
-  taoshouyou = taoshouyou.map((row) => ({ ...row, ...detailById.get(row.listing_id) }));
+  taoshouyou = taoshouyou.map((row) => {
+    const merged = { ...row, ...detailById.get(row.listing_id) };
+    const seasonMentions = extractSeasonMentions(merged.title, merged.description);
+    const graduation = extractSeasonGraduation(merged.description);
+    const fullGraduationCount = graduation.filter((entry) => entry.status === "full").length;
+    const hasReportedCount = Number.isInteger(merged.completed_seasons);
+    const graduationCountConsistent = hasReportedCount
+      && fullGraduationCount === merged.completed_seasons;
+    return {
+      ...merged,
+      ...(seasonMentions.length ? { season_mentions: seasonMentions } : {}),
+      ...(graduation.length ? {
+        season_graduation_mentions: graduation,
+        season_graduation_count_consistent: graduationCountConsistent,
+        ...(graduationCountConsistent ? { start_season_candidate: graduation[0].slug } : {}),
+      } : {}),
+    };
+  });
+  const funpayWithSeasons = funpay.map((row) => {
+    const seasonMentions = extractSeasonMentions(row.title);
+    return seasonMentions.length ? { ...row, season_mentions: seasonMentions } : row;
+  });
   const snapshotComplete = health.snapshotComplete;
   const unique = new Map();
-  for (const row of [...taoshouyou, ...funpay]) {
+  for (const row of [...taoshouyou, ...funpayWithSeasons]) {
     unique.set(`${row.source}:${row.listing_id}`, convertToTwd({
       ...row,
       observed_at: row.observed_at ?? collectedAt,
@@ -494,6 +579,21 @@ const main = async () => {
   }
   const rows = markPriceOutliers([...unique.values()]).sort((left, right) =>
     left.source.localeCompare(right.source) || String(left.listing_id).localeCompare(String(right.listing_id)));
+  const seasonCoverage = Object.fromEntries(seasonMentionPatterns.map(([slug]) => {
+    const matching = rows.filter((row) => row.season_mentions?.includes(slug));
+    const graduated = rows.filter((row) => row.season_graduation_mentions?.some((entry) => entry.slug === slug));
+    return [slug, {
+      listings: matching.length,
+      ratio_candidates: matching.filter((row) => row.ratio_candidate).length,
+      explicit_graduation: graduated.filter((row) => row.season_graduation_mentions
+        .some((entry) => entry.slug === slug && entry.status === "full")).length,
+      explicit_partial: graduated.filter((row) => row.season_graduation_mentions
+        .some((entry) => entry.slug === slug && entry.status === "partial")).length,
+      by_source: Object.fromEntries([...new Set(matching.map((row) => row.source))]
+        .sort()
+        .map((source) => [source, matching.filter((row) => row.source === source).length])),
+    }];
+  }));
   const summary = {
     schema_version: 1,
     collected_at: collectedAt,
@@ -509,6 +609,7 @@ const main = async () => {
     source_health: health.sourceHealth,
     latest_eligible: health.latestEligible,
     by_source: Object.fromEntries([...new Set(rows.map((row) => row.source))].map((source) => [source, rows.filter((row) => row.source === source).length])),
+    season_coverage: seasonCoverage,
     latest_fx_date: rates.at(-1)?.date,
     warning: "FX-converted TWD is not a Taiwan market estimate or a confirmed transaction price.",
   };

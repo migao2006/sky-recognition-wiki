@@ -3,6 +3,8 @@ import test from "node:test";
 import {
   assessCollectionHealth,
   convertToTwd,
+  extractSeasonMentions,
+  extractSeasonGraduation,
   inspectTaoshouyouList,
   localizedPriceValue,
   markPriceOutliers,
@@ -111,6 +113,52 @@ test("parses Taoshouyou detail fields and account description", () => {
     completed_seasons: 8,
     description: "九季白枭巫师多礼包",
   });
+});
+
+test("extracts explicit season mentions without treating signature items as seasons", () => {
+  assert.deepEqual(
+    extractSeasonMentions("魔法季毕业，圣岛毕，预言季 2/3", "致梵高季卡"),
+    ["enchantment", "sanctuary", "prophecy", "dear-van-gogh"],
+  );
+  assert.deepEqual(extractSeasonMentions("阿努比斯白枭多礼包"), []);
+  assert.deepEqual(extractSeasonMentions("Full Rhythm Season account"), ["rhythm"]);
+  assert.deepEqual(
+    extractSeasonMentions("Completed from Rhymth to Carnival. Season of Revival - Nine-Colored Deer"),
+    ["rhythm", "revival", "nine-colored-deer", "carnival"],
+  );
+  assert.deepEqual(
+    extractSeasonMentions("012 - Prophecy - Dreams - Assembly - Little Prince - Flight"),
+    ["prophecy", "dreams", "assembly", "the-little-prince", "flight"],
+  );
+});
+
+test("extracts only explicit graduation-list evidence and keeps partial seasons", () => {
+  assert.deepEqual(
+    extractSeasonGraduation("资源 100 毕业季节：集结季 半预言季 迁徙季季卡 毕业季节物品：队长面具"),
+    [
+      { slug: "prophecy", status: "partial" },
+      { slug: "assembly", status: "full" },
+    ],
+  );
+  assert.deepEqual(
+    extractSeasonGraduation("毕业季节：魔法季半毕业 王子季 欧若拉 九色鹿 二重奏 表演季卡 毕业物品：表演季毕业礼"),
+    [
+      { slug: "enchantment", status: "partial" },
+      { slug: "the-little-prince", status: "full" },
+      { slug: "aurora", status: "full" },
+      { slug: "nine-colored-deer", status: "full" },
+      { slug: "duets", status: "full" },
+    ],
+  );
+  assert.deepEqual(extractSeasonGraduation("阿努比斯，预言季物品很多"), []);
+  assert.deepEqual(
+    extractSeasonGraduation("毕业季节：魔法季3/3 圣岛季1/3 预言季0/3 未毕业梦想季"),
+    [
+      { slug: "enchantment", status: "full" },
+      { slug: "sanctuary", status: "partial" },
+    ],
+  );
+  assert.deepEqual(extractSeasonGraduation("毕业季节：魔法季3/0 圣岛季4/3"), []);
 });
 
 test("parses FunPay accounts and marks obvious services for exclusion", () => {
