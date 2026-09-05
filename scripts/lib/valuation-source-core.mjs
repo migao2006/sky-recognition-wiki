@@ -192,10 +192,13 @@ export const priceFor = (row, options = {}) => {
   return round ? Math.round(price) : price;
 };
 const dateFor = (row) => {
-  const date = new Date(row.published_at ?? row.observed_at ?? "");
+  const date = new Date(row.published_at ?? "");
   return Number.isFinite(date.getTime()) ? date : null;
 };
-export const timestampFor = (row) => dateFor(row)?.getTime() ?? Number.NEGATIVE_INFINITY;
+export const timestampFor = (row) => {
+  const date = new Date(row.published_at ?? row.observed_at ?? "");
+  return Number.isFinite(date.getTime()) ? date.getTime() : Number.NEGATIVE_INFINITY;
+};
 export const timeWeightFor = (row, referenceDate) => {
   const date = dateFor(row);
   if (!date) return 0.45;
