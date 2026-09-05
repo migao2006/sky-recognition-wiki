@@ -39,7 +39,7 @@ const seasonMentionPatterns = [
   ["carnival", /狂欢(?:季|毕业|毕)|狂歡(?:季|畢業|畢)|\b(?:season of )?carnival(?: season)?\b/i, /(?:狂欢|狂歡)(?:季)?/],
   ["dear-van-gogh", /(?:致)?梵高(?:季|毕业|毕)|(?:致)?梵谷(?:季|畢業|畢)|\b(?:season of )?dear van gogh(?: season)?\b/i, /(?:致)?(?:梵高|梵谷)(?:季)?/],
 ];
-const seasonSlugs = seasonMentionPatterns.map(([slug]) => slug);
+export const seasonSlugs = seasonMentionPatterns.map(([slug]) => slug);
 
 const numberedSeasonSlugs = (value) => {
   const normalized = String(value ?? "")

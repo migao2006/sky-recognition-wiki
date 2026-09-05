@@ -24,6 +24,7 @@
     "prepare:valuation-sample": "node scripts/create-valuation-sample-from-backup.mjs",
     "recognize:wardrobe": "node scripts/recognize-wardrobe-image.mjs",
     "consolidate:market-listings": "node scripts/consolidate-market-listing-snapshots.mjs",
+    "analyze:market-season-ratios": "node scripts/analyze-market-season-ratios.mjs",
     "collect:wiki-market": "node scripts/collect-wiki-market-evidence.mjs",
     "verify:wiki-market": "node scripts/verify-wiki-market-evidence.mjs",
     "sync:wiki-player-names:check": "node scripts/sync-wiki-player-names.mjs",
