@@ -94,6 +94,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 已由網站匯出的完整帳號備份可用 `npm run prepare:valuation-sample -- --backup <備份.json> --price-twd <人工或成交價> --evidence-kind professional_estimate --out work/sample.jsonl` 產生可重播的匿名樣本。執行前必須在本機設定至少 32 字元、且同一資料集持續沿用的 `VALUATION_HASH_SALT`。工具只接受 `sold` 或 `professional_estimate`，且只接受目前 v4 備份：使用者必須在衣櫃頁逐項確認完整衣櫃；備份會保存該確認、首次建立時的私密隨機 UUID v4 身分、七個平台的有效綁定狀態與白蠟、愛心、昇華蠟、副卡四項明確整數。v1–v3 備份仍可一般匯入，但不能直接建立正式估價樣本。可選 `--account-id <UUID v4>` 僅用於交叉核對備份身分，不能覆蓋它。輸出強制留在 `work/`；穩定帳號指紋、salt 命名空間與個別快照雜湊分開以 HMAC 產生，七平台、四資源、價格、來源分組、日期、季節進度、分類及 predictor 也會一併簽章。audit 與 validator 只接受能由相同本機 salt 驗證的完整證據，任何事後改價、改社團、改權重來源或排除狀態都會失敗；帳號名稱、私密 UUID、備註與原始檔案路徑不會寫入樣本。
 
+大量備份可建立放在 `work/` 的 JSONL manifest，每列提供 `backup`、`price_twd`、`group_id`、`observed_at`，並可選填 `evidence_kind`、`evidence_quality`、`account_id`。執行 `npm run prepare:valuation-samples -- --manifest work/manifest.jsonl --out work/samples.private.jsonl` 會逐筆套用相同 v4、完整性與簽章門檻，任一列失敗時不會留下部分輸出；同一衣櫃快照重複出現也會拒絕，避免批次資料灌水。
+
 衣櫃截圖可用 `npm run recognize:wardrobe -- <圖片> --grid=左,上,格寬,格高,欄數,列數,水平間距,垂直間距 --out=work/wardrobe-candidates.json` 產生官方 GUID 候選。工具只在圖示相似度至少 0.93、且第一名比第二名至少高 0.03 時標記 `accepted`；其餘一律標記 `review` 或 `unreadable`，必須對照原圖人工確認，輸出也不會自動改寫 catalog、帳號備份或估價樣本。
 
 正式樣本的來源文字同樣屬於簽章內容，不能在簽章後追加國服或外幣描述來改變納入資格；完全相同的衣櫃快照即使使用不同帳號代號，也只計為一個有效帳號。正式 validator 會固定核對目前 production baseline 的模型摘要，逐季範圍則取自程式內的官方季節序列，不接受呼叫者用截短 baseline 排除困難季；未簽名列若碰撞已驗證列的貼文、帳號或快照身分，整次驗證直接失敗。

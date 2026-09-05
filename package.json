@@ -22,6 +22,7 @@
     "sync:trade-names:write": "node scripts/sync-transaction-names.mjs --write",
     "collect:market-listings": "node scripts/collect-public-market-listings.mjs",
     "prepare:valuation-sample": "node scripts/create-valuation-sample-from-backup.mjs",
+    "prepare:valuation-samples": "node scripts/create-valuation-sample-batch.mjs",
     "recognize:wardrobe": "node scripts/recognize-wardrobe-image.mjs",
     "consolidate:market-listings": "node scripts/consolidate-market-listing-snapshots.mjs",
     "analyze:market-season-ratios": "node scripts/analyze-market-season-ratios.mjs",
