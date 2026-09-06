@@ -105,6 +105,18 @@ test("filters an invalid relist before deduplicating the same post", async () =>
   assert.equal(result.seasons.aurora.median, 10000);
 });
 
+test("excludes converted HKD prices and leaves unknown break progress unclassified", async () => {
+  const common = { price_twd: 3500, currency: "TWD", evidence_kind: "ask", start_season_slug: "moments" };
+  const result = await audit([
+    { ...common, post_hash: "hk", original_currency: "HKD" },
+    { ...common, post_hash: "tw", missing_season_count: null, completion_ratio: null },
+  ]);
+  assert.equal(result.eligibleRows, 1);
+  assert.equal(result.excludedRows, 1);
+  assert.equal(result.segments.startSeason.moments.sampleCount, 1);
+  assert.equal(result.segments.breakClass.none.sampleCount, 0);
+});
+
 test("deduplicates the legacy post fingerprint alias", async () => {
   const result = await audit([
     { post_fingerprint: "legacy-post", published_at: recent, price_twd: 10000, evidence_kind: "ask", evidence_quality: "high", season_progress: { aurora: "畢" } },

@@ -615,7 +615,7 @@ test("confirmed all-none bindings count as complete account information", () => 
   assert.equal(confirmed.bindingsConfirmed, true);
 });
 
-test("listing-only start-season evidence is never presented as a completed sale", () => {
+test("mixed start-season evidence is never presented as completed-sale-only data", () => {
   const result = estimateValuation({
     analysis: analyze([
       item({
@@ -633,11 +633,11 @@ test("listing-only start-season evidence is never presented as a completed sale"
     ]),
   });
   assert.ok(result);
-  assert.equal(result.marketProfile.priceStage, "刊登樣本");
-  assert.notEqual(result.marketProfile.evidenceQuality, "strong");
+  assert.equal(result.marketProfile.priceStage, "混合參考");
+  assert.equal(result.confidence, "low");
 });
 
-test("listing-only evidence can never produce the highest confidence", () => {
+test("unvalidated mixed evidence can never produce the highest confidence", () => {
   const result = estimateValuation({
     analysis: analyze([
       item({
@@ -649,7 +649,7 @@ test("listing-only evidence can never produce the highest confidence", () => {
     ]),
   });
   assert.ok(result);
-  assert.equal(result.marketProfile.priceStage, "刊登樣本");
+  assert.equal(result.marketProfile.priceStage, "混合參考");
   assert.notEqual(result.confidence, "high");
 });
 

@@ -306,7 +306,7 @@ test("schema v3 replays partial-season discounts and confidence from the candida
     baseHigh: segment.p75,
     partialDiscountLow: segment.contributionLow * 0.75,
     partialDiscountHigh: segment.contributionHigh * 0.75,
-    confidence: "high",
+    confidence: "medium",
   });
   assert.deepEqual(
     predictValuationAggregate(replay, sample, { assumeValidated: true }),
@@ -816,6 +816,8 @@ test("rejects any tampering with signed model evidence inputs", () => {
     { ...original, observed_at: "2026-09-06T00:00:00.000Z" },
     { ...original, listing_text: "國服" },
     { ...original, account_features: "USD 100" },
+    { ...original, original_currency: "HKD" },
+    { ...original, currency_original: "CNY" },
     { ...original, exclude_from_model: true },
   ]) {
     assert.equal(

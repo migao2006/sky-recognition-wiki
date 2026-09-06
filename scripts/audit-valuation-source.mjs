@@ -23,6 +23,7 @@ import {
   holdoutSplitCommitmentFor,
   inHoldout,
   isExcludedFromModel,
+  marketExclusionReason,
   modelEvidenceFields,
   packageTiers,
   packageTierFor,
@@ -183,9 +184,8 @@ const accountStyleFor = (row) => accountStyles.includes(row.account_style) ? row
 const invalidReason = (row) => {
   if (isExcludedFromModel(row)) return "explicit";
   if (!priceRangeFor(row)) return "invalid_price";
-  const text = `${row.region ?? ""} ${row.currency ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
-  if (/國服|中國服|陸服|\b(?:cn|china)\b/i.test(text)) return "china";
-  if (/人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/i.test(text)) return "foreign_currency";
+  const marketReason = marketExclusionReason(row);
+  if (marketReason) return marketReason;
   if (!Object.hasOwn(evidenceWeights, row.evidence_kind)) return "invalid_evidence";
   if (!Object.hasOwn(qualityWeights, row.evidence_quality ?? "medium")) return "invalid_quality";
   return null;

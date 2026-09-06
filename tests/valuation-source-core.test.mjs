@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   breakClassFor,
+  marketExclusionReason,
   holdoutSplitCommitmentFor,
   inHoldout,
   packageTierFor,
@@ -120,6 +121,27 @@ test("classifies normalized paid-package counts consistently for audit and valid
     null,
   );
   assert.equal(packageTierFor({ paid_package_count: 1.5 }), null);
+});
+
+test("missing and invalid break counts never become unbroken accounts", () => {
+  for (const missing of [null, undefined, "", " ", false, -1, 0.5]) {
+    assert.equal(breakClassFor({ missing_season_count: missing, completion_ratio: 1 }), null);
+  }
+  for (const ratio of [null, undefined, "", " ", false, -0.1, 1.1]) {
+    assert.equal(breakClassFor({ missing_season_count: 0, completion_ratio: ratio }), null);
+  }
+  assert.equal(breakClassFor({ missing_season_count: "0", completion_ratio: "1" }), "none");
+});
+
+test("converted foreign prices remain outside the Taiwan absolute-price model", () => {
+  for (const key of ["original_currency", "currency_original"]) {
+    for (const currency of ["HKD", "CNY", "USD", "MYR", "RUB"]) {
+      assert.equal(marketExclusionReason({ currency: "TWD", [key]: currency, price_twd: 3500 }), "foreign_currency");
+    }
+  }
+  assert.equal(marketExclusionReason({ currency: "TWD", original_currency: "TWD" }), null);
+  assert.equal(marketExclusionReason({ currency: "twd", region: "international" }), null);
+  assert.equal(marketExclusionReason({ currency: "TWD", region: "china" }), "china");
 });
 
 test("same-time deduplication retains the richer replay snapshot", () => {

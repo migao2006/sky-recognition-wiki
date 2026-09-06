@@ -41,7 +41,7 @@ export const valuationSampleSummary = {
     (valuationMarketAggregate.sourceRowsBySource["8591_tw"] ?? 0) +
     (valuationMarketAggregate.sourceRowsBySource.carousell_tw ?? 0),
   marketplaceEligibleRows:
-    (valuationMarketAggregate.sourceBreakdown["8591_hk"] ?? 0) +
+    ((valuationMarketAggregate.sourceBreakdown as Record<string, number>)["8591_hk"] ?? 0) +
     (valuationMarketAggregate.sourceBreakdown["8591_tw"] ?? 0) +
     (valuationMarketAggregate.sourceBreakdown.carousell_tw ?? 0),
   secondaryMarketRows: 74,

@@ -70,7 +70,7 @@ Wiki 蒐集可用 `--source=fandom-zh` 或 `--source=bwiki-zh-cn` 分站更新�
 
 ## 備份相容性
 
-目前匯出格式為 v3，物品保存 SkyGame-Data 官方 GUID；上游尚未收錄的新品則保存上述明確追蹤的 overlay GUID。v1、v2 與無版本的舊備份會在匯入時遷移；未知物品會被略過並顯示數量，較新的未知版本則拒絕匯入。本機草稿保存 30 天，舊 v2 草稿會自動搬移至 v3。
+目前匯出格式為 v4，物品保存 SkyGame-Data 官方 GUID；上游尚未收錄的新品則保存上述明確追蹤的 overlay GUID。v1–v3 與無版本的舊備份會在匯入時遷移；未知物品會被略過並顯示數量，較新的未知版本則拒絕匯入。本機草稿保存 30 天，舊 v2 草稿會自動搬移至 v3。
 
 ## AI 開發規範
 
@@ -104,7 +104,11 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 先用 `audit-valuation-source.mjs` 產生只含 80% 帳號群組的候選彙總，再用 `validate-valuation-model.mjs` 對固定保留組比較現行模型。正式驗證固定使用預先承諾的 `sky-valuation-v3` 切分種子，保留組必須占所有可比較帳號的 15%～25%；最低 200 個帳號時至少要有 30 個未參與校準的帳號，不能改 seed 或挑帳號縮成單筆驗證。validator 會使用相同來源重新執行 calibration-only audit，候選的季節區間、modifier、provenance 與 split 必須逐欄等同重建結果，不能只自行宣告沒有看過 holdout。每個已完成季與斷季、禮包、帳號型態分類至少要有 5 個可比較帳號及 2 個 holdout，候選也必須包含全部 modifier 類別；正式結果會逐季、逐類別檢查 prediction coverage、中位對數誤差及相對 baseline 的退化，不讓整體中位數掩蓋局部失準。來源列的 `effective_weight`／`sample_weight` 不受信任；audit 與 validator 都只依證據類型、價格類型、品質及時效重新計算。驗證多批來源時可重複傳入 `--source <anonymous-source.jsonl>`，工具會合併後再統一去重與切分，不必先手動串接檔案；同一貼文或帳號在證據等級與刊登時間相同時，會優先保留 predictor 與季節重播範圍較完整的版本，讓後續補件不會被舊的不完整列覆蓋。稽核結果的 `predictorCoverage` 只計算具帳號識別與結構化起季的候選列，並列出完整 predictor 比例、逐欄缺口與各來源覆蓋率，供下一輪優先補齊可重播樣本；正式 validator 還會排除基準彙總中沒有可比較起季中位數的列。網站與 validator 共用相同的 seed 混合、先驗強度、跨季單調校正及完整數值核心；驗證通過後，改加 `--include-holdout` 重算全樣本正式彙總。未滿 200 個唯一有效帳號、少於 3 個社團、單一社團權重超過 60%，缺少完整 predictor、網站／validator parity 不一致，或誤差／區間覆蓋未達門檻時不得發布。樣本數門檻計算所有通過來源規則的唯一帳號；誤差只在具有可比較起季資料的帳號上計算。
 
-目前正式彙總只有 164 筆可追溯原始列、162 筆合格資料列，狀態為 `unvalidated`；網站只顯示這組可追溯樣本數，仍提供低信心參考估價，但不得顯示為完整市場驗證。禮包校準分組會優先使用唯一真實禮包數；缺少數量時只接受既有的有效級距，兩者皆無才排除，不會再把未知數量當成少禮。新樣本必須保存完整 `valuation_model` predictor（包含信心與所有乘數），以及由 `start_season_slug` 到模型指定之最新已完成季 `season_progress_end_slug` 的逐季完整結構化進度；model schema v3 的 validator 會核對官方 slug、畢業禮總數與固定結束季，拒絕缺季、未知季、零進度起季或自訂縮短範圍的列，再以候選的共用季節價格帶重新計算起季基準、部分畢業扣分、信心與市場乘數，重播同一數值核心。通過 holdout 後才可改為 `validated`。
+目前參考彙總以 2026-09-06 為基準，使用 448 筆來源列；排除外幣、國服、合售等不合格資料並去重後為 402 筆，其中 270 個具有帳號識別、132 筆為無法連結帳號的舊資料。以既有公開種子分組後，359 筆參與校準、43 筆保留；這是探索性切分，完整且經確認的 predictor 為 0，狀態維持 `unvalidated`，不能宣稱通過正式 holdout 或成交價驗證。網站提供低信心參考估價。禮包校準分組會優先使用唯一真實禮包數；缺少數量時只接受既有的有效級距，兩者皆無才排除，不會再把未知數量當成少禮。新樣本必須保存完整 `valuation_model` predictor（包含信心與所有乘數），以及由 `start_season_slug` 到模型指定之最新已完成季 `season_progress_end_slug` 的逐季完整結構化進度；model schema v3 的 validator 會核對官方 slug、畢業禮總數與固定結束季，拒絕缺季、未知季、零進度起季或自訂縮短範圍的列，再以候選的共用季節價格帶重新計算起季基準、部分畢業扣分、信心與市場乘數，重播同一數值核心。通過 holdout 後才可改為 `validated`。
+
+本輪季節基準只採用稽核產生的 `segments.startSeason`，已移除核心中無可重建來源的舊樣本數與分位數；`seasonBandSeeds` 只保存先驗價格，不增加樣本數或信心。感恩目前沒有直接起季樣本，保留先驗估值。空白／null 的斷季、完成比例及禮包數量保持未知；`original_currency`／`currency_original` 顯示外幣時，即使已有台幣換算金額也排除於台灣絕對價格校準，原幣欄位存在時一併納入證據簽章。既有未包含原幣欄位的簽章仍相容；舊證據若曾帶有未簽章的原幣欄位，必須重新核對並簽章，不能沿用未保護市場資格的簽章。
+
+可在本機用 `node scripts/audit-valuation-source.mjs --as-of=2026-09-06 work/valuation-season-expanded-source-r3-2026-09-05.jsonl work/facebook-season-targeted-2026-09-05.anonymous.jsonl work/facebook-market-confounded-2026-09-05.anonymous.jsonl work/valuation-sample-cai-3500.private.jsonl work/valuation-drive-incremental-2026-09-06.jsonl` 重建本輪參考彙總；這些私人來源不提交 Git。正式 validator 的比較基準仍固定為 commit `8f979264709d0c4ce8b0441c555bc39f9263d264` 中的 `app/valuation-market-aggregate.json`，使用 `git show` 取回該版本後傳給 `--baseline`，不得以新的未驗證彙總替換固定 baseline 或其摘要。
 
 估價中的禮包、限定與資源只計入二手帳號市場可保留的部分價值。同一真實禮包即使包含多件物品，禮包級距、帳號類型與加值上限都只計一次；原始付費物品數只保留作診斷，不參與跨級。拾光季起始或更晚、目前進行中季節，以及無法確認早期季節證據的帳號使用較低的附加價值上限，避免禮包數量把簡號推到早期稀有帳號的價格帶；起始畢業季在拾光以前的帳號保留原本的稀有度校正，完全沒有畢業禮時才以最早季卡項鍊判斷年代。此分段目前同樣屬 `unvalidated` 參考規則，需待足量同型成交樣本與 holdout 驗證後才能視為正式市場模型。
 

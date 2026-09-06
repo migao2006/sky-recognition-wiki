@@ -139,6 +139,8 @@ const modelEvidencePayload = (row) => ({
   evidence_quality: row?.evidence_quality ?? null,
   region: row?.region ?? null,
   currency: row?.currency ?? null,
+  ...(row?.original_currency != null ? { original_currency: row.original_currency } : {}),
+  ...(row?.currency_original != null ? { currency_original: row.currency_original } : {}),
   listing_text: row?.listing_text ?? null,
   account_features: row?.account_features ?? null,
   exclude_from_model: row?.exclude_from_model ?? null,
@@ -272,13 +274,30 @@ export const isExcludedFromModel = (row) => {
 // never recreate market attributes from seller prose.
 export const breakClassFor = (row) => {
   if (breakClasses.includes(row.computed_break_class)) return row.computed_break_class;
+  if ([row.missing_season_count, row.completion_ratio].some((value) =>
+    value == null || typeof value === "boolean" || String(value).trim() === "",
+  )) return null;
   const missing = Number(row.missing_season_count);
   const completion = Number(row.completion_ratio);
-  if (!Number.isFinite(missing) || !Number.isFinite(completion)) return null;
+  if (!Number.isSafeInteger(missing) || missing < 0 ||
+    !Number.isFinite(completion) || completion < 0 || completion > 1) return null;
   if (missing === 0) return "none";
   if (missing <= 2 && completion >= 0.8) return "slight";
   if (missing <= 5 || completion >= 0.5) return "medium";
   return "big";
+};
+
+// A converted TWD amount is still evidence from its original currency market.
+// Keep this boundary identical in the source audit and full-model validator.
+export const marketExclusionReason = (row) => {
+  const text = `${row.region ?? ""} ${row.currency ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
+  if (/國服|中國服|陸服|\b(?:cn|china)\b/i.test(text)) return "china";
+  const currencies = [row.original_currency, row.currency_original, row.currency]
+    .filter((value) => value != null && String(value).trim())
+    .map((value) => String(value).trim().toUpperCase());
+  if (currencies.some((value) => !["TWD", "NTD", "NT$", "NT＄", "台幣", "新台幣"].includes(value)) ||
+    /人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/i.test(text)) return "foreign_currency";
+  return null;
 };
 export const packageTierFor = (row) => {
   const rawCount = row.paid_package_count;

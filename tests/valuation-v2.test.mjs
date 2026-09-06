@@ -21,16 +21,16 @@ const marketAggregate = JSON.parse(
 test("season bands contain all thirty ordered seasons with valid price ranges", () => {
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
-    sourceRows: 164,
-    eligibleRows: 162,
-    facebookRows: 16,
-    facebookEligibleRows: 14,
-    driveRows: 112,
-    driveEligibleRows: 112,
+    sourceRows: 448,
+    eligibleRows: 402,
+    facebookRows: 279,
+    facebookEligibleRows: 269,
+    driveRows: 115,
+    driveEligibleRows: 115,
     marketplaceRows: 36,
-    marketplaceEligibleRows: 36,
+    marketplaceEligibleRows: 3,
     secondaryMarketRows: 74,
-    asOf: "2026-08-30",
+    asOf: "2026-09-06",
   });
   for (const [index, band] of seasonPriceBands.entries()) {
     assert.ok(
@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "b836d6ff76b3be28a730b5cab3c8a0d1723bf24f41b2b8b8fe6fba9b95d0a324",
+    "b0177a7bc86317c7ad66caa59636eaeb775df914c54e5a5c9b32fbeb4f243613",
   );
 });
 
@@ -104,13 +104,13 @@ test("sample confidence reflects direct eligible mentions", () => {
     }),
     [
       ["gratitude", 0, "inferred"],
-      ["rhythm", 19, "medium"],
-      ["enchantment", 40, "high"],
-      ["carnival", 17, "high"],
+      ["rhythm", 30, "medium"],
+      ["enchantment", 39, "medium"],
+      ["carnival", 8, "low"],
     ],
   );
-  assert.equal(bySlug.get("sanctuary")?.sampleCount, 10);
-  assert.equal(bySlug.get("sanctuary")?.confidence, "low");
+  assert.equal(bySlug.get("sanctuary")?.sampleCount, 22);
+  assert.equal(bySlug.get("sanctuary")?.confidence, "medium");
 });
 
 test("sparse Lightseekers mentions do not erase early-season scarcity", () => {
@@ -132,21 +132,29 @@ test("client summary contains no raw listing text", () => {
 test("anonymous market aggregate keeps the current audited source summary", () => {
   assert.equal(marketAggregate.schemaVersion, 4);
   assert.equal(marketAggregate.validationStatus, "unvalidated");
-  assert.equal(marketAggregate.sourceRows, 164);
-  assert.equal(marketAggregate.eligibleRows, 162);
+  assert.equal(marketAggregate.sourceRows, 448);
+  assert.equal(marketAggregate.eligibleRows, 402);
+  assert.equal(marketAggregate.uniqueAccountRows, 270);
+  assert.equal(marketAggregate.split.trainingRows, 359);
+  assert.equal(marketAggregate.split.holdoutRows, 43);
+  assert.equal(marketAggregate.split.trainingMode, "calibration-only");
+  assert.equal(marketAggregate.predictorCoverage.completeRows, 0);
   assert.deepEqual(marketAggregate.sourceBreakdown, {
-    "8591_hk": 33,
     "8591_tw": 1,
     carousell_tw: 2,
-    facebook: 14,
-    google_drive: 112,
+    facebook: 269,
+    google_drive: 115,
+    manual_backup: 1,
+    unknown: 14,
   });
   assert.deepEqual(marketAggregate.sourceRowsBySource, {
     "8591_hk": 33,
     "8591_tw": 1,
     carousell_tw: 2,
-    facebook: 16,
-    google_drive: 112,
+    facebook: 279,
+    google_drive: 115,
+    manual_backup: 2,
+    unknown: 16,
   });
   assert.deepEqual(
     Object.fromEntries(
@@ -154,7 +162,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { none: 13, slight: 28, medium: 54, big: 52 },
+    { none: 44, slight: 63, medium: 97, big: 121 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -162,9 +170,23 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 22, medium: 53, many: 28, hundred: 12 },
+    { few: 117, medium: 77, many: 88, hundred: 19 },
   );
-  assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 15);
+  assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 81);
+});
+
+test("priors add no observations, and only audited start-season samples affect bands", () => {
+  assert.ok(deriveSeasonBands({}).every((band) => band.sampleCount === 0 && band.effectiveWeight === 0));
+  for (const band of seasonPriceBands) {
+    const source = marketAggregate.segments.startSeason[band.slug];
+    assert.equal(band.sampleCount, source.sampleCount);
+    assert.equal(band.effectiveWeight, Number(source.effectiveWeight.toFixed(2)));
+  }
+  const seeds = [{ slug: "test-season", prior: 1000, sampleCount: 99, p25: 90000, p75: 99000 }];
+  assert.deepEqual(deriveSeasonBands({}, seeds)[0], {
+    slug: "test-season", low: 800, median: 1000, high: 1300,
+    contributionLow: 100, contributionHigh: 200, sampleCount: 0, effectiveWeight: 0,
+  });
 });
 
 test("learned market modifiers remain monotonic and anonymous", () => {

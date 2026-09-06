@@ -34,6 +34,17 @@ const prepare = async (lines, salt = testSalt) => {
   return stdout.trim().split("\n").filter(Boolean).map(JSON.parse);
 };
 
+test("anonymization preserves foreign-price exclusions and does not invent zero counts", () => {
+  const prepared = prepareRow({
+    currency: "TWD", original_currency: "HKD", price_twd: 3500,
+    missing_season_count: null, completion_ratio: " ", paid_package_count: null,
+  }, testSalt);
+  assert.equal(prepared.exclusion_reason, "foreign_currency");
+  assert.equal(Object.hasOwn(prepared, "missing_season_count"), false);
+  assert.equal(Object.hasOwn(prepared, "completion_ratio"), false);
+  assert.equal(Object.hasOwn(prepared, "paid_package_count"), false);
+});
+
 test("anonymizes private Facebook fields while retaining only valuation structure", async () => {
   const privateText = "王小明出售追光畢，大傘，私訊我";
   const privateUrl = "https://www.facebook.com/groups/private/posts/123";

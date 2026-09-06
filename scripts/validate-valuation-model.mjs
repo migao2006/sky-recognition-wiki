@@ -17,6 +17,7 @@ import {
   holdoutSplitCommitmentFor,
   inHoldout,
   isExcludedFromModel,
+  marketExclusionReason,
   packageTiers,
   packageTierFor,
   postKeyFor,
@@ -328,9 +329,7 @@ export const validateValuationModel = ({
   const sourceCandidates = rows.flatMap((row) => {
     if (isExcludedFromModel(row)) return [];
     if (!Object.hasOwn(evidenceWeights, row.evidence_kind) || !Object.hasOwn(qualityWeights, row.evidence_quality ?? "medium")) return [];
-    const eligibilityText = `${row.region ?? ""} ${row.currency ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
-    if (/國服|中國服|陸服|\b(?:cn|china)\b/i.test(eligibilityText)) return [];
-    if (/人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/i.test(eligibilityText)) return [];
+    if (marketExclusionReason(row)) return [];
     const price = priceFor(row, {
       coercePoint: false,
       coerceRange: true,

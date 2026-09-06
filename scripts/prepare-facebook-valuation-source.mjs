@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
+import { marketExclusionReason } from "./lib/valuation-source-core.mjs";
 import {
   valuationConfidenceValues,
   valuationModelInputKeys,
@@ -50,6 +51,7 @@ const normalizedSlug = (value) => {
 };
 
 const finiteNumber = (value) => {
+  if (value == null || typeof value === "boolean" || String(value).trim() === "") return undefined;
   const number = typeof value === "number" ? value : Number(value);
   return Number.isFinite(number) ? number : undefined;
 };
@@ -110,7 +112,7 @@ const standardizedExclusionReason = (row) => {
   ]);
   const context = `${row.region ?? ""} ${row.currency ?? ""} ${declared}`.toLowerCase();
   if (/國服|中國服|陸服|\b(?:cn|china)\b/.test(context)) return "china";
-  if (/人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/.test(context)) return "foreign_currency";
+  if (marketExclusionReason(row) === "foreign_currency" || /人民幣|rmb|cny|￥|¥|\busd\b|美金|港幣|hkd/.test(context)) return "foreign_currency";
   const hasPrice = [row.price_twd, row.price_twd_low, row.price_twd_high]
     .map(finiteNumber)
     .some((price) => price !== undefined && price > 0);
