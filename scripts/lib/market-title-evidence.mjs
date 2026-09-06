@@ -1,0 +1,149 @@
+// Seller titles are useful market evidence, but they are deliberately kept
+// separate from wardrobe reconstruction. This parser only accepts explicit,
+// account-level claims and never creates seasonal progress or item GUIDs.
+
+const seasonAliases = [
+  ["gratitude", ["感恩"]],
+  ["lightseekers", ["追光"]],
+  ["belonging", ["歸屬", "归属"]],
+  ["rhythm", ["音韻", "音韵"]],
+  ["enchantment", ["魔法"]],
+  ["sanctuary", ["聖島", "圣岛"]],
+  ["prophecy", ["預言", "预言"]],
+  ["dreams", ["夢想", "梦想"]],
+  ["assembly", ["集結", "集结", "重組", "重组"]],
+  ["the-little-prince", ["小王子", "王子"]],
+  ["flight", ["風行", "风行", "飛行", "飞行"]],
+  ["abyss", ["潛海", "潜海", "深淵", "深渊"]],
+  ["performance", ["表演"]],
+  ["shattering", ["破碎"]],
+  ["aurora", ["極光", "极光"]],
+  ["remembrance", ["緬懷", "缅怀"]],
+  ["passage", ["夜行"]],
+  ["moments", ["拾光"]],
+  ["revival", ["歸巢", "归巢"]],
+  ["nine-colored-deer", ["九色鹿"]],
+  ["nesting", ["築巢", "筑巢"]],
+  ["duets", ["協奏", "协奏"]],
+  ["moomin", ["姆明"]],
+  ["radiance", ["染色"]],
+  ["blue-bird", ["青鳥", "青鸟"]],
+  ["two-embers-part-1", ["暮星"]],
+  ["migration", ["遷徙", "迁徙"]],
+  ["lightmending", ["織光", "织光"]],
+  ["carnival", ["狂歡", "狂欢"]],
+  ["dear-van-gogh", ["致梵谷", "致梵高", "梵谷", "梵高"]],
+];
+
+const normalizedTitle = (value) => String(value ?? "")
+  .normalize("NFKC")
+  .toLowerCase()
+  .replaceAll(/\s+/gu, "")
+  .trim();
+
+const hasNegated = (text, expression) =>
+  new RegExp(`(?:非|不是|並非|并非|不算|非為|非为)(?:${expression})`, "u").test(text);
+
+const unique = (values) => [...new Set(values)];
+
+const seasonClaimsFor = (text) => {
+  const claims = [];
+  for (const [slug, aliases] of seasonAliases) {
+    for (const alias of aliases) {
+      for (const match of text.matchAll(new RegExp(alias, "gu"))) {
+        claims.push({ slug, index: match.index, length: alias.length });
+      }
+    }
+  }
+  return claims;
+};
+
+const breakClassForTitle = (text) => {
+  if (/(?:偽|伪)(?:無斷|无断)/u.test(text)) return "slight";
+  const definitions = [
+    ["none", "(?:無斷|无断|不斷|不断)"],
+    ["slight", "(?:微|小)(?:斷|断)"],
+    ["medium", "中(?:斷|断)"],
+    ["big", "大(?:斷|断)"],
+  ];
+  const matches = definitions
+    .filter(([, expression]) => new RegExp(expression, "u").test(text) && !hasNegated(text, expression))
+    .map(([key]) => key);
+  return unique(matches).length === 1 ? matches[0] : null;
+};
+
+const explicitPackageCountFor = (text) => {
+  const values = [
+    ...text.matchAll(/(?:禮包|礼包)\s*(\d+)(?!\d)/gu),
+    ...text.matchAll(/(?<!\d)(\d+)(?!\d)\s*(?:禮包|礼包)/gu),
+    ...text.matchAll(/(?<!\d)(\d+)(?!\d)\s*(?:禮|礼)(?!包)/gu),
+  ].map((match) => Number(match[1]));
+  const counts = unique(values.filter((value) =>
+    Number.isSafeInteger(value) && value >= 0 && value <= 999,
+  ));
+  return counts.length === 1 ? counts[0] : null;
+};
+
+const salePackageTierFor = (text) => {
+  const labels = [
+    ["few", "少(?:禮|礼)"],
+    ["medium", "(?:中|適中|适中)(?:禮|礼)"],
+    ["many", "多(?:禮|礼)"],
+  ].filter(([, expression]) =>
+    new RegExp(expression, "u").test(text) && !hasNegated(text, expression),
+  ).map(([key]) => key);
+  const explicit = unique(labels);
+  if (explicit.length === 1) return explicit[0];
+  return null;
+};
+
+const accountStyleFor = (text) => {
+  const labels = [
+    ["simple", "(?:簡|简)(?:號|号|帳|帐)|(?:簡|简)(?=$|[,，｜|])"],
+    ["regular", "(?:普|普通)(?:號|号|帳|帐)"],
+  ].filter(([, expression]) =>
+    new RegExp(expression, "u").test(text) && !hasNegated(text, expression),
+  )
+    .map(([key]) => key);
+  return unique(labels).length === 1 ? labels[0] : null;
+};
+
+const startSeasonFor = (text, breakClass, accountStyle) => {
+  const claims = seasonClaimsFor(text);
+  const slugs = unique(claims.map((claim) => claim.slug));
+  if (slugs.length !== 1) return null;
+  const claim = claims[0];
+  const after = text.slice(claim.index + claim.length);
+  const before = text.slice(0, claim.index);
+  // A seasonal pass or a named item is not evidence that the account began
+  // that season, even when the same title also contains seller shorthand.
+  if (/^(?:季)?卡|^(?:通行)?證|^(?:斗篷|披風|面具|髮型|发型|髮飾|发饰|樂器|乐器|禮包|礼包)/u.test(after))
+    return null;
+  if (/(?:非|不是|並非|并非)(?:季)?$/.test(before) && /^(?:季)?起/u.test(after))
+    return null;
+  const explicitStart = /^(?:季)?起/u.test(after) || /(?:起季|起號|起号|入坑)$/.test(before);
+  const accountTitle = /(?:號|号|帳|帐)/u.test(text);
+  const sellerSummary = /(?:少|中|多)(?:禮|礼)|(?:禮包|礼包)\d+|\d+(?:禮|礼)(?:包)?/u.test(text);
+  const explicitBreakSeason = /(?:斷|断)季/u.test(text);
+  const accountEvidence = accountTitle || accountStyle !== null || breakClass !== null || explicitBreakSeason;
+  return explicitStart || (accountEvidence && (breakClass !== null || sellerSummary || explicitBreakSeason || accountStyle !== null))
+    ? claim.slug
+    : null;
+};
+
+export const extractMarketTitleEvidence = (title) => {
+  const text = normalizedTitle(title);
+  const breakClass = breakClassForTitle(text);
+  const paidPackageCount = explicitPackageCountFor(text);
+  const accountStyle = accountStyleFor(text);
+  const wingless = /無翼|无翼/u.test(text) && !hasNegated(text, "(?:無翼|无翼)");
+
+  return {
+    startSeasonSlug: startSeasonFor(text, breakClass, accountStyle),
+    breakClass,
+    paidPackageCount,
+    salePackageTier: salePackageTierFor(text),
+    accountStyle,
+    wingless,
+  };
+};

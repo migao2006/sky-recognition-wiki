@@ -21,8 +21,8 @@ const marketAggregate = JSON.parse(
 test("season bands contain all thirty ordered seasons with valid price ranges", () => {
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
-    sourceRows: 448,
-    eligibleRows: 402,
+    sourceRows: 446,
+    eligibleRows: 401,
     facebookRows: 279,
     facebookEligibleRows: 269,
     driveRows: 115,
@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "b0177a7bc86317c7ad66caa59636eaeb775df914c54e5a5c9b32fbeb4f243613",
+    "4fdb2b352e28afa8f9f4b67e63d81756669c1ee985d8db45ab045e12eb6c5308",
   );
 });
 
@@ -132,19 +132,20 @@ test("client summary contains no raw listing text", () => {
 test("anonymous market aggregate keeps the current audited source summary", () => {
   assert.equal(marketAggregate.schemaVersion, 4);
   assert.equal(marketAggregate.validationStatus, "unvalidated");
-  assert.equal(marketAggregate.sourceRows, 448);
-  assert.equal(marketAggregate.eligibleRows, 402);
-  assert.equal(marketAggregate.uniqueAccountRows, 270);
-  assert.equal(marketAggregate.split.trainingRows, 359);
+  assert.equal(marketAggregate.sourceRows, 446);
+  assert.equal(marketAggregate.eligibleRows, 401);
+  assert.equal(marketAggregate.uniqueAccountRows, 269);
+  assert.equal(marketAggregate.split.trainingRows, 358);
   assert.equal(marketAggregate.split.holdoutRows, 43);
   assert.equal(marketAggregate.split.trainingMode, "calibration-only");
   assert.equal(marketAggregate.predictorCoverage.completeRows, 0);
+  // Known-answer regression accounts must not create apparent market evidence.
+  assert.equal(marketAggregate.segments.startSeason.moments.sampleCount, 0);
   assert.deepEqual(marketAggregate.sourceBreakdown, {
     "8591_tw": 1,
     carousell_tw: 2,
     facebook: 269,
     google_drive: 115,
-    manual_backup: 1,
     unknown: 14,
   });
   assert.deepEqual(marketAggregate.sourceRowsBySource, {
@@ -153,7 +154,6 @@ test("anonymous market aggregate keeps the current audited source summary", () =
     carousell_tw: 2,
     facebook: 279,
     google_drive: 115,
-    manual_backup: 2,
     unknown: 16,
   });
   assert.deepEqual(
@@ -162,7 +162,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { none: 44, slight: 63, medium: 97, big: 121 },
+    { none: 44, slight: 62, medium: 97, big: 121 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -170,7 +170,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 117, medium: 77, many: 88, hundred: 19 },
+    { few: 117, medium: 77, many: 87, hundred: 19 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 81);
 });
