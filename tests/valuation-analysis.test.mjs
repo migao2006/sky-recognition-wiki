@@ -492,6 +492,20 @@ test("fortune doll set aliases reconstruct three cosmetics but one paid package"
   assert.equal(result.marketProfile.canonicalPackageCount, 1);
 });
 
+test("moonlight set aliases count two cosmetics once and earrings separately", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);
+  const matches = resolver.scan("嫦娥套裝｜月華套裝｜嫦娥髮型｜月華服裝");
+  const chosen = [...new Map([...matches.matched, ...matches.groups].flatMap(match => match.candidates.map(item => [item.guid, item]))).values()];
+  assert.equal(chosen.length, 2);
+  const price = items => estimateValuation({ analysis: analyzeValuation({
+    chosen: items, bindings: bindings(), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName },
+  }) });
+  assert.equal(price(chosen).marketProfile.canonicalPackageCount, 1);
+  const earrings = catalog.wikiItems.find(item => item.guid === "XURacs6BHP");
+  assert.equal(price([...chosen, earrings]).marketProfile.canonicalPackageCount, 2);
+});
+
 test("fortune fish pack excludes the separately purchased fish accessory", async () => {
   const catalog = await loadRuntimeCatalog();
   const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);

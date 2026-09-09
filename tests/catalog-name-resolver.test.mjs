@@ -4,6 +4,23 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("moonlight sets contain only the official frock and updo, not earrings", () => {
+  for (const term of ["嫦娥套裝", "月華套裝"]) {
+    const result = resolver.scan(term);
+    assert.equal(result.groups.length, 1);
+    const members = result.groups[0].candidates;
+    assert.deepEqual(members.map(item => item.guid).sort(), ["2e97D5cOuG", "oDLczC36GR"]);
+    assert.ok(members.every(item => catalog.isPaidItem(item)));
+    assert.deepEqual(members.map(item => [item.id, item.order, item.name, item.type]).sort((a, b) => a[0] - b[0]), [
+      [2304, 5700, "Moonlight Frock", "Outfit"],
+      [2305, 16200, "Moonlight Updo", "Hair"],
+    ]);
+    assert.equal(resolver.scan(`沒有${term}`).groups.length, 0);
+  }
+  assert.deepEqual(resolver.resolve("嫦娥髮型").candidates.map(item => item.guid), ["oDLczC36GR"]);
+  assert.deepEqual(resolver.resolve("月光耳墜").candidates.map(item => item.guid), ["XURacs6BHP"]);
+});
+
 test("dragon scale earrings resolve the paid fortune head accessory, not a bracelet", () => {
   for (const term of ["龍鱗耳墜", "金鱗耳墜", "幸運節龍耳飾", "福瑞龍手環"]) {
     const match = resolver.resolve(term);

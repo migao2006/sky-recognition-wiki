@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「嫦娥套裝／月華套裝」對應 Moonlight Frock（`2e97D5cOuG`）與 Moonlight Updo（`oDLczC36GR`）兩件；「嫦娥髮型」只對應後者。依[台灣玩家月華節介紹](https://www.youtube.com/watch?v=WSsc3JkBz5Y)、[台灣更新日誌整理](https://forum.gamer.com.tw/C.php?bsn=33024&snA=2308)與 SkyGame-Data 1.3.10 的 `Moonlight Frock and Updo` 禮包 `0PaBo6qDUQ` 完整成員核對。套裝詞僅作群組搜尋別名，不改單件顯示名；兩件只計一個付費禮包，不包含另售月光耳環，也不以外站售價改寫台幣估價。
+
 明確已知平台間的同行空白也可作清單分隔：「GG GC不出」按兩平台不出重播；Game Center 的名稱內空白不拆成多平台。這只採用明寫的平台，不延伸至下一行或未知縮寫。
 
 GUID 重播會同時輸出來源的 `start_season_slug`、實算的 `reconstructed_start_season_slug` 與 `start_season_conflict`。兩者皆可確認時才比較；缺少任一方標為 `null`，不能當作一致。摘要分開統計一致、衝突與未知，另列起季一致的比較結果。衝突文案仍保留物品、價格與探索區間，但不輸出完整模型 features，也不自動以來源起季覆寫已辨識衣櫃；應先核對是否誤讀贈送數據、魔法、徽章或其他區塊，而非直接調整季節行情。
