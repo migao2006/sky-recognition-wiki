@@ -659,8 +659,14 @@
     {
       "guid": "ADJiva5H2Z",
       "name": "Fortune Muralist's Smock",
-      "playerName": "福瑞壁畫家工作服",
-      "aliases": [],
+      "playerName": "祥雲褲",
+      "aliases": [
+        "壁畫家褲子",
+        "福瑞壁畫家工作服",
+        "兔尾褲",
+        "兔子棉褲"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:AZNU4TiFyl",
       "packageName": "Days of Fortune Muralist's Smock",
       "paid": true,

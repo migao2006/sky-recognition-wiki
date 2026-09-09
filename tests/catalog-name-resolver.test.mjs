@@ -78,12 +78,14 @@ test("fortune doll set preserves three official members and respects negative wo
 });
 
 test("fortune muralist pants aliases remain paid and separate from white cotton pants", () => {
-  for (const term of ["祥雲褲", "壁畫家褲子", "福瑞壁畫家工作服"]) {
+  for (const term of ["祥雲褲", "壁畫家褲子", "福瑞壁畫家工作服", "兔尾褲", "兔子棉褲"]) {
     const match = resolver.resolve(term);
     assert.deepEqual(match.candidates.map(item => item.guid), ["ADJiva5H2Z"]);
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.type, item.name, item.collection], [1734, 3600, "OutfitShoes", "Fortune Muralist's Smock", "days-of-fortune"]);
     assert.equal(catalog.isPaidItem(item), true);
+    assert.equal(catalog.zhItemName(item), "祥雲褲");
+    assert.equal(catalog.saleItemName(item), "祥雲褲");
   }
   assert.equal(resolver.scan("祥雲褲｜壁畫家褲子").matched.length, 1);
   assert.equal(resolver.scan("沒有祥雲褲").matched.length, 0);
