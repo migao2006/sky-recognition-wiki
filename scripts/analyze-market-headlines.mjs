@@ -1,6 +1,7 @@
 import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { channelFor } from "./lib/market-channel.mjs";
 import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor as titleFor } from "./lib/market-title-evidence.mjs";
 import {
   accountKeyFor,
@@ -34,17 +35,6 @@ const known = (value) => {
   return text && !["unknown", "unk", "n/a", "null", "undefined", "-"].includes(text.toLowerCase()) ? text : null;
 };
 const knownIdentity = value => known(value)?.toLowerCase() === "none" ? null : known(value);
-// Only normalize explicit channel metadata, never infer ownership/login from a title.
-// Unknown values stay usable without copying arbitrary seller text into reports.
-const channelFor = (row) => {
-  const value = typeof row.channel === "string" ? row.channel.trim().toLowerCase().replace(/\s+/g, "") : "";
-  const aliases = {
-    "ios官服": "ios-official", "ios官服苹果官服": "ios-official", "蘋果官服": "ios-official", "苹果官服": "ios-official",
-    "安卓官服": "android-official", "華為": "huawei", "华为": "huawei", "小米": "xiaomi", "哔哩哔哩": "bilibili",
-  };
-  return Object.hasOwn(aliases, value) ? aliases[value]
-    : ["ios-official", "android-official", "huawei", "vivo", "oppo", "xiaomi", "bilibili"].includes(value) ? value : "unknown";
-};
 const quantile = (values, percentile) => {
   const ordered = [...values].sort((a, b) => a - b);
   return ordered.length ? ordered[Math.floor((ordered.length - 1) * percentile)] : null;

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { seasonSlugs } from "./collect-public-market-listings.mjs";
+import { channelFor } from "./lib/market-channel.mjs";
 
 const quantile = (values, percentile) => {
   const ordered = [...values].sort((left, right) => left - right);
@@ -14,7 +15,7 @@ const roundRatio = (value) => Math.round(value * 1_000) / 1_000;
 const marketKeyFor = (row) => {
   const source = String(row.source ?? "").trim().toLowerCase();
   const currency = String(row.currency_original ?? "").trim().toUpperCase();
-  return source && currency ? `${source}:${currency}` : null;
+  return source && currency ? `${source}:${currency}:${channelFor(row)}` : null;
 };
 
 const isEligible = (row) =>
@@ -72,6 +73,7 @@ export const buildSeasonRatioReport = (rows, { minimumSamples = 3 } = {}) => {
       });
       return {
         market,
+        channel: channelFor(entries[0]),
         sample_count: entries.length,
         market_median_original: marketMedian,
         seasons,
@@ -80,13 +82,13 @@ export const buildSeasonRatioReport = (rows, { minimumSamples = 3 } = {}) => {
     });
 
   return {
-    schema_version: 1,
+    schema_version: 2,
     evidence_kind: "same-market-season-relative-asking-price",
     minimum_samples_per_season: minimumSamples,
     source_rows: rows.length,
     eligible_rows: eligibleRows.length,
     markets,
-    warning: "Diagnostic relative asking-price evidence only; never mix original currencies or publish as a TWD valuation.",
+    warning: "Diagnostic relative asking-price evidence only; channels and original currencies stay separate. Unknown channels and other account differences remain confounders; never publish as a TWD valuation.",
   };
 };
 
