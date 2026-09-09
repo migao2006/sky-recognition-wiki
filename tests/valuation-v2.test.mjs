@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "169b0bd0651cca729534a7fad87194f2ba558a235d650e06e5f554572fd38ed2",
+    "9819ac1ef047e6ccc5fafab4a164a7416554ca554331a707ea8008eac0e5c35d",
   );
 });
 
@@ -165,7 +165,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
       ),
     ),
     // Excludes a badge/account mixed sale and an unsupported big-break claim.
-    { none: 40, slight: 65, medium: 87, big: 117 },
+    { none: 40, slight: 65, medium: 85, big: 117 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -173,9 +173,10 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 116, medium: 73, many: 84, hundred: 19 },
+    { few: 115, medium: 72, many: 84, hundred: 19 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 80);
+  assert.equal(marketAggregate.segments.accountStyle.regular.sampleCount, 257);
 });
 
 test("priors add no observations, and only audited start-season samples affect bands", () => {

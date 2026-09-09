@@ -27,7 +27,7 @@
   "split": {
     "splitSeed": "sky-valuation-v3",
     "strategy": "public-seed-legacy",
-    "datasetDigest": "3923067f48db61fdef406f19b115ce37324f5aebcfc2e2259de5a9b74eed9d9f",
+    "datasetDigest": "d63edd07808990cb3681c5932947477b1676aa5d67af005fbe36b8aab84e734a",
     "splitCommitment": null,
     "trainingMode": "calibration-only",
     "trainingRows": 356,
@@ -153,7 +153,7 @@
     },
     "lightseekers": {
       "sampleCount": 4,
-      "effectiveWeight": 0.849,
+      "effectiveWeight": 0.85,
       "p25": 114560,
       "median": 148400,
       "p75": 148400,
@@ -169,7 +169,7 @@
     },
     "belonging": {
       "sampleCount": 8,
-      "effectiveWeight": 1.666,
+      "effectiveWeight": 1.667,
       "p25": 70000,
       "median": 100000,
       "p75": 115000,
@@ -185,7 +185,7 @@
     },
     "rhythm": {
       "sampleCount": 35,
-      "effectiveWeight": 7.609,
+      "effectiveWeight": 7.614,
       "p25": 32000,
       "median": 45000,
       "p75": 69000,
@@ -201,7 +201,7 @@
     },
     "enchantment": {
       "sampleCount": 35,
-      "effectiveWeight": 7.371,
+      "effectiveWeight": 7.375,
       "p25": 17580,
       "median": 22900,
       "p75": 25000,
@@ -217,7 +217,7 @@
     },
     "sanctuary": {
       "sampleCount": 24,
-      "effectiveWeight": 6.689,
+      "effectiveWeight": 6.69,
       "p25": 6000,
       "median": 6800,
       "p75": 13000,
@@ -233,7 +233,7 @@
     },
     "prophecy": {
       "sampleCount": 26,
-      "effectiveWeight": 5.148,
+      "effectiveWeight": 5.151,
       "p25": 5800,
       "median": 8000,
       "p75": 9500,
@@ -249,7 +249,7 @@
     },
     "dreams": {
       "sampleCount": 17,
-      "effectiveWeight": 5.483,
+      "effectiveWeight": 5.484,
       "p25": 5000,
       "median": 5500,
       "p75": 6000,
@@ -265,7 +265,7 @@
     },
     "assembly": {
       "sampleCount": 23,
-      "effectiveWeight": 3.912,
+      "effectiveWeight": 3.915,
       "p25": 5275,
       "median": 5600,
       "p75": 7500,
@@ -281,7 +281,7 @@
     },
     "the-little-prince": {
       "sampleCount": 26,
-      "effectiveWeight": 3.994,
+      "effectiveWeight": 3.998,
       "p25": 3500,
       "median": 4500,
       "p75": 6500,
@@ -297,7 +297,7 @@
     },
     "flight": {
       "sampleCount": 21,
-      "effectiveWeight": 3.404,
+      "effectiveWeight": 3.372,
       "p25": 3000,
       "median": 3300,
       "p75": 4100,
@@ -313,7 +313,7 @@
     },
     "abyss": {
       "sampleCount": 9,
-      "effectiveWeight": 1.262,
+      "effectiveWeight": 1.264,
       "p25": 3500,
       "median": 5500,
       "p75": 6500,
@@ -329,7 +329,7 @@
     },
     "performance": {
       "sampleCount": 30,
-      "effectiveWeight": 6.189,
+      "effectiveWeight": 6.193,
       "p25": 3200,
       "median": 3500,
       "p75": 6000,
@@ -345,7 +345,7 @@
     },
     "shattering": {
       "sampleCount": 5,
-      "effectiveWeight": 1.022,
+      "effectiveWeight": 1.023,
       "p25": 280,
       "median": 280,
       "p75": 3200,
@@ -361,7 +361,7 @@
     },
     "aurora": {
       "sampleCount": 9,
-      "effectiveWeight": 1.716,
+      "effectiveWeight": 1.717,
       "p25": 2400,
       "median": 2500,
       "p75": 2500,
@@ -377,7 +377,7 @@
     },
     "remembrance": {
       "sampleCount": 4,
-      "effectiveWeight": 0.73,
+      "effectiveWeight": 0.731,
       "p25": 4000,
       "median": 4000,
       "p75": 4000,
@@ -457,7 +457,7 @@
     },
     "nesting": {
       "sampleCount": 4,
-      "effectiveWeight": 0.489,
+      "effectiveWeight": 0.49,
       "p25": 2500,
       "median": 2500,
       "p75": 2700,
@@ -473,7 +473,7 @@
     },
     "duets": {
       "sampleCount": 5,
-      "effectiveWeight": 1.273,
+      "effectiveWeight": 1.274,
       "p25": 1800,
       "median": 2700,
       "p75": 2700,
@@ -489,7 +489,7 @@
     },
     "moomin": {
       "sampleCount": 15,
-      "effectiveWeight": 2.954,
+      "effectiveWeight": 2.956,
       "p25": 990,
       "median": 1300,
       "p75": 4500,
@@ -505,7 +505,7 @@
     },
     "radiance": {
       "sampleCount": 8,
-      "effectiveWeight": 0.917,
+      "effectiveWeight": 0.918,
       "p25": 1800,
       "median": 2800,
       "p75": 3964,
@@ -537,7 +537,7 @@
     },
     "two-embers-part-1": {
       "sampleCount": 5,
-      "effectiveWeight": 0.532,
+      "effectiveWeight": 0.533,
       "p25": 1700,
       "median": 1700,
       "p75": 17000,
@@ -569,7 +569,7 @@
     },
     "lightmending": {
       "sampleCount": 5,
-      "effectiveWeight": 0.783,
+      "effectiveWeight": 0.784,
       "p25": 900,
       "median": 900,
       "p75": 1000,
@@ -585,7 +585,7 @@
     },
     "carnival": {
       "sampleCount": 11,
-      "effectiveWeight": 2.107,
+      "effectiveWeight": 2.108,
       "p25": 500,
       "median": 600,
       "p75": 2800,
@@ -601,7 +601,7 @@
     },
     "dear-van-gogh": {
       "sampleCount": 2,
-      "effectiveWeight": 0.105,
+      "effectiveWeight": 0.106,
       "p25": 17000,
       "median": 17000,
       "p75": 23000,
@@ -640,7 +640,7 @@
       },
       "lightseekers": {
         "sampleCount": 4,
-        "effectiveWeight": 0.849,
+        "effectiveWeight": 0.85,
         "p25": 114560,
         "median": 148400,
         "p75": 148400,
@@ -663,7 +663,7 @@
       },
       "belonging": {
         "sampleCount": 8,
-        "effectiveWeight": 1.666,
+        "effectiveWeight": 1.667,
         "p25": 70000,
         "median": 100000,
         "p75": 115000,
@@ -686,7 +686,7 @@
       },
       "rhythm": {
         "sampleCount": 35,
-        "effectiveWeight": 6.7,
+        "effectiveWeight": 6.704,
         "p25": 35000,
         "median": 67500,
         "p75": 73000,
@@ -709,7 +709,7 @@
       },
       "enchantment": {
         "sampleCount": 35,
-        "effectiveWeight": 7.248,
+        "effectiveWeight": 7.252,
         "p25": 17580,
         "median": 22900,
         "p75": 25000,
@@ -733,7 +733,7 @@
       },
       "sanctuary": {
         "sampleCount": 22,
-        "effectiveWeight": 6.584,
+        "effectiveWeight": 6.585,
         "p25": 6000,
         "median": 6800,
         "p75": 13000,
@@ -756,7 +756,7 @@
       },
       "prophecy": {
         "sampleCount": 23,
-        "effectiveWeight": 4.355,
+        "effectiveWeight": 4.357,
         "p25": 5800,
         "median": 8500,
         "p75": 9500,
@@ -804,7 +804,7 @@
       },
       "assembly": {
         "sampleCount": 21,
-        "effectiveWeight": 3.792,
+        "effectiveWeight": 3.795,
         "p25": 5275,
         "median": 5600,
         "p75": 7500,
@@ -828,7 +828,7 @@
       },
       "the-little-prince": {
         "sampleCount": 23,
-        "effectiveWeight": 3.774,
+        "effectiveWeight": 3.777,
         "p25": 3050,
         "median": 3700,
         "p75": 6500,
@@ -852,7 +852,7 @@
       },
       "flight": {
         "sampleCount": 19,
-        "effectiveWeight": 3.284,
+        "effectiveWeight": 3.252,
         "p25": 3000,
         "median": 3300,
         "p75": 4100,
@@ -864,9 +864,9 @@
           "comment": 3
         },
         "qualityBreakdown": {
-          "high": 12,
+          "high": 11,
           "medium": 5,
-          "low": 2
+          "low": 3
         },
         "sourceBreakdown": {
           "facebook": 10,
@@ -876,7 +876,7 @@
       },
       "abyss": {
         "sampleCount": 7,
-        "effectiveWeight": 1.057,
+        "effectiveWeight": 1.058,
         "p25": 2800,
         "median": 4900,
         "p75": 6500,
@@ -900,7 +900,7 @@
       },
       "performance": {
         "sampleCount": 28,
-        "effectiveWeight": 5.943,
+        "effectiveWeight": 5.946,
         "p25": 3200,
         "median": 3500,
         "p75": 6000,
@@ -924,7 +924,7 @@
       },
       "shattering": {
         "sampleCount": 4,
-        "effectiveWeight": 0.955,
+        "effectiveWeight": 0.956,
         "p25": 280,
         "median": 280,
         "p75": 3200,
@@ -947,7 +947,7 @@
       },
       "aurora": {
         "sampleCount": 8,
-        "effectiveWeight": 1.644,
+        "effectiveWeight": 1.645,
         "p25": 2400,
         "median": 2500,
         "p75": 2500,
@@ -1060,7 +1060,7 @@
       },
       "nine-colored-deer": {
         "sampleCount": 3,
-        "effectiveWeight": 0.475,
+        "effectiveWeight": 0.476,
         "p25": 4400,
         "median": 4400,
         "p75": 4500,
@@ -1106,7 +1106,7 @@
       },
       "duets": {
         "sampleCount": 4,
-        "effectiveWeight": 1.22,
+        "effectiveWeight": 1.221,
         "p25": 1800,
         "median": 1800,
         "p75": 2700,
@@ -1129,7 +1129,7 @@
       },
       "moomin": {
         "sampleCount": 13,
-        "effectiveWeight": 2.829,
+        "effectiveWeight": 2.831,
         "p25": 990,
         "median": 1300,
         "p75": 4500,
@@ -1153,7 +1153,7 @@
       },
       "radiance": {
         "sampleCount": 7,
-        "effectiveWeight": 0.836,
+        "effectiveWeight": 0.837,
         "p25": 1800,
         "median": 2440,
         "p75": 3964,
@@ -1176,7 +1176,7 @@
       },
       "blue-bird": {
         "sampleCount": 4,
-        "effectiveWeight": 0.748,
+        "effectiveWeight": 0.749,
         "p25": 800,
         "median": 1500,
         "p75": 2200,
@@ -1268,7 +1268,7 @@
       },
       "carnival": {
         "sampleCount": 8,
-        "effectiveWeight": 1.865,
+        "effectiveWeight": 1.866,
         "p25": 500,
         "median": 600,
         "p75": 690,
@@ -1313,7 +1313,7 @@
     "breakClass": {
       "none": {
         "sampleCount": 40,
-        "effectiveWeight": 14.383,
+        "effectiveWeight": 14.384,
         "p25": 1800,
         "median": 4100,
         "p75": 25000,
@@ -1327,7 +1327,7 @@
       },
       "slight": {
         "sampleCount": 65,
-        "effectiveWeight": 14.406,
+        "effectiveWeight": 14.414,
         "p25": 6000,
         "median": 8000,
         "p75": 17580,
@@ -1340,13 +1340,13 @@
         }
       },
       "medium": {
-        "sampleCount": 87,
-        "effectiveWeight": 20.777,
+        "sampleCount": 85,
+        "effectiveWeight": 20.646,
         "p25": 3500,
         "median": 5125,
         "p75": 7000,
         "evidenceBreakdown": {
-          "ask": 57,
+          "ask": 55,
           "quick_sale": 7,
           "sold": 16,
           "professional_estimate": 0,
@@ -1355,7 +1355,7 @@
       },
       "big": {
         "sampleCount": 117,
-        "effectiveWeight": 29.102,
+        "effectiveWeight": 29.111,
         "p25": 900,
         "median": 2900,
         "p75": 6000,
@@ -1370,13 +1370,13 @@
     },
     "packageTier": {
       "few": {
-        "sampleCount": 116,
-        "effectiveWeight": 35.102,
+        "sampleCount": 115,
+        "effectiveWeight": 35.035,
         "p25": 900,
         "median": 1800,
         "p75": 5000,
         "evidenceBreakdown": {
-          "ask": 74,
+          "ask": 73,
           "quick_sale": 8,
           "sold": 22,
           "professional_estimate": 1,
@@ -1384,13 +1384,13 @@
         }
       },
       "medium": {
-        "sampleCount": 73,
-        "effectiveWeight": 15.08,
+        "sampleCount": 72,
+        "effectiveWeight": 15.02,
         "p25": 3625,
-        "median": 5700,
+        "median": 5800,
         "p75": 7000,
         "evidenceBreakdown": {
-          "ask": 54,
+          "ask": 53,
           "quick_sale": 4,
           "sold": 9,
           "professional_estimate": 0,
@@ -1399,7 +1399,7 @@
       },
       "many": {
         "sampleCount": 84,
-        "effectiveWeight": 22.426,
+        "effectiveWeight": 22.433,
         "p25": 5800,
         "median": 8400,
         "p75": 25000,
@@ -1413,7 +1413,7 @@
       },
       "hundred": {
         "sampleCount": 19,
-        "effectiveWeight": 4.131,
+        "effectiveWeight": 4.135,
         "p25": 33000,
         "median": 68500,
         "p75": 80000,
@@ -1429,7 +1429,7 @@
     "accountStyle": {
       "simple": {
         "sampleCount": 80,
-        "effectiveWeight": 22.781,
+        "effectiveWeight": 22.783,
         "p25": 650,
         "median": 1000,
         "p75": 1800,
@@ -1442,13 +1442,13 @@
         }
       },
       "regular": {
-        "sampleCount": 259,
-        "effectiveWeight": 59.824,
+        "sampleCount": 257,
+        "effectiveWeight": 59.678,
         "p25": 4000,
         "median": 6500,
         "p75": 17580,
         "evidenceBreakdown": {
-          "ask": 188,
+          "ask": 186,
           "quick_sale": 18,
           "sold": 37,
           "professional_estimate": 0,
@@ -1462,56 +1462,56 @@
       "none": {
         "multiplier": 1,
         "sampleCount": 39,
-        "effectiveWeight": 13.978
+        "effectiveWeight": 13.979
       },
       "slight": {
         "multiplier": 0.97,
         "sampleCount": 64,
-        "effectiveWeight": 13.707
+        "effectiveWeight": 13.715
       },
       "medium": {
         "multiplier": 0.9,
-        "sampleCount": 84,
-        "effectiveWeight": 20.247
+        "sampleCount": 82,
+        "effectiveWeight": 20.116
       },
       "big": {
         "multiplier": 0.78,
         "sampleCount": 82,
-        "effectiveWeight": 17.135
+        "effectiveWeight": 17.144
       }
     },
     "packageTier": {
       "few": {
         "multiplier": 0.967,
-        "sampleCount": 81,
-        "effectiveWeight": 23.518
+        "sampleCount": 80,
+        "effectiveWeight": 23.451
       },
       "medium": {
         "multiplier": 1,
-        "sampleCount": 70,
-        "effectiveWeight": 14.065
+        "sampleCount": 69,
+        "effectiveWeight": 14.005
       },
       "many": {
         "multiplier": 1.037,
         "sampleCount": 82,
-        "effectiveWeight": 21.581
+        "effectiveWeight": 21.587
       },
       "hundred": {
         "multiplier": 1.181,
         "sampleCount": 19,
-        "effectiveWeight": 3.827
+        "effectiveWeight": 3.831
       }
     },
     "accountStyle": {
       "simple": {
         "multiplier": 0.909,
         "sampleCount": 45,
-        "effectiveWeight": 11.716
+        "effectiveWeight": 11.718
       },
       "regular": {
         "multiplier": 1,
-        "sampleCount": 254,
-        "effectiveWeight": 56.915
+        "sampleCount": 252,
+        "effectiveWeight": 56.768
       }
     }
   }
