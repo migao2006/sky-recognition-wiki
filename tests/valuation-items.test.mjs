@@ -162,6 +162,9 @@ test("deduplicates verified multi-item collaboration packs", () => {
   assert.equal(canonicalPackageKey(ears), canonicalPackageKey(hair));
   assert.equal(canonicalPackageKey(cape), canonicalPackageKey(bowtie));
   assert.notEqual(canonicalPackageKey(ears), canonicalPackageKey(cape));
+  const companion = item({ name: "Cinnamoroll Mini Companion" });
+  assert.notEqual(canonicalPackageKey(companion), canonicalPackageKey(bowtie));
+  assert.notEqual(canonicalPackageKey(companion), canonicalPackageKey(ears));
 
   const kizuna = ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"].map(
     (name) => canonicalPackageKey(item({ name })),

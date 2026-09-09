@@ -126,7 +126,7 @@ const collaborationProfiles = [
     ["Cinnamoroll Ears", "大耳狗耳朵", "cinnamoroll-hair-combo"],
     ["Cinnamoroll Swirled Hair", "大耳狗捲髮", "cinnamoroll-hair-combo", ["大耳狗捲捲髮型"]],
     ["Cinnamoroll Cloud Cape", "大耳狗斗篷", "cinnamoroll-cape-combo", ["大耳狗雲朵斗篷"]],
-    ["Cinnamoroll Bowtie", "大耳狗領結", "cinnamoroll-cape-combo", ["大耳狗頭飾"]],
+    ["Cinnamoroll Bowtie", "大耳狗領結", "cinnamoroll-cape-combo"],
     ["Cinnamoroll Mini Companion", "大耳狗小夥伴", undefined, ["大耳狗迷你夥伴"]],
   ]),
   ...permanentCollaboration("姆明", [

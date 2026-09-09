@@ -4,6 +4,18 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("Cinnamoroll head accessory means the mini companion rather than the cape bowtie", () => {
+  const match = resolver.resolve("大耳狗頭飾");
+  assert.deepEqual(match.candidates.map(item => item.guid), ["eWqTtgnrmt"]);
+  const [item] = match.candidates;
+  assert.deepEqual([item.id, item.order, item.type, item.name], [2141, 7000, "HairAccessory", "Cinnamoroll Mini Companion"]);
+  assert.equal(catalog.isPaidItem(item), true);
+  assert.deepEqual(resolver.resolve("大耳狗領結").candidates.map(item => item.guid), ["VZsaoYRkCQ"]);
+  assert.equal(resolver.scan("大耳狗頭飾｜大耳狗小夥伴｜迷你大耳狗髮飾").matched.length, 1);
+  assert.equal(resolver.scan("大耳狗頭飾｜大耳狗領結｜大耳狗耳朵").matched.length, 3);
+  assert.equal(resolver.scan("沒有大耳狗頭飾").matched.length, 0);
+});
+
 test("anniversary puppy aliases do not become Cinnamoroll collaboration items", () => {
   for (const [term, guid, id, order, type, name] of [
     ["小狗頭飾", "z648Yl_rsv", 2230, 5300, "HairAccessory", "Skyfest Oreo Headband"],
