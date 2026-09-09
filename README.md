@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「小狗頭飾」與「小狗拖鞋」僅作週年奧利奧頭帶／拖鞋的搜尋別名，不歸入大耳狗聯動。分別依[五週年物品介紹](https://www.9game.cn/skygy/10163405.html)及[七週年拖鞋資料](https://wiki.biligame.com/sky/小狗拖鞋礼包)核對名稱，再以 SkyGame-Data 的 `Skyfest Oreo Headband`／`Oreo Slippers`、年份、GUID 與原始分類確認身分；不引入中國服售價或新物品。模糊的「小狗娃娃」未直接對應任一玩偶。
+
 禮包數量證據衝突只略過禮包級距，不排除整筆帳號的季節行情。精確包數必須落在已提供區間內；有效區間優先於舊的衍生級距，跨級區間保持未知。無效區間或只有上界時，不回頭以標題包數掩蓋問題；沒有區間的舊資料仍相容。
 
 「白金絨斗／白金絨斗篷」對應 Winter Ancestor Cape（`B3YJxxJKJX`），保留「冬日先祖斗篷」顯示名。名稱參考[玩家宴會節整理](https://www.taptap.cn/moment/352804618322838086)，並以官方 catalog 的 2021 宴會節關聯及[玩家描述的白色外觀、金邊、紅內襯](https://www.reddit.com/r/SkyChildrenOfLight/comments/1cp2bqh)交叉核對；不採預測價格，不加入會與感恩季兌換斗篷混淆的泛稱「白絨斗」。雪花、雪怪與白金絨斗保持三件不同物品。

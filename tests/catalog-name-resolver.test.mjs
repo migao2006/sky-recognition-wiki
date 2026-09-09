@@ -4,6 +4,22 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("anniversary puppy aliases do not become Cinnamoroll collaboration items", () => {
+  for (const [term, guid, id, order, type, name] of [
+    ["小狗頭飾", "z648Yl_rsv", 2230, 5300, "HairAccessory", "Skyfest Oreo Headband"],
+    ["小狗拖鞋", "YdP0vtpTMi", 3190, 2900, "Shoes", "Oreo Slippers"],
+  ]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.type, item.name, item.collection], [id, order, type, name, "event-sky-anniversary"]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("小狗頭飾｜奧利奧小狗頭飾｜奧利奧頭帶").matched.length, 1);
+  assert.equal(resolver.scan("沒有小狗頭飾｜沒有小狗拖鞋").matched.length, 0);
+  assert.equal(resolver.scan("小狗頭飾｜大耳狗小夥伴｜大耳狗耳朵").matched.length, 3);
+});
+
 test("white-gold fur cape aliases retain the paid Winter Ancestor identity", () => {
   for (const term of ["白金絨斗", "白金絨斗篷", "冬日先祖斗篷"]) {
     const match = resolver.resolve(term);
