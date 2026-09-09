@@ -88,7 +88,7 @@ const priceAndMarketFor = (row) => {
   if (!currency || !region || !price || price <= 0) return { reason: "price_or_market_unknown" };
   return { price, currency: currency.toUpperCase(), region: region.toLowerCase() };
 };
-const rowKeys = (row) => {
+const rowKeys = (row, includeDuplicates = false) => {
   const keys = [];
   const account = knownIdentity(accountKeyFor(row));
   const post = knownIdentity(postKeyFor(row));
@@ -98,6 +98,14 @@ const rowKeys = (row) => {
   for (const value of [row.listing_id, row.listing_url]) {
     const text = knownIdentity(value);
     if (text) keys.push(`listing:${source}:${text}`);
+  }
+  // Only reviewed same-source relistings; aliases cannot supply a missing identity.
+  if (includeDuplicates && Array.isArray(row.duplicate_listing_ids)) {
+    for (const value of row.duplicate_listing_ids) {
+      if (typeof value !== "string" && !(typeof value === "number" && Number.isSafeInteger(value))) continue;
+      const text = knownIdentity(value);
+      if (text) keys.push(`listing:${source}:${text}`);
+    }
   }
   return keys;
 };
@@ -128,7 +136,7 @@ const deduplicate = (rows) => {
   const find = (index) => parent[index] === index ? index : (parent[index] = find(parent[index]));
   const join = (left, right) => { left = find(left); right = find(right); if (left !== right) parent[right] = left; };
   const seen = new Map();
-  rows.forEach((row, index) => rowKeys(row).forEach((key) => {
+  rows.forEach((row, index) => rowKeys(row, true).forEach((key) => {
     if (seen.has(key)) join(index, seen.get(key)); else seen.set(key, index);
   }));
   const groups = new Map();

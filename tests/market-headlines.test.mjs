@@ -12,6 +12,37 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("reviewed relisting IDs join transitively within one source without inflating sample thresholds", () => {
+  const report = buildMarketHeadlineReport([
+    listing({ listing_id: "first", duplicate_listing_ids: ["second"] }),
+    listing({ listing_id: "second", duplicate_listing_ids: ["third"] }),
+    listing({ listing_id: "third" }),
+    listing({ listing_id: "first", source: "another-market" }),
+  ]);
+  assert.equal(report.eligible_rows_before_dedupe, 4);
+  assert.equal(report.eligible_rows, 2);
+  assert.equal(report.markets.length, 2);
+  for (const market of report.markets) {
+    assert.equal(market.sample_count, 1);
+    assert.equal(market.season_breaks[0].packages[0].sufficient_samples, false);
+  }
+  assert.doesNotMatch(JSON.stringify(report), /first|second|third|duplicate_listing_ids/);
+});
+
+test("relisting metadata ignores malformed IDs and cannot replace primary identity", () => {
+  const invalid = [null, true, {}, [], "unknown", "none", "", Number.MAX_SAFE_INTEGER + 1];
+  const report = buildMarketHeadlineReport([
+    listing({ duplicate_listing_ids: invalid }),
+    listing({ duplicate_listing_ids: invalid }),
+    listing({ duplicate_listing_ids: "not-an-array" }),
+    listing({ listing_id: null, duplicate_listing_ids: ["someone-else"] }),
+    listing({ listing_id: "numeric", duplicate_listing_ids: [12345] }),
+    listing({ listing_id: "12345" }),
+  ]);
+  assert.equal(report.diagnostics.identity_unknown, 1);
+  assert.equal(report.eligible_rows, 4);
+});
+
 test("season aliases retain incomplete listings in separate native-currency markets", () => {
   const report = buildMarketHeadlineReport([
     listing({ title: "二重奏起少禮號" }),
