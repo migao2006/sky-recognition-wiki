@@ -103,6 +103,19 @@ test("graduation umbrella and camera names identify the item rather than only th
   assert.notEqual(catalog.saleItemName(regularCamera), "拾光畢業相機");
 });
 
+test("Flight graduation outfit names identify the pants and retain official identity", () => {
+  // Pants context: https://game.xiaomi.com/viewpoint/1312958803_1631021803629_13
+  // Identity is verified independently against the official catalog, not the article's test-server details.
+  const item = catalog.wikiItems.find(item => item.guid === "SxX0bNDJaR");
+  assert.deepEqual([item.id, item.order, item.name, item.group], [478, 1200, "Flight Ultimate Outfit", "Ultimate"]);
+  assert.equal(catalog.zhItemName(item), "飛行畢業褲");
+  assert.equal(catalog.saleItemName(item), "飛行畢業褲");
+  assert.equal(catalog.isPaidItem(item), false);
+  for (const name of ["飛行畢業褲", "風行季畢業禮", "風行季畢業禮服裝", "飛行季畢業褲", "飛翔季畢業褲"]) {
+    assert.deepEqual(resolver.resolve(name).candidates.map(item => item.guid), [item.guid], name);
+  }
+});
+
 test("paid summer surfboard stays distinct from the 2026 sporty surfboard", () => {
   // SkyGame-Data 1.3.10: separate official IDs/orders; only the 2023 board has IAPs.
   const item = catalog.wikiItems.find(item => item.guid === "amo581C-E4");
