@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "9819ac1ef047e6ccc5fafab4a164a7416554ca554331a707ea8008eac0e5c35d",
+    "532290fb13656d4f6f11f7e13f044d896d57b88d4baf1aac7a6f8e954b45ed42",
   );
 });
 
@@ -165,7 +165,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
       ),
     ),
     // Excludes a badge/account mixed sale and an unsupported big-break claim.
-    { none: 42, slight: 63, medium: 79, big: 113 },
+    { none: 43, slight: 62, medium: 76, big: 112 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -173,7 +173,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 115, medium: 66, many: 79, hundred: 19 },
+    { few: 114, medium: 62, many: 78, hundred: 19 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 80);
   assert.equal(marketAggregate.segments.accountStyle.regular.sampleCount, 256);
