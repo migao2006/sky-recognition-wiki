@@ -1,6 +1,32 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { extractMarketTitleEvidence } from "../scripts/lib/market-title-evidence.mjs";
+
+test("package bounds reject negations, approximations and conflicting exact counts", () => {
+  for (const title of ["不到百禮", "百禮以下", "百禮左右", "二百禮", "100+禮 80禮", "60～80禮 100禮", "未滿100+禮", "不破百禮", "最多百禮", "至多百禮", "未達百禮", "不超過百禮"]) {
+    assert.equal(extractMarketPackageRange(title), null, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
+  assert.deepEqual(extractMarketPackageRange("破百禮"), { min: 101, max: null });
+  for (const title of ["不死鳥百禮", "不刀百禮", "不議價百禮"]) {
+    assert.deepEqual(extractMarketPackageRange(title), { min: 100, max: null });
+  }
+  assert.equal(extractMarketTitleEvidence("魔法無斷80禮+千蠟").paidPackageCount, 80);
+  assert.equal(extractMarketTitleEvidence("魔法無斷80禮百蠟").paidPackageCount, 80);
+});
+import { extractMarketTitleEvidence, extractMarketPackageRange } from "../scripts/lib/market-title-evidence.mjs";
+
+test("retains package intervals without turning lower bounds into exact counts", () => {
+  for (const text of ["魔法無斷60+禮包", "魔法無斷禮包60+", "魔法無斷百禮", "魔法無斷60～80禮"]) {
+    assert.equal(extractMarketTitleEvidence(text).paidPackageCount, null);
+  }
+  assert.deepEqual(extractMarketPackageRange("60+禮包"), { min: 60, max: null });
+  assert.deepEqual(extractMarketPackageRange("禮包60+"), { min: 60, max: null });
+  assert.deepEqual(extractMarketPackageRange("60～80禮"), { min: 60, max: 80 });
+  assert.deepEqual(extractMarketPackageRange("魔法無斷百禮"), { min: 100, max: null });
+  assert.equal(extractMarketPackageRange("近百禮"), null);
+  assert.equal(extractMarketPackageRange("百蠟"), null);
+  assert.equal(extractMarketPackageRange("60+禮 90+禮"), null);
+});
 
 test("extracts explicit account-level title evidence without inventing a wardrobe", () => {
   assert.deepEqual(extractMarketTitleEvidence("拾光微斷多禮號"), {

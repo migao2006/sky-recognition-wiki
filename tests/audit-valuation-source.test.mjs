@@ -12,6 +12,29 @@ import {
 
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
+
+test("headline-only accounts contribute reduced-weight season evidence without full inventories", async () => {
+  const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 6000, evidence_kind: "ask", evidence_quality: "high" };
+  const headline = await audit([{ ...base, post_hash: "headline", title: "表演大斷簡號" }]);
+  const explicit = await audit([{ ...base, post_hash: "structured", start_season_slug: "performance" }]);
+  assert.equal(headline.segments.startSeason.performance.sampleCount, 1);
+  assert(headline.segments.startSeason.performance.effectiveWeight < explicit.segments.startSeason.performance.effectiveWeight);
+  assert.equal(headline.segments.breakClass.big.sampleCount, 1);
+  assert.equal(headline.segments.accountStyle.simple.sampleCount, 1);
+  assert.equal(headline.segments.packageTier.few.sampleCount, 0);
+});
+
+test("headline package intervals retain usable tier evidence without fabricating counts", async () => {
+  const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 20000, evidence_kind: "ask", evidence_quality: "medium" };
+  const result = await audit([
+    { ...base, post_hash: "lower", title: "魔法無斷60+禮號" },
+    { ...base, post_hash: "hundred", title: "魔法無斷百禮號" },
+    { ...base, post_hash: "interval", title: "魔法無斷60～80禮號" },
+  ]);
+  assert.equal(result.segments.startSeason.enchantment.sampleCount, 3);
+  assert.equal(result.segments.packageTier.hundred.sampleCount, 1);
+  assert.equal(result.segments.packageTier.many.sampleCount, 1);
+});
 const testHashSalt = "audit-test-hash-salt-32-characters-minimum";
 const testHoldoutSecret = "audit-test-holdout-secret-32-characters-minimum";
 const signEvidenceRow = (row) => {

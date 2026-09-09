@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
+test("package intervals can inform a tier without requiring an exact package count", () => {
+  assert.equal(packageTierFor({ paid_package_min: 100, paid_package_max: null }), "hundred");
+  assert.equal(packageTierFor({ paid_package_min: 60, paid_package_max: 80 }), "many");
+  assert.equal(packageTierFor({ paid_package_min: 60, paid_package_max: null }), null);
+  assert.equal(packageTierFor({ paid_package_min: 0, paid_package_max: 10 }), "few");
+  assert.equal(packageTierFor({ paid_package_min: 80, paid_package_max: 60 }), null);
+  assert.equal(packageTierFor({ paid_package_min: null }), null);
+});
 import {
   breakClassFor,
   marketExclusionReason,
@@ -8,6 +17,8 @@ import {
   packageTierFor,
   preferredRow,
   preferredSample,
+  modelEvidenceSignatureFor,
+  stableRowKey,
   valuationDatasetDigestFor,
 } from "../scripts/lib/valuation-source-core.mjs";
 
@@ -21,6 +32,25 @@ test("freezes source content independently of row order", () => {
     valuationDatasetDigestFor(rows),
     valuationDatasetDigestFor([{ id: 1, price: 101 }, rows[1]]),
   );
+});
+
+test("headline fallback content participates in row identity and stable tie breaking", () => {
+  const a = { price_twd: 6000, listing_text: "表演大斷簡號" };
+  const b = { price_twd: 6000, listing_text: "魔法無斷百禮號" };
+  assert.notEqual(stableRowKey(a), stableRowKey(b));
+  assert.deepEqual(preferredRow(a, b), preferredRow(b, a));
+});
+
+test("headline and interval evidence use protected extended signatures", () => {
+  const salt = "test-headline-evidence-salt-32-characters";
+  const base = { price_twd: 5000 };
+  const original = modelEvidenceSignatureFor(base, salt);
+  for (const field of ["title", "listing_title", "paid_package_min", "paid_package_max"]) {
+    const extended = { ...base, [field]: field.includes("package") ? 100 : "魔法無斷" };
+    assert.notEqual(modelEvidenceSignatureFor(extended, salt), original);
+    assert.notEqual(modelEvidenceSignatureFor({ ...extended, [field]: null }, salt), modelEvidenceSignatureFor(extended, salt));
+  }
+  assert.equal(modelEvidenceSignatureFor({ ...base, title: undefined }, salt), original);
 });
 
 test("private split commitments change the holdout assignment", () => {

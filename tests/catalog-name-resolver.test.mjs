@@ -36,6 +36,13 @@ test("resolves reviewed event wording without changing paid identity", () => {
     ["蛛絲斗篷", "bcKjyS-_p3", true],
     ["惡作劇飛行掃帚道具", "8rYQfi8VP3", true],
     ["彩虹小花髮飾", "KpS-2FdasB", true],
+    ["兔兔頭飾", "EEFIpR6x7Q", true],
+    ["兔兔拖鞋", "MuQrbnmbdp", true],
+    ["南瓜擺飾", "nMt5KsLO6Y", true],
+    ["雪花頭飾", "VZyiD3Wmtp", true],
+    ["宏音海螺", "gHfkqCK-A8", true],
+    ["海浪斗篷", "wMsUtkvt3s", true],
+    ["擬人聲樂器", "K0NBv__mv8", true],
   ];
   for (const [term, guid, paid] of cases) {
     const match = resolver.resolve(term);
@@ -43,6 +50,23 @@ test("resolves reviewed event wording without changing paid identity", () => {
     assert.equal(match.method, "exact", term);
     assert.deepEqual(match.candidates.map((item) => item.guid), [guid], term);
     assert.equal(catalog.isPaidItem(match.candidates[0]), paid, term);
+  }
+});
+
+test("uses reviewed player display names for the Drive-confirmed paid items", () => {
+  const cases = [
+    ["EEFIpR6x7Q", "兔兔頭飾"],
+    ["MuQrbnmbdp", "兔兔拖鞋"],
+    ["nMt5KsLO6Y", "南瓜擺飾"],
+    ["VZyiD3Wmtp", "雪花頭飾"],
+    ["gHfkqCK-A8", "宏音海螺"],
+    ["wMsUtkvt3s", "海浪斗篷"],
+  ];
+  for (const [guid, displayName] of cases) {
+    const item = catalog.wikiItems.find((candidate) => candidate.guid === guid);
+    assert.ok(item, guid);
+    assert.equal(catalog.zhItemName(item), displayName, guid);
+    assert.equal(catalog.isPaidItem(item), true, guid);
   }
 });
 

@@ -73,6 +73,8 @@ const breakClassForTitle = (text) => {
 };
 
 const explicitPackageCountFor = (text) => {
+  // Bounded/approximate counts are useful evidence, but never exact counts.
+  if (/\d+\+(?:禮|礼)|(?:禮包|礼包)\d+\+|百(?:禮|礼)|\d+[-~～至到]\d+(?:禮|礼)/u.test(text)) return null;
   const values = [
     ...text.matchAll(/(?:禮包|礼包)\s*(\d+)(?!\d)/gu),
     ...text.matchAll(/(?<!\d)(\d+)(?!\d)\s*(?:禮包|礼包)/gu),
@@ -82,6 +84,21 @@ const explicitPackageCountFor = (text) => {
     Number.isSafeInteger(value) && value >= 0 && value <= 999,
   ));
   return counts.length === 1 ? counts[0] : null;
+};
+
+export const extractMarketPackageRange = (value) => {
+  const text = normalizedTitle(value);
+  // Upper bounds, approximations and negations must not become lower bounds.
+  if (/(?:不到|不滿|不满|不足|不破|不超過|不超过|未滿|未满|未達|未达|未到|未破|最多|至多|少於|少于|低於|低于|近|約|约|非)[^｜|,，]{0,6}(?:百|\d+)[^｜|,，]{0,3}(?:禮|礼)|(?:禮|礼)(?:包)?(?:以內|以内|以下|左右|上下)/u.test(text)) return null;
+  const matches = [...text.matchAll(/(?<!\d)(\d+)[-~～至到](\d+)(?:禮|礼)(?:包)?|(?<!\d)(\d+)\+(?:禮|礼)(?:包)?|(?:禮包|礼包)(\d+)\+|(?<![半幾几數数兩两二三四五六七八九十])(?:破)?百(?:禮|礼)(?:包)?/gu)];
+  if (matches.length !== 1) return null;
+  const match = matches[0];
+  const remainder = text.slice(0, match.index) + text.slice(match.index + match[0].length);
+  if (/(?:禮包|礼包)\d+|\d+(?:禮|礼)/u.test(remainder)) return null;
+  const min = Number(match[1] ?? match[3] ?? match[4] ?? (match[0].startsWith("破") ? 101 : 100));
+  const max = match[2] === undefined ? null : Number(match[2]);
+  if (!Number.isSafeInteger(min) || min < 0 || min > 999 || (max !== null && (max < min || max > 999))) return null;
+  return { min, max };
 };
 
 const salePackageTierFor = (text) => {

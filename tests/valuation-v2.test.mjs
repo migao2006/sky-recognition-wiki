@@ -30,7 +30,7 @@ test("season bands contain all thirty ordered seasons with valid price ranges", 
     marketplaceRows: 36,
     marketplaceEligibleRows: 3,
     secondaryMarketRows: 74,
-    asOf: "2026-09-06",
+    asOf: "2026-09-09",
   });
   for (const [index, band] of seasonPriceBands.entries()) {
     assert.ok(
@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "4fdb2b352e28afa8f9f4b67e63d81756669c1ee985d8db45ab045e12eb6c5308",
+    "defe76c3670f5d7436944bf7d7f48e6e3fc2136a7d8b1101abb918e27aa6f900",
   );
 });
 
@@ -104,8 +104,8 @@ test("sample confidence reflects direct eligible mentions", () => {
     }),
     [
       ["gratitude", 0, "inferred"],
-      ["rhythm", 30, "medium"],
-      ["enchantment", 39, "medium"],
+      ["rhythm", 31, "medium"],
+      ["enchantment", 38, "medium"],
       ["carnival", 8, "low"],
     ],
   );
@@ -162,7 +162,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { none: 44, slight: 62, medium: 97, big: 121 },
+    { none: 44, slight: 63, medium: 97, big: 121 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -170,7 +170,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 117, medium: 77, many: 87, hundred: 19 },
+    { few: 117, medium: 77, many: 85, hundred: 19 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 81);
 });

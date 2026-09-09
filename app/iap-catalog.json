@@ -1145,8 +1145,9 @@
     {
       "guid": "EEFIpR6x7Q",
       "name": "Moonlight Bunny Accessory",
-      "playerName": "月光兔兔配件",
-      "aliases": [],
+      "playerName": "兔兔頭飾",
+      "aliases": ["玉兔髮飾", "月光兔兔配件"],
+      "nameReviewed": true,
       "packageKey": "iap:Erf5ohu3HY",
       "packageName": "Bunny Accessory",
       "paid": true,
@@ -1364,8 +1365,9 @@
     {
       "guid": "gHfkqCK-A8",
       "name": "Nature Sonorous Seashell",
-      "playerName": "回音海螺",
+      "playerName": "宏音海螺",
       "aliases": [
+        "回音海螺",
         "自然回音貝殼",
         "自然洪亮海螺"
       ],
@@ -1993,8 +1995,9 @@
     {
       "guid": "MuQrbnmbdp",
       "name": "Moonlight Bunny Slippers",
-      "playerName": "月光兔兔拖鞋",
-      "aliases": [],
+      "playerName": "兔兔拖鞋",
+      "aliases": ["玉兔拖鞋", "月光兔兔拖鞋"],
+      "nameReviewed": true,
       "packageKey": "iap:dwa7xvLVxV",
       "packageName": "Style Bunny Slippers",
       "paid": true,
@@ -2122,8 +2125,9 @@
     {
       "guid": "nMt5KsLO6Y",
       "name": "Mischief Pumpkin Prop",
-      "playerName": "惡作劇南瓜道具",
-      "aliases": [],
+      "playerName": "南瓜擺飾",
+      "aliases": ["惡作劇南瓜道具"],
+      "nameReviewed": true,
       "packageKey": "iap:3pWFv5hZ7F",
       "packageName": "Mischief Pumpkin Prop",
       "paid": true,
@@ -2873,8 +2877,9 @@
     {
       "guid": "VZyiD3Wmtp",
       "name": "Snowflake Hair Accessory",
-      "playerName": "雪花髮型配件",
-      "aliases": [],
+      "playerName": "雪花頭飾",
+      "aliases": ["雪花髮型配件", "雪花髮卡髮飾"],
+      "nameReviewed": true,
       "packageKey": "iap:3xQHsmZv-e",
       "packageName": "Snowflake Hair Accessory",
       "paid": true,
@@ -2919,8 +2924,9 @@
     {
       "guid": "wMsUtkvt3s",
       "name": "Nature Wave Cape",
-      "playerName": "自然海浪斗篷",
-      "aliases": [],
+      "playerName": "海浪斗篷",
+      "aliases": ["自然海浪斗篷"],
+      "nameReviewed": true,
       "packageKey": "iap:cP9b081nYM",
       "packageName": "Nature Wave Pack",
       "paid": true,

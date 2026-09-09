@@ -142,6 +142,8 @@ const modelEvidencePayload = (row) => ({
   ...(row?.original_currency != null ? { original_currency: row.original_currency } : {}),
   ...(row?.currency_original != null ? { currency_original: row.currency_original } : {}),
   listing_text: row?.listing_text ?? null,
+  ...(row?.title !== undefined ? { title: row.title } : {}),
+  ...(row?.listing_title !== undefined ? { listing_title: row.listing_title } : {}),
   account_features: row?.account_features ?? null,
   exclude_from_model: row?.exclude_from_model ?? null,
   exclusion_reason: row?.exclusion_reason ?? null,
@@ -153,6 +155,8 @@ const modelEvidencePayload = (row) => ({
   missing_season_count: row?.missing_season_count ?? null,
   completion_ratio: row?.completion_ratio ?? null,
   paid_package_count: row?.paid_package_count ?? null,
+  ...(row?.paid_package_min !== undefined ? { paid_package_min: row.paid_package_min } : {}),
+  ...(row?.paid_package_max !== undefined ? { paid_package_max: row.paid_package_max } : {}),
   computed_package_tier: row?.computed_package_tier ?? null,
   limited_item_count: row?.limited_item_count ?? null,
   graduation_gift_count: row?.graduation_gift_count ?? null,
@@ -161,8 +165,13 @@ const modelEvidencePayload = (row) => ({
 });
 export const modelEvidenceSignatureFor = (row, hashSalt) => {
   if (typeof hashSalt !== "string" || hashSalt.length < 32) return null;
+  // Old rows without headline/range fields retain their original signature.
+  // Extended evidence must be reviewed and re-signed; never accept a v1
+  // signature that left these now model-relevant fields unprotected.
+  const version = ["title", "listing_title", "paid_package_min", "paid_package_max"]
+    .some(key => row?.[key] !== undefined) ? 2 : 1;
   return createHmac("sha256", hashSalt)
-    .update(`model-evidence-v1:${canonicalJson(modelEvidencePayload(row))}`, "utf8")
+    .update(`model-evidence-v${version}:${canonicalJson(modelEvidencePayload(row))}`, "utf8")
     .digest("hex");
 };
 export const hasCompleteModelEvidenceShape = (row) =>
@@ -315,9 +324,13 @@ export const packageTierFor = (row) => {
     if (count >= 15) return "medium";
     return "few";
   }
-  return packageTiers.includes(row.computed_package_tier)
-    ? row.computed_package_tier
-    : null;
+  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
+  const min = row.paid_package_min;
+  const max = row.paid_package_max;
+  if (!Number.isSafeInteger(min) || min < 0 || (max != null && (!Number.isSafeInteger(max) || max < min))) return null;
+  const lower = packageTierFor({ paid_package_count: min });
+  const upper = packageTierFor({ paid_package_count: max ?? Math.max(100, min) });
+  return lower === upper ? lower : null;
 };
 
 // A source row may carry this normalized snapshot when it was collected from
@@ -454,6 +467,11 @@ export const stableRowKey = (row, { accountTrim = true } = {}) =>
       season_progress: row.season_progress ?? null,
       season_progress_end_slug: row.season_progress_end_slug ?? "",
       paid_package_count: row.paid_package_count ?? "",
+      ...(row.paid_package_min !== undefined ? { paid_package_min: row.paid_package_min } : {}),
+      ...(row.paid_package_max !== undefined ? { paid_package_max: row.paid_package_max } : {}),
+      ...(row.title !== undefined ? { title: row.title } : {}),
+      ...(row.listing_title !== undefined ? { listing_title: row.listing_title } : {}),
+      ...(row.listing_text !== undefined ? { listing_text: row.listing_text } : {}),
       account_identity_scheme: row.account_identity_scheme ?? "",
       identity_namespace: row.identity_namespace ?? "",
       snapshot_hash: row.snapshot_hash ?? "",

@@ -7,7 +7,7 @@
     "seasonProgressEndSlug": "carnival",
     "validation": "requires validate-valuation-model full holdout pass before publishing as validated"
   },
-  "asOf": "2026-09-06",
+  "asOf": "2026-09-09",
   "sourceRows": 446,
   "eligibleRows": 401,
   "excludedRows": 42,
@@ -27,7 +27,7 @@
   "split": {
     "splitSeed": "sky-valuation-v3",
     "strategy": "public-seed-legacy",
-    "datasetDigest": "856b48e0db10c07fe134713984c372a7c3fd6258757f3e9f5ab8e40139d431c8",
+    "datasetDigest": "2da730091b5da7b41ac0228375dfb20b6f589be32b93cffb4137e3350a546732",
     "splitCommitment": null,
     "trainingMode": "calibration-only",
     "trainingRows": 358,
@@ -184,13 +184,13 @@
       "duplicateCount": 0
     },
     "rhythm": {
-      "sampleCount": 30,
-      "effectiveWeight": 7.266,
+      "sampleCount": 31,
+      "effectiveWeight": 7.334,
       "p25": 32000,
       "median": 45000,
-      "p75": 73000,
+      "p75": 69000,
       "evidenceBreakdown": {
-        "ask": 22,
+        "ask": 23,
         "quick_sale": 1,
         "sold": 6,
         "professional_estimate": 1,
@@ -200,13 +200,13 @@
       "duplicateCount": 1
     },
     "enchantment": {
-      "sampleCount": 39,
-      "effectiveWeight": 7.681,
+      "sampleCount": 38,
+      "effectiveWeight": 7.613,
       "p25": 17580,
       "median": 22900,
-      "p75": 27000,
+      "p75": 25000,
       "evidenceBreakdown": {
-        "ask": 30,
+        "ask": 29,
         "quick_sale": 4,
         "sold": 5,
         "professional_estimate": 0,
@@ -685,49 +685,49 @@
         }
       },
       "rhythm": {
-        "sampleCount": 30,
-        "effectiveWeight": 6.421,
+        "sampleCount": 31,
+        "effectiveWeight": 6.476,
         "p25": 36000,
         "median": 67500,
         "p75": 73000,
         "evidenceBreakdown": {
-          "ask": 22,
+          "ask": 23,
           "quick_sale": 1,
           "sold": 6,
           "professional_estimate": 1,
           "comment": 0
         },
         "qualityBreakdown": {
-          "high": 21,
+          "high": 22,
           "medium": 8,
           "low": 1
         },
         "sourceBreakdown": {
           "facebook": 17,
-          "google_drive": 13
+          "google_drive": 14
         }
       },
       "enchantment": {
-        "sampleCount": 39,
-        "effectiveWeight": 7.569,
+        "sampleCount": 38,
+        "effectiveWeight": 7.5,
         "p25": 17580,
         "median": 22900,
         "p75": 27000,
         "evidenceBreakdown": {
-          "ask": 30,
+          "ask": 29,
           "quick_sale": 4,
           "sold": 5,
           "professional_estimate": 0,
           "comment": 0
         },
         "qualityBreakdown": {
-          "high": 30,
+          "high": 29,
           "medium": 8,
           "low": 1
         },
         "sourceBreakdown": {
           "facebook": 17,
-          "google_drive": 19,
+          "google_drive": 18,
           "unknown": 3
         }
       },
@@ -1325,13 +1325,13 @@
         }
       },
       "slight": {
-        "sampleCount": 62,
-        "effectiveWeight": 14.214,
+        "sampleCount": 63,
+        "effectiveWeight": 14.265,
         "p25": 6000,
         "median": 8000,
         "p75": 15000,
         "evidenceBreakdown": {
-          "ask": 50,
+          "ask": 51,
           "quick_sale": 2,
           "sold": 6,
           "professional_estimate": 0,
@@ -1397,13 +1397,13 @@
         }
       },
       "many": {
-        "sampleCount": 87,
-        "effectiveWeight": 22.564,
+        "sampleCount": 85,
+        "effectiveWeight": 22.428,
         "p25": 5800,
         "median": 8400,
         "p75": 25000,
         "evidenceBreakdown": {
-          "ask": 57,
+          "ask": 55,
           "quick_sale": 6,
           "sold": 15,
           "professional_estimate": 0,
@@ -1465,8 +1465,8 @@
       },
       "slight": {
         "multiplier": 0.97,
-        "sampleCount": 61,
-        "effectiveWeight": 13.593
+        "sampleCount": 62,
+        "effectiveWeight": 13.603
       },
       "medium": {
         "multiplier": 0.9,
@@ -1488,12 +1488,12 @@
       "medium": {
         "multiplier": 1,
         "sampleCount": 74,
-        "effectiveWeight": 14.275
+        "effectiveWeight": 14.261
       },
       "many": {
         "multiplier": 1.037,
-        "sampleCount": 85,
-        "effectiveWeight": 21.748
+        "sampleCount": 83,
+        "effectiveWeight": 21.612
       },
       "hundred": {
         "multiplier": 1.21,
@@ -1510,7 +1510,7 @@
       "regular": {
         "multiplier": 1,
         "sampleCount": 257,
-        "effectiveWeight": 57.123
+        "effectiveWeight": 57.109
       }
     }
   }

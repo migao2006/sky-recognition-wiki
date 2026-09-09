@@ -1,5 +1,6 @@
 import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
+import { extractMarketTitleEvidence, extractMarketPackageRange } from "./lib/market-title-evidence.mjs";
 import {
   valuationConfidenceValues,
   valuationModelInputKeys,
@@ -110,6 +111,14 @@ const priceFor = (row) => sharedPriceFor(row, {
   coercePoint: false,
   coerceRange: true,
 });
+const headlineCache = new WeakMap();
+const headlineFor = (row) => {
+  if (!headlineCache.has(row)) {
+    const title = row.title ?? row.listing_title ?? String(row.listing_text ?? "").split(/\r?\n/).map(line => line.trim()).find(line => line && !/^分頁\s*\d+$/.test(line)) ?? "";
+    headlineCache.set(row, { ...extractMarketTitleEvidence(title), packageRange: extractMarketPackageRange(title) });
+  }
+  return headlineCache.get(row);
+};
 const seasonSlugsFor = (row) => {
   const start = String(row.start_season_slug ?? "").trim().toLowerCase();
   if (patterns.has(start)) return [start];
@@ -158,7 +167,7 @@ const startSeasonFor = (row) => {
     }
   }
   const structured = structuredSeasonSlugsFor(row);
-  return structured.length === 1 ? structured[0] : null;
+  return structured.length === 1 ? structured[0] : postKeyFor(row) ? headlineFor(row).startSeasonSlug : null;
 };
 const startSeasonFactorFor = (row, startSeason) => {
   if (!startSeason) return 0;
@@ -174,13 +183,23 @@ const auditBreakClassFor = (row) => {
   const structured = sharedBreakClassFor(row);
   if (structured) return structured;
   const label = String(row.seller_break_label ?? "").toLowerCase();
-  if (/無斷|none/.test(label)) return "none";
   if (/微斷|小斷|近無斷|偽無斷|slight/.test(label)) return "slight";
+  if (/無斷|none/.test(label)) return "none";
   if (/中斷|半斷|medium/.test(label)) return "medium";
   if (/大斷|多斷|big/.test(label)) return "big";
-  return null;
+  return headlineFor(row).breakClass;
 };
-const accountStyleFor = (row) => accountStyles.includes(row.account_style) ? row.account_style : null;
+const accountStyleFor = (row) => accountStyles.includes(row.account_style) ? row.account_style : headlineFor(row).accountStyle;
+const auditPackageTierFor = (row) => {
+  if (row.paid_package_count != null || row.computed_package_tier != null || row.paid_package_min != null) return packageTierFor(row);
+  const headline = headlineFor(row);
+  if (headline.paidPackageCount !== null) return packageTierFor({ paid_package_count: headline.paidPackageCount });
+  const range = headline.packageRange;
+  if (!range) return null;
+  const lower = packageTierFor({ paid_package_count: range.min });
+  // An interval contributes only to a tier it unambiguously occupies.
+  return lower === packageTierFor({ paid_package_count: range.max ?? 999 }) ? lower : null;
+};
 const invalidReason = (row) => {
   if (isExcludedFromModel(row)) return "explicit";
   if (!priceRangeFor(row)) return "invalid_price";
@@ -336,7 +355,7 @@ for (const row of postRows.values()) {
     startSeason,
     startSeasonFactor: startSeasonFactorFor(row, startSeason),
     breakClass: auditBreakClassFor(row),
-    packageTier: packageTierFor(row),
+    packageTier: auditPackageTierFor(row),
     accountStyle: accountStyleFor(row),
     accountKey: accountKeyFor(row),
     groupKey: groupKeyFor(row),
