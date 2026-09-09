@@ -153,7 +153,9 @@
       "guid": "1xIwQnxHV-",
       "name": "Fledgling Harp",
       "playerName": "雛鳥之琴",
-      "aliases": ["雛鳥豎琴"],
+      "aliases": [
+        "雛鳥豎琴"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:dyqX00yWC0",
       "packageName": "Fledgling Harp",
@@ -706,7 +708,10 @@
       "guid": "ARZC1Eg2jx",
       "name": "Mischief Spider Quiff",
       "playerName": "蜘蛛頭",
-      "aliases": ["蜘蛛龐克", "惡作劇蜘蛛飛機頭"],
+      "aliases": [
+        "蜘蛛龐克",
+        "惡作劇蜘蛛飛機頭"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:brwUie9WNh",
       "packageName": "Mischief Spider Quiff",
@@ -748,8 +753,9 @@
     {
       "guid": "bcKjyS-_p3",
       "name": "Mischief Gossamer Cape",
-      "playerName": "惡作劇薄紗斗篷",
+      "playerName": "薄紗斗",
       "aliases": [
+        "惡作劇薄紗斗篷",
         "蛛絲斗篷",
         "蛛絲斗"
       ],
@@ -891,7 +897,9 @@
       "guid": "C3Amjr4SgJ",
       "name": "Starry Night's Visage",
       "playerName": "星夜面具",
-      "aliases": ["星光夜晚面容"],
+      "aliases": [
+        "星光夜晚面容"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:RPNf-yu2Jb",
       "packageName": "Starry Night's Visage",
@@ -1149,7 +1157,10 @@
       "guid": "EEFIpR6x7Q",
       "name": "Moonlight Bunny Accessory",
       "playerName": "兔兔頭飾",
-      "aliases": ["玉兔髮飾", "月光兔兔配件"],
+      "aliases": [
+        "玉兔髮飾",
+        "月光兔兔配件"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:Erf5ohu3HY",
       "packageName": "Bunny Accessory",
@@ -1639,7 +1650,10 @@
       "guid": "jc8Pyt7eLR",
       "name": "Butterfly Blossom Memento",
       "playerName": "蝴蝶白靈花",
-      "aliases": ["蝴蝶花紀念品", "蝴蝶花朵紀念物"],
+      "aliases": [
+        "蝴蝶花紀念品",
+        "蝴蝶花朵紀念物"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:5VbG3ZfzVO",
       "packageName": "Butterfly Blossom Memento",
@@ -1747,7 +1761,11 @@
       "guid": "K0NBv__mv8",
       "name": "Voice of AURORA",
       "playerName": "人聲樂器",
-      "aliases": ["AURORA 之聲", "歐若拉之聲道具", "擬人聲樂器"],
+      "aliases": [
+        "AURORA 之聲",
+        "歐若拉之聲道具",
+        "擬人聲樂器"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:9CY9ZuRnX9",
       "packageName": "Voice of AURORA",
@@ -2001,7 +2019,10 @@
       "guid": "MuQrbnmbdp",
       "name": "Moonlight Bunny Slippers",
       "playerName": "兔兔拖鞋",
-      "aliases": ["玉兔拖鞋", "月光兔兔拖鞋"],
+      "aliases": [
+        "玉兔拖鞋",
+        "月光兔兔拖鞋"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:dwa7xvLVxV",
       "packageName": "Style Bunny Slippers",
@@ -2131,7 +2152,9 @@
       "guid": "nMt5KsLO6Y",
       "name": "Mischief Pumpkin Prop",
       "playerName": "南瓜擺飾",
-      "aliases": ["惡作劇南瓜道具"],
+      "aliases": [
+        "惡作劇南瓜道具"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:3pWFv5hZ7F",
       "packageName": "Mischief Pumpkin Prop",
@@ -2328,7 +2351,10 @@
       "guid": "Pyk6fYvTVM",
       "name": "Cinnamoroll Plushie",
       "playerName": "大耳狗娃娃",
-      "aliases": ["大耳狗玩偶", "大耳狗抱枕"],
+      "aliases": [
+        "大耳狗玩偶",
+        "大耳狗抱枕"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:hTvibgWUst",
       "packageName": "Cinnamoroll Pop-Up Cafe Plushie",
@@ -2635,8 +2661,9 @@
     {
       "guid": "txwX8D1yKh",
       "name": "Mischief Crabula Cloak",
-      "playerName": "惡作劇蟹伯爵披風",
+      "playerName": "蟹伯爵斗",
       "aliases": [
+        "惡作劇蟹伯爵披風",
         "吸蟹伯爵斗篷",
         "吸蟹伯爵斗"
       ],
@@ -2668,7 +2695,9 @@
       "guid": "tz-IwazQ7k",
       "name": "Starry Night's Mantle Cape",
       "playerName": "星夜斗篷",
-      "aliases": ["星光夜晚披肩斗篷"],
+      "aliases": [
+        "星光夜晚披肩斗篷"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:apzebrkbmr",
       "packageName": "Starry Night's Mantle",
@@ -2885,7 +2914,10 @@
       "guid": "VZyiD3Wmtp",
       "name": "Snowflake Hair Accessory",
       "playerName": "雪花頭飾",
-      "aliases": ["雪花髮型配件", "雪花髮卡髮飾"],
+      "aliases": [
+        "雪花髮型配件",
+        "雪花髮卡髮飾"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:3xQHsmZv-e",
       "packageName": "Snowflake Hair Accessory",
@@ -2932,7 +2964,9 @@
       "guid": "wMsUtkvt3s",
       "name": "Nature Wave Cape",
       "playerName": "海浪斗篷",
-      "aliases": ["自然海浪斗篷"],
+      "aliases": [
+        "自然海浪斗篷"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:cP9b081nYM",
       "packageName": "Nature Wave Pack",
@@ -3273,7 +3307,9 @@
       "guid": "Z9HZ5p9DX7",
       "name": "Rainbow Face Paint Mask",
       "playerName": "彩繪面具",
-      "aliases": ["彩虹臉部彩繪面具"],
+      "aliases": [
+        "彩虹臉部彩繪面具"
+      ],
       "nameReviewed": true,
       "packageKey": "iap:3myg1K_NVD",
       "packageName": "Rainbow Face Paint Mask",

@@ -188,7 +188,7 @@ test("uses the reviewed Facebook transaction short names by official guid", () =
     ["V0Y7dn2l4H", "情人節雙馬尾"],
     ["MHArTLwxyq", "林克髮型"],
     ["cbWKMsAh7H", "大羽毛"],
-    ["jc8Pyt7eLR", "蝴蝶花紀念品"],
+    ["jc8Pyt7eLR", "蝴蝶白靈花"],
     ["eruG9WiyJZ", "貝殼髮飾"],
     ["DDW1lEoGj0", "捲耳頭飾"],
     ["i9-S4tuhpn", "畫筆髮箍"],

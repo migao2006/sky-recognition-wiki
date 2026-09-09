@@ -8,6 +8,24 @@ const resolver = catalog.buildCatalogNameResolver(
   catalog.zhItemSearchNames,
 );
 
+test("reviewed short names agree across wardrobe and sharing without losing old searches", () => {
+  for (const [guid, id, order, name, terms] of [
+    ["bcKjyS-_p3", 1870, 16500, "薄紗斗", ["惡作劇薄紗斗篷", "蛛絲斗篷", "蛛絲斗"]],
+    ["txwX8D1yKh", 1871, 16600, "蟹伯爵斗", ["惡作劇蟹伯爵披風", "吸蟹伯爵斗篷", "吸蟹伯爵斗"]],
+    ["jc8Pyt7eLR", 2716, 2400, "蝴蝶白靈花", ["蝴蝶花紀念品", "蝴蝶花朵紀念物"]],
+  ]) {
+    const item = catalog.wikiItems.find(item => item.guid === guid);
+    assert.equal(item.id, id);
+    assert.equal(item.order, order);
+    assert.equal(catalog.zhItemName(item), name);
+    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.isPaidItem(item), true);
+    for (const term of [name, ...terms]) {
+      assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
+    }
+  }
+});
+
 test("spider hair uses the evidenced short name and preserves old searches", () => {
   const item = catalog.wikiItems.find(item => item.guid === "ARZC1Eg2jx");
   assert.equal(item.type, "Hair");
