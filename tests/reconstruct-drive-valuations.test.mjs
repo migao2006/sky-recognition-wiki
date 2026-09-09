@@ -44,8 +44,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     {
       post_hash: "private-complete-season-id",
       price_kind: "quick_sale",
-      price_twd_low: 4000,
-      price_twd_high: 4000,
+      price_twd: 4000,
       paid_package_count: null,
       season_progress: { prophecy: "3/3" },
     },
@@ -79,10 +78,17 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     [{ selected: true, expected: true }, false],
     ["start", false],
   ];
+  const invalidPrices = [
+    { price_twd: 0 }, { price_twd: -1 }, { price_twd: true },
+    { price_twd: "4000" }, { price_twd_low: 4000 },
+    { price_twd_high: 4000 }, { price_twd_low: 5000, price_twd_high: 4000 },
+    { price_twd_low: "3000", price_twd_high: "4000" }, {},
+  ];
   for (const [index, [progress]] of progressCases.entries()) {
     const post_hash = `progress-format-${index}`;
     rows.push({ post_hash, content: "" });
     prices.push({ post_hash, season_progress: { prophecy: progress },
+      ...invalidPrices[index],
       ...(index === 0 ? { paid_package_min: 100 } : index === 1 ? { paid_package_min: 80, paid_package_max: 60 } : index === 2 ? { paid_package_min: "60" } : {}),
     });
   }
@@ -129,11 +135,18 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(reconstructed[0].model_features_ready, true);
     assert.ok(reconstructed[0].valuation_model);
     assert.ok(reconstructed[1].season_guid_count > 0);
+    assert.equal(reconstructed[1].price_twd_low, 4000);
+    assert.equal(reconstructed[1].price_twd_high, 4000);
+    assert.equal(typeof reconstructed[1].listing_overlaps_estimate, "boolean");
+    assert.ok(Number.isFinite(reconstructed[1].listing_interval_gap));
     for (const [index, [, complete]] of progressCases.entries()) {
       const actual = reconstructed[5 + index];
       assert.deepEqual(actual.owned_guids, complete ? reconstructed[1].owned_guids : []);
       assert.deepEqual(actual.estimate_envelope, complete ? reconstructed[1].estimate_envelope : null);
       assert.equal(actual.model_features_ready, false);
+      assert.equal(actual.comparison_class, "no-price");
+      assert.equal(actual.listing_overlaps_estimate, null);
+      assert.equal(actual.listing_interval_gap, null);
       assert.deepEqual(actual.declared_paid_range, index === 0 ? { min: 100, max: null } : null);
       assert.deepEqual(actual.unresolved_declared_paid_range, index === 0 ? { min: 100, max: null } : null);
     }

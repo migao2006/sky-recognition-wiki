@@ -174,9 +174,15 @@ const reconstructed = documents.map((document) => {
           midpoint_high: Math.max(optimistic.midpoint, restricted.midpoint),
         }
       : null;
+  const pointPrice = market?.price_twd;
+  const hasPointPrice = typeof pointPrice === "number" && Number.isFinite(pointPrice) && pointPrice > 0;
+  const listingLow = hasPointPrice ? pointPrice : market?.price_twd_low;
+  const listingHigh = hasPointPrice ? pointPrice : market?.price_twd_high;
+  const hasPrice = Number.isFinite(listingLow) && listingLow > 0 &&
+    Number.isFinite(listingHigh) && listingHigh >= listingLow;
   const comparisonClass = excludedFromModel
     ? "excluded"
-    : !market
+    : !hasPrice
     ? "no-price"
     : ambiguity.length === 0 &&
         textGuids.size > 0 &&
@@ -185,16 +191,16 @@ const reconstructed = documents.map((document) => {
       ? "paid-count-covered"
       : "partial-guid";
   const listingOverlapsEstimate =
-    market && envelope && !excludedFromModel
-      ? market.price_twd_low <= envelope.high &&
-        market.price_twd_high >= envelope.low
+    hasPrice && envelope && !excludedFromModel
+      ? listingLow <= envelope.high &&
+        listingHigh >= envelope.low
       : null;
   return {
     document_hash: hashTerm(document.post_hash),
     exclude_from_model: excludedFromModel,
     price_kind: market?.price_kind ?? null,
-    price_twd_low: market?.price_twd_low ?? null,
-    price_twd_high: market?.price_twd_high ?? null,
+    price_twd_low: hasPrice ? listingLow : null,
+    price_twd_high: hasPrice ? listingHigh : null,
     start_season_slug: market?.start_season_slug ?? null,
     owned_guids: [...owned].sort(),
     exact_text_guid_count: textGuids.size,
@@ -229,10 +235,10 @@ const reconstructed = documents.map((document) => {
     estimate_envelope: envelope,
     listing_overlaps_estimate: listingOverlapsEstimate,
     listing_interval_gap:
-      market && envelope && !excludedFromModel
+      hasPrice && envelope && !excludedFromModel
         ? intervalGap(
-            market.price_twd_low,
-            market.price_twd_high,
+            listingLow,
+            listingHigh,
             envelope.low,
             envelope.high,
           )
