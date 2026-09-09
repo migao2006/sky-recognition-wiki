@@ -27,7 +27,7 @@
   "split": {
     "splitSeed": "sky-valuation-v3",
     "strategy": "public-seed-legacy",
-    "datasetDigest": "7c8344697ee25519eba41c3a381b7bc53b5968a502e79a40b830e6d43d05dc67",
+    "datasetDigest": "ba83d68aca88bf3dfb6ef6fb55ea55b8c36fcc0911468d64641a2ec944de703c",
     "splitCommitment": null,
     "trainingMode": "calibration-only",
     "trainingRows": 351,
@@ -164,7 +164,7 @@
         "professional_estimate": 0,
         "comment": 0
       },
-      "excludedCount": 0,
+      "excludedCount": 1,
       "duplicateCount": 0
     },
     "belonging": {
@@ -196,7 +196,7 @@
         "professional_estimate": 1,
         "comment": 0
       },
-      "excludedCount": 9,
+      "excludedCount": 8,
       "duplicateCount": 1
     },
     "enchantment": {
