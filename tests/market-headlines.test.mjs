@@ -95,6 +95,16 @@ test("uses partial structured progress when titles do not identify a starting se
   assert.equal(conflict.diagnostics.title_start_conflict, 1);
 });
 
+test("formatted exact counts are usable but approximate counts do not discard the listing", () => {
+  for (const [label, tier] of [["80個禮包", "80-89"], ["禮包：80", "80-89"], ["約80禮", "unknown"], ["80禮左右", "unknown"], ["禮包：60+", "range:60+"]]) {
+    const report = buildMarketHeadlineReport([listing({ title: `魔法起${label}` })]);
+    assert.equal(report.eligible_rows, 1, label);
+    const group = report.markets[0].season_breaks[0];
+    assert.equal(group.season, "enchantment");
+    assert.equal(group.packages[0].package_tier, tier, label);
+  }
+});
+
 test("retains package bounds as distinct cohorts without exact-count premiums", () => {
   const rows = ["60+禮", "百禮", "60～80禮", "60禮"].flatMap(label =>
     [1000, 1200, 1400].map(price => listing({ title: `緬懷起無斷${label}`, price_original: price })));

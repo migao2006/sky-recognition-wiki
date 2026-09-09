@@ -1,6 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+test("package formatting is accepted without treating approximate quantities as exact", () => {
+  for (const label of ["80個禮包", "80个礼包", "禮包：80", "礼包:80", "８０個禮包"]) {
+    assert.equal(extractMarketTitleEvidence(`魔法起${label}`).paidPackageCount, 80, label);
+  }
+  assert.equal(extractMarketTitleEvidence("拾光80個禮包號").startSeasonSlug, "moments");
+  for (const label of ["約80禮", "近80個禮包", "80禮左右", "80個禮包上下", "不到80禮", "非80禮", "禮包：80左右", "不滿80禮包"]) {
+    assert.equal(extractMarketTitleEvidence(`魔法起${label}`).paidPackageCount, null, label);
+    assert.equal(extractMarketPackageRange(label), null, label);
+    assert.equal(extractMarketTitleEvidence(`魔法起${label}`).startSeasonSlug, "enchantment");
+  }
+  assert.deepEqual(extractMarketPackageRange("禮包：60+"), { min: 60, max: null });
+  assert.deepEqual(extractMarketPackageRange("60～80個禮包"), { min: 60, max: 80 });
+  assert.equal(extractMarketTitleEvidence("禮包：60+").paidPackageCount, null);
+  assert.equal(extractMarketTitleEvidence("60～80個禮包").paidPackageCount, null);
+});
+
 test("package bounds reject negations, approximations and conflicting exact counts", () => {
   for (const title of ["不到百禮", "百禮以下", "百禮左右", "二百禮", "100+禮 80禮", "60～80禮 100禮", "未滿100+禮", "不破百禮", "最多百禮", "至多百禮", "未達百禮", "不超過百禮"]) {
     assert.equal(extractMarketPackageRange(title), null, title);

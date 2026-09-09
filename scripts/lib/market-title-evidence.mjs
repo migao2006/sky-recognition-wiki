@@ -90,7 +90,16 @@ const breakClassForTitle = (text) => {
   return unique(matches).length === 1 ? matches[0] : null;
 };
 
-const explicitPackageCountFor = (text) => {
+const normalizedPackageText = (value) => normalizedTitle(value)
+  .replace(/(?:禮包|礼包):(?=\d)/gu, "禮包")
+  .replace(/(?<=\d)(?:個|个)(?=[禮礼])/gu, "");
+
+const uncertainPackageQuantity = (text) =>
+  /(?:不到|不滿|不满|不足|不破|不超過|不超过|未滿|未满|未達|未达|未到|未破|最多|至多|少於|少于|低於|低于|近|約|约|非)[^｜|,，]{0,6}(?:百|\d+)[^｜|,，]{0,3}(?:禮|礼)|(?:禮|礼)(?:包)?(?:以內|以内|以下|左右|上下)|(?:禮包|礼包)\d+(?:以內|以内|以下|左右|上下)/u.test(text);
+
+const explicitPackageCountFor = (value) => {
+  const text = normalizedPackageText(value);
+  if (uncertainPackageQuantity(text)) return null;
   // Bounded/approximate counts are useful evidence, but never exact counts.
   if (/\d+\+(?:禮|礼)|(?:禮包|礼包)\d+\+|百(?:禮|礼)|\d+[-~～至到]\d+(?:禮|礼)/u.test(text)) return null;
   const values = [
@@ -105,9 +114,9 @@ const explicitPackageCountFor = (text) => {
 };
 
 export const extractMarketPackageRange = (value) => {
-  const text = normalizedTitle(value);
+  const text = normalizedPackageText(value);
   // Upper bounds, approximations and negations must not become lower bounds.
-  if (/(?:不到|不滿|不满|不足|不破|不超過|不超过|未滿|未满|未達|未达|未到|未破|最多|至多|少於|少于|低於|低于|近|約|约|非)[^｜|,，]{0,6}(?:百|\d+)[^｜|,，]{0,3}(?:禮|礼)|(?:禮|礼)(?:包)?(?:以內|以内|以下|左右|上下)/u.test(text)) return null;
+  if (uncertainPackageQuantity(text)) return null;
   const matches = [...text.matchAll(/(?<!\d)(\d+)[-~～至到](\d+)(?:禮|礼)(?:包)?|(?<!\d)(\d+)\+(?:禮|礼)(?:包)?|(?:禮包|礼包)(\d+)\+|(?<![半幾几數数兩两二三四五六七八九十])(?:破)?百(?:禮|礼)(?:包)?/gu)];
   if (matches.length !== 1) return null;
   const match = matches[0];
@@ -159,7 +168,7 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
     return null;
   const explicitStart = /^(?:季)?起/u.test(after) || /(?:起季|起號|起号|入坑)$/.test(before);
   const accountTitle = /(?:號|号|帳|帐)/u.test(text);
-  const sellerSummary = /(?:少|中|多)(?:禮|礼)|(?:禮包|礼包)\d+|\d+(?:禮|礼)(?:包)?/u.test(text);
+  const sellerSummary = /(?:少|中|多)(?:禮|礼)|(?:禮包|礼包)\d+|\d+(?:禮|礼)(?:包)?/u.test(normalizedPackageText(text));
   const explicitBreakSeason = /(?:斷|断)季/u.test(text);
   const countedSeasons = /^(?:\d+|[一二兩两三四五六七八九十]+)季(?:禮包|礼包)?(?:號|号|帳|帐)/u.test(after);
   const transferableWingless = /^(?:季)?(?:(?:綁全出|绑全出)(?:無翼|无翼)|(?:無翼|无翼)(?:綁全出|绑全出))/u.test(after);
