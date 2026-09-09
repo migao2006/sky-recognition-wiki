@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 import { loadValuationRuntime } from "./load-valuation-runtime.mjs";
-import { seasonProgressParts } from "./lib/valuation-source-core.mjs";
+import { positivePriceNumber, seasonProgressParts } from "./lib/valuation-source-core.mjs";
 import {
   bindingsForStatus,
   extractCompleteBindings,
@@ -174,10 +174,10 @@ const reconstructed = documents.map((document) => {
           midpoint_high: Math.max(optimistic.midpoint, restricted.midpoint),
         }
       : null;
-  const pointPrice = market?.price_twd;
-  const hasPointPrice = typeof pointPrice === "number" && Number.isFinite(pointPrice) && pointPrice > 0;
-  const listingLow = hasPointPrice ? pointPrice : market?.price_twd_low;
-  const listingHigh = hasPointPrice ? pointPrice : market?.price_twd_high;
+  const pointPrice = positivePriceNumber(market?.price_twd);
+  const hasPointPrice = pointPrice !== null;
+  const listingLow = hasPointPrice ? pointPrice : positivePriceNumber(market?.price_twd_low);
+  const listingHigh = hasPointPrice ? pointPrice : positivePriceNumber(market?.price_twd_high);
   const hasPrice = Number.isFinite(listingLow) && listingLow > 0 &&
     Number.isFinite(listingHigh) && listingHigh >= listingLow;
   const comparisonClass = excludedFromModel

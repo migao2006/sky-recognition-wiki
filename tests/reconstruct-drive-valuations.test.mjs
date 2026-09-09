@@ -80,9 +80,9 @@ test("replays private listings without inventing partial-season GUIDs", async ()
   ];
   const invalidPrices = [
     { price_twd: 0 }, { price_twd: -1 }, { price_twd: true },
-    { price_twd: "4000" }, { price_twd_low: 4000 },
+    { price_twd: "4000元" }, { price_twd_low: 4000 },
     { price_twd_high: 4000 }, { price_twd_low: 5000, price_twd_high: 4000 },
-    { price_twd_low: "3000", price_twd_high: "4000" }, {},
+    { price_twd_low: [3000], price_twd_high: true }, {},
   ];
   for (const [index, [progress]] of progressCases.entries()) {
     const post_hash = `progress-format-${index}`;
@@ -91,6 +91,11 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       ...invalidPrices[index],
       ...(index === 0 ? { paid_package_min: 100 } : index === 1 ? { paid_package_min: 80, paid_package_max: 60 } : index === 2 ? { paid_package_min: "60" } : {}),
     });
+  }
+  for (const price of [{ price_twd: " 4000 " }, { price_twd_low: "3000", price_twd_high: "3500" }]) {
+    const post_hash = `numeric-text-${rows.length}`;
+    rows.push({ ...rows[0], post_hash });
+    prices.push({ ...prices[0], ...price, post_hash });
   }
   try {
     await Promise.all([
@@ -137,6 +142,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.ok(reconstructed[1].season_guid_count > 0);
     assert.equal(reconstructed[1].price_twd_low, 4000);
     assert.equal(reconstructed[1].price_twd_high, 4000);
+    assert.deepEqual(reconstructed.slice(-2).map(row => [row.price_twd_low, row.price_twd_high]), [[4000, 4000], [3000, 3500]]);
     assert.equal(typeof reconstructed[1].listing_overlaps_estimate, "boolean");
     assert.ok(Number.isFinite(reconstructed[1].listing_interval_gap));
     for (const [index, [, complete]] of progressCases.entries()) {
@@ -194,18 +200,18 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       market_sha256: createHash("sha256").update(await readFile(market, "utf8")).digest("hex"),
       market_row_count: prices.length,
     });
-    assert.equal(report.document_count, 5 + progressCases.length);
-    assert.equal(report.priced_document_count, 5);
-    assert.equal(report.comparable_document_count, 4);
+    assert.equal(report.document_count, 7 + progressCases.length);
+    assert.equal(report.priced_document_count, 7);
+    assert.equal(report.comparable_document_count, 6);
     assert.equal(report.excluded_document_count, 1);
-    assert.equal(report.all_partial_reconstructions.count, 4);
-    assert.equal(report.evidence_completeness.priced_documents.count, 5);
-    assert.equal(report.evidence_completeness.comparable_documents.count, 4);
+    assert.equal(report.all_partial_reconstructions.count, 6);
+    assert.equal(report.evidence_completeness.priced_documents.count, 7);
+    assert.equal(report.evidence_completeness.comparable_documents.count, 6);
     assert.equal(
       report.evidence_completeness.priced_documents.model_features_ready,
-      1,
+      3,
     );
-    assert.equal(report.by_price_kind_all_partial.ask.count, 3);
+    assert.equal(report.by_price_kind_all_partial.ask.count, 5);
     assert.equal(report.by_price_kind_all_partial.quick_sale.count, 1);
   } finally {
     await Promise.all(

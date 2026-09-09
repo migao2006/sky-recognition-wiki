@@ -384,15 +384,17 @@ export const valuationModelFeaturesFor = (row) => {
   return result;
 };
 
-const positiveNumber = (value, coerce) => {
-  const number = coerce ? Number(value) : value;
+export const positivePriceNumber = (value, coerce = true) => {
+  if (typeof value !== "number" &&
+    !(coerce && typeof value === "string" && /^\d+(?:\.\d+)?$/u.test(value.trim()))) return null;
+  const number = typeof value === "string" ? Number(value.trim()) : value;
   return Number.isFinite(number) && number > 0 ? number : null;
 };
 export const priceRangeFor = (row, { coerce = true, coercePoint = coerce, coerceRange = coerce } = {}) => {
-  const point = positiveNumber(row.price_twd, coercePoint);
+  const point = positivePriceNumber(row.price_twd, coercePoint);
   if (point) return { low: point, high: point };
-  const low = positiveNumber(row.price_twd_low, coerceRange);
-  const high = positiveNumber(row.price_twd_high, coerceRange);
+  const low = positivePriceNumber(row.price_twd_low, coerceRange);
+  const high = positivePriceNumber(row.price_twd_high, coerceRange);
   if (!low && !high) return null;
   return { low: low ?? high, high: high ?? low };
 };

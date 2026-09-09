@@ -1,5 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { positivePriceNumber, priceRangeFor } from "../scripts/lib/valuation-source-core.mjs";
+
+test("price coercion accepts decimal text but not JavaScript object coercions", () => {
+  for (const value of [4000, "4000", " 4000.50 "]) assert.equal(positivePriceNumber(value), Number(value));
+  for (const value of [true, false, [], [4000], {}, null, "", " ", "4k", "4,000", "0x100", "4e3", "4000元", -1, Infinity, NaN]) {
+    assert.equal(positivePriceNumber(value), null);
+    assert.equal(priceRangeFor({ price_twd: value }), null);
+  }
+  assert.equal(positivePriceNumber("4000", false), null);
+  assert.deepEqual(priceRangeFor({ price_twd_low: "3000", price_twd_high: "4000" }), { low: 3000, high: 4000 });
+  assert.equal(priceRangeFor({ price_twd_low: true, price_twd_high: [4000] }), null);
+});
 
 test("package bounds constrain exact counts and supersede stale derived tiers", () => {
   for (const row of [
