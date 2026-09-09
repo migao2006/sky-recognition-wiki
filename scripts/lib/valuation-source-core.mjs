@@ -331,6 +331,11 @@ export const marketExclusionReason = (row) => {
   return null;
 };
 export const packageTierFor = (row) => {
+  const min = row.paid_package_min;
+  const max = row.paid_package_max;
+  const hasRange = min != null || max != null;
+  if (hasRange && (!Number.isSafeInteger(min) || min < 0 ||
+    (max != null && (!Number.isSafeInteger(max) || max < min)))) return null;
   const rawCount = row.paid_package_count;
   const hasCount = rawCount !== undefined && rawCount !== null && rawCount !== "";
   if (hasCount) {
@@ -341,15 +346,13 @@ export const packageTierFor = (row) => {
           ? Number(rawCount.trim())
           : NaN;
     if (!Number.isSafeInteger(count) || count < 0) return null;
+    if (hasRange && (count < min || (max != null && count > max))) return null;
     if (count >= 100) return "hundred";
     if (count >= 40) return "many";
     if (count >= 15) return "medium";
     return "few";
   }
-  if (packageTiers.includes(row.computed_package_tier)) return row.computed_package_tier;
-  const min = row.paid_package_min;
-  const max = row.paid_package_max;
-  if (!Number.isSafeInteger(min) || min < 0 || (max != null && (!Number.isSafeInteger(max) || max < min))) return null;
+  if (!hasRange) return packageTiers.includes(row.computed_package_tier) ? row.computed_package_tier : null;
   const lower = packageTierFor({ paid_package_count: min });
   const upper = packageTierFor({ paid_package_count: max ?? Math.max(100, min) });
   return lower === upper ? lower : null;

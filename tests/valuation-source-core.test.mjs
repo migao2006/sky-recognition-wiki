@@ -1,6 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+test("package bounds constrain exact counts and supersede stale derived tiers", () => {
+  for (const row of [
+    { paid_package_min: 60, paid_package_count: 20 },
+    { paid_package_min: 60, paid_package_max: 80, paid_package_count: 90 },
+    { paid_package_min: 80, paid_package_max: 60, paid_package_count: 70 },
+    { paid_package_max: 10, computed_package_tier: "few" },
+    { paid_package_min: "60", paid_package_count: 70 },
+  ]) assert.equal(packageTierFor(row), null, JSON.stringify(row));
+  assert.equal(packageTierFor({ paid_package_min: 60, paid_package_count: "70" }), "many");
+  assert.equal(packageTierFor({ paid_package_min: 60, paid_package_max: 80, computed_package_tier: "hundred" }), "many");
+  assert.equal(packageTierFor({ paid_package_min: 60, computed_package_tier: "many" }), null);
+});
+
 test("package intervals can inform a tier without requiring an exact package count", () => {
   assert.equal(packageTierFor({ paid_package_min: 100, paid_package_max: null }), "hundred");
   assert.equal(packageTierFor({ paid_package_min: 60, paid_package_max: 80 }), "many");

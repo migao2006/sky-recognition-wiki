@@ -13,6 +13,22 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 
+test("conflicting package quantities omit only the package dimension", async () => {
+  for (const fields of [
+    { paid_package_count: 20, paid_package_min: 60 },
+    { paid_package_max: 10 },
+  ]) {
+    const result = await audit([{
+      post_hash: "package-conflict", published_at: recent, price_twd: 6000,
+      evidence_kind: "ask", evidence_quality: "high", start_season_slug: "moments",
+      title: "拾光70禮號", ...fields,
+    }]);
+    assert.equal(result.eligibleRows, 1);
+    assert.equal(result.segments.startSeason.moments.sampleCount, 1);
+    for (const segment of Object.values(result.segments.packageTier)) assert.equal(segment.sampleCount, 0);
+  }
+});
+
 test("audit keeps partial-start samples without borrowing a later season's break claim", async () => {
   const base = { post_hash: "partial-start", published_at: recent, price_twd: 6000, evidence_kind: "ask", evidence_quality: "high", start_season_slug: "duets", season_progress: { duets: "2/3", radiance: "1/2" } };
   for (const title of ["姆明大斷少禮簡號", "姆明大斷少禮簡號｜九色鹿、姆明全禮"]) {

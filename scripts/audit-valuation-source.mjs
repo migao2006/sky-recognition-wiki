@@ -179,7 +179,7 @@ const auditBreakClassFor = (row) => {
 };
 const accountStyleFor = (row) => accountStyles.includes(row.account_style) ? row.account_style : headlineFor(row).accountStyle;
 const auditPackageTierFor = (row) => {
-  if (row.paid_package_count != null || row.computed_package_tier != null || row.paid_package_min != null) return packageTierFor(row);
+  if (row.paid_package_count != null || row.computed_package_tier != null || row.paid_package_min != null || row.paid_package_max != null) return packageTierFor(row);
   const headline = headlineFor(row);
   if (headline.paidPackageCount !== null) return packageTierFor({ paid_package_count: headline.paidPackageCount });
   const range = headline.packageRange;
