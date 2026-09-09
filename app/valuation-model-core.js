@@ -6,7 +6,8 @@ const roundFiveHundred = (value) => Math.round(value / 500) * 500;
 
 export const summarizeValuationRange = (rawLow, rawHigh, confidence) => {
   if (rawHigh <= 0) return { low: 0, high: 0, midpoint: 0 };
-  const midpoint = roundFiveHundred(rawLow + (rawHigh - rawLow) * 0.64);
+  const midpoint = Math.min(rawHigh, Math.max(rawLow,
+    roundFiveHundred(rawLow + (rawHigh - rawLow) * 0.64)));
   const spread = confidence === "high" ? 0.12 : confidence === "medium" ? 0.14 : confidence === "low" ? 0.16 : 0.18;
   return {
     low: roundHundred(Math.max(rawLow, midpoint * (1 - spread))),

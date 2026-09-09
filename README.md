@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+估價數值核心先將 500 元刻度的參考中位價限制於原始價格上下限內，再計算顯示區間，避免低價／窄區間出現上下限倒置或中位價越界。一般價格權重不變；瀏覽器與驗證器共用同一修正。
+
 Fortune Muralist's Smock（`ADJiva5H2Z`）支援「祥雲褲／壁畫家褲子」搜尋，保留原顯示名。依[2023 禮包介紹](https://www.dailiantong.com/news/content_160106.html)、[玩家交易用語](https://www.sina.cn/news/detail/5320693957789435.html)與[2023 福瑞節物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2023)核對兔尾、雲紋、活動年份及付費身分；不與免費白棉褲合併。「新年棉褲」目前只有販售文案用例，尚未直接綁定，不據此補 GUID。
 
 「白色領結」作為優雅領巾（`PuFWddickP`）的搜尋別名，依[玩家同心節介紹](https://www.bilibili.com/read/mobile?id=21606745)與[2023 愛之日物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2023)交叉核對：Days of Love Classy Cravat 為付費白色頸部蝴蝶結。保留原顯示名、GUID 及 IAP 身分，不與聖島季領結、大耳狗領結合併，不採預測或中國服價格。

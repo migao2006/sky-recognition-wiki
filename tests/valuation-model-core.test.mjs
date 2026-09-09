@@ -33,3 +33,18 @@ test("binding risk is applied after the same transfer-aware market summary", () 
   assert.ok(restricted.midpoint < transferable.midpoint);
   assert.ok(restricted.high < transferable.high);
 });
+
+test("narrow low-price bands contain their midpoint before and after binding adjustments", () => {
+  for (let low = 300; low <= 3000; low += 100) {
+    for (let width = 0; width <= 500; width += 100) {
+      for (const confidence of ["high", "medium", "low", "inferred"]) {
+        for (const bindingRisk of [1, 0.96, 0.7]) {
+          const result = calculateValuationModel({ baseLow: low, baseHigh: low + width, confidence, bindingRisk });
+          assert.ok(result.low <= result.midpoint && result.midpoint <= result.high, JSON.stringify({ low, width, confidence, bindingRisk, result }));
+        }
+      }
+    }
+  }
+  assert.deepEqual(calculateValuationModel({ baseLow: 300, baseHigh: 300 }), { low: 300, high: 300, midpoint: 300 });
+  assert.deepEqual(calculateValuationModel({ baseLow: 700, baseHigh: 700 }), { low: 700, high: 700, midpoint: 700 });
+});
