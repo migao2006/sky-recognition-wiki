@@ -8,6 +8,32 @@ const resolver = catalog.buildCatalogNameResolver(
   catalog.zhItemSearchNames,
 );
 
+test("event hair player names distinguish free braids from paid twin tails", () => {
+  // https://www.dcard.tw/f/sky/p/257944195 distinguishes ticket braids and paid twin tails.
+  // https://www.dcard.tw/f/sky/p/255652135 uses 海浪髮型 for the 2024 paid hair.
+  for (const [guid, id, order, english, name, paid, aliases] of [
+    ["V0Y7dn2l4H", 2519, 17500, "Days Of Love Braids", "挑染短辮", false, ["挑染短辮髮型", "日之愛之日辮子"]],
+    ["Yxt4jz3je6", 2516, 17400, "Days Of Love Amethyst-Tipped Tails", "挑染雙馬尾", true, ["情人節雙馬尾", "日之愛之日紫水晶尖端尾巴"]],
+    ["jWAPWGsEd-", 2167, 15500, "Nature Wave-Touched Hair", "海浪髮型", true, ["自然水漾髮型", "自然海浪輕拂髮型"]],
+  ]) {
+    const item = catalog.wikiItems.find(item => item.guid === guid);
+    assert.deepEqual([item.id, item.order, item.name, item.type], [id, order, english, "Hair"]);
+    assert.equal(catalog.zhItemName(item), name);
+    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.isPaidItem(item), paid);
+    for (const term of [name, english, ...aliases])
+      assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
+  }
+  assert.ok(!resolver.resolve("雙馬尾").candidates.some(item => item.guid === "V0Y7dn2l4H"));
+  assert.deepEqual(new Set(resolver.resolve("挑染髮型").candidates.map(item => item.guid)),
+    new Set(["V0Y7dn2l4H", "Yxt4jz3je6"]));
+  assert.equal(resolver.scan("挑染髮型").matched.length, 0);
+  const scan = resolver.scan("挑染短辮｜情人節雙馬尾｜海浪髮型");
+  assert.equal(scan.ambiguous.length, 0);
+  assert.deepEqual(new Set(scan.matched.map(match => match.candidates[0].guid)),
+    new Set(["V0Y7dn2l4H", "Yxt4jz3je6", "jWAPWGsEd-"]));
+});
+
 test("common instrument player names retain exact official identities and old aliases", () => {
   // Taiwan player glossary: https://www.dcard.tw/f/sky/p/234859690
   // Independent high-piano usage: https://www.dcard.tw/f/sky/p/235297354

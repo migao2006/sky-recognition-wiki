@@ -22,16 +22,16 @@
       ]
     },
     "V0Y7dn2l4H": {
-      "aliases": ["雙馬尾"],
+      "aliases": ["挑染短辮髮型"],
       "sources": [
-        { "name": "雙馬尾", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV13swseDEEV/" }
+        {"name":"挑染短辮髮型","platform":"Dcard","author":"烏骨雞","url":"https://www.dcard.tw/f/sky/p/257944195"}
       ]
     },
     "Yxt4jz3je6": {
-      "aliases": ["挑染雙馬尾", "挑染髮型"],
+      "aliases": ["挑染雙馬尾","情人節雙馬尾","雙馬尾"],
       "sources": [
-        { "name": "挑染雙馬尾", "platform": "Bilibili", "author": "是Mr龐呀", "url": "https://www.bilibili.com/video/BV1uxN8eKEEt/" },
-        { "name": "挑染髮型", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV13swseDEEV/" }
+        {"name":"挑染雙馬尾","platform":"Bilibili","author":"是Mr龐呀","url":"https://www.bilibili.com/video/BV1uxN8eKEEt/"},
+        {"name":"雙馬尾","platform":"Dcard","author":"烏骨雞","url":"https://www.dcard.tw/f/sky/p/257944195"}
       ]
     },
     "8aoU-Pwe_p": {
@@ -277,6 +277,12 @@
       "sources": [
         { "name": "雨媽", "observedName": "雨媽髮型", "platform": "Bilibili", "author": "-織束月色-", "url": "https://www.bilibili.com/video/BV1R94y1a7f8/" },
         { "name": "雨媽", "observedName": "雨媽髮型", "platform": "Bilibili", "author": "sky光遇_軒少", "url": "https://www.bilibili.com/video/BV18o4y147aQ/" }
+      ]
+    },
+    "jWAPWGsEd-": {
+      "aliases": ["海浪髮型","自然水漾髮型"],
+      "sources": [
+        {"name":"海浪髮型","platform":"Dcard","author":"Galebowot","url":"https://www.dcard.tw/f/sky/p/255652135"}
       ]
     }
   }

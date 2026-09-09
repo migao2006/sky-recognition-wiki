@@ -388,10 +388,10 @@
     {
       "guid": "V0Y7dn2l4H",
       "englishName": "Days Of Love Braids",
-      "currentName": "日之愛之日辮子",
-      "displayName": "日之愛之日辮子",
+      "currentName": "挑染短辮",
+      "displayName": "挑染短辮",
       "aliases": [
-        "雙馬尾"
+        "挑染短辮髮型"
       ],
       "confidence": "fallback",
       "identitySources": [
@@ -400,21 +400,21 @@
       ],
       "playerSources": [
         {
-          "name": "雙馬尾",
-          "platform": "Bilibili",
-          "author": "sky光遇_軒少",
-          "url": "https://www.bilibili.com/video/BV13swseDEEV/"
+          "name": "挑染短辮髮型",
+          "platform": "Dcard",
+          "author": "烏骨雞",
+          "url": "https://www.dcard.tw/f/sky/p/257944195"
         }
       ]
     },
     {
       "guid": "Yxt4jz3je6",
       "englishName": "Days Of Love Amethyst-Tipped Tails",
-      "currentName": "日之愛之日紫水晶尖端尾巴",
-      "displayName": "日之愛之日紫水晶尖端尾巴",
+      "currentName": "挑染雙馬尾",
+      "displayName": "挑染雙馬尾",
       "aliases": [
-        "挑染雙馬尾",
-        "挑染髮型"
+        "情人節雙馬尾",
+        "雙馬尾"
       ],
       "confidence": "fallback",
       "identitySources": [
@@ -429,10 +429,10 @@
           "url": "https://www.bilibili.com/video/BV1uxN8eKEEt/"
         },
         {
-          "name": "挑染髮型",
-          "platform": "Bilibili",
-          "author": "sky光遇_軒少",
-          "url": "https://www.bilibili.com/video/BV13swseDEEV/"
+          "name": "雙馬尾",
+          "platform": "Dcard",
+          "author": "烏骨雞",
+          "url": "https://www.dcard.tw/f/sky/p/257944195"
         }
       ]
     },
@@ -608,15 +608,24 @@
     {
       "guid": "jWAPWGsEd-",
       "englishName": "Nature Wave-Touched Hair",
-      "currentName": "自然海浪輕拂髮型",
-      "displayName": "自然海浪輕拂髮型",
-      "aliases": [],
+      "currentName": "海浪髮型",
+      "displayName": "海浪髮型",
+      "aliases": [
+        "自然水漾髮型"
+      ],
       "confidence": "fallback",
       "identitySources": [
         "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Nature/2024#Nature_Wave-Touched_Hair",
         "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
       ],
-      "playerSources": []
+      "playerSources": [
+        {
+          "name": "海浪髮型",
+          "platform": "Dcard",
+          "author": "Galebowot",
+          "url": "https://www.dcard.tw/f/sky/p/255652135"
+        }
+      ]
     },
     {
       "guid": "8aoU-Pwe_p",

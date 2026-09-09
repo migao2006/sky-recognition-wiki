@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "jWAPWGsEd-": { "displayName": "海浪髮型", "saleName": "海浪髮型", "aliases": ["自然海浪輕拂髮型", "自然水漾髮型"] },
     "Zvi-5bPtxs": { "displayName": "紅吉他", "saleName": "紅吉他", "aliases": ["吉他"] },
     "xpq4O_F_Md": { "displayName": "琵琶", "saleName": "琵琶", "aliases": ["魯特琴"] },
     "k1JghrvRyd": { "displayName": "貝斯", "saleName": "貝斯", "aliases": ["低音提琴", "屁琴"] },
@@ -79,8 +80,8 @@
     "te5dxg40i2": { "aliases": ["致梵高季畢業禮家具", "致梵高季畢業禮大型家具"] },
     "mABAiqym_P": { "aliases": ["小王子季畢業禮家具", "小王子季畢業禮小型家具"] },
     "i9it79Bnon": { "aliases": ["二重奏季畢業禮1", "二重奏季畢業禮1小型家具"] },
-    "V0Y7dn2l4H": { "saleName": "情人節雙馬尾", "aliases": ["情人節雙馬尾", "雙馬尾"] },
-    "Yxt4jz3je6": { "saleName": "挑染雙馬尾" },
+    "V0Y7dn2l4H": { "displayName": "挑染短辮", "saleName": "挑染短辮", "aliases": ["挑染短辮髮型", "日之愛之日辮子", "挑染髮型"] },
+    "Yxt4jz3je6": { "displayName": "挑染雙馬尾", "saleName": "挑染雙馬尾", "aliases": ["情人節雙馬尾", "雙馬尾", "日之愛之日紫水晶尖端尾巴", "挑染髮型"] },
     "nkJXDrn2cV": { "saleName": "馬蹄蓮髮型" },
     "ARZC1Eg2jx": { "saleName": "蜘蛛頭", "aliases": ["蜘蛛龐克", "惡作劇蜘蛛飛機頭"] },
     "DH-qXh6CMZ": { "saleName": "總裁頭" },

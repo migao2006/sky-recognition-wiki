@@ -1798,8 +1798,12 @@
     {
       "guid": "jWAPWGsEd-",
       "name": "Nature Wave-Touched Hair",
-      "playerName": "自然海浪輕拂髮型",
-      "aliases": [],
+      "playerName": "海浪髮型",
+      "aliases": [
+        "自然海浪輕拂髮型",
+        "自然水漾髮型"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:NlbDnrAvpE",
       "packageName": "Nature Wave-Touched Hair",
       "paid": true,
@@ -3309,8 +3313,13 @@
     {
       "guid": "Yxt4jz3je6",
       "name": "Days Of Love Amethyst-Tipped Tails",
-      "playerName": "日之愛之日紫水晶尖端尾巴",
-      "aliases": [],
+      "playerName": "挑染雙馬尾",
+      "aliases": [
+        "情人節雙馬尾",
+        "雙馬尾",
+        "日之愛之日紫水晶尖端尾巴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:H2mdNW8b-H",
       "packageName": "Days of Love Amethyst-Tipped Tails",
       "paid": true,

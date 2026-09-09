@@ -1,6 +1,8 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "jWAPWGsEd-": { "playerName": "海浪髮型", "aliases": ["自然海浪輕拂髮型", "自然水漾髮型"] },
+    "Yxt4jz3je6": { "playerName": "挑染雙馬尾", "aliases": ["情人節雙馬尾", "雙馬尾", "日之愛之日紫水晶尖端尾巴"] },
     "bOQzUAzYfV": { "playerName": "白吉他", "aliases": ["音韻吉他", "節奏吉他", "白色吉他"] },
     "aRgiKoKavp": { "playerName": "橘子頭飾", "aliases": ["福瑞橘色帽子", "橘子髮飾", "小橘子"] },
     "NEmfcbHb-I": { "playerName": "夏日衝浪板", "aliases": ["陽光衝浪板", "夏日衝浪禮包"] },

@@ -185,7 +185,7 @@ test("uses the reviewed Facebook transaction short names by official guid", () =
     ["GYWFafVVd_", "阿努"],
     ["DS5QeApzvs", "拾光眼鏡"],
     ["_qNmWZx0rp", "鍋蓋頭"],
-    ["V0Y7dn2l4H", "情人節雙馬尾"],
+    ["V0Y7dn2l4H", "挑染短辮"],
     ["MHArTLwxyq", "林克髮型"],
     ["cbWKMsAh7H", "大羽毛"],
     ["jc8Pyt7eLR", "蝴蝶白靈花"],
