@@ -165,7 +165,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
       ),
     ),
     // Excludes a badge/account mixed sale and an unsupported big-break claim.
-    { none: 40, slight: 65, medium: 85, big: 117 },
+    { none: 40, slight: 65, medium: 83, big: 116 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -173,10 +173,10 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 115, medium: 72, many: 84, hundred: 19 },
+    { few: 115, medium: 71, many: 83, hundred: 19 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 80);
-  assert.equal(marketAggregate.segments.accountStyle.regular.sampleCount, 257);
+  assert.equal(marketAggregate.segments.accountStyle.regular.sampleCount, 256);
 });
 
 test("priors add no observations, and only audited start-season samples affect bands", () => {
