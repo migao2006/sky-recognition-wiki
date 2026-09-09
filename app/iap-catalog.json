@@ -360,8 +360,11 @@
     {
       "guid": "5F_G_puJb7",
       "name": "Bloom Rose-Embroidered Cape",
-      "playerName": "花憩玫瑰刺繡斗篷",
-      "aliases": [],
+      "playerName": "玫瑰斗",
+      "aliases": [
+        "花憩玫瑰刺繡斗篷"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:mzbZeWJSV_",
       "packageName": "Bloom Rose-Embroidered Cape",
       "paid": true,
@@ -891,8 +894,11 @@
     {
       "guid": "c1sclAR_k8",
       "name": "Tournament Sleek Skating Outfit",
-      "playerName": "錦標賽俐落滑冰服裝",
-      "aliases": [],
+      "playerName": "錦標滑冰服",
+      "aliases": [
+        "錦標賽俐落滑冰服裝"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:r7v9117BfR",
       "packageName": "Tournament Sleek Skating Set",
       "paid": true,
@@ -1247,8 +1253,12 @@
     {
       "guid": "eruG9WiyJZ",
       "name": "Days of Summer Shell Hairpin",
-      "playerName": "日之夏日貝殼髮夾",
-      "aliases": [],
+      "playerName": "貝殼髮飾",
+      "aliases": [
+        "貝殼髮夾",
+        "日之夏日貝殼髮夾"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:_qV-f7qVx2",
       "packageName": "Seashell Hairpin",
       "paid": true,
@@ -1633,8 +1643,12 @@
     {
       "guid": "IZNxLq33GB",
       "name": "Anniversary Cinema 3D Glasses",
-      "playerName": "週年電影院3D眼鏡",
-      "aliases": [],
+      "playerName": "3D眼鏡",
+      "aliases": [
+        "週年電影院 3D 眼鏡",
+        "週年電影院3D眼鏡"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:6I9KMThVgi",
       "packageName": "Anniversary Cinema Set",
       "paid": true,
@@ -1678,8 +1692,11 @@
     {
       "guid": "jcCb_Tc5ms",
       "name": "Bloom Sunflower Sundress",
-      "playerName": "花憩向日葵夏日洋裝",
-      "aliases": [],
+      "playerName": "向日葵裙",
+      "aliases": [
+        "花憩向日葵夏日洋裝"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:4VDoffvE1l",
       "packageName": "Bloom Sunflower Sundress",
       "paid": true,
@@ -2348,8 +2365,11 @@
     {
       "guid": "PuFWddickP",
       "name": "Days of Love Classy Cravat",
-      "playerName": "日之愛之日優雅領巾",
-      "aliases": [],
+      "playerName": "優雅領巾",
+      "aliases": [
+        "日之愛之日優雅領巾"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:cVvWv3Nf7F",
       "packageName": "Days of Love Classy Cravat",
       "paid": true,

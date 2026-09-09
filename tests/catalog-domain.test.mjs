@@ -80,11 +80,11 @@ test("uses player-friendly names while keeping Wiki names searchable", () => {
 });
 
 test("uses compact sale names without changing wardrobe display names", () => {
-  const roseCape = wikiItems.find((entry) => entry.guid === "5F_G_puJb7");
-  assert.ok(roseCape);
-  assert.equal(zhItemName(roseCape), "花憩玫瑰刺繡斗篷");
-  assert.equal(saleItemName(roseCape), "玫瑰斗");
-  assert.equal(zhItemSearchNames(roseCape).includes("玫瑰斗"), false);
+  const cape = wikiItems.find((entry) => entry.guid === "TpC41cNvtg");
+  assert.ok(cape);
+  assert.equal(zhItemName(cape), "姆明媽媽斗篷");
+  assert.equal(saleItemName(cape), "姆明媽媽斗");
+  assert.equal(zhItemSearchNames(cape).includes("姆明媽媽斗"), false);
 });
 
 test("uses reviewed player terms instead of generated IAP translations", () => {

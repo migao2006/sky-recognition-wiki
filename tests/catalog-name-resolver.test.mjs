@@ -10,6 +10,14 @@ const resolver = catalog.buildCatalogNameResolver(
 
 test("reviewed short names agree across wardrobe and sharing without losing old searches", () => {
   for (const [guid, id, order, name, terms] of [
+    // Existing reviewed sale names; 3D glasses corroborated by
+    // https://www.dcard.tw/f/sky/p/259260519 (not the whole cinema bundle).
+    ["5F_G_puJb7", 2539, 13500, "玫瑰斗", ["花憩玫瑰刺繡斗篷"]],
+    ["c1sclAR_k8", 3003, 6600, "錦標滑冰服", ["錦標賽俐落滑冰服裝"]],
+    ["jcCb_Tc5ms", 3051, 4600, "向日葵裙", ["花憩向日葵夏日洋裝"]],
+    ["PuFWddickP", 1755, 4400, "優雅領巾", ["日之愛之日優雅領巾"]],
+    ["eruG9WiyJZ", 1908, 6400, "貝殼髮飾", ["日之夏日貝殼髮夾", "貝殼髮夾"]],
+    ["IZNxLq33GB", 2657, 2800, "3D眼鏡", ["週年電影院 3D 眼鏡"]],
     // Taiwan player usage: https://www.dcard.tw/f/sky/p/256819080
     ["BWUjIgnjnu", 1844, 2300, "火焰墨鏡", ["時尚火焰墨鏡", "時尚火焰太陽眼鏡"]],
     ["3HeVKqT39a", 1843, 2400, "愛心墨鏡", ["時尚愛心墨鏡", "時尚愛心太陽眼鏡"]],
