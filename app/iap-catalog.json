@@ -735,8 +735,11 @@
     {
       "guid": "Ay3g-0JAeW",
       "name": "Jelly Shoulder Buddy",
-      "playerName": "果凍肩部夥伴",
-      "aliases": [],
+      "playerName": "水母肩飾",
+      "aliases": [
+        "果凍肩部夥伴"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:AZxrY1dz75",
       "packageName": "Jelly Shoulder Buddy",
       "paid": true,
@@ -1451,8 +1454,12 @@
     {
       "guid": "gsACsrp16_",
       "name": "Sunlight Chunky Sandals",
-      "playerName": "陽光厚底涼鞋",
-      "aliases": [],
+      "playerName": "夏日涼鞋",
+      "aliases": [
+        "陽光厚底涼鞋",
+        "夏日涼鞋禮包"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:0yLbT5Ob1R",
       "packageName": "Sunlight Chunky Sandals",
       "paid": true,

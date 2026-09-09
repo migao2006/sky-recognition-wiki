@@ -10,6 +10,10 @@ const resolver = catalog.buildCatalogNameResolver(
 
 test("reviewed short names agree across wardrobe and sharing without losing old searches", () => {
   for (const [guid, id, order, name, terms] of [
+    // Taiwan player usage: https://www.dcard.tw/f/sky/p/256468904
+    // Shoulder item also named by https://www.youtube.com/watch?v=1eSi02ackQg
+    ["Ay3g-0JAeW", 1913, 4800, "水母肩飾", ["果凍肩部夥伴"]],
+    ["gsACsrp16_", 1921, 1700, "夏日涼鞋", ["陽光厚底涼鞋", "夏日涼鞋禮包"]],
     // Existing reviewed sale names; 3D glasses corroborated by
     // https://www.dcard.tw/f/sky/p/259260519 (not the whole cinema bundle).
     ["5F_G_puJb7", 2539, 13500, "玫瑰斗", ["花憩玫瑰刺繡斗篷"]],
