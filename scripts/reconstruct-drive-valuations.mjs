@@ -7,6 +7,7 @@ import { positivePriceNumber, seasonProgressParts } from "./lib/valuation-source
 import {
   bindingsForStatus,
   extractCompleteBindings,
+  extractPartialBindings,
   extractResourceEvidence,
   splitListingInventoryContext,
 } from "./lib/listing-account-evidence.mjs";
@@ -99,6 +100,9 @@ const reconstructed = documents.map((document) => {
       : "");
   const context = splitListingInventoryContext(content);
   const bindingEvidence = extractCompleteBindings(context.inventory);
+  const partialBindings = extractPartialBindings(context.inventory);
+  const bindingValues = bindingEvidence?.bindings ?? partialBindings.bindings;
+  const bindingScenario = (status) => ({ ...bindingsForStatus(status), ...bindingValues });
   const resourceEvidence = extractResourceEvidence(context.inventory);
   const resolution = resolver.scan(context.inventory);
   const separateResolution = resolver.scan(context.separateAccount);
@@ -146,10 +150,10 @@ const reconstructed = documents.map((document) => {
     : null;
   const exactEstimate = Object.values(resourceEvidence.ranges).some((range) => range.max !== null)
     ? null : knownEstimate;
-  const optimistic = exactEstimate ?? estimateFor(bindingEvidence?.bindings ?? bindingsForStatus("none"), resourceEstimateInputs.high);
-  const restricted = exactEstimate ?? estimateFor(bindingEvidence?.bindings ?? bindingsForStatus("keep"), resourceEstimateInputs.low);
+  const optimistic = exactEstimate ?? estimateFor(bindingScenario("none"), resourceEstimateInputs.high);
+  const restricted = exactEstimate ?? estimateFor(bindingScenario("keep"), resourceEstimateInputs.low);
   const reconstructedStartSeason = chosen.length
-    ? analyze(bindingEvidence?.bindings ?? bindingsForStatus("none")).startSeasonSlug
+    ? analyze(bindingScenario("none")).startSeasonSlug
     : null;
   const sourceStartSeason = catalog.graduationSeasonSlugs.includes(market?.start_season_slug)
     ? market.start_season_slug : null;
@@ -250,6 +254,8 @@ const reconstructed = documents.map((document) => {
         ? null
         : Math.max(0, declaredPaidCount - exactPaidCount),
     binding_evidence: bindingEvidence?.kind ?? null,
+    binding_values: bindingValues,
+    binding_conflicts: partialBindings.conflicts,
     resource_fields: resourceEvidence.observed,
     resource_values: resourceEvidence.resources,
     resource_ranges: resourceEvidence.ranges,
@@ -312,6 +318,8 @@ const summarizeKinds = (rows) =>
 const summarizeCompleteness = (rows) => ({
   count: rows.length,
   explicit_bindings: rows.filter((row) => row.binding_evidence).length,
+  partial_bindings: rows.filter((row) => !row.binding_evidence && Object.keys(row.binding_values).length > 0).length,
+  conflicting_bindings: rows.filter((row) => row.binding_conflicts.length > 0).length,
   explicit_resources: rows.filter(
     (row) => !row.missing_fields.includes("resources"),
   ).length,
@@ -372,7 +380,7 @@ const summary = {
     "Source and reconstructed start-season conflicts remain exploratory comparisons, are counted separately, and cannot emit complete model features. Missing either start is unknown, not a verified match.",
     "Explicitly excluded market rows retain GUID diagnostics but emit no model features or price comparison and do not enter fit summaries.",
     "Prices are listings or quick-sale asks, not verified completed sales.",
-    "Unknown bindings are evaluated as an optimistic/restricted envelope.",
+    "Explicit platform statuses remain fixed in both scenarios; only unknown bindings vary in the optimistic/restricted envelope. Partial binding_values never imply complete bindings.",
     "Each explicitly observed resource contributes independently; unknown resources contribute no value and remain incomplete.",
     "Closed resource ranges are replayed at both endpoints as exploratory resource_estimate_inputs, never as exact resource_values or complete resource fields; open bounds and approximations remain diagnostic only.",
     "Declared package ranges and unresolved-count bounds are diagnostic evidence only; they never create GUIDs, exact coverage or complete model features.",

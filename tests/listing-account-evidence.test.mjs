@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   extractCompleteBindings,
+  extractPartialBindings,
   extractResourceEvidence,
   splitListingInventoryContext,
 } from "../scripts/lib/listing-account-evidence.mjs";
@@ -31,6 +32,59 @@ test("accepts only explicit complete binding statements", () => {
   assert.equal(extractCompleteBindings("無綁｜Nintendo 綁可出"), null);
   assert.equal(extractCompleteBindings("無綁｜GG：綁出"), null);
   assert.equal(extractCompleteBindings("無綁定問題"), null);
+  assert.equal(extractCompleteBindings("GG 無綁"), null);
+  assert.equal(extractCompleteBindings("其餘 無綁"), null);
+  assert.equal(extractCompleteBindings("帳號無綁｜NS可出"), null);
+  assert.equal(extractCompleteBindings("綁全出｜GC不出"), null);
+  assert.equal(extractCompleteBindings("帳號無綁｜GG可出/不出"), null);
+  assert.equal(extractCompleteBindings("帳號無綁｜GG無綁/已綁"), null);
+  assert.equal(extractCompleteBindings("帳號無綁｜GG無綁/有綁"), null);
+  assert.equal(extractCompleteBindings(" 無綁 ｜可直接改密碼")?.kind, "none");
+  assert.equal(extractCompleteBindings("無綁 可直接改密碼")?.kind, "none");
+  for (const text of [
+    "綁全出嗎", "綁全出？", "是否綁全出", "請問綁全出嗎？", "不確定綁全出",
+    "請問：綁全出", "是否：綁全出", "不確定：綁全出", "綁全出現", "不是 綁全出", "無綁 嗎", "無綁？",
+  ]) assert.equal(extractCompleteBindings(text), null, text);
+  for (const text of ["表演無斷無翼綁全出", "ɢɢ綁全出", "綁全出重組斷季百蠟", "ɢɢ,ɴs綁全出", "姆明綁全出無翼"]) {
+    assert.equal(extractCompleteBindings(text)?.kind, "all-transfer", text);
+  }
+});
+
+test("retains only direct, unambiguous per-platform binding evidence", () => {
+  assert.deepEqual(
+    extractPartialBindings("GG,ID遺失｜NS可出｜其餘無綁"),
+    { bindings: { nintendo: "transfer" }, conflicts: [] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("Ⱄ綁定║gg gc不出⸝st換綁"),
+    { bindings: { gameCenter: "keep" }, conflicts: [] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("Google 遺失｜FB未綁｜PSN:出"),
+    { bindings: { google: "issue", facebook: "none", playstation: "transfer" }, conflicts: [] },
+  );
+  for (const text of ["不是GG可出", "請問 GG可出", "請問：GG可出", "是否 GG可出", "可否 GG可出", "不確定 GG可出", "GG可出嗎", "GG可出 嗎", "GG可出？", "GG可出現", "Apple ID可出", "GG、NS不出", "GG可出但不出"]) {
+    assert.deepEqual(extractPartialBindings(text).bindings, {}, text);
+  }
+});
+
+test("drops conflicting partial platform claims without deriving other bindings", () => {
+  assert.deepEqual(extractPartialBindings("不是綁全出｜GG不出"), { bindings: { google: "keep" }, conflicts: [] });
+  assert.deepEqual(
+    extractPartialBindings("GG可出｜GG不出｜Twitch異常"),
+    { bindings: { twitch: "issue" }, conflicts: ["google"] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("NS可出/不出"),
+    { bindings: {}, conflicts: ["nintendo"] },
+  );
+  for (const text of ["GG無綁/已綁", "GG無綁/有綁", "GG可出/不可出", "GG可出/不能出", "GG可出/無法解"]) {
+    assert.deepEqual(extractPartialBindings(text), { bindings: {}, conflicts: ["google"] }, text);
+  }
+  assert.deepEqual(
+    extractPartialBindings("帳號無綁｜GG可出"),
+    { bindings: {}, conflicts: ["google"] },
+  );
 });
 
 test("requires all four labeled resources and ignores item names", () => {

@@ -14,6 +14,36 @@ const script = fileURLToPath(
   new URL("../scripts/reconstruct-drive-valuations.mjs", import.meta.url),
 );
 
+test("partial platform evidence changes scenarios without fabricating complete bindings", async () => {
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const paths = ["documents", "market", "output", "summary"].map((label) => new URL(`bindings-${id}-${label}.jsonl`, work));
+  const [documents, market, output, summary] = paths;
+  const statements = ["", "GG可出｜NS不出", "GG無綁", "GG可出｜GG不出", "無綁", "綁全出嗎？"];
+  try {
+    await writeFile(documents, statements.map((statement, index) => JSON.stringify({ post_hash: String(index), content: `星夜之傘｜${statement}｜白蠟0｜愛心0｜昇華蠟0｜副卡0` })).join("\n"));
+    await writeFile(market, statements.map((_, index) => JSON.stringify({ post_hash: String(index), price_twd: 3000, price_kind: "ask", season_progress: { enchantment: "3/3" } })).join("\n"));
+    await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
+    const rows = (await readFile(output, "utf8")).trim().split(/\r?\n/u).map(JSON.parse);
+    assert.deepEqual(rows[1].binding_values, { google: "transfer", nintendo: "keep" });
+    assert.ok(rows[1].estimate_envelope.high < rows[0].estimate_envelope.high);
+    assert.deepEqual(rows[2].binding_values, { google: "none" });
+    assert.deepEqual(rows[3].binding_values, {});
+    assert.deepEqual(rows[3].binding_conflicts, ["google"]);
+    assert.deepEqual(rows[3].estimate_envelope, rows[0].estimate_envelope);
+    for (const row of rows.slice(1, 4)) {
+      assert.equal(row.binding_evidence, null);
+      assert.equal(row.model_features_ready, false);
+      assert.ok(row.missing_fields.includes("bindings"));
+    }
+    assert.equal(rows[4].binding_evidence, "none");
+    assert.equal(rows[5].binding_evidence, null);
+    assert.deepEqual(rows[5].estimate_envelope, rows[0].estimate_envelope);
+  } finally {
+    await Promise.all(paths.map((path) => rm(path, { force: true })));
+  }
+});
+
 test("closed resource intervals replay both endpoints without becoming exact evidence", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();

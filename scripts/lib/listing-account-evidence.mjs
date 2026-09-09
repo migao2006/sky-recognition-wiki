@@ -29,24 +29,118 @@ export const splitListingInventoryContext = (content) => {
 };
 const boundary = String.raw`(?:^|[\s｜|，,。；;])`;
 const ending = String.raw`(?=$|[\s｜|，,。；;])`;
-const noBindingsPattern = new RegExp(
-  `${boundary}(?:帳號)?(?:全)?無綁(?:定)?${ending}`,
-  "u",
-);
-const allTransferPattern = /(?:綁全出|綁定全出|綁全可出|綁定全可出|綁皆出|綁定皆出|綁全部可出|綁定全部可出)/u;
-const negatedAllTransferPattern = /(?:不是|並非|并非|不算|非)\s*(?:綁全出|綁定全出|綁全可出|綁定全可出|綁皆出|綁定皆出|綁全部可出|綁定全部可出)/u;
+// Keep this deliberately line/punctuation scoped.  A whitespace boundary alone
+// would make "GG 無綁" and "其餘 無綁" look like claims about every platform.
+const noBindingsPattern = /(?:^|[｜|，,。；;\r\n])\s*(?:帳號\s*)?(?:全\s*)?無綁(?:定)?(?=$|[\s｜|，,。；;])/gu;
+const allTransferPattern = /(?:綁全出|綁定全出|綁全可出|綁定全可出|綁皆出|綁定皆出|綁全部可出|綁定全部可出)(?![現现])/gu;
 const bindingProblemPattern = /(?:遺失|遗失|異常|异常|不出|不能出|不可出|解不了|無法解|无法解)/u;
 const linkedPlatformPattern = /(?:(?:已綁|已绑|有綁|有绑|綁定|绑定)\s*[:：]?\s*(?:Google|GG|Facebook|FB|Nintendo|NS|Game\s*Center|GC|PlayStation|PSN|Steam|Twitch)|(?:Google|GG|Facebook|FB|Nintendo|NS|Game\s*Center|GC|PlayStation|PSN|Steam|Twitch)\s*[:：]?\s*(?:已綁|已绑|有綁|有绑|綁(?:定)?(?:可)?出|绑(?:定)?(?:可)?出|可出|出))/iu;
 
+const platformAliases = {
+  google: "Google|GG",
+  nintendo: "Nintendo|NS",
+  gameCenter: "Game\\s*Center|GC",
+  facebook: "Facebook|FB",
+  playstation: "PlayStation|PSN",
+  steam: "Steam",
+  twitch: "Twitch",
+};
+const platformPattern = Object.entries(platformAliases)
+  .map(([key, aliases]) => `(?<${key}>${aliases})`)
+  .join("|");
+const partialStatusPattern = String.raw`可\s*出|不\s*出|遺失|遗失|異常|异常|無\s*綁(?:定)?|未\s*綁(?:定)?|出`;
+const partialEnding = String.raw`(?=$|[\s｜|，,。；;║⸝/、])`;
+const partialBindingPattern = new RegExp(
+  String.raw`(?<![\p{L}\p{N}])(?:${platformPattern})\s*[:：]?\s*(?:(?:綁定|绑定|綁|绑)\s*)?(?<status>${partialStatusPattern})${partialEnding}`,
+  "giu",
+);
+const partialContinuationPattern = new RegExp(
+  String.raw`^\s*(?:或|/|、|與|和|and)\s*(?<status>${partialStatusPattern})${partialEnding}`,
+  "iu",
+);
+const ambiguousPartialContinuationPattern = new RegExp(
+  String.raw`^\s*(?:或|/|、|與|和|and)\s*(?:已綁|已绑|有綁|有绑|不可出|不能出|無法解|无法解|解不了)${partialEnding}`,
+  "iu",
+);
+const questionedPlatformSuffix = /^\s*(?:[?？]|嗎|吗|可否|是否)/u;
+const invalidGlobalPrefix = /(?:不是|並非|并非|不算|非|沒有|没有|未|不|不確定|不确定|請問|请问|是否|可否)\s*[:：]?\s*$/u;
+
+const hasEffectiveGlobalStatement = (text, pattern) =>
+  [...text.matchAll(pattern)].some((match) =>
+    !invalidGlobalPrefix.test(text.slice(Math.max(0, match.index - 24), match.index)) &&
+    !questionedPlatformSuffix.test(text.slice(match.index + match[0].length)),
+  );
+const groupedPlatformPrefix = new RegExp(
+  String.raw`(?:${Object.values(platformAliases).join("|")})\s*[、,，/]\s*$`,
+  "iu",
+);
+
+const platformKeyForMatch = (groups) =>
+  bindingKeys.find((key) => groups[key] !== undefined);
+
+const statusForPartialBinding = (status) => {
+  if (/^可\s*出$|^出$/u.test(status)) return "transfer";
+  if (/^不\s*出$/u.test(status)) return "keep";
+  if (/^(?:遺失|遗失|異常|异常)$/u.test(status)) return "issue";
+  return "none";
+};
+
+// This intentionally recognizes only direct, single-platform declarations.
+// In particular it does not inherit a status across a platform list, interpret
+// Apple ID/st, or turn a group/"其餘" statement into per-platform evidence.
+export const extractPartialBindings = (content) => {
+  const text = String(content ?? "").normalize("NFKC");
+  const bindings = {};
+  const conflicts = new Set();
+  for (const match of text.matchAll(partialBindingPattern)) {
+    const key = platformKeyForMatch(match.groups);
+    const prefix = text.slice(Math.max(0, match.index - 24), match.index);
+    if (
+      !key ||
+      invalidGlobalPrefix.test(prefix) ||
+      groupedPlatformPrefix.test(prefix) ||
+      questionedPlatformSuffix.test(text.slice(match.index + match[0].length))
+    ) continue;
+    const status = statusForPartialBinding(match.groups.status);
+    const after = text.slice(match.index + match[0].length);
+    const continuation = after.match(partialContinuationPattern);
+    if (
+      ambiguousPartialContinuationPattern.test(after) ||
+      (continuation && statusForPartialBinding(continuation.groups.status) !== status)
+    ) {
+      conflicts.add(key);
+      delete bindings[key];
+      continue;
+    }
+    if (conflicts.has(key)) continue;
+    if (bindings[key] && bindings[key] !== status) {
+      conflicts.add(key);
+      delete bindings[key];
+      continue;
+    }
+    bindings[key] = status;
+  }
+  const declaredNone = hasEffectiveGlobalStatement(text, noBindingsPattern);
+  const declaredAllTransfer = hasEffectiveGlobalStatement(text, allTransferPattern);
+  for (const [key, status] of Object.entries(bindings)) {
+    if ((declaredNone && status !== "none") || (declaredAllTransfer && status !== "transfer")) {
+      conflicts.add(key);
+      delete bindings[key];
+    }
+  }
+  return { bindings, conflicts: [...conflicts] };
+};
+
 export const extractCompleteBindings = (content) => {
   const text = String(content ?? "");
-  const declaresNone = noBindingsPattern.test(text);
-  const declaresAllTransfer = allTransferPattern.test(text);
+  const declaresNone = hasEffectiveGlobalStatement(text, noBindingsPattern);
+  const declaresAllTransfer = hasEffectiveGlobalStatement(text, allTransferPattern);
+  const partial = extractPartialBindings(text);
   if (
     bindingProblemPattern.test(text) ||
-    negatedAllTransferPattern.test(text) ||
     (declaresNone && declaresAllTransfer) ||
-    (declaresNone && linkedPlatformPattern.test(text))
+    (declaresNone && linkedPlatformPattern.test(text)) ||
+    ((declaresNone || declaresAllTransfer) && partial.conflicts.length)
   )
     return null;
   if (declaresNone)
