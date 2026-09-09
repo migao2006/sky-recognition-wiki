@@ -48,6 +48,24 @@ test("reviewed short names agree across wardrobe and sharing without losing old 
   }
 });
 
+test("Sanctuary graduation handpan stays distinguishable from the paid recolor", () => {
+  // Player comparison: https://www.dcard.tw/f/sky/p/238946230
+  // Paid alias: https://forum.gamer.com.tw/Co.php?bsn=33024&sn=5577
+  const ultimate = catalog.wikiItems.find(item => item.guid === "Hvq52gCeih");
+  const paid = catalog.wikiItems.find(item => item.guid === "McTvO9Z8EQ");
+  assert.deepEqual([ultimate.id, ultimate.order, ultimate.name], [394, 1500, "Sanctuary Ultimate Handpan"]);
+  assert.deepEqual([paid.id, paid.order, paid.name], [1941, 1600, "Triumph Handpan"]);
+  assert.equal(catalog.zhItemName(ultimate), "聖島手碟");
+  assert.equal(catalog.saleItemName(ultimate), "聖島手碟");
+  assert.equal(catalog.isPaidItem(ultimate), false);
+  assert.equal(catalog.isPaidItem(paid), true);
+  for (const term of ["聖島手碟", "聖島季畢業禮手碟"]) {
+    assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [ultimate.guid]);
+  }
+  assert.deepEqual(resolver.resolve("霞谷手盤").candidates.map(item => item.guid), [paid.guid]);
+  assert.ok(catalog.zhItemSearchNames(ultimate).includes("聖島季畢業禮道具"));
+});
+
 test("paid summer surfboard stays distinct from the 2026 sporty surfboard", () => {
   // SkyGame-Data 1.3.10: separate official IDs/orders; only the 2023 board has IAPs.
   const item = catalog.wikiItems.find(item => item.guid === "amo581C-E4");
