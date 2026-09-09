@@ -178,14 +178,25 @@ test("separates important visibility from paid valuation", () => {
   );
   assert.equal(byName.get("Days of Healing Poppy")?.paid, true);
   assert.equal(byName.get("Days of Healing Poppy")?.saleSection, "important");
-  assert.equal(byName.get("Skyfest Wireframe Cape")?.paid, false);
+  assert.equal(byName.get("Skyfest Wireframe Cape")?.paid, true);
   assert.equal(byName.get("Skyfest Wireframe Cape")?.saleSection, "important");
-  assert.equal(byName.get("AURORA Runaway Hair")?.paid, false);
+  assert.equal(byName.get("AURORA Runaway Hair")?.paid, true);
   assert.equal(byName.get("AURORA Runaway Hair")?.saleSection, "collaboration");
   assert.equal(byName.get("Starry Night's Canopy")?.playerName, "星夜之傘");
   assert.equal(byName.get("Starry Night's Canopy")?.packageName, "星夜之傘");
   assert.equal(byName.get("Starry Night's Canopy")?.saleSection, "important");
   assert.equal(byName.get("Starry Night's Canopy")?.paid, true);
+});
+
+test("curated display profiles cannot erase verified IAP payment identity", () => {
+  for (const row of iapCatalog.items) {
+    assert.equal(marketCollectibleProfile(row.name, row.guid)?.paid, row.paid, row.guid);
+  }
+  // TGC 0.19.0 announcement: Runaway hair/outfit and Tiara are IAPs;
+  // Cure For Me mask/outfit are candle unlocks, not part of those packages.
+  for (const name of ["Cure for Me Mask", "Cure for Me Outfit"]) {
+    assert.equal(marketCollectibleProfile(name)?.paid, false, name);
+  }
 });
 
 test("every common bundle only references real international items", () => {

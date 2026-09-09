@@ -181,6 +181,22 @@ test("renamed Dapper Trio members remain three items but one paid package", asyn
   assert.deepEqual(result.range, single.range);
 });
 
+test("verified wireframe and AURORA IAPs count as five packages without limited double charging", async () => {
+  const { loadRuntimeCatalog } = await import("../scripts/load-runtime-catalog.mjs");
+  const catalog = await loadRuntimeCatalog();
+  // SkyGame-Data 1.3.10: five distinct paid offers with stable official GUIDs.
+  const guids = ["8l3QuiKC_8", "meld4SQL8l", "9kbdAvVwR4", "i0BYuPKZYe", "wZGUtak1mb"];
+  const chosen = guids.map(guid => catalog.wikiItems.find(item => item.guid === guid));
+  assert.ok(chosen.every(Boolean));
+  const analysis = analyzeValuation({ chosen, bindings: bindings(), bindingNote: "", domain: { ...domain, isLimitedItem: () => true } });
+  const result = estimateValuation({ analysis });
+  assert.equal(analysis.limited.length, 5);
+  assert.equal(result.marketProfile.paidItemCount, 5);
+  assert.equal(result.marketProfile.canonicalPackageCount, 5);
+  assert.equal(result.contributions.filter(row => row.group === "package").length, 5);
+  assert.equal(result.contributions.filter(row => row.group === "limited").length, 0);
+});
+
 test("distinct anniversary rewards in one event collection are all retained", () => {
   const result = estimateValuation({
     analysis: analyze([

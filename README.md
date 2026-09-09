@@ -21,6 +21,7 @@
 - `app/catalog-*.ts`：物品資料、分類、中文名稱與來源規則
 - `app/player-zh-names.json`：以官方 GUID 保存玩家顯示名、出售短名與搜尋別名；標準 Wiki 名稱仍可搜尋
 - `app/reviewed-iap-player-names.json`：以官方 GUID 保存人工核對的付費物品玩家稱呼；未核對的自動翻譯不直接進入出售文案
+- 付費身分以已核對的 IAP 快照為準，人工顯示／文案分類不得將已確認付費的物品覆蓋成免費；沒有 IAP 的兌換物仍保留原分類。同一物品已列入禮包加值後，不再重複計入限定加值。
 - `app/wiki-data.ts`：SkyGame-Data 衣櫃物品快照
 - `app/valuation-calibration.ts`：估價校正規則
 - `app/export-showcase.ts`：圖片版衣櫃輸出

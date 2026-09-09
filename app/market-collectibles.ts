@@ -376,6 +376,8 @@ for (const curated of curatedProfiles) {
   const merged: MarketCollectibleProfile = {
     ...generated,
     ...curated,
+    // Verified IAP identity takes precedence over legacy presentation defaults.
+    paid: generated?.paid ?? curated.paid,
     playerName: generated?.nameReviewed
       ? generated.playerName
       : curated.playerName,

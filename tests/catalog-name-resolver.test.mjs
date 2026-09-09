@@ -90,7 +90,8 @@ test("resolves reviewed event wording without changing paid identity", () => {
     ["活力海牛耳飾", "y69WKTTyw7", true],
     ["活力海牛頸飾", "cXaPt2zi0Q", true],
     ["週年影院沙發椅", "P09UDA73qQ", false],
-    ["白底TGC斗篷", "xaX_sfWwKV", true],
+    // SkyGame-Data 1.3.10: Beta Cape offer IquijQ-cfu is zero-price, not a paid bundle.
+    ["白底TGC斗篷", "xaX_sfWwKV", false],
     ["蛛絲斗篷", "bcKjyS-_p3", true],
     ["惡作劇飛行掃帚道具", "8rYQfi8VP3", true],
     ["彩虹小花髮飾", "KpS-2FdasB", true],
