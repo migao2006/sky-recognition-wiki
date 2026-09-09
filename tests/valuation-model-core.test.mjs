@@ -1,6 +1,26 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { calculateValuationModel } from "../app/valuation-model-core.js";
+import { bindingRiskForCounts, calculateValuationModel } from "../app/valuation-model-core.js";
+
+test("reducing any of seven binding restrictions never lowers risk or estimated prices", () => {
+  for (let issues = 0; issues <= 7; issues++) {
+    for (let keeps = 0; keeps <= 7 - issues; keeps++) {
+      const risk = bindingRiskForCounts(issues, keeps);
+      assert.ok(risk >= 0.7 && risk <= 1);
+      const before = calculateValuationModel({ ...base, bindingRisk: risk });
+      const improvements = [];
+      if (issues) improvements.push([issues - 1, keeps + 1], [issues - 1, keeps]);
+      if (keeps) improvements.push([issues, keeps - 1]);
+      for (const [nextIssues, nextKeeps] of improvements) {
+        const nextRisk = bindingRiskForCounts(nextIssues, nextKeeps);
+        assert.ok(nextRisk >= risk);
+        const after = calculateValuationModel({ ...base, bindingRisk: nextRisk });
+        for (const key of ["low", "midpoint", "high"]) assert.ok(after[key] >= before[key]);
+      }
+    }
+  }
+  assert.equal(bindingRiskForCounts(4, 0), bindingRiskForCounts(3, 1));
+});
 
 const base = {
   baseLow: 10000,

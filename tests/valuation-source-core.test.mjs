@@ -36,10 +36,12 @@ test("package intervals can inform a tier without requiring an exact package cou
 });
 import {
   breakClassFor,
+  bindingRiskForModelEvidence,
   marketExclusionReason,
   holdoutSplitCommitmentFor,
   hasCompleteModelEvidence,
   inHoldout,
+  legacyBindingRiskForModelEvidence,
   packageTierFor,
   preferredRow,
   preferredSample,
@@ -47,6 +49,7 @@ import {
   stableRowKey,
   timeWeightFor,
   valuationDatasetDigestFor,
+  valuationModelFeaturesFor,
 } from "../scripts/lib/valuation-source-core.mjs";
 
 test("an observation today does not make an undated historical listing recent", () => {
@@ -125,6 +128,37 @@ const completeModel = {
   transferHighMultiplier: 1,
   confidence: "low",
 };
+
+test("v5 binding risk is rebuilt from all seven binding statuses", () => {
+  const row = {
+    valuation_model_schema_version: 5,
+    model_evidence: {
+      bindings: {
+        google: "issue", nintendo: "keep", gameCenter: "none", facebook: "transfer",
+        steam: "none", twitch: "none", playstation: "none",
+      },
+      resources: { candles: 0, hearts: 0, ascended: 0, passes: 0 },
+    },
+    valuation_model: { ...completeModel, bindingRisk: 0.86 },
+  };
+  assert.equal(bindingRiskForModelEvidence(row), 0.86);
+  assert.equal(legacyBindingRiskForModelEvidence(row), 0.864);
+  assert.equal(valuationModelFeaturesFor(row)?.bindingRisk, 0.86);
+  assert.equal(
+    valuationModelFeaturesFor({
+      ...row,
+      valuation_model: { ...row.valuation_model, bindingRisk: 0.864 },
+    }),
+    null,
+  );
+  assert.equal(
+    bindingRiskForModelEvidence({
+      ...row,
+      model_evidence: { ...row.model_evidence, bindings: { google: "none" } },
+    }),
+    null,
+  );
+});
 
 test("classifies normalized break fields consistently for audit and validation", () => {
   assert.equal(breakClassFor({ computed_break_class: "big" }), "big");
@@ -307,7 +341,7 @@ test("same-time predictor ties resolve deterministically regardless of source or
     account_identity_scheme: "stable-hmac-v1",
     inventory_complete: true,
     bindings_complete: true,
-    valuation_model_schema_version: 4,
+    valuation_model_schema_version: 5,
     season_progress: { carnival: "畢" },
     season_progress_end_slug: "carnival",
   };
@@ -320,8 +354,8 @@ test("same-time predictor ties resolve deterministically regardless of source or
   assert.equal(preferredRow(first, second), preferredRow(second, first));
 });
 
-test("schema v3 evidence is not accepted as a complete v4 predictor", () => {
-  const salt = "schema-v4-test-salt-that-is-at-least-32-characters";
+test("old and future evidence schemas are not accepted as complete v5 predictors", () => {
+  const salt = "schema-v5-test-salt-that-is-at-least-32-characters";
   const current = {
     account_fingerprint: "a".repeat(64),
     snapshot_hash: "b".repeat(64),
@@ -329,7 +363,7 @@ test("schema v3 evidence is not accepted as a complete v4 predictor", () => {
     account_identity_scheme: "stable-hmac-v1",
     inventory_complete: true,
     bindings_complete: true,
-    valuation_model_schema_version: 4,
+    valuation_model_schema_version: 5,
     model_evidence: {
       bindings: {
         google: "none", nintendo: "none", gameCenter: "none", facebook: "none",
@@ -350,6 +384,15 @@ test("schema v3 evidence is not accepted as a complete v4 predictor", () => {
     ...legacy,
     evidence_signature: modelEvidenceSignatureFor(legacy, salt),
   };
+  const future = {
+    ...current,
+    valuation_model_schema_version: 6,
+  };
+  const signedFuture = {
+    ...future,
+    evidence_signature: modelEvidenceSignatureFor(future, salt),
+  };
   assert.equal(hasCompleteModelEvidence(signedCurrent, { hashSalt: salt }), true);
   assert.equal(hasCompleteModelEvidence(signedLegacy, { hashSalt: salt }), false);
+  assert.equal(hasCompleteModelEvidence(signedFuture, { hashSalt: salt }), false);
 });

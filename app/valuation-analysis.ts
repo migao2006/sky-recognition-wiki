@@ -38,7 +38,7 @@ import {
   type SeasonPriceBand,
 } from "./valuation-season-bands";
 import type { WikiItem } from "./wiki-data";
-import { calculateValuationModel } from "./valuation-model-core.js";
+import { bindingRiskForCounts, calculateValuationModel } from "./valuation-model-core.js";
 import {
   adjustConfidenceForEvidence,
   valuationEvidenceProfile,
@@ -518,9 +518,7 @@ export const estimateValuation = ({
       high: 0,
       percent: Math.round((accountStyleMultiplier - 1) * 100),
     });
-  const risk =
-    Math.max(0.7, 1 - analysis.issueCount * 0.1) *
-    Math.max(0.84, 1 - analysis.keepCount * 0.04);
+  const risk = bindingRiskForCounts(analysis.issueCount, analysis.keepCount);
   if (risk < 1)
     contributions.push({
       group: "binding",

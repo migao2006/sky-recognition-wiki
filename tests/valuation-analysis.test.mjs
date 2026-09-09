@@ -430,6 +430,25 @@ test("partial graduation is below full graduation without a second break penalty
   );
 });
 
+test("changing an issue binding to keep cannot lower the runtime estimate", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const chosen = ["FlOSNmw_38", "RpAC3rlPrR"].map((guid) => {
+    const entry = catalog.wikiItems.find((item) => item.guid === guid);
+    assert.ok(entry, guid);
+    return entry;
+  });
+  const estimate = (google) => estimateValuation({
+    analysis: analyzeValuation({ chosen, bindings: bindings({ google, nintendo: "issue", gameCenter: "issue", facebook: "issue" }), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName } }),
+    resources: {},
+  });
+  const before = estimate("issue");
+  const after = estimate("keep");
+  assert.equal(before.modelFeatures.bindingRisk, 0.7);
+  assert.equal(after.modelFeatures.bindingRisk, 0.7);
+  assert.ok(after.midpoint >= before.midpoint);
+  for (const key of ["low", "high"]) assert.ok(after.range[key] >= before.range[key]);
+});
+
 test("adding later graduation items never reduces a complete starting-season account", async () => {
   const catalog = await loadRuntimeCatalog();
   const liveDomain = { ...catalog, getZhName: catalog.zhItemName };

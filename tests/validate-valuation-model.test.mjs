@@ -93,7 +93,7 @@ const aggregate = (median, { fullModel = false, status = "unvalidated" } = {}) =
   ...(fullModel
     ? {
         provenance: {
-          modelSchemaVersion: 4,
+          modelSchemaVersion: 5,
           predictorSchema: "valuation_model",
           seasonProgressEndSlug: replaySeasonProgressEndSlug,
         },
@@ -167,7 +167,7 @@ const unsignedRows = Array.from({ length: 500 }, (_, index) => {
   account_identity_scheme: "stable-hmac-v1",
   inventory_complete: true,
   bindings_complete: true,
-  valuation_model_schema_version: 4,
+  valuation_model_schema_version: 5,
   model_evidence: {
     bindings: {
       google: "none",
@@ -273,7 +273,7 @@ test("validator predictor uses the browser's blended season low, midpoint, and h
   });
 });
 
-test("schema v4 replays only the starting season's partial-graduation discount", () => {
+test("schema v5 replays only the starting season's partial-graduation discount", () => {
   const candidate = aggregate(10000, { fullModel: true });
   Object.assign(candidate.segments.startSeason.assembly, {
     evidenceBreakdown: { sold: 8 },
@@ -320,7 +320,7 @@ test("schema v4 replays only the starting season's partial-graduation discount",
   );
 });
 
-test("schema v4 does not subtract a later season's partial graduation twice", () => {
+test("schema v5 does not subtract a later season's partial graduation twice", () => {
   const candidate = aggregate(10000, { fullModel: true });
   const replay = withDerivedSeasonBands(candidate);
   const segment = replay.segments.startSeason.lightseekers;
@@ -354,7 +354,7 @@ test("schema v4 does not subtract a later season's partial graduation twice", ()
   );
 });
 
-test("schema v4 rejects unknown, incomplete, or mismatched season progress", () => {
+test("schema v5 rejects unknown, incomplete, or mismatched season progress", () => {
   const replay = withDerivedSeasonBands(aggregate(10000, { fullModel: true }));
   const sample = {
     startSeason: "assembly",
@@ -445,7 +445,7 @@ test("keeps an explicit canonical start season when the raw baseline segment is 
   assert.equal(report.criteria.completeModelPredictors.actual, 1);
 });
 
-test("schema v4 requires valid replay classifications and candidate modifiers", () => {
+test("schema v5 requires valid replay classifications and candidate modifiers", () => {
   const candidate = withDerivedSeasonBands(aggregate(10000, { fullModel: true }));
   const sample = {
     startSeason: "assembly",
@@ -894,6 +894,39 @@ test("requires explicit identity, wardrobe, and binding evidence for every predi
       assert.equal(report.criteria.identityNamespaceConsistency.pass, false);
     }
     assert.equal(report.outcome, "fail", key);
+  }
+});
+
+test("v5 never verifies missing binding evidence or a forged binding risk", () => {
+  const missingBindings = rows.map((row, index) =>
+    index === 0
+      ? signEvidenceRow({
+          ...row,
+          model_evidence: { ...row.model_evidence, bindings: { google: "none" } },
+        })
+      : row,
+  );
+  const forgedRisk = rows.map((row, index) =>
+    index === 0
+      ? signEvidenceRow({
+          ...row,
+          model_evidence: {
+            ...row.model_evidence,
+            bindings: { ...row.model_evidence.bindings, google: "issue", nintendo: "keep" },
+          },
+          valuation_model: { ...row.valuation_model, bindingRisk: 1 },
+        })
+      : row,
+  );
+  for (const invalid of [missingBindings, forgedRisk]) {
+    const report = validateValuationModel({
+      candidate: aggregate(20000, { fullModel: true }),
+      baseline: aggregate(8000),
+      rows: invalid,
+      splitSeed: "fixture",
+    });
+    assert.equal(report.criteria.completeModelPredictors.pass, false);
+    assert.equal(report.outcome, "fail");
   }
 });
 

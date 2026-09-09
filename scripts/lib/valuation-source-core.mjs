@@ -1,5 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import {
+  bindingRiskForCounts,
   hasCompleteValuationModelFeatures,
   valuationModelInputKeys,
 } from "../../app/valuation-model-core.js";
@@ -111,6 +112,24 @@ export const hasCompleteModelEvidenceSnapshot = (row) => {
       resources[key] <= modelEvidenceResourceLimits[key]),
   );
 };
+export const bindingRiskForModelEvidence = (row) => {
+  if (!hasCompleteModelEvidenceSnapshot(row)) return null;
+  const statuses = Object.values(row.model_evidence.bindings);
+  return bindingRiskForCounts(
+    statuses.filter((status) => status === "issue").length,
+    statuses.filter((status) => status === "keep").length,
+  );
+};
+// The frozen v2 baseline used independent issue and keep multipliers. It is
+// deliberately retained only for replaying that pinned baseline, never for a
+// current model predictor.
+export const legacyBindingRiskForModelEvidence = (row) => {
+  if (!hasCompleteModelEvidenceSnapshot(row)) return null;
+  const statuses = Object.values(row.model_evidence.bindings);
+  const issues = statuses.filter((status) => status === "issue").length;
+  const keeps = statuses.filter((status) => status === "keep").length;
+  return Math.max(0.7, 1 - 0.1 * issues) * Math.max(0.84, 1 - 0.04 * keeps);
+};
 const modelEvidencePayload = (row) => ({
   schema_version: row?.schema_version ?? null,
   source: row?.source ?? null,
@@ -178,7 +197,7 @@ export const hasCompleteModelEvidenceShape = (row) =>
   /^[a-f0-9]{64}$/u.test(String(row?.account_fingerprint ?? "")) &&
   /^[a-f0-9]{64}$/u.test(String(row?.snapshot_hash ?? "")) &&
   /^[a-f0-9]{64}$/u.test(String(row?.identity_namespace ?? "")) &&
-  row?.valuation_model_schema_version === 4 &&
+  row?.valuation_model_schema_version === 5 &&
   row?.account_identity_scheme === "stable-hmac-v1" &&
   row?.inventory_complete === true &&
   row?.bindings_complete === true &&
@@ -375,6 +394,10 @@ export const valuationModelFeaturesFor = (row) => {
   );
   result.confidence = value.confidence;
   if (!hasCompleteValuationModelFeatures(result)) return null;
+  if (row?.valuation_model_schema_version === 5) {
+    const bindingRisk = bindingRiskForModelEvidence(row);
+    if (bindingRisk === null || result.bindingRisk !== bindingRisk) return null;
+  }
   if (result.baseLow <= 0 || result.baseHigh < result.baseLow) return null;
   if (result.breakMultiplier <= 0 || result.accountStyleMultiplier <= 0) return null;
   if (result.packageMarketMultiplier <= 0) return null;

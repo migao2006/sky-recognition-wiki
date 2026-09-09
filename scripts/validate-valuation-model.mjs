@@ -9,6 +9,7 @@ import {
   applyGroupCap,
   breakClasses,
   breakClassFor,
+  bindingRiskForModelEvidence,
   canonicalJson,
   evidenceWeights,
   groupKeyFor,
@@ -17,6 +18,7 @@ import {
   holdoutSplitCommitmentFor,
   inHoldout,
   isExcludedFromModel,
+  legacyBindingRiskForModelEvidence,
   marketExclusionReason,
   packageTiers,
   packageTierFor,
@@ -133,13 +135,13 @@ const missingModifierValues = (candidate, key, values) =>
   });
 const hasFullModelPredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
-  Number(aggregate?.provenance?.modelSchemaVersion) === 4;
+  Number(aggregate?.provenance?.modelSchemaVersion) === 5;
 const hasLegacyBaselinePredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
   Number(aggregate?.provenance?.modelSchemaVersion) === 2;
 const hasReplayableCandidatePredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
-  Number(aggregate?.provenance?.modelSchemaVersion) === 4 &&
+  Number(aggregate?.provenance?.modelSchemaVersion) === 5 &&
   aggregate?.provenance?.seasonProgressEndSlug === replaySeasonProgressEndSlug;
 const supportedSeedsFor = (aggregate) => {
   const startSeason = aggregate?.segments?.startSeason ?? {};
@@ -249,7 +251,7 @@ export const predictValuationAggregate = (
   if (hasFullModelPredictor(aggregate) || legacyBaseline) {
     if (!sample.modelFeatures) return null;
     if (
-      Number(aggregate?.provenance?.modelSchemaVersion) === 4 &&
+      Number(aggregate?.provenance?.modelSchemaVersion) === 5 &&
       !hasReplayableCandidatePredictor(aggregate)
     )
       return null;
@@ -281,6 +283,14 @@ export const predictValuationAggregate = (
       ? partialDiscountForV4(aggregate, sample.row)
       : partialDiscountForLegacyBaseline(aggregate, sample.row);
     if (!partialDiscount) return null;
+    const requiresV5BindingEvidence =
+      replayCandidate && sample.row?.valuation_model_schema_version === 5;
+    const bindingRisk = requiresV5BindingEvidence
+      ? bindingRiskForModelEvidence(sample.row)
+      : legacyBaseline && sample.row?.model_evidence
+        ? legacyBindingRiskForModelEvidence(sample.row)
+        : sample.modelFeatures.bindingRisk;
+    if (bindingRisk === null) return null;
     const confidence = replayCandidate
       ? adjustConfidenceForEvidence({
           aggregate,
@@ -309,6 +319,7 @@ export const predictValuationAggregate = (
           sample.modelFeatures.packageMarketMultiplier) *
         packageMultiplier,
       accountStyleMultiplier,
+      bindingRisk,
       confidence,
     });
     return { price: summary.midpoint, low: summary.low, high: summary.high };
@@ -596,7 +607,7 @@ export const validateValuationModel = ({
         splitSecret !== hashSalt &&
         candidate.split?.datasetDigest === datasetDigest &&
         candidate.split?.splitCommitment === splitCommitment &&
-        candidate.schemaVersion >= 4 &&
+        candidate.schemaVersion === 4 &&
         hasReplayableCandidatePredictor(candidate),
     },
     minimumEligibleRows: { actual: eligible.length, minimum: minimumEligibleAccounts, pass: eligible.length >= minimumEligibleAccounts },

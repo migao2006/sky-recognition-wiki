@@ -4,6 +4,10 @@
 const roundHundred = (value) => Math.round(value / 100) * 100;
 const roundFiveHundred = (value) => Math.round(value / 500) * 500;
 
+// One shared deduction floor keeps issue → keep → unrestricted monotonic.
+export const bindingRiskForCounts = (issueCount, keepCount) =>
+  Math.max(0.7, 1 - issueCount * 0.1 - keepCount * 0.04);
+
 export const summarizeValuationRange = (rawLow, rawHigh, confidence) => {
   if (rawHigh <= 0) return { low: 0, high: 0, midpoint: 0 };
   const midpoint = Math.min(rawHigh, Math.max(rawLow,

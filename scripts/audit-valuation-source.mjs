@@ -547,7 +547,7 @@ const missingPredictorFields = (row) => {
       : field === "account_identity_scheme"
       ? row[field] !== "stable-hmac-v1"
       : field === "valuation_model_schema_version"
-      ? row[field] !== 4
+      ? row[field] !== 5
       : field === "inventory_complete" || field === "bindings_complete"
       ? row[field] !== true
       : field === "model_evidence"
@@ -604,7 +604,7 @@ console.log(JSON.stringify({
   schemaVersion: 4,
   validationStatus: "unvalidated",
   provenance: {
-    modelSchemaVersion: 4,
+    modelSchemaVersion: 5,
     predictorSchema: "valuation_model",
     seasonProgressEndSlug: replaySeasonProgressEndSlug,
     validation: "requires validate-valuation-model full holdout pass before publishing as validated",

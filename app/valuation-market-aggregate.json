@@ -2,7 +2,7 @@
   "schemaVersion": 4,
   "validationStatus": "unvalidated",
   "provenance": {
-    "modelSchemaVersion": 4,
+    "modelSchemaVersion": 5,
     "predictorSchema": "valuation_model",
     "seasonProgressEndSlug": "carnival",
     "validation": "requires validate-valuation-model full holdout pass before publishing as validated"
