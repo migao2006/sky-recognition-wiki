@@ -34,6 +34,17 @@ const known = (value) => {
   return text && !["unknown", "unk", "n/a", "null", "undefined", "-"].includes(text.toLowerCase()) ? text : null;
 };
 const knownIdentity = value => known(value)?.toLowerCase() === "none" ? null : known(value);
+// Only normalize explicit channel metadata, never infer ownership/login from a title.
+// Unknown values stay usable without copying arbitrary seller text into reports.
+const channelFor = (row) => {
+  const value = typeof row.channel === "string" ? row.channel.trim().toLowerCase().replace(/\s+/g, "") : "";
+  const aliases = {
+    "ios官服": "ios-official", "ios官服苹果官服": "ios-official", "蘋果官服": "ios-official", "苹果官服": "ios-official",
+    "安卓官服": "android-official", "華為": "huawei", "华为": "huawei", "小米": "xiaomi", "哔哩哔哩": "bilibili",
+  };
+  return Object.hasOwn(aliases, value) ? aliases[value]
+    : ["ios-official", "android-official", "huawei", "vivo", "oppo", "xiaomi", "bilibili"].includes(value) ? value : "unknown";
+};
 const quantile = (values, percentile) => {
   const ordered = [...values].sort((a, b) => a - b);
   return ordered.length ? ordered[Math.floor((ordered.length - 1) * percentile)] : null;
@@ -177,8 +188,9 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
   for (const row of eligible) {
     const binding = known(row.binding_class ?? row.bindingClass)?.toLowerCase() ?? "unknown";
     const source = known(row.source)?.toLowerCase() ?? "unknown";
-    const key = [source, row.__market.region, row.__market.currency, row.__priceKind, binding, row.__style, row.__wingless].join("|");
-    const entries = markets.get(key) ?? { key, source, region: row.__market.region, currency: row.__market.currency, price_kind: row.__priceKind, binding_class: binding, account_style: row.__style, wingless: row.__wingless, rows: [] };
+    const channel = channelFor(row);
+    const key = [source, row.__market.region, row.__market.currency, channel, row.__priceKind, binding, row.__style, row.__wingless].join("|");
+    const entries = markets.get(key) ?? { key, source, region: row.__market.region, currency: row.__market.currency, channel, price_kind: row.__priceKind, binding_class: binding, account_style: row.__style, wingless: row.__wingless, rows: [] };
     entries.rows.push(row); markets.set(key, entries);
   }
   const marketReports = [...markets.values()].sort((a, b) => a.key.localeCompare(b.key)).map((market) => {
@@ -203,7 +215,7 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
       })));
       return { season: group.season, break_class: group.break_class, sample_count: group.rows.length, packages, package_differences, no_package_baseline: packages.some((item) => item.package_tier === "0" && item.sufficient_samples) };
     });
-    return { source: market.source, region: market.region, currency: market.currency, price_kind: market.price_kind, binding_class: market.binding_class, account_style: market.account_style, wingless: market.wingless, sample_count: market.rows.length, season_breaks };
+    return { source: market.source, region: market.region, currency: market.currency, channel: market.channel, price_kind: market.price_kind, binding_class: market.binding_class, account_style: market.account_style, wingless: market.wingless, sample_count: market.rows.length, season_breaks };
   });
   return { schema_version: 1, status: "headline-unvalidated", evidence_kind: "season-break-package-market-headline-diagnostic", minimum_samples: minimumSamples, source_rows: rows.length, eligible_rows_before_dedupe: candidates.length, eligible_rows: eligible.length, diagnostics, markets: marketReports, warning: "Diagnostic only: headline evidence is not a valuation baseline or model gate. Markets, currencies, and asking/sold kinds are never combined." };
 };

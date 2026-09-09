@@ -79,6 +79,33 @@ test("keeps public listing markets separate and reports exact package-tier diffe
   assert.equal(group.package_differences[0].median_total_difference, -200);
 });
 
+test("keeps known channels separate without discarding unknown-channel evidence", () => {
+  const rows = ["ios-official", "android-official", "vivo", undefined].flatMap((channel, index) =>
+    [1, 2, 3].map(n => listing({ channel, price_original: (index + 1) * 1000 + n })));
+  const report = buildMarketHeadlineReport(rows);
+  assert.equal(report.eligible_rows, 12);
+  assert.equal(report.markets.length, 4);
+  for (const [channel, median] of [["ios-official", 1002], ["android-official", 2002], ["vivo", 3002], ["unknown", 4002]]) {
+    const market = report.markets.find(market => market.channel === channel);
+    assert.equal(market.sample_count, 3);
+    assert.equal(market.season_breaks[0].packages[0].median, median);
+  }
+});
+
+test("normalizes explicit channel aliases without leaking text or inflating relists", () => {
+  const report = buildMarketHeadlineReport([
+    ...["ios-official", " iOS 官服 ", "iOS官服 苹果官服"].map(channel => listing({ channel })),
+    listing({ channel: "安卓官服", listing_id: "relisted" }),
+    listing({ channel: "vivo", listing_id: "relisted" }),
+    listing({ channel: "seller-private-contact" }), listing({ channel: { toString: "ios-official" } }),
+    listing({ channel: "__proto__" }), listing({ channel: "iOS" }),
+  ]);
+  assert.equal(report.eligible_rows, 8);
+  assert.equal(report.markets.find(m => m.channel === "ios-official").sample_count, 3);
+  assert.equal(report.markets.find(m => m.channel === "unknown").sample_count, 4);
+  assert.doesNotMatch(JSON.stringify(report), /seller-private-contact|__proto__|relisted/);
+});
+
 test("excludes conflicts and unsafe rows, dedupes without exposing titles or identifiers", () => {
   const rows = [
     listing({ listing_id: "same", price_original: 1000 }), listing({ listing_id: "same", price_original: 2000, evidence_kind: "sold" }),
