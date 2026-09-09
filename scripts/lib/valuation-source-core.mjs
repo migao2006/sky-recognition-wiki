@@ -213,6 +213,25 @@ export const seasonProgressParts = (value) => {
     : null;
 };
 
+// Partial source progress can establish an exploratory start without a full
+// wardrobe. It does not establish uninterrupted completion or formal replay.
+export const firstSeasonWithProgress = (progress) => {
+  if (!progress || typeof progress !== "object" || Array.isArray(progress)) return null;
+  for (const { slug } of seasonBandSeeds) {
+    if (!Object.hasOwn(progress, slug)) continue;
+    const value = progress[slug];
+    if (value == null || value === false || Array.isArray(value)) continue;
+    if (typeof value === "number") {
+      if (Number.isSafeInteger(value) && value > 0) return slug;
+      continue;
+    }
+    if (typeof value === "string" && value.trim().toLowerCase() === "start") return slug;
+    const parts = seasonProgressParts(value);
+    if (parts && parts.expected > 0 && parts.selected > 0 && parts.selected <= parts.expected) return slug;
+  }
+  return null;
+};
+
 export const hasReplayableSeasonProgress = (
   row,
   { orderedSeasonSlugs, requiredEndSlug, graduationGiftCounts } = {},

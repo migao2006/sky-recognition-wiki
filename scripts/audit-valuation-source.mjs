@@ -17,6 +17,7 @@ import {
   breakClasses,
   breakClassFor as sharedBreakClassFor,
   evidenceWeights,
+  firstSeasonWithProgress,
   groupKeyFor,
   hasCompleteModelEvidence,
   hasCompleteModelEvidenceSnapshot,
@@ -33,7 +34,6 @@ import {
   priceFor as sharedPriceFor,
   priceRangeFor as sharedPriceRangeFor,
   sampleWeightFor,
-  seasonProgressParts,
   sourceFor,
   stableRowKey,
   timestampFor,
@@ -151,21 +151,8 @@ const structuredSeasonSlugsFor = (row) => {
 const startSeasonFor = (row) => {
   const explicit = String(row.start_season_slug ?? "").trim().toLowerCase();
   if (patterns.has(explicit)) return explicit;
-  if (row.season_progress && typeof row.season_progress === "object") {
-    const hasProgress = (value) => {
-      if (value === null || value === undefined || value === false) return false;
-      if (typeof value === "number") return Number.isSafeInteger(value) && value > 0;
-      // Legacy sources use "start" as an explicit marker, not a fraction.
-      if (typeof value === "string" && value.trim().toLowerCase() === "start") return true;
-      if (Array.isArray(value)) return false;
-      const parts = seasonProgressParts(value);
-      return parts !== null && parts.expected > 0 && parts.selected > 0 && parts.selected <= parts.expected;
-    };
-    for (const slug of patterns.keys()) {
-      if (Object.hasOwn(row.season_progress, slug) && hasProgress(row.season_progress[slug]))
-        return slug;
-    }
-  }
+  const progressStart = firstSeasonWithProgress(row.season_progress);
+  if (progressStart) return progressStart;
   const structured = structuredSeasonSlugsFor(row);
   return structured.length === 1 ? structured[0] : postKeyFor(row) ? headlineFor(row).startSeasonSlug : null;
 };

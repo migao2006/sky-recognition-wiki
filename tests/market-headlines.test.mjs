@@ -36,6 +36,22 @@ test("reviewed earlier partial graduation can resolve a later headline season", 
   }
 });
 
+test("uses partial structured progress when titles do not identify a starting season", () => {
+  for (const value of ["complete", "1/2", { selected: 1, expected: 2 }, 1, "start"]) {
+    const report = buildMarketHeadlineReport([listing({ title: "耳墜阿努禮包號", season_progress: { prophecy: "complete", rhythm: value, gratitude: "0" } })]);
+    assert.equal(report.eligible_rows, 1);
+    assert.equal(report.markets[0].season_breaks[0].season, "rhythm");
+    assert.equal(report.markets[0].season_breaks[0].break_class, "unknown");
+  }
+  for (const value of [null, false, 0, -1, 0.5, {}, [], "3/2", "1/0", { selected: 0, expected: 2 }]) {
+    const report = buildMarketHeadlineReport([listing({ title: "帳號出售", season_progress: { gratitude: value, invented: "complete" } })]);
+    assert.equal(report.eligible_rows, 0);
+    assert.equal(report.diagnostics.start_unknown, 1);
+  }
+  const conflict = buildMarketHeadlineReport([listing({ title: "緬懷起無斷", season_progress: { rhythm: "1/2" } })]);
+  assert.equal(conflict.diagnostics.title_start_conflict, 1);
+});
+
 test("retains package bounds as distinct cohorts without exact-count premiums", () => {
   const rows = ["60+禮", "百禮", "60～80禮", "60禮"].flatMap(label =>
     [1000, 1200, 1400].map(price => listing({ title: `緬懷起無斷${label}`, price_original: price })));

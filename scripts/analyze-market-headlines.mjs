@@ -6,6 +6,7 @@ import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFo
 import {
   accountKeyFor,
   breakClasses,
+  firstSeasonWithProgress,
   isExcludedFromModel,
   postKeyFor,
   preferredRow,
@@ -157,7 +158,7 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
     const verifiedPublicCandidate = isPublic && row.season_graduation_count_consistent === true
       ? known(row.start_season_candidate)?.toLowerCase()
       : null;
-    const explicitStart = suppliedStart?.toLowerCase() ?? verifiedPublicCandidate;
+    const explicitStart = suppliedStart?.toLowerCase() ?? verifiedPublicCandidate ?? firstSeasonWithProgress(row.season_progress);
     const startConflict = explicitStart && titleEvidence.startSeasonSlug && explicitStart !== titleEvidence.startSeasonSlug;
     if (startConflict && !supportedEarlierStart(row, explicitStart, titleEvidence.startSeasonSlug)) {
       diagnostics.title_start_conflict++; continue;
