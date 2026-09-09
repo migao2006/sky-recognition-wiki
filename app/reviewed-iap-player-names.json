@@ -1,6 +1,9 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "BWUjIgnjnu": { "playerName": "火焰墨鏡", "aliases": ["時尚火焰墨鏡", "時尚火焰太陽眼鏡"] },
+    "3HeVKqT39a": { "playerName": "愛心墨鏡", "aliases": ["時尚愛心墨鏡", "時尚愛心太陽眼鏡"] },
+    "E7RAu04_xI": { "playerName": "闊腿牛仔褲", "aliases": ["時尚寬型腿部牛仔褲", "闊腿牛仔褲禮包"] },
     "ARZC1Eg2jx": { "playerName": "蜘蛛頭", "aliases": ["蜘蛛龐克", "惡作劇蜘蛛飛機頭"] },
     "-ZIWymGtlX": { "playerName": "紫水晶頭飾", "aliases": ["愛之慶典紫水晶頭飾"] },
     "6Kn8VMa4go": { "playerName": "泡沫斗", "aliases": ["海洋泡沫斗篷"] },

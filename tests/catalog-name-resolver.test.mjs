@@ -10,6 +10,10 @@ const resolver = catalog.buildCatalogNameResolver(
 
 test("reviewed short names agree across wardrobe and sharing without losing old searches", () => {
   for (const [guid, id, order, name, terms] of [
+    // Taiwan player usage: https://www.dcard.tw/f/sky/p/256819080
+    ["BWUjIgnjnu", 1844, 2300, "火焰墨鏡", ["時尚火焰墨鏡", "時尚火焰太陽眼鏡"]],
+    ["3HeVKqT39a", 1843, 2400, "愛心墨鏡", ["時尚愛心墨鏡", "時尚愛心太陽眼鏡"]],
+    ["E7RAu04_xI", 1841, 5800, "闊腿牛仔褲", ["時尚寬型腿部牛仔褲", "闊腿牛仔褲禮包"]],
     ["bcKjyS-_p3", 1870, 16500, "薄紗斗", ["惡作劇薄紗斗篷", "蛛絲斗篷", "蛛絲斗"]],
     ["txwX8D1yKh", 1871, 16600, "蟹伯爵斗", ["惡作劇蟹伯爵披風", "吸蟹伯爵斗篷", "吸蟹伯爵斗"]],
     ["jc8Pyt7eLR", 2716, 2400, "蝴蝶白靈花", ["蝴蝶花紀念品", "蝴蝶花朵紀念物"]],

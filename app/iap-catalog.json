@@ -259,8 +259,12 @@
     {
       "guid": "3HeVKqT39a",
       "name": "Style Heart Sunglasses",
-      "playerName": "時尚愛心太陽眼鏡",
-      "aliases": [],
+      "playerName": "愛心墨鏡",
+      "aliases": [
+        "時尚愛心墨鏡",
+        "時尚愛心太陽眼鏡"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:5LZSuhPZTP",
       "packageName": "Style Heart Sunglasses",
       "paid": true,
@@ -838,8 +842,12 @@
     {
       "guid": "BWUjIgnjnu",
       "name": "Style Flame Sunglasses",
-      "playerName": "時尚火焰太陽眼鏡",
-      "aliases": [],
+      "playerName": "火焰墨鏡",
+      "aliases": [
+        "時尚火焰墨鏡",
+        "時尚火焰太陽眼鏡"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:LRfQWHH7ot",
       "packageName": "Style Flame Sunglasses",
       "paid": true,
@@ -1126,8 +1134,12 @@
     {
       "guid": "E7RAu04_xI",
       "name": "Style Wide-Leg Jeans",
-      "playerName": "時尚寬型腿部牛仔褲",
-      "aliases": [],
+      "playerName": "闊腿牛仔褲",
+      "aliases": [
+        "時尚寬型腿部牛仔褲",
+        "闊腿牛仔褲禮包"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:n3KEOOprwe",
       "packageName": "Style Wide-Leg Jeans",
       "paid": true,
