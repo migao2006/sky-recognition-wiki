@@ -13,6 +13,17 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 
+test("zero and invalid progress cannot masquerade as an early graduation", async () => {
+  const base = { published_at: recent, price_twd: 9000, evidence_kind: "ask", evidence_quality: "high" };
+  for (const value of ["0", "0/3", { selected: 0, expected: 3 }, { selected: 3, expected: 0 }, "4/3", {}, "unknown", []]) {
+    const result = await audit([{ ...base, post_hash: "zero", season_progress: { rhythm: value, enchantment: { selected: 1, expected: 2 } } }]);
+    assert.equal(result.segments.startSeason.rhythm.sampleCount, 0, JSON.stringify(value));
+    assert.equal(result.segments.startSeason.enchantment.sampleCount, 1, JSON.stringify(value));
+    const onlyZero = await audit([{ ...base, post_hash: "only-zero", season_progress: { rhythm: value } }]);
+    assert.equal(onlyZero.segments.startSeason.rhythm.sampleCount, 0, JSON.stringify(value));
+  }
+});
+
 test("page-marker fallbacks retain usable titles without mixing foreign markets", async () => {
   const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 6000, evidence_kind: "ask", evidence_quality: "high" };
   const result = await audit([

@@ -33,6 +33,7 @@ import {
   priceFor as sharedPriceFor,
   priceRangeFor as sharedPriceRangeFor,
   sampleWeightFor,
+  seasonProgressParts,
   sourceFor,
   stableRowKey,
   timestampFor,
@@ -141,8 +142,6 @@ const structuredSeasonSlugsFor = (row) => {
     if (patterns.has(slug)) slugs.add(slug);
   };
   add(row.start_season_slug);
-  if (row.season_progress && typeof row.season_progress === "object")
-    Object.keys(row.season_progress).forEach(add);
   if (Array.isArray(row.seasons))
     row.seasons.forEach((season) =>
       add(typeof season === "string" ? season : season?.slug),
@@ -155,11 +154,12 @@ const startSeasonFor = (row) => {
   if (row.season_progress && typeof row.season_progress === "object") {
     const hasProgress = (value) => {
       if (value === null || value === undefined || value === false) return false;
-      if (typeof value === "number") return value > 0;
-      const normalized = String(value).trim().toLowerCase();
-      if (!normalized || /^(?:0|0\s*\/\s*\d+|⁰|none|no|false|-)$/.test(normalized))
-        return false;
-      return true;
+      if (typeof value === "number") return Number.isSafeInteger(value) && value > 0;
+      // Legacy sources use "start" as an explicit marker, not a fraction.
+      if (typeof value === "string" && value.trim().toLowerCase() === "start") return true;
+      if (Array.isArray(value)) return false;
+      const parts = seasonProgressParts(value);
+      return parts !== null && parts.expected > 0 && parts.selected > 0 && parts.selected <= parts.expected;
     };
     for (const slug of patterns.keys()) {
       if (Object.hasOwn(row.season_progress, slug) && hasProgress(row.season_progress[slug]))
