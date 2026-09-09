@@ -11,13 +11,16 @@ import {
 
 const argument = (name, fallback) => {
   const index = process.argv.indexOf(name);
-  return index >= 0 ? process.argv[index + 1] : fallback;
+  const value = index >= 0 ? process.argv[index + 1] : fallback;
+  if (!value?.trim() || value.startsWith("--"))
+    throw new Error(`${name} requires an explicit file path.`);
+  return value;
 };
 const documentsPath = resolve(
   argument("--documents", "work/drive-documents.private.jsonl"),
 );
 const marketPath = resolve(
-  argument("--market", "work/valuation-drive-2026-08-30.jsonl"),
+  argument("--market"),
 );
 const outputPath = resolve(
   argument("--out", "work/drive-guid-reconstruction.private.jsonl"),
@@ -69,12 +72,14 @@ const sameStringSet = (left, right) => {
   return [...left].sort().every((value, index) => value === sortedRight[index]);
 };
 
-const [documents, marketRows, catalog, valuation] = await Promise.all([
-  readFile(documentsPath, "utf8").then(lines),
-  readFile(marketPath, "utf8").then(lines),
+const [documentText, marketText, catalog, valuation] = await Promise.all([
+  readFile(documentsPath, "utf8"),
+  readFile(marketPath, "utf8"),
   loadRuntimeCatalog(),
   loadValuationRuntime(),
 ]);
+const documents = lines(documentText);
+const marketRows = lines(marketText);
 const resolver = catalog.buildCatalogNameResolver(
   catalog.wikiItems,
   catalog.zhItemSearchNames,
@@ -278,6 +283,11 @@ const summarizeCompleteness = (rows) => ({
   ),
 });
 const summary = {
+  input_sources: {
+    documents_sha256: createHash("sha256").update(documentText).digest("hex"),
+    market_sha256: createHash("sha256").update(marketText).digest("hex"),
+    market_row_count: marketRows.length,
+  },
   document_count: documents.length,
   priced_document_count: priced.length,
   comparable_document_count: comparable.length,

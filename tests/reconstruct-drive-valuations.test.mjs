@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
@@ -143,6 +143,11 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       reconstructed.every((row) => row.document_hash.length === 16),
     );
     const report = JSON.parse(await readFile(summary, "utf8"));
+    assert.deepEqual(report.input_sources, {
+      documents_sha256: createHash("sha256").update(await readFile(documents, "utf8")).digest("hex"),
+      market_sha256: createHash("sha256").update(await readFile(market, "utf8")).digest("hex"),
+      market_row_count: prices.length,
+    });
     assert.equal(report.document_count, 5);
     assert.equal(report.priced_document_count, 5);
     assert.equal(report.comparable_document_count, 4);
@@ -169,9 +174,18 @@ test("refuses to write reconstructed private data outside work", async () => {
   await assert.rejects(
     execFileAsync(
       process.execPath,
-      [script, "--out", "tests/private-leak.jsonl"],
+      [script, "--market", "work/test-market.jsonl", "--out", "tests/private-leak.jsonl"],
       { cwd: root },
     ),
     /private work directory/u,
   );
+});
+
+test("requires an explicit market source instead of silently replaying old prices", async () => {
+  for (const args of [[], ["--market"], ["--market", ""], ["--market", "--out", "work/unused.jsonl"]]) {
+    await assert.rejects(
+      execFileAsync(process.execPath, [script, ...args], { cwd: root }),
+      /--market requires an explicit file path/u,
+    );
+  }
 });
