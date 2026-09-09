@@ -13,7 +13,36 @@ test("package bounds reject negations, approximations and conflicting exact coun
   assert.equal(extractMarketTitleEvidence("魔法無斷80禮+千蠟").paidPackageCount, 80);
   assert.equal(extractMarketTitleEvidence("魔法無斷80禮百蠟").paidPackageCount, 80);
 });
-import { extractMarketTitleEvidence, extractMarketPackageRange } from "../scripts/lib/market-title-evidence.mjs";
+import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor } from "../scripts/lib/market-title-evidence.mjs";
+
+test("accepts season-count, package-account and transferable wingless headings", () => {
+  for (const [title, slug] of [
+    ["預言八季禮包號", "prophecy"], ["預言12季禮包號", "prophecy"],
+    ["音韻七季禮包號", "rhythm"], ["協奏兩季禮包號", "duets"],
+    ["狂歡禮包號", "carnival"], ["織光禮包無翼", "lightmending"],
+    ["姆明綁全出無翼", "moomin"], ["極光綁全出禮包無翼", "aurora"],
+    ["遷途禮包簡", "migration"], ["遷徒微斷號", "migration"],
+  ]) {
+    const result = extractMarketTitleEvidence(title);
+    assert.equal(result.startSeasonSlug, slug, title);
+    assert.equal(result.paidPackageCount, null, title);
+  }
+  for (const title of ["狂歡禮包", "預言季卡禮包號", "姆明斗篷禮包號", "王子飞行白梟", "緬懷狂歡禮包號", "王子三件套禮包號", "王子圍巾斗禮包號", "姆明耳尾禮包號", "極光金翅膀禮包號", "預言阿努面具禮包號", "姆明耳尾綁全出無翼"]) {
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
+  }
+});
+
+test("blank metadata and document page markers do not hide the real heading", () => {
+  assert.equal(marketHeadlineFor({ title: "  ", listing_title: "N/A", listing_text: "\uFEFF分頁 1\n\n預言八季禮包號\n綁定資料" }), "預言八季禮包號");
+  assert.equal(marketHeadlineFor({ title: "狂歡禮包號", listing_text: "其他資料" }), "狂歡禮包號");
+  assert.equal(marketHeadlineFor({}), "");
+});
+
+test("item names before simple-account suffixes are not start-season claims", () => {
+  for (const title of ["王子三件套禮包簡", "姆明耳尾禮包簡", "極光金翅膀禮包簡", "遷途武士褲禮包簡"]) {
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
+  }
+});
 
 test("retains package intervals without turning lower bounds into exact counts", () => {
   for (const text of ["魔法無斷60+禮包", "魔法無斷禮包60+", "魔法無斷百禮", "魔法無斷60～80禮"]) {

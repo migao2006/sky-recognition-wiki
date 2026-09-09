@@ -299,7 +299,7 @@ export const breakClassFor = (row) => {
 // A converted TWD amount is still evidence from its original currency market.
 // Keep this boundary identical in the source audit and full-model validator.
 export const marketExclusionReason = (row) => {
-  const text = `${row.region ?? ""} ${row.currency ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
+  const text = `${row.region ?? ""} ${row.currency ?? ""} ${row.title ?? ""} ${row.listing_title ?? ""} ${row.listing_text ?? ""} ${row.account_features ?? ""}`;
   if (/國服|中國服|陸服|\b(?:cn|china)\b/i.test(text)) return "china";
   const currencies = [row.original_currency, row.currency_original, row.currency]
     .filter((value) => value != null && String(value).trim())

@@ -29,7 +29,7 @@ const seasonAliases = [
   ["radiance", ["染色"]],
   ["blue-bird", ["青鳥", "青鸟"]],
   ["two-embers-part-1", ["暮星"]],
-  ["migration", ["遷徙", "迁徙"]],
+  ["migration", ["遷徙", "迁徙", "遷徒", "遷途"]],
   ["lightmending", ["織光", "织光"]],
   ["carnival", ["狂歡", "狂欢"]],
   ["dear-van-gogh", ["致梵谷", "致梵高", "梵谷", "梵高"]],
@@ -45,6 +45,15 @@ const hasNegated = (text, expression) =>
   new RegExp(`(?:非|不是|並非|并非|不算|非為|非为)(?:${expression})`, "u").test(text);
 
 const unique = (values) => [...new Set(values)];
+
+// Both calibration and the report read the same actual heading, not a blank
+// metadata field or the document viewer's page marker.
+export const marketHeadlineFor = (row) => {
+  const usable = value => typeof value === "string" && value.trim() &&
+    !/^(?:unknown|n\/a|null|none|-|分頁\s*\d+)$/iu.test(value.trim());
+  return [row.title, row.listing_title, ...String(row.listing_text ?? "").split(/\r?\n/u)]
+    .find(usable)?.trim() ?? "";
+};
 
 const seasonClaimsFor = (text) => {
   const claims = [];
@@ -134,7 +143,8 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   const before = text.slice(0, claim.index);
   // A seasonal pass or a named item is not evidence that the account began
   // that season, even when the same title also contains seller shorthand.
-  if (/^(?:季)?卡|^(?:通行)?證|^(?:斗篷|披風|面具|髮型|发型|髮飾|发饰|樂器|乐器|禮包|礼包)/u.test(after))
+  const packageAccount = /^(?:季)?(?:綁全出|绑全出)?(?:禮包|礼包)(?:號|号|帳|帐|簡|简|無翼|无翼)/u.test(after);
+  if (/^(?:季)?卡|^(?:通行)?證|^(?:斗篷|披風|面具|髮型|发型|髮飾|发饰|樂器|乐器)/u.test(after) || (/^(?:禮包|礼包)/u.test(after) && !packageAccount))
     return null;
   if (/(?:非|不是|並非|并非)(?:季)?$/.test(before) && /^(?:季)?起/u.test(after))
     return null;
@@ -142,8 +152,11 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   const accountTitle = /(?:號|号|帳|帐)/u.test(text);
   const sellerSummary = /(?:少|中|多)(?:禮|礼)|(?:禮包|礼包)\d+|\d+(?:禮|礼)(?:包)?/u.test(text);
   const explicitBreakSeason = /(?:斷|断)季/u.test(text);
-  const accountEvidence = accountTitle || accountStyle !== null || breakClass !== null || explicitBreakSeason;
-  return explicitStart || (accountEvidence && (breakClass !== null || sellerSummary || explicitBreakSeason || accountStyle !== null))
+  const countedSeasons = /^(?:\d+|[一二兩两三四五六七八九十]+)季(?:禮包|礼包)?(?:號|号|帳|帐)/u.test(after);
+  const transferableWingless = /^(?:季)?(?:(?:綁全出|绑全出)(?:無翼|无翼)|(?:無翼|无翼)(?:綁全出|绑全出))/u.test(after);
+  const adjacentAccountStyle = accountStyle !== null && /^(?:季)?(?:簡|简|普|普通)/u.test(after);
+  const accountEvidence = accountTitle || accountStyle !== null || breakClass !== null || explicitBreakSeason || packageAccount || transferableWingless;
+  return explicitStart || (accountEvidence && (breakClass !== null || sellerSummary || explicitBreakSeason || adjacentAccountStyle || countedSeasons || packageAccount || transferableWingless))
     ? claim.slug
     : null;
 };

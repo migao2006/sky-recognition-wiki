@@ -13,6 +13,18 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 
+test("page-marker fallbacks retain usable titles without mixing foreign markets", async () => {
+  const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 6000, evidence_kind: "ask", evidence_quality: "high" };
+  const result = await audit([
+    { ...base, post_hash: "page", title: " ", listing_text: "分頁 1\n預言八季禮包號" },
+    { ...base, post_hash: "china", title: "國服狂歡禮包號" },
+    { ...base, post_hash: "hkd", listing_title: "狂歡禮包號 300港幣" },
+  ]);
+  assert.equal(result.eligibleRows, 1);
+  assert.equal(result.segments.startSeason.prophecy.sampleCount, 1);
+  assert.equal(result.segments.startSeason.carnival.sampleCount, 0);
+});
+
 test("headline-only accounts contribute reduced-weight season evidence without full inventories", async () => {
   const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 6000, evidence_kind: "ask", evidence_quality: "high" };
   const headline = await audit([{ ...base, post_hash: "headline", title: "表演大斷簡號" }]);

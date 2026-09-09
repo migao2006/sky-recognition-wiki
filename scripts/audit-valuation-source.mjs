@@ -1,6 +1,6 @@
 import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
-import { extractMarketTitleEvidence, extractMarketPackageRange } from "./lib/market-title-evidence.mjs";
+import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor } from "./lib/market-title-evidence.mjs";
 import {
   valuationConfidenceValues,
   valuationModelInputKeys,
@@ -114,7 +114,7 @@ const priceFor = (row) => sharedPriceFor(row, {
 const headlineCache = new WeakMap();
 const headlineFor = (row) => {
   if (!headlineCache.has(row)) {
-    const title = row.title ?? row.listing_title ?? String(row.listing_text ?? "").split(/\r?\n/).map(line => line.trim()).find(line => line && !/^分頁\s*\d+$/.test(line)) ?? "";
+    const title = marketHeadlineFor(row);
     headlineCache.set(row, { ...extractMarketTitleEvidence(title), packageRange: extractMarketPackageRange(title) });
   }
   return headlineCache.get(row);

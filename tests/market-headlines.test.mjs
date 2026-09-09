@@ -12,6 +12,12 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("report reads the same blank-metadata and page-marker fallback as calibration", () => {
+  const report = buildMarketHeadlineReport([listing({ title: " ", listing_title: "N/A", listing_text: "分頁 1\n預言八季禮包號" })]);
+  assert.equal(report.eligible_rows, 1);
+  assert.equal(report.markets[0].season_breaks[0].season, "prophecy");
+});
+
 test("keeps public listing markets separate and reports exact package-tier differences", () => {
   const rows = [900, 1000, 1100].map((price) => listing({ price_original: price })).concat([700, 800, 900].map((price) => listing({ title: "緬懷起 無斷 禮包10 簡號", price_original: price })));
   const report = buildMarketHeadlineReport(rows);

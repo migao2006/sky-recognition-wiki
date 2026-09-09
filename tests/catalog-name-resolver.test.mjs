@@ -43,6 +43,12 @@ test("resolves reviewed event wording without changing paid identity", () => {
     ["宏音海螺", "gHfkqCK-A8", true],
     ["海浪斗篷", "wMsUtkvt3s", true],
     ["擬人聲樂器", "K0NBv__mv8", true],
+    ["雛鳥之琴", "1xIwQnxHV-", true],
+    ["星夜斗篷", "tz-IwazQ7k", true],
+    ["彩繪面具", "Z9HZ5p9DX7", true],
+    ["大耳狗娃娃", "Pyk6fYvTVM", true],
+    ["蝴蝶白靈花", "jc8Pyt7eLR", true],
+    ["星夜面具", "C3Amjr4SgJ", true],
   ];
   for (const [term, guid, paid] of cases) {
     const match = resolver.resolve(term);
@@ -61,6 +67,13 @@ test("uses reviewed player display names for the Drive-confirmed paid items", ()
     ["VZyiD3Wmtp", "雪花頭飾"],
     ["gHfkqCK-A8", "宏音海螺"],
     ["wMsUtkvt3s", "海浪斗篷"],
+    ["1xIwQnxHV-", "雛鳥之琴"],
+    ["tz-IwazQ7k", "星夜斗篷"],
+    ["Z9HZ5p9DX7", "彩繪面具"],
+    ["Pyk6fYvTVM", "大耳狗娃娃"],
+    ["jc8Pyt7eLR", "蝴蝶白靈花"],
+    ["C3Amjr4SgJ", "星夜面具"],
+    ["K0NBv__mv8", "人聲樂器"],
   ];
   for (const [guid, displayName] of cases) {
     const item = catalog.wikiItems.find((candidate) => candidate.guid === guid);

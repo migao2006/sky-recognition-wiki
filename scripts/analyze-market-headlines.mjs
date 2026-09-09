@@ -1,7 +1,7 @@
 import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { extractMarketTitleEvidence } from "./lib/market-title-evidence.mjs";
+import { extractMarketTitleEvidence, marketHeadlineFor as titleFor } from "./lib/market-title-evidence.mjs";
 import {
   accountKeyFor,
   breakClasses,
@@ -33,11 +33,6 @@ const packageTierFor = (count, sellerTier) => {
     return `${lower}-${lower + 9}`;
   }
   return ["few", "medium", "many"].includes(sellerTier) ? `seller:${sellerTier}` : "unknown";
-};
-const titleFor = (row) => {
-  const title = row.title ?? row.listing_title;
-  if (known(title)) return title;
-  return String(row.listing_text ?? "").split(/\r?\n/u).find((line) => line.trim()) ?? "";
 };
 const priceAndMarketFor = (row) => {
   const isPublic = Object.hasOwn(row, "price_original") || Object.hasOwn(row, "currency_original");
