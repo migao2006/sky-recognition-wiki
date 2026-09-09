@@ -84,7 +84,7 @@ test("creates a private replayable predictor from a complete backup", async () =
     assert.equal(row.snapshot_hash.length, 64);
     assert.equal(row.inventory_complete, true);
     assert.equal(row.bindings_complete, true);
-    assert.equal(row.valuation_model_schema_version, 3);
+    assert.equal(row.valuation_model_schema_version, 4);
     assert.deepEqual(row.model_evidence.bindings, backup.bindings);
     assert.deepEqual(row.model_evidence.resources, {
       candles: 900,

@@ -26,6 +26,7 @@ import {
   breakClassFor,
   marketExclusionReason,
   holdoutSplitCommitmentFor,
+  hasCompleteModelEvidence,
   inHoldout,
   packageTierFor,
   preferredRow,
@@ -294,7 +295,7 @@ test("same-time predictor ties resolve deterministically regardless of source or
     account_identity_scheme: "stable-hmac-v1",
     inventory_complete: true,
     bindings_complete: true,
-    valuation_model_schema_version: 3,
+    valuation_model_schema_version: 4,
     season_progress: { carnival: "畢" },
     season_progress_end_slug: "carnival",
   };
@@ -305,4 +306,38 @@ test("same-time predictor ties resolve deterministically regardless of source or
   };
 
   assert.equal(preferredRow(first, second), preferredRow(second, first));
+});
+
+test("schema v3 evidence is not accepted as a complete v4 predictor", () => {
+  const salt = "schema-v4-test-salt-that-is-at-least-32-characters";
+  const current = {
+    account_fingerprint: "a".repeat(64),
+    snapshot_hash: "b".repeat(64),
+    identity_namespace: "c".repeat(64),
+    account_identity_scheme: "stable-hmac-v1",
+    inventory_complete: true,
+    bindings_complete: true,
+    valuation_model_schema_version: 4,
+    model_evidence: {
+      bindings: {
+        google: "none", nintendo: "none", gameCenter: "none", facebook: "none",
+        steam: "none", twitch: "none", playstation: "none",
+      },
+      resources: { candles: 0, hearts: 0, ascended: 0, passes: 0 },
+    },
+  };
+  const signedCurrent = {
+    ...current,
+    evidence_signature: modelEvidenceSignatureFor(current, salt),
+  };
+  const legacy = {
+    ...current,
+    valuation_model_schema_version: 3,
+  };
+  const signedLegacy = {
+    ...legacy,
+    evidence_signature: modelEvidenceSignatureFor(legacy, salt),
+  };
+  assert.equal(hasCompleteModelEvidence(signedCurrent, { hashSalt: salt }), true);
+  assert.equal(hasCompleteModelEvidence(signedLegacy, { hashSalt: salt }), false);
 });

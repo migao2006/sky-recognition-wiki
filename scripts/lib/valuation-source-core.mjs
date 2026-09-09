@@ -178,7 +178,7 @@ export const hasCompleteModelEvidenceShape = (row) =>
   /^[a-f0-9]{64}$/u.test(String(row?.account_fingerprint ?? "")) &&
   /^[a-f0-9]{64}$/u.test(String(row?.snapshot_hash ?? "")) &&
   /^[a-f0-9]{64}$/u.test(String(row?.identity_namespace ?? "")) &&
-  row?.valuation_model_schema_version === 3 &&
+  row?.valuation_model_schema_version === 4 &&
   row?.account_identity_scheme === "stable-hmac-v1" &&
   row?.inventory_complete === true &&
   row?.bindings_complete === true &&

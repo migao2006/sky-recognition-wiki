@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { tsImport } from "tsx/esm/api";
 import { loadValuationRuntime } from "../scripts/load-valuation-runtime.mjs";
+import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 import { calculateValuationModel } from "../app/valuation-model-core.js";
 
 const calibrationLoaded = await tsImport(
@@ -427,6 +428,37 @@ test("partial graduation is below full graduation without a second break penalty
   assert.ok(
     partial.contributions.some((row) => row.label === "未完成畢業禮"),
   );
+});
+
+test("adding later graduation items never reduces a complete starting-season account", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const liveDomain = { ...catalog, getZhName: catalog.zhItemName };
+  const estimate = (chosen) => estimateValuation({
+    analysis: analyzeValuation({ chosen, bindings: bindings(), bindingNote: "", domain: liveDomain }),
+    resources: {},
+  });
+  const magic = catalog.seasonGraduationItems.get("enchantment");
+  const performanceHair = catalog.wikiItems.find((entry) => entry.guid === "Lw93RiDG46");
+  assert.ok(magic?.length && performanceHair);
+  const before = estimate(magic);
+  const after = estimate([...magic, performanceHair]);
+  assert.equal(after.modelFeatures.partialDiscountHigh, 0);
+  assert.ok(after.midpoint >= before.midpoint);
+
+  for (const [index, slug] of catalog.graduationSeasonSlugs.entries()) {
+    const chosen = catalog.seasonGraduationItems.get(slug);
+    if (!chosen?.length) continue;
+    const baseline = estimate(chosen);
+    for (const later of catalog.graduationSeasonSlugs.slice(index + 1)) {
+      for (const addition of catalog.seasonGraduationItems.get(later) ?? []) {
+        const result = estimate([...chosen, addition]);
+        for (const field of ["low", "high"]) {
+          assert.ok(result.range[field] >= baseline.range[field], `${slug} + ${addition.guid}: ${field}`);
+        }
+        assert.ok(result.midpoint >= baseline.midpoint, `${slug} + ${addition.guid}: midpoint`);
+      }
+    }
+  }
 });
 
 test("market package tier and value count one real package only once", () => {

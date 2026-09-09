@@ -133,10 +133,13 @@ const missingModifierValues = (candidate, key, values) =>
   });
 const hasFullModelPredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
-  Number(aggregate?.provenance?.modelSchemaVersion) >= 2;
+  Number(aggregate?.provenance?.modelSchemaVersion) === 4;
+const hasLegacyBaselinePredictor = (aggregate) =>
+  aggregate?.provenance?.predictorSchema === "valuation_model" &&
+  Number(aggregate?.provenance?.modelSchemaVersion) === 2;
 const hasReplayableCandidatePredictor = (aggregate) =>
   aggregate?.provenance?.predictorSchema === "valuation_model" &&
-  Number(aggregate?.provenance?.modelSchemaVersion) >= 3 &&
+  Number(aggregate?.provenance?.modelSchemaVersion) === 4 &&
   aggregate?.provenance?.seasonProgressEndSlug === replaySeasonProgressEndSlug;
 const supportedSeedsFor = (aggregate) => {
   const startSeason = aggregate?.segments?.startSeason ?? {};
@@ -179,7 +182,32 @@ export const withDerivedSeasonBands = (aggregate) => {
   };
 };
 
-const partialDiscountFor = (aggregate, row) => {
+const partialDiscountForV4 = (aggregate, row) => {
+  if (!hasReplayableSeasonProgress(row, replaySeasonProgressOptions)) return null;
+  const startSlug = String(row.start_season_slug ?? "").trim().toLowerCase();
+  const progress = seasonProgressParts(row.season_progress?.[startSlug]);
+  if (
+    !progress ||
+    progress.expected <= 0 ||
+    progress.selected < 0 ||
+    progress.selected > progress.expected
+  )
+    return null;
+  if (progress.selected === progress.expected) return { low: 0, high: 0 };
+  const band = aggregate.segments?.startSeason?.[startSlug];
+  if (!Number.isFinite(band?.contributionLow) || !Number.isFinite(band?.contributionHigh))
+    return null;
+  const missingRatio = 1 - progress.selected / progress.expected;
+  return {
+    low: band.contributionLow * missingRatio,
+    high: band.contributionHigh * missingRatio,
+  };
+};
+
+// The pinned v2 baseline predates the v4 start-season-only policy. Rebuild
+// its historical all-season partial-graduation deduction from the frozen
+// baseline bands instead of trusting a persisted source-row amount.
+const partialDiscountForLegacyBaseline = (aggregate, row) => {
   if (!hasReplayableSeasonProgress(row, replaySeasonProgressOptions)) return null;
   let low = 0;
   let high = 0;
@@ -206,12 +234,22 @@ const partialDiscountFor = (aggregate, row) => {
 export const predictValuationAggregate = (
   aggregate,
   sample,
-  { assumeValidated = aggregate?.validationStatus === "validated" } = {},
+  {
+    assumeValidated = aggregate?.validationStatus === "validated",
+    allowLegacyBaseline = false,
+  } = {},
 ) => {
-  if (hasFullModelPredictor(aggregate)) {
+  const legacyBaseline = allowLegacyBaseline && hasLegacyBaselinePredictor(aggregate);
+  if (
+    aggregate?.provenance?.predictorSchema === "valuation_model" &&
+    !hasFullModelPredictor(aggregate) &&
+    !legacyBaseline
+  )
+    return null;
+  if (hasFullModelPredictor(aggregate) || legacyBaseline) {
     if (!sample.modelFeatures) return null;
     if (
-      Number(aggregate?.provenance?.modelSchemaVersion) >= 3 &&
+      Number(aggregate?.provenance?.modelSchemaVersion) === 4 &&
       !hasReplayableCandidatePredictor(aggregate)
     )
       return null;
@@ -240,11 +278,8 @@ export const predictValuationAggregate = (
     )
       return null;
     const partialDiscount = replayCandidate
-      ? partialDiscountFor(aggregate, sample.row)
-      : {
-          low: sample.modelFeatures.partialDiscountLow,
-          high: sample.modelFeatures.partialDiscountHigh,
-        };
+      ? partialDiscountForV4(aggregate, sample.row)
+      : partialDiscountForLegacyBaseline(aggregate, sample.row);
     if (!partialDiscount) return null;
     const confidence = replayCandidate
       ? adjustConfidenceForEvidence({
@@ -435,7 +470,7 @@ export const validateValuationModel = ({
     completeEvidenceRows.map((sample) => sample.row.identity_namespace),
   );
   const candidateErrorDetails = errorDetails(replayCandidate, { assumeValidated: true });
-  const baselineErrorDetails = errorDetails(replayBaseline);
+  const baselineErrorDetails = errorDetails(replayBaseline, { allowLegacyBaseline: true });
   const candidateMetrics = summarizeErrors(candidateErrorDetails);
   const baselineMetrics = summarizeErrors(baselineErrorDetails);
   const replayEndIndex = orderedSeasonSlugs.indexOf(replaySeasonProgressEndSlug);

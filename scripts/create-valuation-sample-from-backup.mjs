@@ -146,7 +146,10 @@ const row = {
   snapshot_hash: snapshotHash,
   inventory_complete: true,
   bindings_complete: true,
-  valuation_model_schema_version: 3,
+  // v4 only discounts an incomplete graduation at the account's starting
+  // season. Later gaps remain part of the break classification, so they must
+  // not also be subtracted as independent season-value penalties.
+  valuation_model_schema_version: 4,
   model_evidence: {
     bindings: Object.fromEntries(
       accountConfig.bindingKeys.map((key) => [key, imported.bindings[key]]),

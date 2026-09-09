@@ -93,7 +93,7 @@ const aggregate = (median, { fullModel = false, status = "unvalidated" } = {}) =
   ...(fullModel
     ? {
         provenance: {
-          modelSchemaVersion: 3,
+          modelSchemaVersion: 4,
           predictorSchema: "valuation_model",
           seasonProgressEndSlug: replaySeasonProgressEndSlug,
         },
@@ -167,7 +167,7 @@ const unsignedRows = Array.from({ length: 500 }, (_, index) => {
   account_identity_scheme: "stable-hmac-v1",
   inventory_complete: true,
   bindings_complete: true,
-  valuation_model_schema_version: 3,
+  valuation_model_schema_version: 4,
   model_evidence: {
     bindings: {
       google: "none",
@@ -273,7 +273,7 @@ test("validator predictor uses the browser's blended season low, midpoint, and h
   });
 });
 
-test("schema v3 replays partial-season discounts and confidence from the candidate", () => {
+test("schema v4 replays only the starting season's partial-graduation discount", () => {
   const candidate = aggregate(10000, { fullModel: true });
   Object.assign(candidate.segments.startSeason.assembly, {
     evidenceBreakdown: { sold: 8 },
@@ -320,7 +320,41 @@ test("schema v3 replays partial-season discounts and confidence from the candida
   );
 });
 
-test("schema v3 rejects unknown, incomplete, or mismatched season progress", () => {
+test("schema v4 does not subtract a later season's partial graduation twice", () => {
+  const candidate = aggregate(10000, { fullModel: true });
+  const replay = withDerivedSeasonBands(candidate);
+  const segment = replay.segments.startSeason.lightseekers;
+  const staleFeatures = {
+    ...modelFeatures,
+    partialDiscountLow: 9999,
+    partialDiscountHigh: 9999,
+  };
+  const sample = {
+    startSeason: "lightseekers",
+    breakClass: "none",
+    packageTier: "few",
+    accountStyle: "regular",
+    row: {
+      start_season_slug: "lightseekers",
+      season_progress: completeSeasonProgress("lightseekers", { rhythm: "1/2" }),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    modelFeatures: staleFeatures,
+  };
+  const expected = calculateValuationModel({
+    ...staleFeatures,
+    baseLow: segment.p25,
+    baseHigh: segment.p75,
+    partialDiscountLow: 0,
+    partialDiscountHigh: 0,
+  });
+  assert.deepEqual(
+    predictValuationAggregate(replay, sample, { assumeValidated: true }),
+    { low: expected.low, high: expected.high, price: expected.midpoint },
+  );
+});
+
+test("schema v4 rejects unknown, incomplete, or mismatched season progress", () => {
   const replay = withDerivedSeasonBands(aggregate(10000, { fullModel: true }));
   const sample = {
     startSeason: "assembly",
@@ -411,7 +445,7 @@ test("keeps an explicit canonical start season when the raw baseline segment is 
   assert.equal(report.criteria.completeModelPredictors.actual, 1);
 });
 
-test("schema v3 requires valid replay classifications and candidate modifiers", () => {
+test("schema v4 requires valid replay classifications and candidate modifiers", () => {
   const candidate = withDerivedSeasonBands(aggregate(10000, { fullModel: true }));
   const sample = {
     startSeason: "assembly",
@@ -738,6 +772,7 @@ test("never promotes legacy data even if it otherwise resembles a passing aggreg
     ...aggregate(10000, { fullModel: true, status: "legacy-unvalidated" }),
     schemaVersion: 3,
   };
+  legacy.provenance.modelSchemaVersion = 3;
   const report = validateValuationModel({
     candidate: legacy,
     baseline: aggregate(8000),
@@ -746,6 +781,65 @@ test("never promotes legacy data even if it otherwise resembles a passing aggreg
   });
   assert.equal(report.outcome, "legacy-unvalidated");
   assert.equal(report.criteria.candidateProvenance.pass, false);
+  assert.equal(
+    predictValuationAggregate(legacy, {
+      startSeason: "assembly",
+      breakClass: "none",
+      packageTier: "few",
+      accountStyle: "regular",
+      row: {
+        start_season_slug: "assembly",
+        season_progress: completeSeasonProgress("assembly"),
+        season_progress_end_slug: replaySeasonProgressEndSlug,
+      },
+      modelFeatures,
+    }),
+    null,
+  );
+});
+
+test("uses the fixed v2 baseline only through the historical baseline route", () => {
+  const candidate = aggregate(10000, { fullModel: true });
+  const baseline = aggregate(10000, { fullModel: true });
+  baseline.provenance.modelSchemaVersion = 2;
+  const replayCandidate = withDerivedSeasonBands(candidate);
+  const replayBaseline = withDerivedSeasonBands(baseline);
+  const sample = {
+    startSeason: "lightseekers",
+    breakClass: "none",
+    packageTier: "few",
+    accountStyle: "regular",
+    row: {
+      start_season_slug: "lightseekers",
+      season_progress: completeSeasonProgress("lightseekers", { rhythm: "1/2" }),
+      season_progress_end_slug: replaySeasonProgressEndSlug,
+    },
+    modelFeatures: {
+      ...modelFeatures,
+      partialDiscountLow: 9999,
+      partialDiscountHigh: 9999,
+    },
+  };
+  assert.equal(predictValuationAggregate(replayBaseline, sample), null);
+  const v2Prediction = predictValuationAggregate(
+    replayBaseline,
+    sample,
+    { allowLegacyBaseline: true },
+  );
+  const v4Prediction = predictValuationAggregate(replayCandidate, sample);
+  assert.ok(v2Prediction);
+  assert.ok(v4Prediction);
+  assert.ok(
+    v2Prediction.price < v4Prediction.price,
+    "v2 recalculates the later Rhythm partial discount while v4 does not",
+  );
+  const report = validateValuationModel({
+    candidate,
+    baseline,
+    rows,
+    splitSeed: "fixture",
+  });
+  assert.ok(report.baseline.evaluatedPredictionCount > 0);
 });
 
 test("rejects a candidate that declares a shortened season replay scope", () => {

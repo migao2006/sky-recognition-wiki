@@ -368,7 +368,9 @@ export const estimateValuation = ({
     });
   const partialSeasonDiscount = seasonRows.reduce(
     (total, row) => {
-      if (!row.selected || row.selected >= row.expected) return total;
+      // Only the starting-season anchor assumes full graduation. Later gaps
+      // already affect the break profile; charging them at 0 -> 1 lowers value.
+      if (row.slug !== analysis.startSeasonSlug || !row.selected || row.selected >= row.expected) return total;
       const missingRatio = Math.max(0, 1 - row.completion);
       return {
         low: total.low + row.contributionLow * missingRatio,

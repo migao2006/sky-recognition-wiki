@@ -74,7 +74,7 @@ test("converts a private manifest into complete signed samples", async () => {
     assert.deepEqual(summary.countsByStartSeason, { moments: 1 });
     assert.equal(sample.inventory_complete, true);
     assert.equal(sample.bindings_complete, true);
-    assert.equal(sample.valuation_model_schema_version, 3);
+    assert.equal(sample.valuation_model_schema_version, 4);
     assert.equal(sample.evidence_signature.length, 64);
   } finally {
     await Promise.all(
