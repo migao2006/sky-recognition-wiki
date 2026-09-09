@@ -49,6 +49,14 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       season_progress: { prophecy: "3/3" },
     },
   ];
+  rows.push({ ...rows[0], post_hash: "private-excluded-bundle-id" });
+  prices.push({
+    ...prices[0],
+    post_hash: "private-excluded-bundle-id",
+    exclude_from_model: true,
+    price_twd_low: 115000,
+    price_twd_high: 115000,
+  });
   try {
     await Promise.all([
       writeFile(
@@ -92,6 +100,16 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(reconstructed[0].model_features_ready, true);
     assert.ok(reconstructed[0].valuation_model);
     assert.ok(reconstructed[1].season_guid_count > 0);
+    const excluded = reconstructed[2];
+    assert.equal(excluded.exclude_from_model, true);
+    assert.equal(excluded.inventory_complete, true);
+    assert.equal(excluded.model_features_ready, false);
+    assert.equal(excluded.valuation_model, undefined);
+    assert.equal(excluded.comparison_class, "excluded");
+    assert.equal(excluded.listing_overlaps_estimate, null);
+    assert.equal(excluded.listing_interval_gap, null);
+    assert.deepEqual(excluded.owned_guids, reconstructed[0].owned_guids);
+    assert.equal(excluded.price_twd_low, 115000);
     assert.deepEqual(reconstructed[1].missing_fields.sort(), [
       "bindings",
       "inventory",
@@ -102,7 +120,13 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       reconstructed.every((row) => row.document_hash.length === 16),
     );
     const report = JSON.parse(await readFile(summary, "utf8"));
-    assert.equal(report.document_count, 2);
+    assert.equal(report.document_count, 3);
+    assert.equal(report.priced_document_count, 3);
+    assert.equal(report.comparable_document_count, 2);
+    assert.equal(report.excluded_document_count, 1);
+    assert.equal(report.all_partial_reconstructions.count, 2);
+    assert.equal(report.evidence_completeness.priced_documents.count, 3);
+    assert.equal(report.evidence_completeness.comparable_documents.count, 2);
     assert.equal(
       report.evidence_completeness.priced_documents.model_features_ready,
       1,

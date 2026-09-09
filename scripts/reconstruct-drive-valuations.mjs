@@ -88,6 +88,7 @@ const valuationDomain = {
 
 const reconstructed = documents.map((document) => {
   const market = marketByHash.get(document.post_hash);
+  const excludedFromModel = market?.exclude_from_model === true;
   const content =
     document.content ??
     (document.content_base64
@@ -155,7 +156,7 @@ const reconstructed = documents.map((document) => {
     ...(!resourceEvidence.complete ? ["resources"] : []),
   ];
   const modelFeaturesReady =
-    missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
+    !excludedFromModel && missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
   const envelope =
     optimistic && restricted
       ? {
@@ -165,7 +166,9 @@ const reconstructed = documents.map((document) => {
           midpoint_high: Math.max(optimistic.midpoint, restricted.midpoint),
         }
       : null;
-  const comparisonClass = !market
+  const comparisonClass = excludedFromModel
+    ? "excluded"
+    : !market
     ? "no-price"
     : ambiguity.length === 0 &&
         textGuids.size > 0 &&
@@ -174,12 +177,13 @@ const reconstructed = documents.map((document) => {
       ? "paid-count-covered"
       : "partial-guid";
   const listingOverlapsEstimate =
-    market && envelope
+    market && envelope && !excludedFromModel
       ? market.price_twd_low <= envelope.high &&
         market.price_twd_high >= envelope.low
       : null;
   return {
     document_hash: hashTerm(document.post_hash),
+    exclude_from_model: excludedFromModel,
     price_kind: market?.price_kind ?? null,
     price_twd_low: market?.price_twd_low ?? null,
     price_twd_high: market?.price_twd_high ?? null,
@@ -209,7 +213,7 @@ const reconstructed = documents.map((document) => {
     estimate_envelope: envelope,
     listing_overlaps_estimate: listingOverlapsEstimate,
     listing_interval_gap:
-      market && envelope
+      market && envelope && !excludedFromModel
         ? intervalGap(
             market.price_twd_low,
             market.price_twd_high,
@@ -220,7 +224,8 @@ const reconstructed = documents.map((document) => {
   };
 });
 
-const comparable = reconstructed.filter((row) => row.price_twd_low !== null);
+const priced = reconstructed.filter((row) => row.price_twd_low !== null);
+const comparable = priced.filter((row) => !row.exclude_from_model);
 const exact = comparable.filter(
   (row) => row.comparison_class === "paid-count-covered",
 );
@@ -271,7 +276,9 @@ const summarizeCompleteness = (rows) => ({
 });
 const summary = {
   document_count: documents.length,
-  priced_document_count: comparable.length,
+  priced_document_count: priced.length,
+  comparable_document_count: comparable.length,
+  excluded_document_count: reconstructed.filter((row) => row.exclude_from_model).length,
   paid_count_covered_exploration: summarize(exact),
   all_partial_reconstructions: summarize(comparable),
   by_price_kind_all_partial: summarizeKinds(comparable),
@@ -282,7 +289,8 @@ const summary = {
   },
   evidence_completeness: {
     all_documents: summarizeCompleteness(reconstructed),
-    priced_documents: summarizeCompleteness(comparable),
+    priced_documents: summarizeCompleteness(priced),
+    comparable_documents: summarizeCompleteness(comparable),
   },
   name_resolution: {
     text_guid_median: quantile(
@@ -300,6 +308,7 @@ const summary = {
     ),
   },
   limitations: [
+    "Explicitly excluded market rows retain GUID diagnostics but emit no model features or price comparison and do not enter fit summaries.",
     "Prices are listings or quick-sale asks, not verified completed sales.",
     "Unknown bindings are evaluated as an optimistic/restricted envelope.",
     "Unknown resources contribute no value.",
