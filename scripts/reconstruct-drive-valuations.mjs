@@ -122,7 +122,7 @@ const reconstructed = documents.map((document) => {
     chosen.length
       ? valuation.estimateValuation({
           analysis: analyze(selectedBindings),
-          resources: resourceEvidence.complete ? resourceEvidence.resources : {},
+          resources: resourceEvidence.resources,
         })
       : null;
   const knownEstimate = bindingEvidence
@@ -205,6 +205,7 @@ const reconstructed = documents.map((document) => {
         : Math.max(0, declaredPaidCount - exactPaidCount),
     binding_evidence: bindingEvidence?.kind ?? null,
     resource_fields: resourceEvidence.observed,
+    resource_values: resourceEvidence.resources,
     inventory_complete: inventoryComplete,
     missing_fields: missingFields,
     model_features_ready: modelFeaturesReady,
@@ -311,7 +312,7 @@ const summary = {
     "Explicitly excluded market rows retain GUID diagnostics but emit no model features or price comparison and do not enter fit summaries.",
     "Prices are listings or quick-sale asks, not verified completed sales.",
     "Unknown bindings are evaluated as an optimistic/restricted envelope.",
-    "Unknown resources contribute no value.",
+    "Each explicitly observed resource contributes independently; unknown resources contribute no value and remain incomplete.",
     "Model features are emitted only after an exact confirmed GUID list, matching canonical package count, complete binding evidence, and all four resource fields.",
     "Ambiguous names never enter owned GUIDs.",
     "Overlap and interval gaps are exploratory listing-fit measures, not model accuracy metrics.",
