@@ -76,7 +76,11 @@ const packageEvidenceFor = (row, titleEvidence) => {
     return packageTierFor(count, null);
   }
   if (range || suppliedRange) return validRange ? `range:${range.min}${range.max === null ? "+" : `-${range.max}`}` : "unknown";
-  return packageTierFor(count, titleEvidence.salePackageTier);
+  const sellerTier = ["few", "medium", "many"].includes(row.seller_package_label) ? row.seller_package_label : null;
+  const titleTier = titleEvidence.salePackageTier;
+  // Seller labels are usable even without a title/count, but remain distinct
+  // from measured package counts. Conflicting labels affect only this dimension.
+  return packageTierFor(count, sellerTier && titleTier && sellerTier !== titleTier ? null : sellerTier ?? titleTier);
 };
 const priceAndMarketFor = (row) => {
   const isPublic = Object.hasOwn(row, "price_original") || Object.hasOwn(row, "currency_original");

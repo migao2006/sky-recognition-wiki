@@ -63,6 +63,28 @@ test("structured bounds override title guesses; invalid or conflicting values st
   }
 });
 
+test("retains explicit seller package labels without inventing counts or rejecting conflicts", () => {
+  const cases = [
+    [{ seller_package_label: "few" }, "seller:few"],
+    [{ seller_package_label: "medium" }, "seller:medium"],
+    [{ seller_package_label: "many" }, "seller:many"],
+    [{ seller_package_label: "unknown" }, "unknown"],
+    [{ seller_package_label: "few", title: "緬懷少禮號" }, "seller:few"],
+    [{ seller_package_label: "few", title: "緬懷多禮號" }, "unknown"],
+    [{ seller_package_label: "few", paid_package_count: 65 }, "60-69"],
+    [{ seller_package_label: "few", paid_package_min: 60 }, "range:60+"],
+    [{ seller_package_label: "many", paid_package_count: "bad" }, "unknown"],
+  ];
+  for (const [fields, tier] of cases) {
+    const report = buildMarketHeadlineReport([listing({ title: "", start_season_slug: "remembrance", ...fields })]);
+    assert.equal(report.eligible_rows, 1);
+    const group = report.markets[0].season_breaks[0];
+    assert.equal(group.packages[0].package_tier, tier);
+    assert.equal(group.no_package_baseline, false);
+    assert.deepEqual(group.package_differences, []);
+  }
+});
+
 test("report reads the same blank-metadata and page-marker fallback as calibration", () => {
   const report = buildMarketHeadlineReport([listing({ title: " ", listing_title: "N/A", listing_text: "分頁 1\n預言八季禮包號" })]);
   assert.equal(report.eligible_rows, 1);
