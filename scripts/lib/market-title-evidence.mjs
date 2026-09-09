@@ -67,6 +67,10 @@ const seasonClaimsFor = (text) => {
   return claims;
 };
 
+// Mentions are not account-start claims: they may identify a cape or bundle.
+export const marketTitleSeasonMentions = (title) =>
+  unique(seasonClaimsFor(normalizedTitle(title)).map(claim => claim.slug));
+
 const breakClassForTitle = (text) => {
   if (/(?:偽|伪)(?:無斷|无断)/u.test(text)) return "slight";
   const definitions = [

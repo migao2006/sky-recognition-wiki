@@ -52,6 +52,23 @@ test("reviewed earlier partial graduation can resolve a later headline season", 
   }
 });
 
+test("a multi-season title cannot lend its break degree to a different structured start", () => {
+  // Real source pattern: 8591 HK 53878130; price is deliberately synthetic.
+  const fields = { title: "姆明大斷少禮簡號｜九色鹿、姆明全禮", start_season_slug: "duets", season_progress: { duets: "2/3", radiance: "1/2" } };
+  for (const extra of [{}, { seller_break_label: "big" }]) {
+    const report = buildMarketHeadlineReport([listing({ ...fields, ...extra })]);
+    assert.equal(report.eligible_rows, 1);
+    const group = report.markets[0].season_breaks[0];
+    assert.equal(group.season, "duets");
+    assert.equal(group.break_class, "unknown");
+    assert.equal(group.packages[0].package_tier, "seller:few");
+  }
+  for (const extra of [{ computed_break_class: "big" }, { title: "大斷少禮簡號" }, { title: "協奏大斷少禮簡號" }]) {
+    const report = buildMarketHeadlineReport([listing({ ...fields, ...extra })]);
+    assert.equal(report.markets[0].season_breaks[0].break_class, "big");
+  }
+});
+
 test("uses partial structured progress when titles do not identify a starting season", () => {
   for (const value of ["complete", "1/2", { selected: 1, expected: 2 }, 1, "start"]) {
     const report = buildMarketHeadlineReport([listing({ title: "耳墜阿努禮包號", season_progress: { prophecy: "complete", rhythm: value, gratitude: "0" } })]);
