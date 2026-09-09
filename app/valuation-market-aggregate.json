@@ -27,7 +27,7 @@
   "split": {
     "splitSeed": "sky-valuation-v3",
     "strategy": "public-seed-legacy",
-    "datasetDigest": "56b1903c3a829494eb6368ec4c56d566c92048e3a37d80902e6da34c39ef1077",
+    "datasetDigest": "c54b454c2dcc863860cdbc3b3ca6a46cbb60dc4a4c39989e32f0686d43e75fdf",
     "splitCommitment": null,
     "trainingMode": "calibration-only",
     "trainingRows": 356,
@@ -1312,13 +1312,13 @@
     },
     "breakClass": {
       "none": {
-        "sampleCount": 40,
-        "effectiveWeight": 14.384,
+        "sampleCount": 42,
+        "effectiveWeight": 14.526,
         "p25": 1800,
         "median": 4100,
         "p75": 25000,
         "evidenceBreakdown": {
-          "ask": 25,
+          "ask": 27,
           "quick_sale": 1,
           "sold": 13,
           "professional_estimate": 0,
@@ -1326,13 +1326,13 @@
         }
       },
       "slight": {
-        "sampleCount": 65,
-        "effectiveWeight": 14.414,
+        "sampleCount": 63,
+        "effectiveWeight": 14.273,
         "p25": 6000,
         "median": 8000,
         "p75": 17580,
         "evidenceBreakdown": {
-          "ask": 53,
+          "ask": 51,
           "quick_sale": 2,
           "sold": 6,
           "professional_estimate": 0,
@@ -1340,13 +1340,13 @@
         }
       },
       "medium": {
-        "sampleCount": 83,
-        "effectiveWeight": 20.505,
+        "sampleCount": 82,
+        "effectiveWeight": 20.435,
         "p25": 3500,
         "median": 5125,
-        "p75": 7200,
+        "p75": 7000,
         "evidenceBreakdown": {
-          "ask": 53,
+          "ask": 52,
           "quick_sale": 7,
           "sold": 16,
           "professional_estimate": 0,
@@ -1384,13 +1384,13 @@
         }
       },
       "medium": {
-        "sampleCount": 71,
-        "effectiveWeight": 14.949,
+        "sampleCount": 70,
+        "effectiveWeight": 14.879,
         "p25": 3500,
         "median": 5800,
         "p75": 7000,
         "evidenceBreakdown": {
-          "ask": 52,
+          "ask": 51,
           "quick_sale": 4,
           "sold": 9,
           "professional_estimate": 0,
@@ -1398,13 +1398,13 @@
         }
       },
       "many": {
-        "sampleCount": 83,
-        "effectiveWeight": 22.362,
+        "sampleCount": 81,
+        "effectiveWeight": 22.221,
         "p25": 5800,
         "median": 8400,
         "p75": 25000,
         "evidenceBreakdown": {
-          "ask": 53,
+          "ask": 51,
           "quick_sale": 6,
           "sold": 15,
           "professional_estimate": 0,
@@ -1461,18 +1461,18 @@
     "breakClass": {
       "none": {
         "multiplier": 1,
-        "sampleCount": 39,
-        "effectiveWeight": 13.979
+        "sampleCount": 41,
+        "effectiveWeight": 14.121
       },
       "slight": {
         "multiplier": 0.97,
-        "sampleCount": 64,
-        "effectiveWeight": 13.715
+        "sampleCount": 62,
+        "effectiveWeight": 13.574
       },
       "medium": {
         "multiplier": 0.9,
-        "sampleCount": 80,
-        "effectiveWeight": 19.975
+        "sampleCount": 79,
+        "effectiveWeight": 19.904
       },
       "big": {
         "multiplier": 0.78,
@@ -1488,13 +1488,13 @@
       },
       "medium": {
         "multiplier": 1,
-        "sampleCount": 68,
-        "effectiveWeight": 13.934
+        "sampleCount": 67,
+        "effectiveWeight": 13.864
       },
       "many": {
-        "multiplier": 1.037,
-        "sampleCount": 81,
-        "effectiveWeight": 21.517
+        "multiplier": 1.038,
+        "sampleCount": 79,
+        "effectiveWeight": 21.376
       },
       "hundred": {
         "multiplier": 1.181,
