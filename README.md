@@ -22,6 +22,7 @@
 - `app/player-zh-names.json`：以官方 GUID 保存玩家顯示名、出售短名與搜尋別名；標準 Wiki 名稱仍可搜尋
 - `app/reviewed-iap-player-names.json`：以官方 GUID 保存人工核對的付費物品玩家稱呼；未核對的自動翻譯不直接進入出售文案
 - 聖島畢業手碟顯示為「聖島手碟」，避免只有籠統的「聖島季畢業禮」；付費「凱旋手碟」另支援「霞谷手盤」搜尋，兩者保持不同官方 GUID 與付費身分。
+- 預言與重組畢業樂器使用「預言鼓」「重組小號」，依[台灣玩家樂器討論](https://www.dcard.tw/f/sky/p/238946230)保留辨識度；舊畢業禮名稱仍可搜尋，不因文案提到測試服換色款而新增物品或付費身分。
 - 付費身分以已核對的 IAP 快照為準，人工顯示／文案分類不得將已確認付費的物品覆蓋成免費；沒有 IAP 的兌換物仍保留原分類。同一物品已列入禮包加值後，不再重複計入限定加值。
 - 女巫髮型與枯萎斗篷保留活動收藏文案，但不計付費禮包；[官方 0.19.0 公告](https://thatgamecompany.helpshift.com/hc/en/17-sky-children-of-the-light/faq/952-patch-notes---october-13-2022---0-19-0-202986-android-huawei-ios-202613-switch/)列為 66／99 蠟燭兌換，與另售的巫師帽不同。SkyGame-Data 1.3.10 對應 GUID 為 `si_8YhNtmr`／`-HtIAPjYsa`。
 - `Fortune Orange Hat`（`aRgiKoKavp`）採台灣社群的「橘子頭飾」，不是橘色帽子；用語參考[巴哈姆特春之日更新文](https://forum.gamer.com.tw/C.php?bsn=33024&snA=1142)，身分核對 SkyGame-Data 1.3.10 的 `HairAccessory`／ID 1725。舊稱保留搜尋，IAP 關聯不變。

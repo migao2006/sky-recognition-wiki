@@ -66,6 +66,23 @@ test("Sanctuary graduation handpan stays distinguishable from the paid recolor",
   assert.ok(catalog.zhItemSearchNames(ultimate).includes("聖島季畢業禮道具"));
 });
 
+test("graduation drum and bugle use recognizable instrument names with stable identities", () => {
+  // Taiwan player terms: https://www.dcard.tw/f/sky/p/238946230
+  for (const [guid, id, order, english, name, aliases] of [
+    ["wGQSuhVWXD", 410, 1700, "Prophecy Ultimate Drum", "預言鼓", ["預言季鼓", "預言季畢業禮鼓", "預言季畢業禮道具"]],
+    ["B59f4_ru60", 438, 1900, "Assembly Ultimate Bugle", "重組小號", ["重組季小號", "重組季畢業禮號角", "集結季畢業禮道具"]],
+  ]) {
+    const item = catalog.wikiItems.find(item => item.guid === guid);
+    assert.deepEqual([item.id, item.order, item.name], [id, order, english]);
+    assert.equal(catalog.zhItemName(item), name);
+    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.isPaidItem(item), false);
+    for (const term of [name, ...aliases]) {
+      assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
+    }
+  }
+});
+
 test("paid summer surfboard stays distinct from the 2026 sporty surfboard", () => {
   // SkyGame-Data 1.3.10: separate official IDs/orders; only the 2023 board has IAPs.
   const item = catalog.wikiItems.find(item => item.guid === "amo581C-E4");
