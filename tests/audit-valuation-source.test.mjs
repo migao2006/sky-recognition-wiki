@@ -88,6 +88,21 @@ test("headline package intervals retain usable tier evidence without fabricating
   assert.equal(result.segments.packageTier.hundred.sampleCount, 1);
   assert.equal(result.segments.packageTier.many.sampleCount, 1);
 });
+test("audit accepts measured lower bounds without inventing exact counts or cross-tier classes", async () => {
+  const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 20000, evidence_kind: "ask", evidence_quality: "medium" };
+  const result = await audit([
+    { ...base, post_hash: "measured-sixty", title: "魔法起60+個禮包" },
+    { ...base, post_hash: "measured-hundred", title: "魔法起１００＋个礼包" },
+    { ...base, post_hash: "measured-conflict", title: "魔法起60+個禮包 90個禮包" },
+  ]);
+  assert.equal(result.eligibleRows, 3);
+  assert.equal(result.segments.startSeason.enchantment.sampleCount, 3);
+  assert.equal(result.segments.packageTier.hundred.sampleCount, 1);
+  assert.equal(result.segments.packageTier.many.sampleCount, 0);
+  assert.equal(result.segments.packageTier.medium.sampleCount, 0);
+  assert.equal(result.segments.packageTier.few.sampleCount, 0);
+});
+
 const testHashSalt = "audit-test-hash-salt-32-characters-minimum";
 const testHoldoutSecret = "audit-test-holdout-secret-32-characters-minimum";
 const signEvidenceRow = (row) => {

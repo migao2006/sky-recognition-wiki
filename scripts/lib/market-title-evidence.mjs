@@ -92,7 +92,7 @@ const breakClassForTitle = (text) => {
 
 const normalizedPackageText = (value) => normalizedTitle(value)
   .replace(/(?:禮包|礼包):(?=\d)/gu, "禮包")
-  .replace(/(?<=\d)(?:個|个)(?=[禮礼])/gu, "");
+  .replace(/(\d\+?)(?:個|个)(?=[禮礼])/gu, "$1");
 
 const uncertainPackageQuantity = (text) =>
   /(?:不到|不滿|不满|不足|不破|不超過|不超过|未滿|未满|未達|未达|未到|未破|最多|至多|少於|少于|低於|低于|近|約|约|非)[^｜|,，]{0,6}(?:百|\d+)[^｜|,，]{0,3}(?:禮|礼)|(?:禮|礼)(?:包)?(?:以內|以内|以下|左右|上下)|(?:禮包|礼包)\d+(?:以內|以内|以下|左右|上下)/u.test(text);

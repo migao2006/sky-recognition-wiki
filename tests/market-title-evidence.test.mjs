@@ -17,6 +17,20 @@ test("package formatting is accepted without treating approximate quantities as 
   assert.equal(extractMarketTitleEvidence("60～80個禮包").paidPackageCount, null);
 });
 
+test("package lower bounds retain their plus sign before a measure word", () => {
+  for (const label of ["60+個禮包", "60+个礼包", "６０＋ 個禮包"]) {
+    assert.deepEqual(extractMarketPackageRange(label), { min: 60, max: null }, label);
+    assert.equal(extractMarketTitleEvidence(`魔法起${label}`).paidPackageCount, null, label);
+  }
+  assert.deepEqual(extractMarketPackageRange("１００＋个礼包"), { min: 100, max: null });
+  for (const label of ["約60+個禮包", "60+個禮包左右", "未滿100+個禮包", "60+個禮包 90個禮包", "60+個禮包 100+個禮包"]) {
+    assert.equal(extractMarketPackageRange(label), null, label);
+    assert.equal(extractMarketTitleEvidence(label).paidPackageCount, null, label);
+  }
+  assert.equal(extractMarketTitleEvidence("60個禮包+900蠟").paidPackageCount, 60);
+  assert.equal(extractMarketPackageRange("60個禮包+900蠟"), null);
+});
+
 test("package bounds reject negations, approximations and conflicting exact counts", () => {
   for (const title of ["不到百禮", "百禮以下", "百禮左右", "二百禮", "100+禮 80禮", "60～80禮 100禮", "未滿100+禮", "不破百禮", "最多百禮", "至多百禮", "未達百禮", "不超過百禮"]) {
     assert.equal(extractMarketPackageRange(title), null, title);
