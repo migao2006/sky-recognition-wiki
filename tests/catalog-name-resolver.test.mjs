@@ -4,6 +4,22 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("sun earrings use the player name while preserving the official sunlight identity", () => {
+  for (const term of ["太陽耳環", "太陽耳墜", "陽光太陽神圓環"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["lv_MnKorJN"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [2290, 1900, "Sunlight Helios Hoops", "HeadAccessory", "days-of-sunlight"]);
+    assert.equal(catalog.zhItemName(item), "太陽耳環");
+    assert.equal(catalog.saleItemName(item), "太陽耳環");
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("太陽耳環｜太陽耳墜").matched.length, 1);
+  assert.equal(resolver.scan("沒有太陽耳環").matched.length, 0);
+  assert.equal(resolver.scan("太陽耳環｜月光耳墜｜向日葵耳飾").matched.length, 3);
+});
+
 test("marshmallow rack aliases resolve the paid snack kit as a single prop", () => {
   for (const term of ["棉花糖架", "烤棉花糖架", "烤棉花糖禮包", "營火點心套組"]) {
     const match = resolver.resolve(term);

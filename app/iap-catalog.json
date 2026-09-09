@@ -1975,8 +1975,12 @@
     {
       "guid": "lv_MnKorJN",
       "name": "Sunlight Helios Hoops",
-      "playerName": "陽光太陽神圓環",
-      "aliases": [],
+      "playerName": "太陽耳環",
+      "aliases": [
+        "陽光太陽神圓環",
+        "太陽耳墜"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:af8EXlZ_4K",
       "packageName": "Sunlight Helios Hoops",
       "paid": true,

@@ -140,6 +140,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+Sunlight Helios Hoops（`lv_MnKorJN`）顯示與分享短名改為「太陽耳環」，保留「陽光太陽神圓環／太陽耳墜」搜尋。依[台灣玩家活動介紹](https://www.youtube.com/watch?v=w2B12NP9Bnk)、[交易用語](https://www.8591.com.hk/mall/detail/51274180)與[2024 陽光日物品資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight/2024)核對太陽造型、年份及付費身分；IAP 使用 SkyGame-Data 1.3.10 精確 GUID，不與月華耳環、向日葵耳飾混用。
+
 「棉花糖架／烤棉花糖架／烤棉花糖禮包」對應 Campfire Snack Kit（`TXYOTW9Qyn`），保留原顯示名與一件道具身分，不因英文 Kit 或中文套組而拆成多個物品。依[台灣玩家陽光日用語](https://www.dcard.tw/f/sky/p/256468904)、[2022 活動棉花糖架稱呼](https://www.9game.cn/skygy/7015104.html)及[國際服物品描述](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight/2022)交叉核對木架、棉花糖互動及活動來源；付費關係使用 `iap-catalog.json` 1.3.10，不使用中國服價格。
 
 禮包數量接受前置標籤區間（如「禮包：60～80」），與「60～80禮包」同樣保存上下界，不再誤讀為精確 60 包。「60禮以上／至少60禮包／禮包最少60」保留為下界 60、上界未知，跨級距時不猜級距；「100禮以上」仍可提供 hundred 級距參考。倒序、超出有效數量、否定、近似及互相矛盾的範圍仍保持未知，但不因此丟棄整筆帳號的其他已知資訊；行情稽核與標題報告使用同一解析規則。
