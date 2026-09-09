@@ -14,6 +14,28 @@ const script = fileURLToPath(
   new URL("../scripts/reconstruct-drive-valuations.mjs", import.meta.url),
 );
 
+test("gifted-account inventory stays diagnostic instead of raising the main starting season", async () => {
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const paths = ["documents", "market", "output", "summary"].map((label) =>
+    new URL(`gift-context-${id}-${label}.jsonl`, work));
+  const [documents, market, output, summary] = paths;
+  try {
+    await writeFile(documents, JSON.stringify({ post_hash: "gift-fixture", content: "星夜之傘\n贈號上數據\n追光大傘\n\n無綁｜白蠟0｜愛心0｜昇華蠟0｜副卡0" }));
+    await writeFile(market, JSON.stringify({ post_hash: "gift-fixture", price_twd: 3000, price_kind: "ask", paid_package_count: 1, confirmed_owned_guids: ["OAGgi-B-xa"] }));
+    await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
+    const row = JSON.parse((await readFile(output, "utf8")).trim());
+    assert.deepEqual(row.owned_guids, ["OAGgi-B-xa"]);
+    assert.deepEqual(row.separate_account_guids, ["2o3CEU9QhM"]);
+    assert.notEqual(row.reconstructed_start_season_slug, "lightseekers");
+    assert.equal(row.model_features_ready, false);
+    assert.ok(row.estimate_envelope);
+    assert.equal(row.exclude_from_model, false);
+  } finally {
+    await Promise.all(paths.map((path) => rm(path, { force: true })));
+  }
+});
+
 test("replays private listings without inventing partial-season GUIDs", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();

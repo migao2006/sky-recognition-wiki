@@ -8,6 +8,7 @@ import {
   bindingsForStatus,
   extractCompleteBindings,
   extractResourceEvidence,
+  splitListingInventoryContext,
 } from "./lib/listing-account-evidence.mjs";
 
 const argument = (name, fallback) => {
@@ -96,9 +97,15 @@ const reconstructed = documents.map((document) => {
     (document.content_base64
       ? Buffer.from(document.content_base64, "base64").toString("utf8")
       : "");
-  const bindingEvidence = extractCompleteBindings(content);
-  const resourceEvidence = extractResourceEvidence(content);
-  const resolution = resolver.scan(content);
+  const context = splitListingInventoryContext(content);
+  const bindingEvidence = extractCompleteBindings(context.inventory);
+  const resourceEvidence = extractResourceEvidence(context.inventory);
+  const resolution = resolver.scan(context.inventory);
+  const separateResolution = resolver.scan(context.separateAccount);
+  const separateAccountGuids = [...new Set([
+    ...separateResolution.matched.flatMap((match) => match.candidates.map((item) => item.guid)),
+    ...separateResolution.groups.flatMap((group) => group.candidates.map((item) => item.guid)),
+  ])].sort();
   const textGuids = new Set(
     resolution.matched.map((match) => match.candidates[0].guid),
   );
@@ -169,6 +176,7 @@ const reconstructed = documents.map((document) => {
     ...(!inventoryComplete ? ["inventory"] : []),
     ...(!bindingEvidence ? ["bindings"] : []),
     ...(!resourceEvidence.complete ? ["resources"] : []),
+    ...(context.separateAccount.trim() ? ["separate_account_scope"] : []),
   ];
   const modelFeaturesReady =
     !excludedFromModel && startSeasonConflict !== true && missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
@@ -212,6 +220,7 @@ const reconstructed = documents.map((document) => {
     reconstructed_start_season_slug: reconstructedStartSeason,
     start_season_conflict: startSeasonConflict,
     owned_guids: [...owned].sort(),
+    separate_account_guids: separateAccountGuids,
     exact_text_guid_count: textGuids.size,
     season_guid_count: owned.size - textGuids.size,
     ambiguous: ambiguity,

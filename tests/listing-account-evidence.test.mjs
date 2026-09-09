@@ -3,7 +3,18 @@ import test from "node:test";
 import {
   extractCompleteBindings,
   extractResourceEvidence,
+  splitListingInventoryContext,
 } from "../scripts/lib/listing-account-evidence.mjs";
+
+test("separate gifted-account sections do not establish main-account ownership", () => {
+  const result = splitListingInventoryContext("追光大傘\r\n✦ 贈號上數據\r\n追光大傘｜白蠟100\r\n無綁\r\n\r\n星夜之傘｜白蠟900");
+  assert.equal(result.inventory, "追光大傘\n\n星夜之傘｜白蠟900");
+  assert.equal(result.separateAccount, "追光大傘｜白蠟100\n無綁");
+  for (const text of ["沒有贈號上數據\n追光大傘", "帳號數據\n追光大傘", "贈送禮包\n星夜之傘"]) {
+    assert.equal(splitListingInventoryContext(text).inventory, text);
+  }
+  assert.equal(splitListingInventoryContext("赠号上数据：\n追光大傘").inventory, "");
+});
 
 test("accepts only explicit complete binding statements", () => {
   assert.equal(extractCompleteBindings("帳號無綁｜可直接改密碼")?.kind, "none");

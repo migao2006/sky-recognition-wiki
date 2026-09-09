@@ -10,6 +10,23 @@ export const bindingKeys = [
 
 export const bindingsForStatus = (status) =>
   Object.fromEntries(bindingKeys.map((key) => [key, status]));
+
+// An explicitly separate gifted account is not proof of the main wardrobe.
+// Stop at the next blank line; do not infer ownership from generic 「數據」.
+export const splitListingInventoryContext = (content) => {
+  const inventory = [];
+  const separateAccount = [];
+  let separate = false;
+  for (const line of String(content ?? "").split(/\r?\n/u)) {
+    if (/^[^\p{L}\p{N}]*(?:贈號上數據|赠号上数据)\s*[:：]?\s*$/u.test(line)) {
+      separate = true;
+      continue;
+    }
+    if (!line.trim()) separate = false;
+    (separate ? separateAccount : inventory).push(line);
+  }
+  return { inventory: inventory.join("\n"), separateAccount: separateAccount.join("\n") };
+};
 const boundary = String.raw`(?:^|[\s｜|，,。；;])`;
 const ending = String.raw`(?=$|[\s｜|，,。；;])`;
 const noBindingsPattern = new RegExp(
