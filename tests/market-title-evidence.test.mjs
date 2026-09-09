@@ -105,6 +105,21 @@ test("extracts explicit account-level title evidence without inventing a wardrob
 });
 
 test("recognizes common season aliases only when the title makes an account claim", () => {
+  // Taiwan season reference: https://forum.gamer.com.tw/C.php?bsn=33024&snA=705
+  for (const [slug, aliases] of [
+    ["flight", ["飛翔季", "飞翔季"]],
+    ["moments", ["時光季", "时光季"]],
+    ["revival", ["雲巢季", "云巢季"]],
+  ]) {
+    for (const alias of aliases) {
+      assert.equal(extractMarketTitleEvidence(`${alias}起微斷少禮號`).startSeasonSlug, slug);
+      assert.equal(extractMarketTitleEvidence(`${alias}卡多禮號`).startSeasonSlug, null);
+      assert.equal(extractMarketTitleEvidence(`${alias}斗篷少禮號`).startSeasonSlug, null);
+    }
+  }
+  assert.equal(extractMarketTitleEvidence("雲巢家具多禮號").startSeasonSlug, null);
+  assert.equal(extractMarketTitleEvidence("美好時光少禮號").startSeasonSlug, null);
+  assert.equal(extractMarketTitleEvidence("時光季微斷｜飛翔季無斷號").startSeasonSlug, null);
   assert.equal(extractMarketTitleEvidence("風行季起無斷多禮號").startSeasonSlug, "flight");
   assert.equal(extractMarketTitleEvidence("集結中斷普號").startSeasonSlug, "assembly");
   assert.equal(extractMarketTitleEvidence("極光季起無斷").startSeasonSlug, "aurora");

@@ -13,15 +13,16 @@ const seasonAliases = [
   ["dreams", ["夢想", "梦想"]],
   ["assembly", ["集結", "集结", "重組", "重组"]],
   ["the-little-prince", ["小王子", "王子"]],
-  ["flight", ["風行", "风行", "飛行", "飞行"]],
+  ["flight", ["風行", "风行", "飛行", "飞行", "飛翔", "飞翔"]],
   ["abyss", ["潛海", "潜海", "深淵", "深渊"]],
   ["performance", ["表演"]],
   ["shattering", ["破碎", "破曉", "破晓"]],
   ["aurora", ["極光", "极光", "歐若拉", "欧若拉", "aurora"]],
   ["remembrance", ["緬懷", "缅怀", "追憶", "追忆"]],
   ["passage", ["夜行"]],
-  ["moments", ["拾光"]],
-  ["revival", ["歸巢", "归巢"]],
+  // These also occur as ordinary prose/a location; require the season suffix.
+  ["moments", ["拾光", "時光季", "时光季"]],
+  ["revival", ["歸巢", "归巢", "雲巢季", "云巢季"]],
   ["nine-colored-deer", ["九色鹿"]],
   ["nesting", ["築巢", "筑巢"]],
   ["duets", ["協奏", "协奏", "二重奏"]],
@@ -152,7 +153,7 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   // A seasonal pass or a named item is not evidence that the account began
   // that season, even when the same title also contains seller shorthand.
   const packageAccount = /^(?:季)?(?:綁全出|绑全出)?(?:禮包|礼包)(?:號|号|帳|帐|簡|简|無翼|无翼)/u.test(after);
-  if (/^(?:季)?卡|^(?:通行)?證|^(?:斗篷|披風|面具|髮型|发型|髮飾|发饰|樂器|乐器)/u.test(after) || (/^(?:禮包|礼包)/u.test(after) && !packageAccount))
+  if (/^(?:季)?(?:卡|(?:通行)?證|斗篷|披風|面具|髮型|发型|髮飾|发饰|樂器|乐器)/u.test(after) || (/^(?:禮包|礼包)/u.test(after) && !packageAccount))
     return null;
   if (/(?:非|不是|並非|并非)(?:季)?$/.test(before) && /^(?:季)?起/u.test(after))
     return null;
