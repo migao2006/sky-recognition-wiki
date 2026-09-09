@@ -140,6 +140,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「月光耳墜」補作 Moonlight Earrings（`XURacs6BHP`）的搜尋別名，保留原顯示名及獨立付費禮包。名稱依[中文商店頁](https://sky-children-of-the-light.fandom.com/zh/wiki/Premium_Candle_Shop?variant=zh-tw)與[公開交易用語](https://www.8591.com.hk/mall/detail/51274180)核對，身分依 [Wiki 圖示模組](https://sky-children-of-the-light.fandom.com/wiki/Module:Days_Item/data)的 `Moonlight-Earrings-icon.png`、官方 catalog GUID 及 `iap-catalog.json` 1.3.10 交叉確認。不同別名重複出現只計一次，不與幸運節龍耳飾合併，也不採用外站售價調整台幣權重。
+
 「錦鯉套裝」只展開為 Fortune Fish Hood（`A26TJj3cSl`）與 Fortune Fish Cape（`mzF6ZaHa1s`），兩件計一包；Fortune Fish Accessory（`OjSfpOgFoR`）依 IAP 來源保留獨立禮包，不再被舊顯示套組覆寫合併。成員及分售依[2022 活動物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2022)與本地 `iap-catalog.json` 交叉核對；玩家用詞參考下列同一份販售文案。保留原顯示名、GUID 與價格權重。
 
 「福娃套裝／新春福娃套裝」只展開為 Fortune Bun Hair、Blushing Mask、Cape 三個官方 GUID，仍計一個真實禮包，不更改單件顯示名。成員依[2021 活動物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2021)、[台灣玩家禮包整理](https://forum.gamer.com.tw/G2.php?bsn=33024&sn=467)及[販售文案的三件成員描述](https://www.carousell.com.hk/p/sky%E5%85%89%E9%81%87%E5%A4%9A%E7%A6%AE%E5%8C%85%E8%99%9F-%E5%B0%8F%E7%8E%8B%E5%AD%90%E9%83%BD%E5%85%A8%E7%A6%AE%E5%8C%85-%E7%99%BD%E6%A2%9F-%E6%9E%97%E5%85%8B-%E5%A4%A7%E7%BE%BD%E6%AF%9B-1458877656/)交叉核對。「辦公室斗／辦公室斗篷／辦公室藍斗篷」補作付費 Founder's Cape 的搜尋別名，保留原顯示名；依[台灣玩家辦公室討論](https://www.dcard.tw/f/sky/p/235097205)與[官方 Beta／Founder 區分](https://thatgamecompany.helpshift.com/hc/en/17-sky-children-of-the-light/faq/725-how-do-i-get-the-beta-cape/)核對，不把 Beta 白底斗或普通藍斗合併，也不採用外站價格作台幣估價。

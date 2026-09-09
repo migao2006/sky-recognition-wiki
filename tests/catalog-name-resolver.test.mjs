@@ -4,6 +4,20 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("moonlight earring wording resolves one paid moonlight item without duplicate counting", () => {
+  for (const term of ["月光耳墜", "月華耳環", "星月耳環", "月光耳環"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["XURacs6BHP"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.type, item.name, item.collection],
+      [2306, 2000, "HeadAccessory", "Moonlight Earrings", "days-of-moonlight"]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("月光耳墜｜月華耳環｜星月耳環").matched.length, 1);
+  assert.equal(resolver.scan("沒有月光耳墜").matched.length, 0);
+  assert.equal(resolver.scan("月光耳墜｜幸運節龍耳飾").matched.length, 2);
+});
+
 test("office cape aliases refer to the paid founder cape, not the beta reward", () => {
   for (const term of ["辦公室斗", "辦公室斗篷", "辦公室藍斗篷"]) {
     const match = resolver.resolve(term);
