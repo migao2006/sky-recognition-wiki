@@ -4,6 +4,19 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("yeti cape aliases identify the paid Cozy Hermit Cape without duplicating it", () => {
+  for (const term of ["雪怪斗篷", "暖洋洋雪怪斗篷", "暖心隱士斗篷", "Cozy Hermit Cape"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["Nep9ocMylo"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type], [1900, 17100, "Cozy Hermit Cape", "Cape"]);
+    assert.equal(catalog.isPaidItem(item), true);
+    assert.equal(catalog.zhItemName(item), "暖心隱士斗篷");
+  }
+  assert.equal(resolver.scan("雪怪斗篷｜暖心隱士斗篷").matched.length, 1);
+  assert.equal(resolver.scan("沒有雪怪斗篷").matched.length, 0);
+});
+
 test("new-year umbrella and fan aliases preserve paid held-prop identities", () => {
   // Fortune fan: https://www.dcard.tw/f/sky/p/257849027
   // Umbrella identity: Days_of_Fortune/2023#Days_of_Fortune_Enchanted_Umbrella
