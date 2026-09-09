@@ -19,8 +19,19 @@ import {
   preferredSample,
   modelEvidenceSignatureFor,
   stableRowKey,
+  timeWeightFor,
   valuationDatasetDigestFor,
 } from "../scripts/lib/valuation-source-core.mjs";
+
+test("an observation today does not make an undated historical listing recent", () => {
+  const reference = new Date("2026-09-10T00:00:00Z");
+  const row = { published_at: null, published_relative: "4 年前", observed_at: reference.toISOString() };
+  assert.equal(timeWeightFor(row, reference), 0.45);
+  assert.equal(timeWeightFor({ ...row, published_at: "" }, reference), 0.45);
+  assert.equal(timeWeightFor({ ...row, published_at: "not-a-date" }, reference), 0.45);
+  assert.equal(timeWeightFor({ ...row, published_at: reference.toISOString() }, reference), 1);
+  assert.equal(timeWeightFor({ ...row, published_at: "2022-08-30T00:00:00Z" }, reference), 0.25);
+});
 
 test("freezes source content independently of row order", () => {
   const rows = [{ id: 1, price: 100 }, { id: 2, price: 200 }];

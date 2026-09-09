@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "832800dc1ea0ca955a08fb0e9fdb4dff37bb8da8aa7a4b213ae3faa4236b0857",
+    "3a9d5efed2f8439914d5fb89e4869fe3059f9efd66e72bd89b18a70968598b33",
   );
 });
 
