@@ -12,6 +12,33 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("retains package bounds as distinct cohorts without exact-count premiums", () => {
+  const rows = ["60+禮", "百禮", "60～80禮", "60禮"].flatMap(label =>
+    [1000, 1200, 1400].map(price => listing({ title: `緬懷起無斷${label}`, price_original: price })));
+  const group = buildMarketHeadlineReport(rows).markets[0].season_breaks[0];
+  assert.deepEqual(group.packages.map(x => x.package_tier).sort(), ["60-69", "range:100+", "range:60+", "range:60-80"].sort());
+  assert.ok(group.packages.every(x => x.sample_count === 3 && x.sufficient_samples));
+  assert.deepEqual(group.package_differences, []);
+  assert.equal(group.no_package_baseline, false);
+});
+
+test("structured bounds override title guesses; invalid or conflicting values stay unknown", () => {
+  const cases = [
+    [{ paid_package_min: 60 }, "range:60+"],
+    [{ paid_package_min: 60, paid_package_max: 80 }, "range:60-80"],
+    [{ paid_package_max: 80 }, "unknown"],
+    [{ paid_package_min: 80, paid_package_max: 60 }, "unknown"],
+    [{ paid_package_min: "60" }, "unknown"],
+    [{ paid_package_min: 60, paid_package_count: 20 }, "unknown"],
+    [{ paid_package_min: 60, paid_package_count: 70 }, "70-79"],
+    [{ paid_package_count: "bad" }, "unknown"],
+  ];
+  for (const [fields, expected] of cases) {
+    const report = buildMarketHeadlineReport([listing(fields)]);
+    assert.equal(report.markets[0].season_breaks[0].packages[0].package_tier, expected);
+  }
+});
+
 test("report reads the same blank-metadata and page-marker fallback as calibration", () => {
   const report = buildMarketHeadlineReport([listing({ title: " ", listing_title: "N/A", listing_text: "分頁 1\n預言八季禮包號" })]);
   assert.equal(report.eligible_rows, 1);

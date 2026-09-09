@@ -1,7 +1,7 @@
 import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { extractMarketTitleEvidence, marketHeadlineFor as titleFor } from "./lib/market-title-evidence.mjs";
+import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor as titleFor } from "./lib/market-title-evidence.mjs";
 import {
   accountKeyFor,
   breakClasses,
@@ -33,6 +33,26 @@ const packageTierFor = (count, sellerTier) => {
     return `${lower}-${lower + 9}`;
   }
   return ["few", "medium", "many"].includes(sellerTier) ? `seller:${sellerTier}` : "unknown";
+};
+const packageEvidenceFor = (row, titleEvidence) => {
+  const suppliedRange = row.paid_package_min != null || row.paid_package_max != null;
+  const range = suppliedRange
+    ? { min: row.paid_package_min, max: row.paid_package_max ?? null }
+    : extractMarketPackageRange(titleFor(row));
+  const validRange = range && Number.isSafeInteger(range.min) && range.min >= 0 &&
+    (range.max === null || (Number.isSafeInteger(range.max) && range.max >= range.min));
+  const rawCount = row.paid_package_count;
+  const suppliedCount = rawCount != null && rawCount !== "";
+  const countValue = suppliedCount ? rawCount : range || suppliedRange ? null : titleEvidence.paidPackageCount;
+  const count = /^\d+$/.test(String(countValue ?? "")) && Number.isSafeInteger(Number(countValue)) ? Number(countValue) : null;
+  // Bounds retain their own cohorts: a 60+ listing is neither exactly 60 nor
+  // comparable to a disjoint exact-count tier for package-price differences.
+  if (suppliedCount) {
+    if (count === null || (range && (!validRange || count < range.min || (range.max !== null && count > range.max)))) return "unknown";
+    return packageTierFor(count, null);
+  }
+  if (range || suppliedRange) return validRange ? `range:${range.min}${range.max === null ? "+" : `-${range.max}`}` : "unknown";
+  return packageTierFor(count, titleEvidence.salePackageTier);
 };
 const priceAndMarketFor = (row) => {
   const isPublic = Object.hasOwn(row, "price_original") || Object.hasOwn(row, "currency_original");
@@ -131,12 +151,9 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
     if (!rowKeys(row).length) { diagnostics.identity_unknown++; continue; }
     const suppliedBreak = known(row.computed_break_class) ?? known(row.seller_break_label);
     const breakClass = breakClasses.includes(suppliedBreak) ? suppliedBreak : titleEvidence.breakClass ?? "unknown";
-    const countValue = row.paid_package_count ?? titleEvidence.paidPackageCount;
-    const count = /^\d+$/.test(String(countValue ?? "")) ? Number(countValue) : null;
-    const sellerTier = titleEvidence.salePackageTier;
-    const packageTier = packageTierFor(count, sellerTier);
+    const packageTier = packageEvidenceFor(row, titleEvidence);
     const wingless = row.wingless === true ? "yes" : row.wingless === false ? "no" : titleEvidence.wingless ? "yes" : "unknown";
-    candidates.push({ ...row, __market: market, __priceKind: priceKind.value, __season: season, __break: breakClass, __package: packageTier, __count: count, __style: titleEvidence.accountStyle ?? known(row.account_style)?.toLowerCase() ?? "unknown", __wingless: wingless });
+    candidates.push({ ...row, __market: market, __priceKind: priceKind.value, __season: season, __break: breakClass, __package: packageTier, __style: titleEvidence.accountStyle ?? known(row.account_style)?.toLowerCase() ?? "unknown", __wingless: wingless });
   }
   const eligible = deduplicate(candidates);
   const markets = new Map();
