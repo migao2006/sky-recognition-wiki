@@ -3,6 +3,18 @@ import test from "node:test";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
+
+test("blue sunglasses player names retain the Nature paid item identity", () => {
+  // Taiwan player usage: https://www.youtube.com/watch?v=gYsDdAliO0s
+  // Taiwan editorial confirmation: https://apps.apple.com/tw/iphone/story/id1682105205
+  const item = catalog.wikiItems.find(item => item.guid === "IOBWcIpOY9");
+  assert.deepEqual([item.id, item.order, item.name, item.type], [1787, 2100, "Nature Glasses", "FaceAccessory"]);
+  assert.equal(catalog.isPaidItem(item), true);
+  assert.equal(catalog.zhItemName(item), "藍色墨鏡");
+  assert.equal(catalog.saleItemName(item), "藍色墨鏡");
+  for (const term of ["藍色墨鏡", "自然日眼鏡", "自然墨鏡", "海洋日墨鏡", "Nature Glasses"])
+    assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [item.guid], term);
+});
 const resolver = catalog.buildCatalogNameResolver(
   catalog.wikiItems,
   catalog.zhItemSearchNames,

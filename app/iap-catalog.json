@@ -1639,8 +1639,14 @@
     {
       "guid": "IOBWcIpOY9",
       "name": "Nature Glasses",
-      "playerName": "自然眼鏡",
-      "aliases": [],
+      "playerName": "藍色墨鏡",
+      "aliases": [
+        "自然日眼鏡",
+        "自然眼鏡",
+        "自然墨鏡",
+        "海洋日墨鏡"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:-gGiPg8b0n",
       "packageName": "Nature Glasses Pack",
       "paid": true,
