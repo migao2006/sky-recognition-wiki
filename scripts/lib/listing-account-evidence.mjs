@@ -52,17 +52,28 @@ const resourceMaximums = {
   passes: 1_000,
 };
 
+const resourceNumber = (literal) => {
+  const normalized = literal.replaceAll(",", "");
+  const match = normalized.match(/^(\d+)(?:\.(\d+))?([千萬万])?$/u);
+  if (!match) return NaN;
+  const [, whole, fraction = "", unit] = match;
+  const scale = unit === "千" ? 3 : unit ? 4 : 0;
+  // Shift decimal digits without rounding fractional resources into whole units.
+  if (/[1-9]/u.test(fraction.slice(scale))) return NaN;
+  return Number(whole + fraction.slice(0, scale).padEnd(scale, "0"));
+};
+
 export const extractResourceEvidence = (content) => {
   const text = String(content ?? "").normalize("NFKC");
   const resources = {};
   for (const [key, labels] of Object.entries(resourceLabels)) {
-    const number = String.raw`(?<![0-9],)([0-9]+(?:,[0-9]{3})*)(?!,[0-9])`;
+    const number = String.raw`(?<![0-9],)([0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?[千萬万]?)(?!,[0-9])`;
     const pattern = new RegExp(
       String.raw`${boundary}(?:(?:${labels})\s*[:：]?\s*${number}|${number}\s*(?:${labels}))${ending}`,
       "giu",
     );
     const matches = [...text.matchAll(pattern)];
-    const values = [...new Set(matches.map((match) => Number((match[1] ?? match[2]).replaceAll(",", ""))))];
+    const values = [...new Set(matches.map((match) => resourceNumber(match[1] ?? match[2])))];
     if (values.length !== 1) continue;
     const [value] = values;
     if (Number.isSafeInteger(value) && value >= 0 && value <= resourceMaximums[key])

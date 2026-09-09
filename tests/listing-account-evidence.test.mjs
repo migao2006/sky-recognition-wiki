@@ -47,7 +47,17 @@ test("accepts labeled suffixes and fullwidth numbers without inventing approxima
     { candles: 1000, hearts: 100, ascended: 90, passes: 2 });
   assert.deepEqual(extractResourceEvidence("白蠟 1000｜1000白蠟").resources, { candles: 1000 });
   assert.deepEqual(extractResourceEvidence("白蠟 1000｜2000白蠟").resources, {});
-  for (const text of ["白蠟 1.5萬", "白蠟 100+", "白蠟 100-200", "白蠟 1,00", "1,00白蠟", "100愛心眼鏡", "1000𖠜｜100ෆ｜90✦"]) {
+  for (const text of ["白蠟 1.5", "白蠟 100+", "白蠟 100-200", "白蠟 1,00", "1,00白蠟", "100愛心眼鏡", "1000𖠜｜100ෆ｜90✦"]) {
+    assert.deepEqual(extractResourceEvidence(text).resources, {}, text);
+  }
+});
+
+test("expands exact thousand and ten-thousand resource notation", () => {
+  assert.deepEqual(extractResourceEvidence("１．５萬白蠟｜愛心 2千｜昇華蠟 0.0003万").resources,
+    { candles: 15000, hearts: 2000, ascended: 3 });
+  assert.deepEqual(extractResourceEvidence("白蠟 1.5萬｜15000白蠟").resources, { candles: 15000 });
+  assert.deepEqual(extractResourceEvidence("白蠟 1.5萬｜14000白蠟").resources, {});
+  for (const text of ["白蠟 約1.5萬", "白蠟 1.5萬以上", "白蠟 1.5萬+", "白蠟 1.5萬～2萬", "愛心 0.00001萬", "愛心 0.999999999999999999", "白蠟 101萬", "副卡 2千"]) {
     assert.deepEqual(extractResourceEvidence(text).resources, {}, text);
   }
 });
