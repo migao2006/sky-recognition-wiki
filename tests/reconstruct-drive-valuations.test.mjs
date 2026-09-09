@@ -5,6 +5,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
+import { firstSeasonWithProgress, seasonProgressParts } from "../scripts/lib/valuation-source-core.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -67,6 +68,22 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     content: "星夜之傘｜無綁｜白蠟 1000+｜愛心 約100｜昇華蠟20～30｜副卡0",
   });
   prices.push({ ...prices[0], post_hash: "private-range-resource-id" });
+  const progressCases = [
+    [{ selected: 3, expected: 3 }, true],
+    [{ selected: "3", expected: "3" }, true],
+    ["full", true],
+    [{ selected: 1, expected: 3 }, false],
+    [{ selected: 0, expected: 3 }, false],
+    [{ selected: 0, expected: 0 }, false],
+    [{ selected: 4, expected: 3 }, false],
+    [{ selected: true, expected: true }, false],
+    ["start", false],
+  ];
+  for (const [index, [progress]] of progressCases.entries()) {
+    const post_hash = `progress-format-${index}`;
+    rows.push({ post_hash, content: "" });
+    prices.push({ post_hash, season_progress: { prophecy: progress } });
+  }
   try {
     await Promise.all([
       writeFile(
@@ -110,6 +127,12 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(reconstructed[0].model_features_ready, true);
     assert.ok(reconstructed[0].valuation_model);
     assert.ok(reconstructed[1].season_guid_count > 0);
+    for (const [index, [, complete]] of progressCases.entries()) {
+      const actual = reconstructed[5 + index];
+      assert.deepEqual(actual.owned_guids, complete ? reconstructed[1].owned_guids : []);
+      assert.deepEqual(actual.estimate_envelope, complete ? reconstructed[1].estimate_envelope : null);
+      assert.equal(actual.model_features_ready, false);
+    }
     const excluded = reconstructed[2];
     assert.equal(excluded.exclude_from_model, true);
     assert.equal(excluded.inventory_complete, true);
@@ -148,7 +171,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       market_sha256: createHash("sha256").update(await readFile(market, "utf8")).digest("hex"),
       market_row_count: prices.length,
     });
-    assert.equal(report.document_count, 5);
+    assert.equal(report.document_count, 5 + progressCases.length);
     assert.equal(report.priced_document_count, 5);
     assert.equal(report.comparable_document_count, 4);
     assert.equal(report.excluded_document_count, 1);
@@ -168,6 +191,22 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       ),
     );
   }
+});
+
+test("structured progress does not coerce missing fields or booleans into graduation", () => {
+  for (const value of [
+    { selected: true, expected: true },
+    { selected: null, expected: 3 },
+    { selected: "", expected: 3 },
+    { selected: 3 },
+    { selected: Number.MAX_SAFE_INTEGER + 1, expected: Number.MAX_SAFE_INTEGER + 1 },
+    [],
+  ]) {
+    assert.equal(seasonProgressParts(value), null);
+    assert.equal(firstSeasonWithProgress({ prophecy: value }), null);
+  }
+  assert.deepEqual(seasonProgressParts({ selected: "1", expected: "3" }), { selected: 1, expected: 3 });
+  assert.equal(firstSeasonWithProgress({ prophecy: { selected: 1, expected: 3 } }), "prophecy");
 });
 
 test("refuses to write reconstructed private data outside work", async () => {

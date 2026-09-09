@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 import { loadValuationRuntime } from "./load-valuation-runtime.mjs";
+import { seasonProgressParts } from "./lib/valuation-source-core.mjs";
 import {
   bindingsForStatus,
   extractCompleteBindings,
@@ -53,13 +54,9 @@ const quantile = (values, ratio) => {
   return sorted[Math.floor((sorted.length - 1) * ratio)];
 };
 const isCompleteProgress = (value) => {
-  const normalized = String(value ?? "").trim().toLocaleLowerCase("zh-Hant");
-  if (["complete", "completed", "畢", "全畢"].includes(normalized))
-    return true;
-  const ratio = normalized.match(/^(\d+)\s*\/\s*(\d+)$/u);
-  return ratio
-    ? Number(ratio[2]) > 0 && Number(ratio[1]) === Number(ratio[2])
-    : false;
+  const parts = seasonProgressParts(value);
+  return Boolean(parts && Number.isSafeInteger(parts.expected) &&
+    parts.expected > 0 && parts.selected === parts.expected);
 };
 const intervalGap = (leftLow, leftHigh, rightLow, rightHigh) => {
   if (leftHigh < rightLow) return rightLow - leftHigh;

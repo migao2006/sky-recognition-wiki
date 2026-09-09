@@ -196,9 +196,12 @@ export const hasCompleteModelEvidence = (row, { hashSalt } = {}) => {
 
 export const seasonProgressParts = (value) => {
   if (value && typeof value === "object") {
+    if (Array.isArray(value) || [value.selected, value.expected].some(
+      (part) => !["number", "string"].includes(typeof part) || String(part).trim() === "",
+    )) return null;
     const selected = Number(value.selected);
     const expected = Number(value.expected);
-    return Number.isInteger(selected) && Number.isInteger(expected)
+    return Number.isSafeInteger(selected) && Number.isSafeInteger(expected)
       ? { selected, expected }
       : null;
   }
