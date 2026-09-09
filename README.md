@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+花憩茶具保留原顯示名，Pink Bloom Teaset（`sTIyha_lg1`）補「櫻花茶桌」，Purple Bloom Teaset（`l6GE013zrh`）補「紫藤花茶桌／紫藤花茶具」。依[2021 櫻花茶桌介紹](https://www.9game.cn/skygy/5057027.html)與[2022 玩家活動介紹](https://www.youtube.com/watch?v=hNR1z9_iIrc)，核對 catalog 的年份、GUID、LargeProp 與付費身分；不引入中國服價格。「雙人茶几／三人茶桌」等泛稱未直接綁定，避免與其他活動及季節茶桌錯配。
+
 GUID 重播保留已核對的 `paid_package_min/max`，輸出 `declared_paid_range` 與扣除已辨識唯一禮包後的 `unresolved_declared_paid_range`。未知上界仍為 null，僅供漏讀診斷；不補 GUID、不轉成精確包數、不據此宣告衣櫃完整或調高估價。
 
 性格測試的 Green Folded Ears 支援「綠絨卷耳／綠絨絨卷耳髮飾」，用語參考[活動整理](https://game.xiaomi.com/viewpoint/1543958016_1769498317632_149)；2023 宴會節 Cozy Hermit Boots 支援「隱士雪人靴／雪人靴」，依[物品介紹](https://www.biubiu001.com/skygyand/83007.html)核對。保留目前顯示名、GUID、原始分類與 IAP 身分，只補搜尋別名，不採中國服價格。「綠野犬耳／雪絨圍巾」仍缺唯一身分證據，不直接補入。

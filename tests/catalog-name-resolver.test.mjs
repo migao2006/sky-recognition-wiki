@@ -4,6 +4,25 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("bloom tea aliases preserve the two paid tables and do not invent generic table identities", () => {
+  for (const [guid, id, order, name, terms] of [
+    ["sTIyha_lg1", 1766, 3600, "Pink Bloom Teaset", ["櫻花茶桌", "粉紅色花憩茶具"]],
+    ["l6GE013zrh", 1771, 3800, "Purple Bloom Teaset", ["紫藤花茶桌", "紫藤花茶具", "紫色花憩茶具"]],
+  ]) {
+    for (const term of terms) {
+      const match = resolver.resolve(term);
+      assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
+      const [item] = match.candidates;
+      assert.deepEqual([item.id, item.order, item.name, item.type, item.collection], [id, order, name, "LargeProp", "days-of-bloom"]);
+      assert.equal(catalog.isPaidItem(item), true);
+    }
+    assert.equal(resolver.scan(terms.join("｜")).matched.length, 1);
+  }
+  assert.equal(resolver.scan("櫻花茶桌｜紫藤花茶桌").matched.length, 2);
+  assert.equal(resolver.scan("沒有櫻花茶桌｜缺紫藤花茶桌").matched.length, 0);
+  assert.equal(resolver.scan("雙人茶几｜三人茶桌").matched.length, 0);
+});
+
 test("green folded ears and hermit snow boots retain their paid identities", () => {
   for (const [guid, id, order, name, type, terms] of [
     ["2XujEQcN6n", 2931, 7200, "Green Folded Ears", "HairAccessory", ["綠絨卷耳", "綠絨絨卷耳髮飾", "毛茸綠折耳"]],
