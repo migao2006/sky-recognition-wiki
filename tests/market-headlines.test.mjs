@@ -12,6 +12,22 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("season aliases retain incomplete listings in separate native-currency markets", () => {
+  const report = buildMarketHeadlineReport([
+    listing({ title: "二重奏起少禮號" }),
+    listing({ title: "二重奏起少礼号", currency_original: "CNY", market_scope: "cn" }),
+  ]);
+  assert.equal(report.eligible_rows, 2);
+  assert.equal(report.markets.length, 2);
+  assert.deepEqual(new Set(report.markets.map(market => market.currency)), new Set(["TWD", "CNY"]));
+  for (const market of report.markets) {
+    assert.equal(market.binding_class, "unknown");
+    assert.equal(market.season_breaks[0].season, "duets");
+    assert.equal(market.season_breaks[0].break_class, "unknown");
+    assert.equal(market.season_breaks[0].packages[0].package_tier, "seller:few");
+  }
+});
+
 test("reviewed earlier partial graduation can resolve a later headline season", () => {
   const base = { title: "魔法無斷綁全出", start_season_slug: "rhythm", start_season_confidence: "structured", season_progress: { rhythm: "1/2", enchantment: "complete" } };
   const report = buildMarketHeadlineReport([listing(base)]);

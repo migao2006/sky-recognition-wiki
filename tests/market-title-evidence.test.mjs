@@ -15,6 +15,26 @@ test("package bounds reject negations, approximations and conflicting exact coun
 });
 import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor } from "../scripts/lib/market-title-evidence.mjs";
 
+test("alternate season names provide the same account evidence without changing market identity", () => {
+  // Taiwan player usage: dcard.tw/f/sky/p/256115646 (Duets),
+  // dcard.tw/f/sky/p/257795105 (Radiance); other aliases also used by source audit.
+  for (const [canonical, aliases] of [
+    ["破碎", ["破曉", "破晓"]],
+    ["極光", ["歐若拉", "欧若拉", "AURORA"]],
+    ["緬懷", ["追憶", "追忆"]],
+    ["協奏", ["二重奏"]],
+    ["染色", ["彩染"]],
+  ]) {
+    for (const alias of aliases) {
+      assert.deepEqual(extractMarketTitleEvidence(`${alias}起微斷少禮號`),
+        extractMarketTitleEvidence(`${canonical}起微斷少禮號`), alias);
+      for (const suffix of ["季卡禮包號", "斗篷禮包號", "面具禮包號"])
+        assert.equal(extractMarketTitleEvidence(`${alias}${suffix}`).startSeasonSlug, null);
+    }
+  }
+  assert.equal(extractMarketTitleEvidence("二重奏彩染少禮號").startSeasonSlug, null);
+});
+
 test("accepts season-count, package-account and transferable wingless headings", () => {
   for (const [title, slug] of [
     ["預言八季禮包號", "prophecy"], ["預言12季禮包號", "prophecy"],
