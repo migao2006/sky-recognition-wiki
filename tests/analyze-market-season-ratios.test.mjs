@@ -1,6 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildSeasonRatioReport } from "../scripts/analyze-market-season-ratios.mjs";
+import { channelFor } from "../scripts/lib/market-channel.mjs";
+
+test("reads Taoshouyou explicit client channels without guessing other sources or overriding channel", () => {
+  for (const [client, expected] of [["安卓官方", "android-official"], ["苹果官方", "ios-official"], ["安卓华为", "huawei"], ["安卓B服", "bilibili"], ["安卓OPPO", "oppo"], ["安卓小米", "xiaomi"], ["安卓vivo", "vivo"], ["安卓其他", "unknown"]]) {
+    assert.equal(channelFor({ source: "taoshouyou", client }), expected);
+    assert.equal(channelFor({ source: "facebook", client }), "unknown");
+  }
+  assert.equal(channelFor({ source: "taoshouyou", client: "安卓官方", channel: "unknown" }), "unknown");
+  assert.equal(channelFor({ source: "taoshouyou", client: "安卓官方", channel: "huawei" }), "huawei");
+  const report = buildSeasonRatioReport([
+    row({ source: "taoshouyou", client: "安卓官方", price_original: 100 }),
+    row({ source: "taoshouyou", client: "安卓华为", price_original: 900 }),
+  ]);
+  assert.equal(report.eligible_rows, 2);
+  assert.deepEqual(report.markets.map(m => [m.channel, m.market_median_original]), [["android-official", 100], ["huawei", 900]]);
+});
 
 const row = (overrides = {}) => ({
   source: "market-a",

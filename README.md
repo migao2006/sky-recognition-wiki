@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+渠道分析共用 `market-channel.mjs`：淘手遊採集列未提供 `channel` 時，讀取來源明確的 `client`（安卓官方、蘋果官方、華為、B服、OPPO、小米、vivo），同時用於季節比例與標題行情報告。既有 `channel` 優先，不從標題或其他來源的 `client` 猜配；未識別渠道仍保留 unknown，不排除整列。
+
 私人 GUID 重播同時接受正數 `price_twd` 單一售價及完整 `price_twd_low/high` 價格區間；單價優先，統一輸出比較上下限。缺價、單邊區間或無效區間仍保留物品與帳號證據，但標為 `no-price`，不計入有價比較，也不把未知價格算成零。
 
 花憩茶具保留原顯示名，Pink Bloom Teaset（`sTIyha_lg1`）補「櫻花茶桌」，Purple Bloom Teaset（`l6GE013zrh`）補「紫藤花茶桌／紫藤花茶具」。依[2021 櫻花茶桌介紹](https://www.9game.cn/skygy/5057027.html)與[2022 玩家活動介紹](https://www.youtube.com/watch?v=hNR1z9_iIrc)，核對 catalog 的年份、GUID、LargeProp 與付費身分；不引入中國服價格。「雙人茶几／三人茶桌」等泛稱未直接綁定，避免與其他活動及季節茶桌錯配。
