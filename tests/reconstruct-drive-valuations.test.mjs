@@ -62,6 +62,11 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     content: "星夜之傘｜無綁｜白蠟 1000",
   });
   prices.push({ ...prices[0], post_hash: "private-partial-resource-id" });
+  rows.push({
+    post_hash: "private-range-resource-id",
+    content: "星夜之傘｜無綁｜白蠟 1000+｜愛心 約100｜昇華蠟20～30｜副卡0",
+  });
+  prices.push({ ...prices[0], post_hash: "private-range-resource-id" });
   try {
     await Promise.all([
       writeFile(
@@ -121,6 +126,13 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(partialResources.model_features_ready, false);
     assert.ok(partialResources.missing_fields.includes("resources"));
     assert.ok(partialResources.estimate_envelope.midpoint_high > reconstructed[0].estimate_envelope.midpoint_high);
+    const rangedResources = reconstructed[4];
+    assert.deepEqual(rangedResources.resource_values, { passes: 0 });
+    assert.deepEqual(rangedResources.resource_ranges, { candles: { min: 1000, max: null }, ascended: { min: 20, max: 30 } });
+    assert.deepEqual(rangedResources.resource_approximations, { hearts: 100 });
+    assert.equal(rangedResources.model_features_ready, false);
+    assert.deepEqual(rangedResources.estimate_envelope, reconstructed[0].estimate_envelope);
+    assert.ok(rangedResources.missing_fields.includes("resources"));
     assert.deepEqual(reconstructed[1].missing_fields.sort(), [
       "bindings",
       "inventory",
@@ -131,18 +143,18 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       reconstructed.every((row) => row.document_hash.length === 16),
     );
     const report = JSON.parse(await readFile(summary, "utf8"));
-    assert.equal(report.document_count, 4);
-    assert.equal(report.priced_document_count, 4);
-    assert.equal(report.comparable_document_count, 3);
+    assert.equal(report.document_count, 5);
+    assert.equal(report.priced_document_count, 5);
+    assert.equal(report.comparable_document_count, 4);
     assert.equal(report.excluded_document_count, 1);
-    assert.equal(report.all_partial_reconstructions.count, 3);
-    assert.equal(report.evidence_completeness.priced_documents.count, 4);
-    assert.equal(report.evidence_completeness.comparable_documents.count, 3);
+    assert.equal(report.all_partial_reconstructions.count, 4);
+    assert.equal(report.evidence_completeness.priced_documents.count, 5);
+    assert.equal(report.evidence_completeness.comparable_documents.count, 4);
     assert.equal(
       report.evidence_completeness.priced_documents.model_features_ready,
       1,
     );
-    assert.equal(report.by_price_kind_all_partial.ask.count, 2);
+    assert.equal(report.by_price_kind_all_partial.ask.count, 3);
     assert.equal(report.by_price_kind_all_partial.quick_sale.count, 1);
   } finally {
     await Promise.all(

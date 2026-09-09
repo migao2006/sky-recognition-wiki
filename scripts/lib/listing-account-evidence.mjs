@@ -63,25 +63,60 @@ const resourceNumber = (literal) => {
   return Number(whole + fraction.slice(0, scale).padEnd(scale, "0"));
 };
 
+const resourceNumeric = String.raw`(?<![0-9],)[0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?[千萬万]?(?!,[0-9])`;
+const resourceAmount = String.raw`(?:約|约|大約|大约)?\s*${resourceNumeric}(?:\s*(?:[-~～至到]\s*${resourceNumeric}|\+|以上|以下|左右))?`;
+const resourceQuantity = (literal, maximum) => {
+  const match = literal.trim().match(new RegExp(
+    String.raw`^(約|约|大約|大约)?\s*(${resourceNumeric})(?:\s*(?:([-~～至到])\s*(${resourceNumeric})|(\+|以上|以下|左右)))?$`, "u",
+  ));
+  if (!match) return null;
+  const [, approximate, first, separator, second, suffix] = match;
+  const value = resourceNumber(first);
+  const valid = (number) => Number.isSafeInteger(number) && number >= 0 && number <= maximum;
+  if (!valid(value)) return null;
+  if (approximate || suffix === "左右")
+    return separator || (suffix && suffix !== "左右") ? null : { kind: "approximate", value };
+  if (separator) {
+    const high = resourceNumber(second);
+    return valid(high) && high >= value ? { kind: "range", min: value, max: high } : null;
+  }
+  if (suffix) return suffix === "以下"
+    ? { kind: "range", min: 0, max: value }
+    : { kind: "range", min: value, max: null };
+  return { kind: "exact", value };
+};
+
 export const extractResourceEvidence = (content) => {
   const text = String(content ?? "").normalize("NFKC");
   const resources = {};
+  const ranges = {};
+  const approximations = {};
   for (const [key, labels] of Object.entries(resourceLabels)) {
-    const number = String.raw`(?<![0-9],)([0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?[千萬万]?)(?!,[0-9])`;
     const pattern = new RegExp(
-      String.raw`${boundary}(?:(?:${labels})\s*[:：]?\s*${number}|${number}\s*(?:${labels}))${ending}`,
+      String.raw`${boundary}(?:(?:${labels})\s*[:：]?\s*(${resourceAmount})|(${resourceAmount})\s*(?:${labels})(?:\s*(左右|以上|以下))?)${ending}`,
       "giu",
     );
     const matches = [...text.matchAll(pattern)];
-    const values = [...new Set(matches.map((match) => resourceNumber(match[1] ?? match[2])))];
-    if (values.length !== 1) continue;
-    const [value] = values;
-    if (Number.isSafeInteger(value) && value >= 0 && value <= resourceMaximums[key])
-      resources[key] = value;
+    const quantities = matches.map((match) => {
+      // A whitespace boundary must not detach a quantity from its qualifier,
+      // negation, range endpoint or malformed thousands prefix.
+      const before = /^[｜|，,。；;\r\n]/u.test(match[0]) ? "" : text.slice(0, match.index).trimEnd();
+      const after = text.slice(match.index + match[0].length).trimStart();
+      if (/(?:約|约|大概|近|超過|超过|不到|至少|最多|不是|沒有|没有|並非|并非|非|不|[0-9],|[0-9]\s*[-~～至到–—])$/u.test(before) || /^(?:(?:左右|以上|以下|多)(?=$|[\s｜|，,。；;])|[+\-~～至到–—])/u.test(after)) return null;
+      return resourceQuantity((match[1] ?? match[2]) + (match[3] ?? ""), resourceMaximums[key]);
+    });
+    const unique = [...new Set(quantities.map((quantity) => JSON.stringify(quantity)))];
+    if (unique.length !== 1 || unique[0] === "null") continue;
+    const quantity = quantities[0];
+    if (quantity.kind === "exact") resources[key] = quantity.value;
+    else if (quantity.kind === "range") ranges[key] = { min: quantity.min, max: quantity.max };
+    else approximations[key] = quantity.value;
   }
   const observed = Object.keys(resources);
   return {
     resources,
+    ranges,
+    approximations,
     observed,
     complete: observed.length === Object.keys(resourceLabels).length,
   };
