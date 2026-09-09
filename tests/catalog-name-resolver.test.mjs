@@ -83,6 +83,26 @@ test("graduation drum and bugle use recognizable instrument names with stable id
   }
 });
 
+test("graduation umbrella and camera names identify the item rather than only the season", () => {
+  // Seasonal item references: https://forum.gamer.com.tw/Co.php?bsn=33024&sn=2316
+  for (const [guid, id, order, english, name, terms] of [
+    ["2o3CEU9QhM", 371, 3800, "Lightseekers Ultimate Umbrella", "大傘", ["追光大傘", "大雨傘", "追光季畢業禮道具"]],
+    ["W-3Nh_yWGv", 637, 3900, "Moments Ultimate Camera", "拾光畢業相機", ["拾光季畢業相機", "拾光季畢業禮道具"]],
+  ]) {
+    const item = catalog.wikiItems.find(item => item.guid === guid);
+    assert.deepEqual([item.id, item.order, item.name], [id, order, english]);
+    assert.equal(catalog.zhItemName(item), name);
+    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.isPaidItem(item), false);
+    for (const term of [name, ...terms]) {
+      assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
+    }
+  }
+  const regularCamera = catalog.wikiItems.find(item => item.guid === "K_OhSP_gST");
+  assert.equal(catalog.zhItemName(regularCamera), "相機");
+  assert.notEqual(catalog.saleItemName(regularCamera), "拾光畢業相機");
+});
+
 test("paid summer surfboard stays distinct from the 2026 sporty surfboard", () => {
   // SkyGame-Data 1.3.10: separate official IDs/orders; only the 2023 board has IAPs.
   const item = catalog.wikiItems.find(item => item.guid === "amo581C-E4");
