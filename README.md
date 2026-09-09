@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「白金絨斗／白金絨斗篷」對應 Winter Ancestor Cape（`B3YJxxJKJX`），保留「冬日先祖斗篷」顯示名。名稱參考[玩家宴會節整理](https://www.taptap.cn/moment/352804618322838086)，並以官方 catalog 的 2021 宴會節關聯及[玩家描述的白色外觀、金邊、紅內襯](https://www.reddit.com/r/SkyChildrenOfLight/comments/1cp2bqh)交叉核對；不採預測價格，不加入會與感恩季兌換斗篷混淆的泛稱「白絨斗」。雪花、雪怪與白金絨斗保持三件不同物品。
+
 「雪怪斗篷／暖洋洋雪怪斗篷」作為付費 Cozy Hermit Cape 的搜尋別名，保留顯示名「暖心隱士斗篷」及官方 GUID `Nep9ocMylo`。身分交叉核對[多語物品對照](https://skym.iina117.com/sky-terminology-3/)與[雪怪斗篷介紹](https://news.4399.com/skygy/xzdh/dp/m/974472.html)，僅採名稱證據，不把中國服價格帶入台幣估價，也不將泛稱「雪怪」綁到單件物品。
 
 新年道具別名：「新年紙傘／新年紅傘」對應 Fortune Enchanted Umbrella，「新年手扇／新春摺扇」對應 Fortune Hand Fan；身分與用語參考[2023 福瑞傘](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2023)及[台灣玩家 2025 新年活動整理](https://www.dcard.tw/f/sky/p/257849027)。保留原顯示名與官方身分，不把泛稱「紙傘／紅傘／扇子」直接綁定。123 份既有文案中，46 份共補辨識 68 次物品出現，12 份部分衣櫃估價區間改變；別名去重後每件仍只算一次，不視為完整估價驗證。

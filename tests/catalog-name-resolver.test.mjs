@@ -4,6 +4,20 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("white-gold fur cape aliases retain the paid Winter Ancestor identity", () => {
+  for (const term of ["白金絨斗", "白金絨斗篷", "冬日先祖斗篷"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["B3YJxxJKJX"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type], [1895, 17000, "Winter Ancestor Cape", "Cape"]);
+    assert.equal(catalog.isPaidItem(item), true);
+    assert.equal(catalog.zhItemName(item), "冬日先祖斗篷");
+  }
+  assert.equal(resolver.scan("白金絨斗｜白金絨斗篷｜冬日先祖斗篷").matched.length, 1);
+  assert.equal(resolver.scan("沒有白金絨斗").matched.length, 0);
+  assert.equal(resolver.scan("白金絨斗｜雪怪斗篷｜雪花斗篷").matched.length, 3);
+});
+
 test("yeti cape aliases identify the paid Cozy Hermit Cape without duplicating it", () => {
   for (const term of ["雪怪斗篷", "暖洋洋雪怪斗篷", "暖心隱士斗篷", "Cozy Hermit Cape"]) {
     const match = resolver.resolve(term);
