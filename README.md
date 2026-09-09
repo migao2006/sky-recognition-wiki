@@ -6,6 +6,8 @@
 
 ## 專案結構
 
+Fortune Dragon Bangles（`xsTxIqIX8E`）保留「幸運節龍耳飾」顯示名，支援「龍鱗耳墜／金鱗耳墜」搜尋。依[交易用語](https://www.8591.com.hk/mall/detail/51274180)、[2024 春節物品介紹](https://www.9game.cn/skygy/9762443.html)與[國際服 2024 福瑞節物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2024)核對：這是金紅色垂晶耳飾，不是手環；官方 ID 2055、order 1400、HeadAccessory 分類、圖示及付費禮包 `iap:1f6Qmtj6ky` 不變。舊直譯仍可搜尋，不採外幣行情校準台幣，也不將泛稱「龍鱗」綁定單件。
+
 - `app/page.tsx`：三步驟流程協調與按需載入
 - `app/account-step.tsx`：帳號資料與綁定設定
 - `app/use-account-backup-actions.ts`：第一步的 JSON 備份匯入與匯出

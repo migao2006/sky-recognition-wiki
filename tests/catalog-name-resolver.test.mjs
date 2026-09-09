@@ -4,6 +4,21 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("dragon scale earrings resolve the paid fortune head accessory, not a bracelet", () => {
+  for (const term of ["龍鱗耳墜", "金鱗耳墜", "幸運節龍耳飾", "福瑞龍手環"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["xsTxIqIX8E"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [2055, 1400, "Fortune Dragon Bangles", "HeadAccessory", "days-of-fortune"]);
+    assert.equal(catalog.zhItemName(item), "幸運節龍耳飾");
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("龍鱗耳墜｜金鱗耳墜｜幸運節龍耳飾").matched.length, 1);
+  assert.equal(resolver.scan("沒有龍鱗耳墜").matched.length, 0);
+  assert.equal(resolver.scan("龍鱗耳墜｜月光耳墜｜太陽耳墜").matched.length, 3);
+});
+
 test("sun earrings use the player name while preserving the official sunlight identity", () => {
   for (const term of ["太陽耳環", "太陽耳墜", "陽光太陽神圓環"]) {
     const match = resolver.resolve(term);
