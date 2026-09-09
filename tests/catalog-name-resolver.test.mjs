@@ -103,6 +103,20 @@ test("graduation umbrella and camera names identify the item rather than only th
   assert.notEqual(catalog.saleItemName(regularCamera), "拾光畢業相機");
 });
 
+test("Moomin red umbrella keeps its identity and does not replace the Lightseekers umbrella", () => {
+  // Taiwan player description: https://www.dcard.tw/f/sky/p/256907106
+  const item = catalog.wikiItems.find(item => item.guid === "dkfdFCaemY");
+  assert.deepEqual([item.id, item.order, item.name, item.group, item.collection],
+    [2341, 4100, "Moomin Ultimate Umbrella", "Ultimate", "moomin"]);
+  assert.equal(catalog.zhItemName(item), "姆明紅傘");
+  assert.equal(catalog.saleItemName(item), "姆明紅傘");
+  assert.equal(catalog.isPaidItem(item), false);
+  for (const term of ["姆明紅傘", "姆明傘", "姆明雨傘", "姆明大傘", "姆明季畢業傘", "姆明季畢業禮道具"]) {
+    assert.deepEqual(resolver.resolve(term).candidates.map(value => value.guid), [item.guid], term);
+  }
+  assert.deepEqual(resolver.resolve("大傘").candidates.map(value => value.guid), ["2o3CEU9QhM"]);
+});
+
 test("Flight graduation outfit names identify the pants and retain official identity", () => {
   // Pants context: https://game.xiaomi.com/viewpoint/1312958803_1631021803629_13
   // Identity is verified independently against the official catalog, not the article's test-server details.

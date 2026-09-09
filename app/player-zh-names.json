@@ -390,7 +390,7 @@
     "rMC7kQhgYk": { "saleName": "薩克斯", "aliases": ["薩克斯道具"], "displayName": "薩克斯" },
     "2o3CEU9QhM": { "saleName": "大傘", "aliases": ["追光季畢業禮", "追光季畢業禮道具", "追光大傘", "大雨傘"], "displayName": "大傘" },
     "W-3Nh_yWGv": { "saleName": "拾光畢業相機", "aliases": ["拾光季畢業禮", "拾光季畢業禮道具", "拾光季畢業相機"], "displayName": "拾光畢業相機" },
-    "dkfdFCaemY": { "displayName": "姆明季畢業禮道具" },
+    "dkfdFCaemY": { "displayName": "姆明紅傘", "saleName": "姆明紅傘", "aliases": ["姆明季畢業禮道具", "姆明傘", "姆明雨傘", "姆明大傘", "姆明季畢業傘"] },
     "y54CllfiMA": { "saleName": "週年場記板", "aliases": ["週年場記板道具"], "displayName": "週年場記板" },
     "4CYafmMUql": { "saleName": "夏日陽傘", "aliases": ["夏日陽傘"], "displayName": "夏日傘" },
     "9-5LbKZZQz": { "saleName": "滑雪板", "aliases": ["滑雪板道具"], "displayName": "滑雪板" },
