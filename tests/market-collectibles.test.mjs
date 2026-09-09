@@ -47,6 +47,31 @@ test("generated IAP metadata covers every mapped catalog item by GUID", () => {
   }
 });
 
+test("candle redemption hair and cape remain collectibles, not paid packages", async () => {
+  const { canonicalPackageKey } = await tsImport("../app/valuation-items.ts", import.meta.url);
+  for (const [guid, name] of [
+    ["si_8YhNtmr", "Mischief Witch Hair"],
+    ["-HtIAPjYsa", "Mischief Withered Cape"],
+  ]) {
+    const item = catalog.wikiItems.find((entry) => entry.guid === guid);
+    assert.equal(item?.name, name);
+    assert.equal(iapCatalog.items.some((entry) => entry.guid === guid), false);
+    assert.equal(catalog.isPaidItem(item), false);
+    assert.equal(canonicalPackageKey(item), null);
+    assert.equal(marketCollectibleProfile(name, guid)?.saleCopy, true);
+  }
+  const witchHat = catalog.wikiItems.find((entry) => entry.name === "Mischief Witch Hat");
+  assert.ok(witchHat);
+  assert.equal(catalog.isPaidItem(witchHat), true);
+  assert.ok(canonicalPackageKey(witchHat));
+});
+
+test("runtime paid items have positive IAP evidence, not only curated labels", () => {
+  const paidGuids = new Set(iapCatalog.items.filter((row) => row.paid).map((row) => row.guid));
+  const runtimeGuids = new Set(catalog.wikiItems.filter(catalog.isPaidItem).map((item) => item.guid));
+  assert.deepEqual(runtimeGuids, paidGuids);
+});
+
 test("reviewed IAP player terms replace machine translations by exact GUID", () => {
   const rows = new Map(iapCatalog.items.map((item) => [item.guid, item]));
   assert.ok(Object.keys(reviewedIapNames.items).length >= 35);

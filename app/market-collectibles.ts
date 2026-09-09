@@ -230,8 +230,6 @@ const standardPaidProfiles = defineProfiles(
   },
   [
     ["Feathery Lash Mask", "羽睫面具"],
-    ["Mischief Witch Hair", "巫師髮型", undefined, ["女巫髮型"]],
-    ["Mischief Withered Cape", "枯萎斗篷"],
     ["Winter Feast Snowglobe", "宴會雪景球"],
     ["Fledgling Harp", "雛鳥豎琴"],
     ["Rhythm Guitar", "音韻吉他", undefined, ["節奏吉他"]],
@@ -266,6 +264,23 @@ const standardPaidProfiles = defineProfiles(
     ["Charming Creature Outfit", "迷人小生物服裝", "charming-creature-pack"],
     ["Charming Creature Head Accessory", "迷人小生物頭飾", "charming-creature-pack"],
     ["FlOw Cape", "FlOw 斗篷", undefined, ["花憩風之旅人斗篷"]],
+  ],
+);
+
+// Candle redemptions, not the separately sold Mischief Witch Hat.
+const redemptionProfiles = defineProfiles(
+  {
+    series: "活動收藏",
+    availability: "global",
+    paid: false,
+    valuationMultiplier: 0.9,
+    valuationTier: "standard",
+    saleSection: "special",
+    salePriority: 101,
+  },
+  [
+    ["Mischief Witch Hair", "巫師髮型", undefined, ["女巫髮型"]],
+    ["Mischief Withered Cape", "枯萎斗篷"],
   ],
 );
 
@@ -333,6 +348,7 @@ const curatedProfiles: readonly MarketCollectibleProfile[] = [
   ...importantPackageProfiles,
   ...importantLimitedProfiles,
   ...standardPaidProfiles,
+  ...redemptionProfiles,
   ...legacyProfiles,
 ];
 

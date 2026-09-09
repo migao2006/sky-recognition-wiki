@@ -197,6 +197,18 @@ test("verified wireframe and AURORA IAPs count as five packages without limited 
   assert.equal(result.contributions.filter(row => row.group === "limited").length, 0);
 });
 
+test("candle redemptions do not increase paid package count or package contributions", async () => {
+  const { loadRuntimeCatalog } = await import("../scripts/load-runtime-catalog.mjs");
+  const catalog = await loadRuntimeCatalog();
+  const chosen = ["si_8YhNtmr", "-HtIAPjYsa"].map(guid => catalog.wikiItems.find(item => item.guid === guid));
+  assert.ok(chosen.every(Boolean));
+  const result = estimateValuation({ analysis: analyze(chosen) });
+  assert.ok(result);
+  assert.equal(result.marketProfile.paidItemCount, 0);
+  assert.equal(result.marketProfile.canonicalPackageCount, 0);
+  assert.equal(result.contributions.filter(row => row.group === "package").length, 0);
+});
+
 test("distinct anniversary rewards in one event collection are all retained", () => {
   const result = estimateValuation({
     analysis: analyze([
