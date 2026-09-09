@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+性格測試的 Green Folded Ears 支援「綠絨卷耳／綠絨絨卷耳髮飾」，用語參考[活動整理](https://game.xiaomi.com/viewpoint/1543958016_1769498317632_149)；2023 宴會節 Cozy Hermit Boots 支援「隱士雪人靴／雪人靴」，依[物品介紹](https://www.biubiu001.com/skygyand/83007.html)核對。保留目前顯示名、GUID、原始分類與 IAP 身分，只補搜尋別名，不採中國服價格。「綠野犬耳／雪絨圍巾」仍缺唯一身分證據，不直接補入。
+
 「大耳狗頭飾」依[台灣玩家活動介紹](https://www.dcard.tw/f/sky/p/255375235)及[PTT 四款禮包整理](https://www.ptt.cc/bbs/Steam/M.1714730404.A.127.html)，對應獨立販售的迷你夥伴（`eWqTtgnrmt`），不是與雲朵斗篷同包的領結。移除領結上的錯誤別名，不作相容保留；領結、耳朵與迷你夥伴保持不同 GUID 與正確禮包去重。
 
 「小狗頭飾」與「小狗拖鞋」僅作週年奧利奧頭帶／拖鞋的搜尋別名，不歸入大耳狗聯動。分別依[五週年物品介紹](https://www.9game.cn/skygy/10163405.html)及[七週年拖鞋資料](https://wiki.biligame.com/sky/小狗拖鞋礼包)核對名稱，再以 SkyGame-Data 的 `Skyfest Oreo Headband`／`Oreo Slippers`、年份、GUID 與原始分類確認身分；不引入中國服售價或新物品。模糊的「小狗娃娃」未直接對應任一玩偶。

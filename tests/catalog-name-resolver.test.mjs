@@ -4,6 +4,23 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("green folded ears and hermit snow boots retain their paid identities", () => {
+  for (const [guid, id, order, name, type, terms] of [
+    ["2XujEQcN6n", 2931, 7200, "Green Folded Ears", "HairAccessory", ["綠絨卷耳", "綠絨絨卷耳髮飾", "毛茸綠折耳"]],
+    ["pT4AVkYVZP", 1979, 2200, "Cozy Hermit Boots", "Shoes", ["隱士雪人靴", "雪人靴", "暖心隱士靴子"]],
+  ]) {
+    for (const term of terms) {
+      const match = resolver.resolve(term);
+      assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
+      const [item] = match.candidates;
+      assert.deepEqual([item.id, item.order, item.name, item.type], [id, order, name, type]);
+      assert.equal(catalog.isPaidItem(item), true);
+    }
+    assert.equal(resolver.scan(terms.join("｜")).matched.length, 1);
+  }
+  assert.equal(resolver.scan("沒有綠絨卷耳｜沒有雪人靴").matched.length, 0);
+});
+
 test("Cinnamoroll head accessory means the mini companion rather than the cape bowtie", () => {
   const match = resolver.resolve("大耳狗頭飾");
   assert.deepEqual(match.candidates.map(item => item.guid), ["eWqTtgnrmt"]);

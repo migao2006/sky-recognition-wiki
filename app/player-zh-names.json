@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "pT4AVkYVZP": { "aliases": ["隱士雪人靴", "雪人靴"] },
     "B3YJxxJKJX": { "aliases": ["白金絨斗", "白金絨斗篷"] },
     "Nep9ocMylo": { "aliases": ["雪怪斗篷", "暖洋洋雪怪斗篷"] },
     "uzos22Ysp3": { "aliases": ["新年紙傘", "新年紅傘"] },
@@ -668,7 +669,7 @@
     "fLbULqwumS": { "aliases": ["愛麗絲圍裙套裝髮飾"] },
     "8aWnwc3_C6": { "aliases": ["暖冬絨絨髮飾"] },
     "HdoyB06O4V": { "aliases": ["錦標賽桂冠"] },
-    "2XujEQcN6n": { "aliases": ["綠茸茸卷耳髮飾"] },
+    "2XujEQcN6n": { "aliases": ["綠茸茸卷耳髮飾", "綠絨卷耳", "綠絨絨卷耳髮飾"] },
     "i9-S4tuhpn": { "aliases": ["綴黃畫筆髮箍髮飾", "畫筆髮箍", "黃筆刷髮帶"], "saleName": "畫筆髮箍" },
     "1YM9K1fWqF": { "aliases": ["探寶翎羽帽"] },
     "EsxTOk-gmG": { "saleName": "彩虹連體褲", "aliases": ["彩虹連體褲", "彩虹綁帶連身衣"] },
