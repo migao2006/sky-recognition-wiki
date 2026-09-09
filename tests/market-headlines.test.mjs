@@ -28,6 +28,16 @@ test("season aliases retain incomplete listings in separate native-currency mark
   }
 });
 
+test("binding shorthand plus simple-account title is usable without GUIDs or binding details", () => {
+  const report = buildMarketHeadlineReport([listing({ title: "音韻綁全出簡" })]);
+  assert.equal(report.eligible_rows, 1);
+  assert.equal(report.markets[0].binding_class, "unknown");
+  const group = report.markets[0].season_breaks[0];
+  assert.equal(group.season, "rhythm");
+  assert.equal(group.break_class, "unknown");
+  assert.equal(group.packages[0].package_tier, "unknown");
+});
+
 test("reviewed earlier partial graduation can resolve a later headline season", () => {
   const base = { title: "魔法無斷綁全出", start_season_slug: "rhythm", start_season_confidence: "structured", season_progress: { rhythm: "1/2", enchantment: "complete" } };
   const report = buildMarketHeadlineReport([listing(base)]);

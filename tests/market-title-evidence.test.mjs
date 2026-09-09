@@ -52,6 +52,22 @@ test("accepts season-count, package-account and transferable wingless headings",
   }
 });
 
+test("transferable-binding text does not hide an adjacent simple-account claim", () => {
+  // Existing reviewed Drive heading: 音韻綁全出簡.
+  for (const title of ["音韻綁全出簡", "音韵季绑全出简号", "音韻綁全出簡帳"]) {
+    assert.deepEqual(extractMarketTitleEvidence(title), {
+      startSeasonSlug: "rhythm",
+      breakClass: null,
+      paidPackageCount: null,
+      salePackageTier: null,
+      accountStyle: "simple",
+      wingless: false,
+    });
+  }
+  for (const title of ["音韻季卡綁全出簡", "音韻吉他綁全出簡", "王子圍巾綁全出簡", "音韻綁全出簡｜追光簡", "音韻綁全出非簡號"])
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
+});
+
 test("blank metadata and document page markers do not hide the real heading", () => {
   assert.equal(marketHeadlineFor({ title: "  ", listing_title: "N/A", listing_text: "\uFEFF分頁 1\n\n預言八季禮包號\n綁定資料" }), "預言八季禮包號");
   assert.equal(marketHeadlineFor({ title: "狂歡禮包號", listing_text: "其他資料" }), "狂歡禮包號");

@@ -163,7 +163,7 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   const explicitBreakSeason = /(?:斷|断)季/u.test(text);
   const countedSeasons = /^(?:\d+|[一二兩两三四五六七八九十]+)季(?:禮包|礼包)?(?:號|号|帳|帐)/u.test(after);
   const transferableWingless = /^(?:季)?(?:(?:綁全出|绑全出)(?:無翼|无翼)|(?:無翼|无翼)(?:綁全出|绑全出))/u.test(after);
-  const adjacentAccountStyle = accountStyle !== null && /^(?:季)?(?:簡|简|普|普通)/u.test(after);
+  const adjacentAccountStyle = accountStyle !== null && /^(?:季)?(?:綁全出|绑全出)?(?:簡|简|普|普通)/u.test(after);
   const accountEvidence = accountTitle || accountStyle !== null || breakClass !== null || explicitBreakSeason || packageAccount || transferableWingless;
   return explicitStart || (accountEvidence && (breakClass !== null || sellerSummary || explicitBreakSeason || adjacentAccountStyle || countedSeasons || packageAccount || transferableWingless))
     ? claim.slug
