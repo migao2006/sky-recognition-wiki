@@ -1,6 +1,6 @@
 import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
-import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor } from "./lib/market-title-evidence.mjs";
+import { extractMarketTitleEvidence, extractMarketPackageRange, marketTitleBreakMatchesStart, marketHeadlineFor } from "./lib/market-title-evidence.mjs";
 import {
   valuationConfidenceValues,
   valuationModelInputKeys,
@@ -169,6 +169,7 @@ const startSeasonFactorFor = (row, startSeason) => {
 const auditBreakClassFor = (row) => {
   const structured = sharedBreakClassFor(row);
   if (structured) return structured;
+  if (!marketTitleBreakMatchesStart(marketHeadlineFor(row), startSeasonFor(row), headlineFor(row).startSeasonSlug)) return null;
   const label = String(row.seller_break_label ?? "").toLowerCase();
   if (/微斷|小斷|近無斷|偽無斷|slight/.test(label)) return "slight";
   if (/無斷|none/.test(label)) return "none";

@@ -68,8 +68,12 @@ const seasonClaimsFor = (text) => {
 };
 
 // Mentions are not account-start claims: they may identify a cape or bundle.
-export const marketTitleSeasonMentions = (title) =>
+const marketTitleSeasonMentions = (title) =>
   unique(seasonClaimsFor(normalizedTitle(title)).map(claim => claim.slug));
+
+export const marketTitleBreakMatchesStart = (title, start, headlineStart) =>
+  !start || (headlineStart ? headlineStart === start :
+    marketTitleSeasonMentions(title).every(slug => slug === start));
 
 const breakClassForTitle = (text) => {
   if (/(?:偽|伪)(?:無斷|无断)/u.test(text)) return "slight";

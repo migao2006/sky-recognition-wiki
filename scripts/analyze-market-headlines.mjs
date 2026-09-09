@@ -2,7 +2,7 @@ import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { channelFor } from "./lib/market-channel.mjs";
-import { extractMarketTitleEvidence, extractMarketPackageRange, marketTitleSeasonMentions, marketHeadlineFor as titleFor } from "./lib/market-title-evidence.mjs";
+import { extractMarketTitleEvidence, extractMarketPackageRange, marketTitleBreakMatchesStart, marketHeadlineFor as titleFor } from "./lib/market-title-evidence.mjs";
 import {
   accountKeyFor,
   breakClasses,
@@ -171,8 +171,7 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
     if (!rowKeys(row).length) { diagnostics.identity_unknown++; continue; }
     if (startConflict) diagnostics.title_start_resolved++;
     const suppliedBreak = known(row.computed_break_class) ?? known(row.seller_break_label);
-    const ambiguousBreakScope = explicitStart && !titleEvidence.startSeasonSlug &&
-      marketTitleSeasonMentions(titleFor(row)).some(slug => slug !== season);
+    const ambiguousBreakScope = !marketTitleBreakMatchesStart(titleFor(row), season, titleEvidence.startSeasonSlug);
     // A title's break claim may cover only its later starting season.
     const breakClass = breakClasses.includes(row.computed_break_class) ? row.computed_break_class
       : startConflict || ambiguousBreakScope ? "unknown" : breakClasses.includes(suppliedBreak) ? suppliedBreak : titleEvidence.breakClass ?? "unknown";

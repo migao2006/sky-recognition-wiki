@@ -13,6 +13,21 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 
+test("audit keeps partial-start samples without borrowing a later season's break claim", async () => {
+  const base = { post_hash: "partial-start", published_at: recent, price_twd: 6000, evidence_kind: "ask", evidence_quality: "high", start_season_slug: "duets", season_progress: { duets: "2/3", radiance: "1/2" } };
+  for (const title of ["姆明大斷少禮簡號", "姆明大斷少禮簡號｜九色鹿、姆明全禮"]) {
+    const result = await audit([{ ...base, title, seller_break_label: "大斷" }]);
+    assert.equal(result.eligibleRows, 1);
+    assert.equal(result.segments.startSeason.duets.sampleCount, 1);
+    assert.equal(result.segments.breakClass.big.sampleCount, 0);
+    assert.equal(result.segments.accountStyle.simple.sampleCount, 1);
+  }
+  for (const extra of [{ title: "大斷少禮簡號" }, { title: "協奏大斷少禮簡號" }, { title: "姆明大斷少禮簡號", computed_break_class: "big" }]) {
+    const result = await audit([{ ...base, ...extra }]);
+    assert.equal(result.segments.breakClass.big.sampleCount, 1);
+  }
+});
+
 test("graduation count and a few-gifts label do not fabricate package or account classes", async () => {
   const result = await audit([{
     source: "8591_tw", post_hash: "three-graduated-seasons", published_at: recent,

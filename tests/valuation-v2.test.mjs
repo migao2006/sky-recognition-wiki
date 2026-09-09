@@ -164,7 +164,8 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { none: 40, slight: 67, medium: 89, big: 119 },
+    // Two later-title break labels no longer describe their structured start.
+    { none: 40, slight: 65, medium: 89, big: 119 },
   );
   assert.deepEqual(
     Object.fromEntries(

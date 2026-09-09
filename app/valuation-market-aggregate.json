@@ -1327,13 +1327,13 @@
         }
       },
       "slight": {
-        "sampleCount": 67,
-        "effectiveWeight": 14.502,
+        "sampleCount": 65,
+        "effectiveWeight": 14.398,
         "p25": 6000,
         "median": 8200,
         "p75": 17580,
         "evidenceBreakdown": {
-          "ask": 55,
+          "ask": 53,
           "quick_sale": 2,
           "sold": 6,
           "professional_estimate": 0,
@@ -1467,8 +1467,8 @@
       },
       "slight": {
         "multiplier": 0.97,
-        "sampleCount": 66,
-        "effectiveWeight": 13.783
+        "sampleCount": 64,
+        "effectiveWeight": 13.7
       },
       "medium": {
         "multiplier": 0.9,
