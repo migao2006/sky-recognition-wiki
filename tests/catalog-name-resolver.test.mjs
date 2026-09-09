@@ -4,6 +4,19 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("white bow wording resolves the paid love cravat rather than a seasonal bowtie", () => {
+  for (const term of ["白色領結", "優雅領巾"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["PuFWddickP"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.type, item.name, item.collection], [1755, 4400, "Necklace", "Days of Love Classy Cravat", "days-of-love"]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("白色領結｜優雅領巾").matched.length, 1);
+  assert.equal(resolver.scan("沒有白色領結").matched.length, 0);
+  assert.equal(resolver.scan("白色領結｜健行壞脾氣領結｜大耳狗領結").matched.length, 3);
+});
+
 test("bloom tea aliases preserve the two paid tables and do not invent generic table identities", () => {
   for (const [guid, id, order, name, terms] of [
     ["sTIyha_lg1", 1766, 3600, "Pink Bloom Teaset", ["櫻花茶桌", "粉紅色花憩茶具"]],

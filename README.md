@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「白色領結」作為優雅領巾（`PuFWddickP`）的搜尋別名，依[玩家同心節介紹](https://www.bilibili.com/read/mobile?id=21606745)與[2023 愛之日物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2023)交叉核對：Days of Love Classy Cravat 為付費白色頸部蝴蝶結。保留原顯示名、GUID 及 IAP 身分，不與聖島季領結、大耳狗領結合併，不採預測或中國服價格。
+
 渠道分析共用 `market-channel.mjs`：淘手遊採集列未提供 `channel` 時，讀取來源明確的 `client`（安卓官方、蘋果官方、華為、B服、OPPO、小米、vivo），同時用於季節比例與標題行情報告。既有 `channel` 優先，不從標題或其他來源的 `client` 猜配；未識別渠道仍保留 unknown，不排除整列。
 
 私人 GUID 重播同時接受正數 `price_twd` 單一售價及完整 `price_twd_low/high` 價格區間；單價優先，統一輸出比較上下限。缺價、單邊區間或無效區間仍保留物品與帳號證據，但標為 `no-price`，不計入有價比較，也不把未知價格算成零。
