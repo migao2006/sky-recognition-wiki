@@ -4,6 +4,21 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("marshmallow rack aliases resolve the paid snack kit as a single prop", () => {
+  for (const term of ["棉花糖架", "烤棉花糖架", "烤棉花糖禮包", "營火點心套組"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["TXYOTW9Qyn"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [1915, 5900, "Campfire Snack Kit", "SmallProp", "days-of-sunlight"]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  const repeated = resolver.scan("棉花糖架｜烤棉花糖禮包｜營火點心套組");
+  assert.equal(repeated.matched.length, 1);
+  assert.equal(repeated.groups.length, 0);
+  assert.equal(resolver.scan("沒有棉花糖架").matched.length, 0);
+});
+
 test("moonlight earring wording resolves one paid moonlight item without duplicate counting", () => {
   for (const term of ["月光耳墜", "月華耳環", "星月耳環", "月光耳環"]) {
     const match = resolver.resolve(term);
