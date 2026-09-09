@@ -104,6 +104,20 @@ test("headline package intervals retain usable tier evidence without fabricating
   assert.equal(result.segments.packageTier.hundred.sampleCount, 1);
   assert.equal(result.segments.packageTier.many.sampleCount, 1);
 });
+test("audit keeps verbal lower bounds without turning sixty-plus into a fixed tier", async () => {
+  const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 20000, evidence_kind: "ask", evidence_quality: "medium" };
+  const result = await audit([
+    { ...base, post_hash: "verbal-sixty", title: "魔法起至少60禮包" },
+    { ...base, post_hash: "verbal-hundred", title: "魔法起100禮以上" },
+    { ...base, post_hash: "verbal-negated", title: "魔法起不是至少60禮包" },
+  ]);
+  assert.equal(result.eligibleRows, 3);
+  assert.equal(result.segments.packageTier.hundred.sampleCount, 1);
+  assert.equal(result.segments.packageTier.many.sampleCount, 0);
+  assert.equal(result.segments.packageTier.medium.sampleCount, 0);
+  assert.equal(result.segments.packageTier.few.sampleCount, 0);
+});
+
 test("audit accepts measured lower bounds without inventing exact counts or cross-tier classes", async () => {
   const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 20000, evidence_kind: "ask", evidence_quality: "medium" };
   const result = await audit([
