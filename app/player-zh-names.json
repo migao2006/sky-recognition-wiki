@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "uzos22Ysp3": { "aliases": ["新年紙傘", "新年紅傘"] },
     "4XMYa4Wj-M": { "aliases": ["彩虹耳墜"] },
     "IOBWcIpOY9": { "displayName": "藍色墨鏡", "saleName": "藍色墨鏡", "aliases": ["自然日眼鏡", "自然眼鏡", "自然墨鏡", "海洋日墨鏡"] },
     "jWAPWGsEd-": { "displayName": "海浪髮型", "saleName": "海浪髮型", "aliases": ["自然海浪輕拂髮型", "自然水漾髮型", "水漾髮型"] },
@@ -58,7 +59,7 @@
     "8KXtBlvNRO": { "displayName": "幸運鼓", "aliases": ["幸運小堂鼓"] },
     "10Ol7H9jKg": { "displayName": "直立鋼琴", "aliases": ["新手鋼琴"] },
     "WMNr4yo_35": { "displayName": "音樂工作台" },
-    "HEV8fvTQwQ": { "displayName": "福瑞手持扇", "aliases": ["幸運扇子"] },
+    "HEV8fvTQwQ": { "displayName": "福瑞手持扇", "aliases": ["幸運扇子", "新年手扇", "新春摺扇"] },
     "aU_ZGHomyy": { "displayName": "尋寶鏟", "aliases": ["尋寶鏟道具"], "saleName": "尋寶鏟" },
     "YdP0vtpTMi": { "displayName": "奧利奧拖鞋", "aliases": ["Oreo 拖鞋"] },
     "z648Yl_rsv": { "displayName": "奧利奧頭帶", "aliases": ["Oreo 頭帶"] },

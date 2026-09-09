@@ -4,6 +4,27 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("new-year umbrella and fan aliases preserve paid held-prop identities", () => {
+  // Fortune fan: https://www.dcard.tw/f/sky/p/257849027
+  // Umbrella identity: Days_of_Fortune/2023#Days_of_Fortune_Enchanted_Umbrella
+  for (const [guid, id, order, english, terms] of [
+    ["uzos22Ysp3", 1735, 4700, "Fortune Enchanted Umbrella", ["新年紙傘", "新年紅傘", "福瑞魔法傘"]],
+    ["HEV8fvTQwQ", 2503, 4800, "Fortune Hand Fan", ["新年手扇", "新春摺扇", "福瑞手持扇", "幸運扇子"]],
+  ]) {
+    for (const term of terms) {
+      const match = resolver.resolve(term);
+      assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
+      const [item] = match.candidates;
+      assert.deepEqual([item.id, item.order, item.name, item.type], [id, order, english, "HeldProp"]);
+      assert.equal(catalog.isPaidItem(item), true);
+    }
+  }
+  const scan = resolver.scan("新年紙傘｜新年紅傘｜新年手扇｜新春摺扇");
+  assert.equal(scan.matched.length, 2, "synonyms must not duplicate items");
+  assert.equal(scan.ambiguous.length, 0);
+  assert.equal(resolver.scan("沒有新年紙傘｜沒有新年手扇").matched.length, 0);
+});
+
 test("rainbow dangling braid remains free and distinct from paid rainbow earrings", () => {
   // Taiwan distinction: https://www.dcard.tw/f/sky/p/239253148
   for (const [term, guid, id, order, name, paid] of [

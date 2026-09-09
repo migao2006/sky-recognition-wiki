@@ -138,6 +138,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+新年道具別名：「新年紙傘／新年紅傘」對應 Fortune Enchanted Umbrella，「新年手扇／新春摺扇」對應 Fortune Hand Fan；身分與用語參考[2023 福瑞傘](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2023)及[台灣玩家 2025 新年活動整理](https://www.dcard.tw/f/sky/p/257849027)。保留原顯示名與官方身分，不把泛稱「紙傘／紅傘／扇子」直接綁定。123 份既有文案中，46 份共補辨識 68 次物品出現，12 份部分衣櫃估價區間改變；別名去重後每件仍只算一次，不視為完整估價驗證。
+
 「彩虹耳墜」依[台灣玩家彩虹日整理](https://www.dcard.tw/f/sky/p/239253148)對應 20 愛心兌換的 Rainbow Braid（彩虹辮子），只補搜尋別名；與付費「彩虹耳釘」、暗彩虹耳環分開。既有 123 份文案中補回 38 份的此物品辨識，付費禮包計數及重播估價均不變，不能因它出現在文案禮包區就改算付費。
 
 文案辨識支援「水漾髮型」與「貝殼頭飾」，分別對應自然日付費海浪髮型、夏日付費貝殼髮飾，不更改顯示名。身分核對參考[自然節髮型](https://sky-children-of-the-light.fandom.com/zh/wiki/自然節?variant=zh-tw)及[夏日貝殼髮飾](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Summer)。以既有 123 份私人文案重播，64 份補辨識共 83 次物品出現、19 份部分衣櫃估價區間改變；不是新增帳號，也不表示通過完整估價驗證。
