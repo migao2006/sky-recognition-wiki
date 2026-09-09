@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "4XMYa4Wj-M": { "aliases": ["彩虹耳墜"] },
     "IOBWcIpOY9": { "displayName": "藍色墨鏡", "saleName": "藍色墨鏡", "aliases": ["自然日眼鏡", "自然眼鏡", "自然墨鏡", "海洋日墨鏡"] },
     "jWAPWGsEd-": { "displayName": "海浪髮型", "saleName": "海浪髮型", "aliases": ["自然海浪輕拂髮型", "自然水漾髮型", "水漾髮型"] },
     "Zvi-5bPtxs": { "displayName": "紅吉他", "saleName": "紅吉他", "aliases": ["吉他"] },

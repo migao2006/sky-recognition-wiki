@@ -4,6 +4,26 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("rainbow dangling braid remains free and distinct from paid rainbow earrings", () => {
+  // Taiwan distinction: https://www.dcard.tw/f/sky/p/239253148
+  for (const [term, guid, id, order, name, paid] of [
+    ["彩虹耳墜", "4XMYa4Wj-M", 1789, 1500, "Rainbow Braid", false],
+    ["彩虹耳釘", "f-X2dDeB9w", 1807, 1600, "Rainbow Earrings", true],
+    ["暗彩虹耳墜", "krzIL86J83", 1814, 1800, "Dark Rainbow Earrings", true],
+  ]) {
+    const result = resolver.resolve(term);
+    assert.deepEqual(result.candidates.map(item => item.guid), [guid]);
+    const [item] = result.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type], [id, order, name, "HeadAccessory"]);
+    assert.equal(catalog.isPaidItem(item), paid);
+  }
+  const result = resolver.scan("彩虹耳墜｜彩虹耳釘｜暗彩虹耳墜");
+  assert.equal(result.matched.length, 3);
+  assert.equal(result.ambiguous.length, 0);
+  assert.equal(result.matched.filter(match => catalog.isPaidItem(match.candidates[0])).length, 2);
+  assert.equal(resolver.scan("沒有彩虹耳墜").matched.length, 0);
+});
+
 test("frequent listing aliases resolve paid shell hairpin and wave hair without matching anniversary props", () => {
   // Identity: Nature/2024 Wave-Touched Hair; Days of Summer Shell Hairpin (2021).
   for (const [term, guid, id, type, display] of [
