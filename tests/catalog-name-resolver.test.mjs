@@ -15,6 +15,10 @@ test("common instrument player names retain exact official identities and old al
     ["k1JghrvRyd", 261, 300, "Contrabass", "", "貝斯", ["低音提琴", "屁琴"]],
     ["o8VUub-4vw", 232, 400, "Piano", "", "鋼琴", ["鋼琴鍵盤"]],
     ["M1MCfh7sVo", 905, 1400, "Winter Piano", "SeasonPass", "高音鋼琴", ["冬季鋼琴", "冬日鋼琴"]],
+    // Belonging returning spirit: https://daydaynews.cc/video/959594.html
+    ["Zvi-5bPtxs", 824, 1000, "Guitar", "SeasonPass", "紅吉他", ["吉他"]],
+    // Taiwan glossary: https://forum.gamer.com.tw/Co.php?bsn=33024&sn=4630
+    ["xpq4O_F_Md", 1145, 1800, "Lute", "SeasonPass", "琵琶", ["魯特琴"]],
   ]) {
     const item = catalog.wikiItems.find(item => item.guid === guid);
     assert.deepEqual([item.id, item.order, item.name, item.type, item.group], [id, order, english, "Instrument", group]);
@@ -26,6 +30,10 @@ test("common instrument player names retain exact official identities and old al
   }
   assert.deepEqual(new Set(resolver.scan("貝斯｜鋼琴｜高音鋼琴").matched.map(match => match.candidates[0].guid)),
     new Set(["k1JghrvRyd", "o8VUub-4vw", "M1MCfh7sVo"]));
+  const scan = resolver.scan("紅吉他｜白吉他｜電吉他｜藍色電吉他｜琵琶");
+  assert.equal(scan.ambiguous.length, 0);
+  assert.deepEqual(new Set(scan.matched.map(match => match.candidates[0].guid)),
+    new Set(["Zvi-5bPtxs", "bOQzUAzYfV", "ARf5D2Bu4v", "hcuS6xsmHg", "xpq4O_F_Md"]));
 });
 
 test("rainbow mask variants remain ambiguous unless year or paid variant is explicit", () => {

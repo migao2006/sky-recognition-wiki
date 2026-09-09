@@ -1,6 +1,8 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "Zvi-5bPtxs": { "displayName": "紅吉他", "saleName": "紅吉他", "aliases": ["吉他"] },
+    "xpq4O_F_Md": { "displayName": "琵琶", "saleName": "琵琶", "aliases": ["魯特琴"] },
     "k1JghrvRyd": { "displayName": "貝斯", "saleName": "貝斯", "aliases": ["低音提琴", "屁琴"] },
     "o8VUub-4vw": { "displayName": "鋼琴", "saleName": "鋼琴", "aliases": ["鋼琴鍵盤"] },
     "M1MCfh7sVo": { "displayName": "高音鋼琴", "saleName": "高音鋼琴", "aliases": ["冬季鋼琴", "冬日鋼琴"] },

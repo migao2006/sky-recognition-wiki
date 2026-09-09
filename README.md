@@ -80,6 +80,8 @@ Wiki 蒐集可用 `--source=fandom-zh` 或 `--source=bwiki-zh-cn` 分站更新�
 
 一般樂器的「貝斯／屁琴、鋼琴、高音鋼琴」依[台灣玩家國際服用語整理](https://www.dcard.tw/f/sky/p/234859690)及[高音鋼琴使用討論](https://www.dcard.tw/f/sky/p/235297354)核對，分別綁定 Contrabass、Piano、Winter Piano 官方 GUID；「屁琴」只作搜尋別名，原低音提琴、鋼琴鍵盤、冬季／冬日鋼琴仍可搜尋。名稱變更不改動付費、畢業禮、衣櫃位置與排序。
 
+歸屬季 Guitar 採「紅吉他」、夢想季 Lute 採「琵琶」，參考既有交易文案、[歸屬復刻影片用語](https://daydaynews.cc/video/959594.html)及[巴哈姆特樂器對照](https://forum.gamer.com.tw/Co.php?bsn=33024&sn=4630)。原「吉他」「魯特琴」保留搜尋；紅吉他、白吉他、電吉他與藍色電吉他分別解析，不混同免費復刻與付費款。
+
 ## 備份相容性
 
 目前匯出格式為 v4，物品保存 SkyGame-Data 官方 GUID；上游尚未收錄的新品則保存上述明確追蹤的 overlay GUID。v1–v3 與無版本的舊備份會在匯入時遷移；未知物品會被略過並顯示數量，較新的未知版本則拒絕匯入。本機草稿保存 30 天，舊 v2 草稿會自動搬移至 v3。
