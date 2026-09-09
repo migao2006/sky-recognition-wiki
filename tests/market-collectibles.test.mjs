@@ -72,6 +72,20 @@ test("runtime paid items have positive IAP evidence, not only curated labels", (
   assert.deepEqual(runtimeGuids, paidGuids);
 });
 
+test("Fortune Orange is an orange head accessory, not an orange-colored hat", () => {
+  const item = catalog.wikiItems.find((entry) => entry.guid === "aRgiKoKavp");
+  assert.equal(item?.name, "Fortune Orange Hat");
+  assert.equal(item.type, "HairAccessory");
+  assert.equal(item.id, 1725);
+  assert.equal(item.order, 3500);
+  assert.equal(catalog.zhItemName(item), "橘子頭飾");
+  assert.equal(catalog.saleItemName(item), "橘子頭飾");
+  assert.equal(catalog.isPaidItem(item), true);
+  for (const name of ["福瑞橘色帽子", "橘子髮飾", "小橘子"])
+    assert.ok(catalog.zhItemSearchNames(item).includes(name), name);
+  assert.equal(marketCollectibleProfile("Fortune Orange Hat", "different-guid"), null);
+});
+
 test("reviewed IAP player terms replace machine translations by exact GUID", () => {
   const rows = new Map(iapCatalog.items.map((item) => [item.guid, item]));
   assert.ok(Object.keys(reviewedIapNames.items).length >= 35);

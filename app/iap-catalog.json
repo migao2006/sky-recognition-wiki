@@ -703,8 +703,13 @@
     {
       "guid": "aRgiKoKavp",
       "name": "Fortune Orange Hat",
-      "playerName": "福瑞橘色帽子",
-      "aliases": [],
+      "playerName": "橘子頭飾",
+      "aliases": [
+        "福瑞橘色帽子",
+        "橘子髮飾",
+        "小橘子"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:-RQOnjiSgH",
       "packageName": "Days of Fortune Orange",
       "paid": true,
