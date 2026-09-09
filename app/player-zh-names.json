@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "ADJiva5H2Z": { "aliases": ["祥雲褲", "壁畫家褲子"] },
     "sTIyha_lg1": { "aliases": ["櫻花茶桌"] },
     "l6GE013zrh": { "aliases": ["紫藤花茶桌", "紫藤花茶具"] },
     "pT4AVkYVZP": { "aliases": ["隱士雪人靴", "雪人靴"] },

@@ -4,6 +4,21 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("fortune muralist pants aliases remain paid and separate from white cotton pants", () => {
+  for (const term of ["祥雲褲", "壁畫家褲子", "福瑞壁畫家工作服"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["ADJiva5H2Z"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.type, item.name, item.collection], [1734, 3600, "OutfitShoes", "Fortune Muralist's Smock", "days-of-fortune"]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("祥雲褲｜壁畫家褲子").matched.length, 1);
+  assert.equal(resolver.scan("沒有祥雲褲").matched.length, 0);
+  const cotton = resolver.resolve("白棉褲").candidates;
+  assert.deepEqual(cotton.map(item => item.guid), ["qrP9vZPLlk"]);
+  assert.equal(catalog.isPaidItem(cotton[0]), false);
+});
+
 test("white bow wording resolves the paid love cravat rather than a seasonal bowtie", () => {
   for (const term of ["白色領結", "優雅領巾"]) {
     const match = resolver.resolve(term);
