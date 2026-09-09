@@ -39,11 +39,11 @@ export const extractCompleteBindings = (content) => {
   return null;
 };
 
-const resourcePatterns = {
-  candles: /(?:^|[\s｜|，,。；;])(?:白蠟|白蜡|白蠟燭|白蜡烛)\s*[:：]?\s*([0-9][0-9,]*)/iu,
-  hearts: /(?:^|[\s｜|，,。；;])(?:愛心|爱心)\s*[:：]?\s*([0-9][0-9,]*)/iu,
-  ascended: /(?:^|[\s｜|，,。；;])(?:昇華蠟|升華蠟|升华蜡|紅蠟|红蜡)\s*[:：]?\s*([0-9][0-9,]*)/iu,
-  passes: /(?:^|[\s｜|，,。；;])副卡\s*[:：]?\s*([0-9][0-9,]*)/iu,
+const resourceLabels = {
+  candles: "白蠟燭|白蜡烛|白蠟|白蜡",
+  hearts: "愛心|爱心",
+  ascended: "昇華蠟|升華蠟|升华蜡|紅蠟|红蜡",
+  passes: "副卡",
 };
 const resourceMaximums = {
   candles: 1_000_000,
@@ -53,11 +53,16 @@ const resourceMaximums = {
 };
 
 export const extractResourceEvidence = (content) => {
-  const text = String(content ?? "");
+  const text = String(content ?? "").normalize("NFKC");
   const resources = {};
-  for (const [key, pattern] of Object.entries(resourcePatterns)) {
-    const matches = [...text.matchAll(new RegExp(pattern.source, `${pattern.flags}g`))];
-    const values = [...new Set(matches.map((match) => Number(match[1].replaceAll(",", ""))))];
+  for (const [key, labels] of Object.entries(resourceLabels)) {
+    const number = String.raw`(?<![0-9],)([0-9]+(?:,[0-9]{3})*)(?!,[0-9])`;
+    const pattern = new RegExp(
+      String.raw`${boundary}(?:(?:${labels})\s*[:：]?\s*${number}|${number}\s*(?:${labels}))${ending}`,
+      "giu",
+    );
+    const matches = [...text.matchAll(pattern)];
+    const values = [...new Set(matches.map((match) => Number((match[1] ?? match[2]).replaceAll(",", ""))))];
     if (values.length !== 1) continue;
     const [value] = values;
     if (Number.isSafeInteger(value) && value >= 0 && value <= resourceMaximums[key])
@@ -67,6 +72,6 @@ export const extractResourceEvidence = (content) => {
   return {
     resources,
     observed,
-    complete: observed.length === Object.keys(resourcePatterns).length,
+    complete: observed.length === Object.keys(resourceLabels).length,
   };
 };

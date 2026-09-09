@@ -41,3 +41,13 @@ test("requires all four labeled resources and ignores item names", () => {
     {},
   );
 });
+
+test("accepts labeled suffixes and fullwidth numbers without inventing approximate counts", () => {
+  assert.deepEqual(extractResourceEvidence("１，０００白蠟｜１００愛心｜９０昇華蠟｜２副卡").resources,
+    { candles: 1000, hearts: 100, ascended: 90, passes: 2 });
+  assert.deepEqual(extractResourceEvidence("白蠟 1000｜1000白蠟").resources, { candles: 1000 });
+  assert.deepEqual(extractResourceEvidence("白蠟 1000｜2000白蠟").resources, {});
+  for (const text of ["白蠟 1.5萬", "白蠟 100+", "白蠟 100-200", "白蠟 1,00", "1,00白蠟", "100愛心眼鏡", "1000𖠜｜100ෆ｜90✦"]) {
+    assert.deepEqual(extractResourceEvidence(text).resources, {}, text);
+  }
+});
