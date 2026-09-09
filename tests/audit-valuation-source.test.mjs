@@ -13,6 +13,21 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 
+test("graduation count and a few-gifts label do not fabricate package or account classes", async () => {
+  const result = await audit([{
+    source: "8591_tw", post_hash: "three-graduated-seasons", published_at: recent,
+    currency: "TWD", region: "international", price_twd: 4200, evidence_kind: "ask", evidence_quality: "high",
+    title: "測試用帳號：3季畢業，少禮", paid_package_count: null, seller_package_label: "few",
+    start_season_slug: "performance",
+    season_progress: { performance: "complete", shattering: "complete", aurora: "complete" },
+  }]);
+  assert.equal(result.eligibleRows, 1);
+  assert.equal(result.segments.startSeason.performance.sampleCount, 1);
+  assert.equal(result.segments.packageTier.few.sampleCount, 0);
+  assert.equal(result.segments.accountStyle.simple.sampleCount, 0);
+  assert.equal(result.segments.breakClass.big.sampleCount, 0);
+});
+
 test("zero and invalid progress cannot masquerade as an early graduation", async () => {
   const base = { published_at: recent, price_twd: 9000, evidence_kind: "ask", evidence_quality: "high" };
   for (const value of ["0", "0/3", { selected: 0, expected: 3 }, { selected: 3, expected: 0 }, "4/3", {}, "unknown", []]) {

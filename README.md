@@ -134,6 +134,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 `npm run analyze:market-headlines -- <source.jsonl> [more.jsonl ...] --out=work/headline-report.json` 接受標題或已核對的起季、斷季、禮包數。`market-title-evidence.mjs` 只提取明確文字；「偽無斷／小斷」屬微斷，「斷季」未說程度時保持未知，季卡／單件物品、多季衝突不猜起季。既有少／中／多禮標籤與精確禮包數分開，不能互相補值，也不補造 GUID、畢業進度、綁定或資源。
 
+同日再核對一筆台灣刊登的文字與商品圖片，修正把「3 季畢業」記成「3 包」的來源資料，並移除沒有依據的簡號／大斷分類；保留售價、明確畢業季與賣家少禮描述，不排除帳號或補造精確禮包數。最新私人校準來源為 `work/market-research-2026-09-10/tw-reviewed-calibration.jsonl`，以相同 `audit-valuation-source.mjs --as-of=2026-09-10` 指令重建；有效樣本仍為 400 筆，狀態仍為 `unvalidated`。這是既有來源修正，不是新增樣本或成交價驗證。
+
 每筆仍須有來源、市場／原幣、明確價格類型及貼文／刊登識別，以便去重；這是刊登 ID 或網址，不是物品 GUID。缺少識別的重複列不計入樣本門檻。`--out` 不覆蓋既有檔案；重跑請使用新檔名。
 
 標題報告亦依明確的 `channel` 分組：`ios-official`、`android-official`、`huawei`、`vivo`、`oppo`、`xiaomi`、`bilibili`；支援對應的常見中文標記。缺值、未支援標記及只有「iOS」而未說明官服的資料保留在 `unknown`，不因此排除，也不從標題或登入綁定猜渠道。報告只輸出正規化渠道，不帶出原始自由文字；同一刊登仍先去重，不會因改填渠道而多算一筆。此變更僅適用標題診斷，不改寫正式估價或既有季節倍率報告。
