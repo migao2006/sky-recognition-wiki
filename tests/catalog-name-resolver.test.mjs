@@ -19,6 +19,9 @@ test("reviewed short names agree across wardrobe and sharing without losing old 
     ["eruG9WiyJZ", 1908, 6400, "貝殼髮飾", ["日之夏日貝殼髮夾", "貝殼髮夾"]],
     ["IZNxLq33GB", 2657, 2800, "3D眼鏡", ["週年電影院 3D 眼鏡"]],
     // Taiwan player usage: https://www.dcard.tw/f/sky/p/256819080
+    ["4c-yCAGV5U", 2323, 6000, "襯衫套裝", ["時尚紳士西裝"]],
+    ["gZoseEbqGz", 2324, 2500, "單邊眼鏡", ["時尚紳士單片眼鏡"]],
+    ["yuO7uDMle8", 2325, 4900, "領帶", ["時尚紳士領帶"]],
     ["BWUjIgnjnu", 1844, 2300, "火焰墨鏡", ["時尚火焰墨鏡", "時尚火焰太陽眼鏡"]],
     ["3HeVKqT39a", 1843, 2400, "愛心墨鏡", ["時尚愛心墨鏡", "時尚愛心太陽眼鏡"]],
     ["E7RAu04_xI", 1841, 5800, "闊腿牛仔褲", ["時尚寬型腿部牛仔褲", "闊腿牛仔褲禮包"]],

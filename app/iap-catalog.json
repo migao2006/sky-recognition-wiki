@@ -277,8 +277,11 @@
     {
       "guid": "4c-yCAGV5U",
       "name": "Style Dapper Suit",
-      "playerName": "時尚紳士西裝",
-      "aliases": [],
+      "playerName": "襯衫套裝",
+      "aliases": [
+        "時尚紳士西裝"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:aOfqv766r8",
       "packageName": "Style Dapper Trio",
       "paid": true,
@@ -1462,8 +1465,11 @@
     {
       "guid": "gZoseEbqGz",
       "name": "Style Dapper Monocle",
-      "playerName": "時尚紳士單片眼鏡",
-      "aliases": [],
+      "playerName": "單邊眼鏡",
+      "aliases": [
+        "時尚紳士單片眼鏡"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:aOfqv766r8",
       "packageName": "Style Dapper Trio",
       "paid": true,
@@ -3221,8 +3227,11 @@
     {
       "guid": "yuO7uDMle8",
       "name": "Style Dapper Necktie",
-      "playerName": "時尚紳士領帶",
-      "aliases": [],
+      "playerName": "領帶",
+      "aliases": [
+        "時尚紳士領帶"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:aOfqv766r8",
       "packageName": "Style Dapper Trio",
       "paid": true,

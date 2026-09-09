@@ -166,6 +166,21 @@ test("verified collaboration combos contribute once per real package", () => {
   );
 });
 
+test("renamed Dapper Trio members remain three items but one paid package", async () => {
+  const { loadRuntimeCatalog } = await import("../scripts/load-runtime-catalog.mjs");
+  const catalog = await loadRuntimeCatalog();
+  // SkyGame-Data 1.3.10: IAP aOfqv766r8, not three standalone purchases.
+  const guids = ["4c-yCAGV5U", "gZoseEbqGz", "yuO7uDMle8"];
+  const chosen = guids.map(guid => catalog.wikiItems.find(item => item.guid === guid));
+  assert.ok(chosen.every(Boolean));
+  const result = estimateValuation({ analysis: analyze(chosen) });
+  const single = estimateValuation({ analysis: analyze(chosen.slice(0, 1)) });
+  assert.equal(result.marketProfile.paidItemCount, 3);
+  assert.equal(result.marketProfile.canonicalPackageCount, 1);
+  assert.equal(result.contributions.filter(row => row.group === "package").length, 1);
+  assert.deepEqual(result.range, single.range);
+});
+
 test("distinct anniversary rewards in one event collection are all retained", () => {
   const result = estimateValuation({
     analysis: analyze([

@@ -1,6 +1,9 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "4c-yCAGV5U": { "playerName": "襯衫套裝", "aliases": ["時尚紳士西裝"] },
+    "gZoseEbqGz": { "playerName": "單邊眼鏡", "aliases": ["時尚紳士單片眼鏡"] },
+    "yuO7uDMle8": { "playerName": "領帶", "aliases": ["時尚紳士領帶"] },
     "5F_G_puJb7": { "playerName": "玫瑰斗", "aliases": ["花憩玫瑰刺繡斗篷"] },
     "c1sclAR_k8": { "playerName": "錦標滑冰服", "aliases": ["錦標賽俐落滑冰服裝"] },
     "jcCb_Tc5ms": { "playerName": "向日葵裙", "aliases": ["花憩向日葵夏日洋裝"] },
