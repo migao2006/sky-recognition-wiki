@@ -1362,8 +1362,9 @@
     {
       "guid": "fLbULqwumS",
       "name": "Wonderland Primrose Pinafore Bow",
-      "playerName": "報春花蝴蝶結",
+      "playerName": "愛麗絲蝴蝶結",
       "aliases": [
+        "報春花蝴蝶結",
         "仙境報春花蝴蝶結",
         "仙境報春花圍裙洋裝鞠躬"
       ],
@@ -2712,8 +2713,9 @@
     {
       "guid": "tSAl1nV-qo",
       "name": "Wonderland Primrose Pinafore Dress",
-      "playerName": "報春花洋裝",
+      "playerName": "愛麗絲裙",
       "aliases": [
+        "報春花洋裝",
         "仙境報春花圍裙洋裝"
       ],
       "nameReviewed": true,

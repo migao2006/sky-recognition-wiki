@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+愛麗絲聯動的兩件付費服飾顯示為「愛麗絲裙」「愛麗絲蝴蝶結」，保留報春花舊名搜尋；用語與成員依[台灣玩家活動介紹](https://www.dcard.tw/f/sky/p/257565037)及 SkyGame-Data 1.3.10 的 `Wonderland Primose Pinafore Set` 核對，首次／返場禮包皆為 `tSAl1nV-qo`（Outfit）與 `fLbULqwumS`（HairAccessory）兩件。「愛麗絲套裝」才作整組辨識；「愛麗絲裙裝／愛麗絲裙子」只指裙子，不自動補髮飾。兩件共計一包，不包含另售咖啡廳傳送門，保留 GUID、ID、order 及原始圖示。
+
 「嫦娥套裝／月華套裝」對應 Moonlight Frock（`2e97D5cOuG`）與 Moonlight Updo（`oDLczC36GR`）兩件；「嫦娥髮型」只對應後者。依[台灣玩家月華節介紹](https://www.youtube.com/watch?v=WSsc3JkBz5Y)、[台灣更新日誌整理](https://forum.gamer.com.tw/C.php?bsn=33024&snA=2308)與 SkyGame-Data 1.3.10 的 `Moonlight Frock and Updo` 禮包 `0PaBo6qDUQ` 完整成員核對。套裝詞僅作群組搜尋別名，不改單件顯示名；兩件只計一個付費禮包，不包含另售月光耳環，也不以外站售價改寫台幣估價。
 
 明確已知平台間的同行空白也可作清單分隔：「GG GC不出」按兩平台不出重播；Game Center 的名稱內空白不拆成多平台。這只採用明寫的平台，不延伸至下一行或未知縮寫。

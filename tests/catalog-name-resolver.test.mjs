@@ -4,6 +4,27 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("Alice player names distinguish the dress, hair bow and complete set", () => {
+  for (const [term, guid, id, order, type, display] of [
+    ["愛麗絲裙裝", "tSAl1nV-qo", 2416, 6300, "Outfit", "愛麗絲裙"],
+    ["報春花洋裝", "tSAl1nV-qo", 2416, 6300, "Outfit", "愛麗絲裙"],
+    ["報春花蝴蝶結", "fLbULqwumS", 2417, 5000, "HairAccessory", "愛麗絲蝴蝶結"],
+  ]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.type], [id, order, type]);
+    assert.equal(catalog.zhItemName(item), display);
+    assert.equal(catalog.saleItemName(item), display);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  const [set] = resolver.scan("愛麗絲套裝").groups;
+  assert.deepEqual(set.candidates.map(item => item.guid).sort(), ["fLbULqwumS", "tSAl1nV-qo"]);
+  assert.equal(resolver.scan("愛麗絲裙裝").groups.length, 0);
+  assert.equal(resolver.scan("愛麗絲裙子｜愛麗絲裙裝").matched.length, 1);
+  assert.equal(resolver.scan("沒有愛麗絲套裝").groups.length, 0);
+});
+
 test("moonlight sets contain only the official frock and updo, not earrings", () => {
   for (const term of ["嫦娥套裝", "月華套裝"]) {
     const result = resolver.scan(term);

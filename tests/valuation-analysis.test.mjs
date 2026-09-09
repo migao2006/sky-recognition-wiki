@@ -506,6 +506,18 @@ test("moonlight set aliases count two cosmetics once and earrings separately", a
   assert.equal(price([...chosen, earrings]).marketProfile.canonicalPackageCount, 2);
 });
 
+test("Alice dress and bow remain one paid package even with repeated set names", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);
+  const matches = resolver.scan("愛麗絲套裝｜愛麗絲裙裝｜愛麗絲蝴蝶結");
+  const chosen = [...new Map([...matches.matched, ...matches.groups].flatMap(match => match.candidates.map(item => [item.guid, item]))).values()];
+  assert.equal(chosen.length, 2);
+  const result = estimateValuation({ analysis: analyzeValuation({
+    chosen, bindings: bindings(), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName },
+  }) });
+  assert.equal(result.marketProfile.canonicalPackageCount, 1);
+});
+
 test("fortune fish pack excludes the separately purchased fish accessory", async () => {
   const catalog = await loadRuntimeCatalog();
   const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);

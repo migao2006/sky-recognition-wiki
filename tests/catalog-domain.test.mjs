@@ -96,11 +96,11 @@ test("uses reviewed player terms instead of generated IAP translations", () => {
     ["e8qFeoyXxK", "花朵髮飾"],
     ["EMG3a7883l", "泡沫靴"],
     ["EocwmiV_Vf", "海浪面具"],
-    ["fLbULqwumS", "報春花蝴蝶結"],
+    ["fLbULqwumS", "愛麗絲蝴蝶結"],
     ["gHfkqCK-A8", "宏音海螺"],
     ["rA-RHusWvS", "拼圖寬簷帽"],
     ["svUBdDQ945", "流星披肩"],
-    ["tSAl1nV-qo", "報春花洋裝"],
+    ["tSAl1nV-qo", "愛麗絲裙"],
     ["VRB1mcOeYv", "FlOw斗"],
     ["yv8WuDrV-e", "寶藏夥伴"],
   ]) {

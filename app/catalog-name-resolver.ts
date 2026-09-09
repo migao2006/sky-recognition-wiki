@@ -19,6 +19,7 @@ export type CatalogTextResolution = {
 // player-facing set. Other duplicate aliases remain ambiguous and are never
 // guessed during valuation reconstruction.
 const confirmedGroupTerms = new Set([
+  "愛麗絲套裝",
   "嫦娥套裝",
   "月華套裝",
   "錦鯉套裝",
