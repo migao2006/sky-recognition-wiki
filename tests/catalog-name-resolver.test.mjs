@@ -4,6 +4,25 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("frequent listing aliases resolve paid shell hairpin and wave hair without matching anniversary props", () => {
+  // Identity: Nature/2024 Wave-Touched Hair; Days of Summer Shell Hairpin (2021).
+  for (const [term, guid, id, type, display] of [
+    ["水漾髮型", "jWAPWGsEd-", 2167, "Hair", "海浪髮型"],
+    ["貝殼頭飾", "eruG9WiyJZ", 1908, "HairAccessory", "貝殼髮飾"],
+  ]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.type, catalog.zhItemName(item)], [id, type, display]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  const scan = resolver.scan("水漾髮型｜貝殼頭飾");
+  assert.equal(scan.unmatched.length, 0);
+  assert.equal(scan.ambiguous.length, 0);
+  assert.equal(scan.matched.length, 2);
+  assert.equal(resolver.scan("沒有貝殼頭飾").matched.length, 0);
+});
+
 test("blue sunglasses player names retain the Nature paid item identity", () => {
   // Taiwan player usage: https://www.youtube.com/watch?v=gYsDdAliO0s
   // Taiwan editorial confirmation: https://apps.apple.com/tw/iphone/story/id1682105205
