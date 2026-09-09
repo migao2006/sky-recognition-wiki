@@ -27,7 +27,7 @@
   "split": {
     "splitSeed": "sky-valuation-v3",
     "strategy": "public-seed-legacy",
-    "datasetDigest": "474e7a0ebd34c0fdad2e159dfae686cbc3d20bae36c1085ba371a2c5112674a5",
+    "datasetDigest": "702851dd4b274efc2751e0f3613eb4d17681e09d458c7cfdc0f94b108e142ff2",
     "splitCommitment": null,
     "trainingMode": "calibration-only",
     "trainingRows": 356,
@@ -1326,13 +1326,13 @@
         }
       },
       "slight": {
-        "sampleCount": 64,
-        "effectiveWeight": 14.356,
+        "sampleCount": 65,
+        "effectiveWeight": 14.425,
         "p25": 6000,
         "median": 8000,
         "p75": 17580,
         "evidenceBreakdown": {
-          "ask": 52,
+          "ask": 53,
           "quick_sale": 2,
           "sold": 6,
           "professional_estimate": 0,
@@ -1340,13 +1340,13 @@
         }
       },
       "medium": {
-        "sampleCount": 89,
-        "effectiveWeight": 20.897,
+        "sampleCount": 88,
+        "effectiveWeight": 20.827,
         "p25": 3500,
         "median": 5125,
         "p75": 7000,
         "evidenceBreakdown": {
-          "ask": 59,
+          "ask": 58,
           "quick_sale": 7,
           "sold": 16,
           "professional_estimate": 0,
@@ -1354,13 +1354,13 @@
         }
       },
       "big": {
-        "sampleCount": 118,
-        "effectiveWeight": 29.188,
+        "sampleCount": 117,
+        "effectiveWeight": 29.119,
         "p25": 900,
         "median": 2900,
         "p75": 6000,
         "evidenceBreakdown": {
-          "ask": 80,
+          "ask": 79,
           "quick_sale": 8,
           "sold": 15,
           "professional_estimate": 1,
@@ -1466,18 +1466,18 @@
       },
       "slight": {
         "multiplier": 0.97,
-        "sampleCount": 63,
-        "effectiveWeight": 13.657
+        "sampleCount": 64,
+        "effectiveWeight": 13.727
       },
       "medium": {
         "multiplier": 0.9,
-        "sampleCount": 86,
-        "effectiveWeight": 20.366
+        "sampleCount": 85,
+        "effectiveWeight": 20.297
       },
       "big": {
         "multiplier": 0.78,
-        "sampleCount": 83,
-        "effectiveWeight": 17.221
+        "sampleCount": 82,
+        "effectiveWeight": 17.152
       }
     },
     "packageTier": {

@@ -165,7 +165,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
       ),
     ),
     // Excludes a badge/account mixed sale and an unsupported big-break claim.
-    { none: 40, slight: 64, medium: 89, big: 118 },
+    { none: 40, slight: 65, medium: 88, big: 117 },
   );
   assert.deepEqual(
     Object.fromEntries(
