@@ -705,8 +705,9 @@
     {
       "guid": "ARZC1Eg2jx",
       "name": "Mischief Spider Quiff",
-      "playerName": "惡作劇蜘蛛飛機頭",
-      "aliases": [],
+      "playerName": "蜘蛛頭",
+      "aliases": ["蜘蛛龐克", "惡作劇蜘蛛飛機頭"],
+      "nameReviewed": true,
       "packageKey": "iap:brwUie9WNh",
       "packageName": "Mischief Spider Quiff",
       "paid": true,

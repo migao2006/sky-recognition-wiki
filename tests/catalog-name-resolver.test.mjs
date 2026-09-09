@@ -8,6 +8,16 @@ const resolver = catalog.buildCatalogNameResolver(
   catalog.zhItemSearchNames,
 );
 
+test("spider hair uses the evidenced short name and preserves old searches", () => {
+  const item = catalog.wikiItems.find(item => item.guid === "ARZC1Eg2jx");
+  assert.equal(item.type, "Hair");
+  assert.equal(catalog.zhItemName(item), "蜘蛛頭");
+  assert.equal(catalog.isPaidItem(item), true);
+  for (const name of ["蜘蛛頭", "蜘蛛龐克", "惡作劇蜘蛛飛機頭"]) {
+    assert.deepEqual(resolver.resolve(name).candidates.map(item => item.guid), [item.guid]);
+  }
+});
+
 test("resolves a unique player-facing name to its official GUID", () => {
   const match = resolver.resolve("星夜之傘");
   assert.ok(match);

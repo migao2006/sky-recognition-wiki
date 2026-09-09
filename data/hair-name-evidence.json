@@ -1,6 +1,7 @@
 {
   "method": "顯示短名需由至少兩位不同玩家作者使用；頭／髮型等通用尾詞視為同一叫法，observedName 缺省代表來源原文即為 name；BWiki 只用於確認物品身分。",
   "baselineNames": {
+    "ARZC1Eg2jx": "惡作劇蜘蛛飛機頭",
     "57_e_eF6Ek": "自然潛水髮型",
     "Rrhk8jKU4u": "花憩玫瑰辮髮",
     "oDLczC36GR": "月華盤髮",
@@ -113,9 +114,11 @@
       ]
     },
     "ARZC1Eg2jx": {
-      "aliases": ["蜘蛛頭", "蜘蛛龐克", "飛機頭"],
+      "displayName": "蜘蛛頭",
+      "aliases": ["蜘蛛龐克", "飛機頭", "惡作劇蜘蛛飛機頭"],
       "sources": [
-        { "name": "蜘蛛頭", "platform": "小米遊戲中心", "author": "第六君", "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16" }
+        { "name": "蜘蛛頭", "observedName": "蜘蛛髮型", "platform": "小米遊戲中心", "author": "第六君", "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16" },
+        { "name": "蜘蛛頭", "observedName": "蜘蛛頭", "platform": "OurPlay", "author": "Fegeek", "url": "https://www.ourplay.net/find/detail/155097" }
       ]
     },
     "A26TJj3cSl": {

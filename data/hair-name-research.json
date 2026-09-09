@@ -932,13 +932,13 @@
       "guid": "ARZC1Eg2jx",
       "englishName": "Mischief Spider Quiff",
       "currentName": "惡作劇蜘蛛飛機頭",
-      "displayName": "惡作劇蜘蛛飛機頭",
+      "displayName": "蜘蛛頭",
       "aliases": [
-        "蜘蛛頭",
         "蜘蛛龐克",
-        "飛機頭"
+        "飛機頭",
+        "惡作劇蜘蛛飛機頭"
       ],
-      "confidence": "fallback",
+      "confidence": "consensus",
       "identitySources": [
         "https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2021#Mischief_Spider_Quiff",
         "https://wiki.biligame.com/sky/%E6%A8%A1%E6%9D%BF%3A%E5%8F%91%E5%9E%8B"
@@ -946,9 +946,17 @@
       "playerSources": [
         {
           "name": "蜘蛛頭",
+          "observedName": "蜘蛛髮型",
           "platform": "小米遊戲中心",
           "author": "第六君",
           "url": "https://game.xiaomi.com/viewpoint/126790439_1635683432397_16"
+        },
+        {
+          "name": "蜘蛛頭",
+          "observedName": "蜘蛛頭",
+          "platform": "OurPlay",
+          "author": "Fegeek",
+          "url": "https://www.ourplay.net/find/detail/155097"
         }
       ]
     },
