@@ -10,10 +10,23 @@ import {
   preferredRow,
   priceFor,
   marketExclusionReason,
+  seasonProgressParts,
 } from "./lib/valuation-source-core.mjs";
 import { seasonBandSeeds } from "../app/valuation-season-band-core.js";
 
 const canonicalSeasons = new Set(seasonBandSeeds.map((seed) => seed.slug));
+const supportedEarlierStart = (row, start, headlineStart) => {
+  const progress = row.season_progress;
+  if (row.start_season_confidence !== "structured" || !progress || typeof progress !== "object" || Array.isArray(progress)) return false;
+  const nonzero = new Set();
+  for (const [slug, value] of Object.entries(progress)) {
+    const parts = seasonProgressParts(value);
+    if (!canonicalSeasons.has(slug) || !parts || parts.expected <= 0 || parts.selected < 0 || parts.selected > parts.expected) return false;
+    if (parts.selected > 0) nonzero.add(slug);
+  }
+  const ordered = [...canonicalSeasons].filter(slug => nonzero.has(slug));
+  return ordered[0] === start && ordered.indexOf(headlineStart) > 0;
+};
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const known = (value) => {
@@ -122,7 +135,7 @@ const deduplicate = (rows) => {
 export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => {
   if (!Number.isInteger(minimumSamples) || minimumSamples < 2)
     throw new Error("minimumSamples must be an integer of at least 2");
-  const diagnostics = { excluded_from_model: 0, public_listing_not_candidate: 0, source_unknown: 0, price_or_market_unknown: 0, converted_currency_only: 0, contradictory_market: 0, price_kind_conflict: 0, price_kind_unknown: 0, identity_unknown: 0, title_start_conflict: 0, start_unknown: 0 };
+  const diagnostics = { excluded_from_model: 0, public_listing_not_candidate: 0, source_unknown: 0, price_or_market_unknown: 0, converted_currency_only: 0, contradictory_market: 0, price_kind_conflict: 0, price_kind_unknown: 0, identity_unknown: 0, title_start_conflict: 0, title_start_resolved: 0, start_unknown: 0 };
   const candidates = [];
   for (const row of rows) {
     if (isExcludedFromModel(row)) { diagnostics.excluded_from_model++; continue; }
@@ -140,7 +153,8 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
       ? known(row.start_season_candidate)?.toLowerCase()
       : null;
     const explicitStart = suppliedStart?.toLowerCase() ?? verifiedPublicCandidate;
-    if (explicitStart && titleEvidence.startSeasonSlug && explicitStart !== titleEvidence.startSeasonSlug) {
+    const startConflict = explicitStart && titleEvidence.startSeasonSlug && explicitStart !== titleEvidence.startSeasonSlug;
+    if (startConflict && !supportedEarlierStart(row, explicitStart, titleEvidence.startSeasonSlug)) {
       diagnostics.title_start_conflict++; continue;
     }
     const season = explicitStart ?? titleEvidence.startSeasonSlug;
@@ -149,8 +163,11 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
       diagnostics.price_kind_unknown++; continue;
     }
     if (!rowKeys(row).length) { diagnostics.identity_unknown++; continue; }
+    if (startConflict) diagnostics.title_start_resolved++;
     const suppliedBreak = known(row.computed_break_class) ?? known(row.seller_break_label);
-    const breakClass = breakClasses.includes(suppliedBreak) ? suppliedBreak : titleEvidence.breakClass ?? "unknown";
+    // A title's break claim may cover only its later starting season.
+    const breakClass = breakClasses.includes(row.computed_break_class) ? row.computed_break_class
+      : startConflict ? "unknown" : breakClasses.includes(suppliedBreak) ? suppliedBreak : titleEvidence.breakClass ?? "unknown";
     const packageTier = packageEvidenceFor(row, titleEvidence);
     const wingless = row.wingless === true ? "yes" : row.wingless === false ? "no" : titleEvidence.wingless ? "yes" : "unknown";
     candidates.push({ ...row, __market: market, __priceKind: priceKind.value, __season: season, __break: breakClass, __package: packageTier, __style: titleEvidence.accountStyle ?? known(row.account_style)?.toLowerCase() ?? "unknown", __wingless: wingless });

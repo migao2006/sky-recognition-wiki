@@ -12,6 +12,30 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("reviewed earlier partial graduation can resolve a later headline season", () => {
+  const base = { title: "魔法無斷綁全出", start_season_slug: "rhythm", start_season_confidence: "structured", season_progress: { rhythm: "1/2", enchantment: "complete" } };
+  const report = buildMarketHeadlineReport([listing(base)]);
+  assert.equal(report.eligible_rows, 1);
+  assert.equal(report.diagnostics.title_start_resolved, 1);
+  assert.equal(report.diagnostics.title_start_conflict, 0);
+  assert.equal(report.markets[0].season_breaks[0].season, "rhythm");
+  assert.equal(report.markets[0].season_breaks[0].break_class, "unknown");
+  const computed = buildMarketHeadlineReport([listing({ ...base, computed_break_class: "slight" })]);
+  assert.equal(computed.markets[0].season_breaks[0].break_class, "slight");
+  for (const fields of [
+    { start_season_confidence: "inferred" },
+    { season_progress: { rhythm: "0", enchantment: "complete" } },
+    { season_progress: { rhythm: "3/0", enchantment: "complete" } },
+    { season_progress: { rhythm: "3/2", enchantment: "complete" } },
+    { season_progress: { rhythm: "1/2" } },
+    { season_progress: { belonging: "complete", rhythm: "1/2", enchantment: "complete" } },
+  ]) {
+    const rejected = buildMarketHeadlineReport([listing({ ...base, ...fields })]);
+    assert.equal(rejected.eligible_rows, 0);
+    assert.equal(rejected.diagnostics.title_start_conflict, 1);
+  }
+});
+
 test("retains package bounds as distinct cohorts without exact-count premiums", () => {
   const rows = ["60+禮", "百禮", "60～80禮", "60禮"].flatMap(label =>
     [1000, 1200, 1400].map(price => listing({ title: `緬懷起無斷${label}`, price_original: price })));
