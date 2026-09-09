@@ -2138,8 +2138,12 @@
     {
       "guid": "NEmfcbHb-I",
       "name": "Sunlight Surfboard",
-      "playerName": "陽光衝浪板",
-      "aliases": [],
+      "playerName": "夏日衝浪板",
+      "aliases": [
+        "陽光衝浪板",
+        "夏日衝浪禮包"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:0jnacyurfU",
       "packageName": "Sunlight Surfboard",
       "paid": true,

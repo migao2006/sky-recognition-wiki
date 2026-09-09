@@ -1,6 +1,7 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "NEmfcbHb-I": { "playerName": "夏日衝浪板", "aliases": ["陽光衝浪板", "夏日衝浪禮包"] },
     "Ay3g-0JAeW": { "playerName": "水母肩飾", "aliases": ["果凍肩部夥伴"] },
     "gsACsrp16_": { "playerName": "夏日涼鞋", "aliases": ["陽光厚底涼鞋", "夏日涼鞋禮包"] },
     "4c-yCAGV5U": { "playerName": "襯衫套裝", "aliases": ["時尚紳士西裝"] },

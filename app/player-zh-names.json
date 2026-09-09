@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "NEmfcbHb-I": { "displayName": "夏日衝浪板", "saleName": "夏日衝浪板", "aliases": ["陽光衝浪板", "夏日衝浪禮包"] },
     "Ay3g-0JAeW": { "displayName": "水母肩飾", "saleName": "水母肩飾", "aliases": ["果凍肩部夥伴"] },
     "gsACsrp16_": { "displayName": "夏日涼鞋", "saleName": "夏日涼鞋", "aliases": ["陽光厚底涼鞋", "夏日涼鞋禮包"] },
     "4c-yCAGV5U": { "displayName": "襯衫套裝", "saleName": "襯衫套裝", "aliases": ["時尚紳士西裝"] },
