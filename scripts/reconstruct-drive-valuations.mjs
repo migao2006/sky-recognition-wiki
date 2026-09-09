@@ -127,18 +127,27 @@ const reconstructed = documents.map((document) => {
       bindingNote: "",
       domain: valuationDomain,
     });
-  const estimateFor = (selectedBindings) =>
+  const resourceScenario = (bound) => ({
+    ...Object.fromEntries(Object.entries(resourceEvidence.ranges)
+      .filter(([, range]) => range.max !== null)
+      .map(([key, range]) => [key, range[bound]])),
+    ...resourceEvidence.resources,
+  });
+  const resourceEstimateInputs = { low: resourceScenario("min"), high: resourceScenario("max") };
+  const estimateFor = (selectedBindings, resources = resourceEvidence.resources) =>
     chosen.length
       ? valuation.estimateValuation({
           analysis: analyze(selectedBindings),
-          resources: resourceEvidence.resources,
+          resources,
         })
       : null;
   const knownEstimate = bindingEvidence
     ? estimateFor(bindingEvidence.bindings)
     : null;
-  const optimistic = knownEstimate ?? estimateFor(bindingsForStatus("none"));
-  const restricted = knownEstimate ?? estimateFor(bindingsForStatus("keep"));
+  const exactEstimate = Object.values(resourceEvidence.ranges).some((range) => range.max !== null)
+    ? null : knownEstimate;
+  const optimistic = exactEstimate ?? estimateFor(bindingEvidence?.bindings ?? bindingsForStatus("none"), resourceEstimateInputs.high);
+  const restricted = exactEstimate ?? estimateFor(bindingEvidence?.bindings ?? bindingsForStatus("keep"), resourceEstimateInputs.low);
   const reconstructedStartSeason = chosen.length
     ? analyze(bindingEvidence?.bindings ?? bindingsForStatus("none")).startSeasonSlug
     : null;
@@ -244,6 +253,7 @@ const reconstructed = documents.map((document) => {
     resource_fields: resourceEvidence.observed,
     resource_values: resourceEvidence.resources,
     resource_ranges: resourceEvidence.ranges,
+    resource_estimate_inputs: resourceEstimateInputs,
     resource_approximations: resourceEvidence.approximations,
     inventory_complete: inventoryComplete,
     missing_fields: missingFields,
@@ -364,7 +374,7 @@ const summary = {
     "Prices are listings or quick-sale asks, not verified completed sales.",
     "Unknown bindings are evaluated as an optimistic/restricted envelope.",
     "Each explicitly observed resource contributes independently; unknown resources contribute no value and remain incomplete.",
-    "Resource ranges and approximate quantities are retained as evidence, not substituted for exact valuation inputs or complete resource fields.",
+    "Closed resource ranges are replayed at both endpoints as exploratory resource_estimate_inputs, never as exact resource_values or complete resource fields; open bounds and approximations remain diagnostic only.",
     "Declared package ranges and unresolved-count bounds are diagnostic evidence only; they never create GUIDs, exact coverage or complete model features.",
     "Model features are emitted only after an exact confirmed GUID list, matching canonical package count, complete binding evidence, and all four resource fields.",
     "Ambiguous names never enter owned GUIDs.",

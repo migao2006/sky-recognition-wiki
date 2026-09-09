@@ -14,6 +14,35 @@ const script = fileURLToPath(
   new URL("../scripts/reconstruct-drive-valuations.mjs", import.meta.url),
 );
 
+test("closed resource intervals replay both endpoints without becoming exact evidence", async () => {
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const paths = ["documents", "market", "output", "summary"].map((label) => new URL(`resources-${id}-${label}.jsonl`, work));
+  const [documents, market, output, summary] = paths;
+  const amounts = ["200～2000", "200", "2000", "200+", "約200", "2000～200", "0"];
+  try {
+    await writeFile(documents, amounts.map((amount, index) => JSON.stringify({ post_hash: String(index), content: `星夜之傘｜無綁｜白蠟${amount}｜愛心0｜昇華蠟0｜副卡0` })).join("\n"));
+    await writeFile(market, amounts.map((_, index) => JSON.stringify({ post_hash: String(index), price_twd: 3000, price_kind: "ask", season_progress: { enchantment: "3/3" } })).join("\n"));
+    await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
+    const rows = (await readFile(output, "utf8")).trim().split(/\r?\n/u).map(JSON.parse);
+    const [ranged, low, high] = rows;
+    assert.equal(ranged.estimate_envelope.low, low.estimate_envelope.low);
+    assert.equal(ranged.estimate_envelope.high, high.estimate_envelope.high);
+    assert.equal(ranged.estimate_envelope.midpoint_low, low.estimate_envelope.midpoint_low);
+    assert.equal(ranged.estimate_envelope.midpoint_high, high.estimate_envelope.midpoint_high);
+    assert.ok(high.estimate_envelope.high > low.estimate_envelope.high);
+    assert.equal(ranged.resource_values.candles, undefined);
+    assert.equal(ranged.model_features_ready, false);
+    assert.ok(ranged.missing_fields.includes("resources"));
+    for (const row of rows.slice(3, 6)) {
+      assert.equal(row.resource_estimate_inputs.low.candles, undefined);
+      assert.deepEqual(row.estimate_envelope, rows[6].estimate_envelope);
+    }
+  } finally {
+    await Promise.all(paths.map((path) => rm(path, { force: true })));
+  }
+});
+
 test("gifted-account inventory stays diagnostic instead of raising the main starting season", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();
@@ -215,7 +244,8 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(rangedResources.paid_coverage, null);
     assert.equal(rangedResources.inventory_complete, false);
     assert.equal(reconstructed[0].declared_paid_range, null);
-    assert.deepEqual(rangedResources.estimate_envelope, reconstructed[0].estimate_envelope);
+    assert.deepEqual(rangedResources.resource_estimate_inputs, { low: { ascended: 20, passes: 0 }, high: { ascended: 30, passes: 0 } });
+    assert.ok(rangedResources.estimate_envelope.low >= reconstructed[0].estimate_envelope.low);
     assert.ok(rangedResources.missing_fields.includes("resources"));
     assert.deepEqual(reconstructed[1].missing_fields.sort(), [
       "bindings",
