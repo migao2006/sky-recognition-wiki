@@ -92,6 +92,7 @@ const breakClassForTitle = (text) => {
 
 const normalizedPackageText = (value) => normalizedTitle(value)
   .replace(/(?:禮包|礼包):(?=\d)/gu, "禮包")
+  .replace(/(?:禮包|礼包)(\d+[-~～至到]\d+)(?!\d)(?:個|个)?(?:禮包|礼包)?/gu, "$1禮包")
   .replace(/(\d\+?)(?:個|个)(?=[禮礼])/gu, "$1");
 
 const uncertainPackageQuantity = (text) =>

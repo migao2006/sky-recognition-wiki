@@ -45,6 +45,17 @@ test("package bounds reject negations, approximations and conflicting exact coun
 });
 import { extractMarketTitleEvidence, extractMarketPackageRange, marketHeadlineFor } from "../scripts/lib/market-title-evidence.mjs";
 
+test("prefix package ranges stay bounded evidence rather than exact counts", () => {
+  for (const title of ["禮包：60～80", "礼包60-80", "禮包 60 至 80 個", "禮包60到80禮包", "禮包６０～８０"]) {
+    assert.deepEqual(extractMarketPackageRange(title), { min: 60, max: 80 }, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
+  for (const title of ["禮包80-60", "禮包60-1000", "約禮包60-80", "禮包60-80左右", "禮包60-80｜90禮包", "禮包60-80｜禮包100-120"]) {
+    assert.equal(extractMarketPackageRange(title), null, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
+});
+
 test("alternate season names provide the same account evidence without changing market identity", () => {
   // Taiwan player usage: dcard.tw/f/sky/p/256115646 (Duets),
   // dcard.tw/f/sky/p/257795105 (Radiance); other aliases also used by source audit.

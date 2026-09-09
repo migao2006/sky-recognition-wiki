@@ -140,6 +140,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+禮包數量接受前置標籤區間（如「禮包：60～80」），與「60～80禮包」同樣保存上下界，不再誤讀為精確 60 包。倒序、超出有效數量、近似及互相矛盾的範圍仍保持未知；行情稽核與標題報告使用同一解析規則。
+
 「月光耳墜」補作 Moonlight Earrings（`XURacs6BHP`）的搜尋別名，保留原顯示名及獨立付費禮包。名稱依[中文商店頁](https://sky-children-of-the-light.fandom.com/zh/wiki/Premium_Candle_Shop?variant=zh-tw)與[公開交易用語](https://www.8591.com.hk/mall/detail/51274180)核對，身分依 [Wiki 圖示模組](https://sky-children-of-the-light.fandom.com/wiki/Module:Days_Item/data)的 `Moonlight-Earrings-icon.png`、官方 catalog GUID 及 `iap-catalog.json` 1.3.10 交叉確認。不同別名重複出現只計一次，不與幸運節龍耳飾合併，也不採用外站售價調整台幣權重。
 
 「錦鯉套裝」只展開為 Fortune Fish Hood（`A26TJj3cSl`）與 Fortune Fish Cape（`mzF6ZaHa1s`），兩件計一包；Fortune Fish Accessory（`OjSfpOgFoR`）依 IAP 來源保留獨立禮包，不再被舊顯示套組覆寫合併。成員及分售依[2022 活動物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2022)與本地 `iap-catalog.json` 交叉核對；玩家用詞參考下列同一份販售文案。保留原顯示名、GUID 與價格權重。
