@@ -67,7 +67,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     post_hash: "private-range-resource-id",
     content: "星夜之傘｜無綁｜白蠟 1000+｜愛心 約100｜昇華蠟20～30｜副卡0",
   });
-  prices.push({ ...prices[0], post_hash: "private-range-resource-id" });
+  prices.push({ ...prices[0], post_hash: "private-range-resource-id", paid_package_count: null, paid_package_min: 2, paid_package_max: 4 });
   const progressCases = [
     [{ selected: 3, expected: 3 }, true],
     [{ selected: "3", expected: "3" }, true],
@@ -82,7 +82,9 @@ test("replays private listings without inventing partial-season GUIDs", async ()
   for (const [index, [progress]] of progressCases.entries()) {
     const post_hash = `progress-format-${index}`;
     rows.push({ post_hash, content: "" });
-    prices.push({ post_hash, season_progress: { prophecy: progress } });
+    prices.push({ post_hash, season_progress: { prophecy: progress },
+      ...(index === 0 ? { paid_package_min: 100 } : index === 1 ? { paid_package_min: 80, paid_package_max: 60 } : index === 2 ? { paid_package_min: "60" } : {}),
+    });
   }
   try {
     await Promise.all([
@@ -132,6 +134,8 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       assert.deepEqual(actual.owned_guids, complete ? reconstructed[1].owned_guids : []);
       assert.deepEqual(actual.estimate_envelope, complete ? reconstructed[1].estimate_envelope : null);
       assert.equal(actual.model_features_ready, false);
+      assert.deepEqual(actual.declared_paid_range, index === 0 ? { min: 100, max: null } : null);
+      assert.deepEqual(actual.unresolved_declared_paid_range, index === 0 ? { min: 100, max: null } : null);
     }
     const excluded = reconstructed[2];
     assert.equal(excluded.exclude_from_model, true);
@@ -154,6 +158,12 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.deepEqual(rangedResources.resource_ranges, { candles: { min: 1000, max: null }, ascended: { min: 20, max: 30 } });
     assert.deepEqual(rangedResources.resource_approximations, { hearts: 100 });
     assert.equal(rangedResources.model_features_ready, false);
+    assert.deepEqual(rangedResources.declared_paid_range, { min: 2, max: 4 });
+    assert.deepEqual(rangedResources.unresolved_declared_paid_range, { min: 1, max: 3 });
+    assert.equal(rangedResources.declared_paid_count, null);
+    assert.equal(rangedResources.paid_coverage, null);
+    assert.equal(rangedResources.inventory_complete, false);
+    assert.equal(reconstructed[0].declared_paid_range, null);
     assert.deepEqual(rangedResources.estimate_envelope, reconstructed[0].estimate_envelope);
     assert.ok(rangedResources.missing_fields.includes("resources"));
     assert.deepEqual(reconstructed[1].missing_fields.sort(), [

@@ -135,6 +135,12 @@ const reconstructed = documents.map((document) => {
   const exactPaidItemCount = chosen.filter(catalog.isPaidItem).length;
   const exactPaidCount = optimistic?.marketProfile?.canonicalPackageCount ?? 0;
   const declaredPaidCount = market?.paid_package_count ?? null;
+  const packageMin = market?.paid_package_min;
+  const packageMax = market?.paid_package_max;
+  const declaredPaidRange = Number.isSafeInteger(packageMin) && packageMin >= 0 &&
+    (packageMax == null || (Number.isSafeInteger(packageMax) && packageMax >= packageMin))
+    ? { min: packageMin, max: packageMax ?? null }
+    : null;
   const paidCoverage = declaredPaidCount
     ? Math.min(1, exactPaidCount / declaredPaidCount)
     : null;
@@ -200,6 +206,11 @@ const reconstructed = documents.map((document) => {
     exact_paid_count: exactPaidCount,
     exact_paid_item_count: exactPaidItemCount,
     declared_paid_count: declaredPaidCount,
+    declared_paid_range: declaredPaidRange,
+    unresolved_declared_paid_range: declaredPaidRange ? {
+      min: Math.max(0, declaredPaidRange.min - exactPaidCount),
+      max: declaredPaidRange.max === null ? null : Math.max(0, declaredPaidRange.max - exactPaidCount),
+    } : null,
     paid_coverage: paidCoverage,
     unresolved_declared_paid_count:
       declaredPaidCount === null
@@ -323,6 +334,7 @@ const summary = {
     "Unknown bindings are evaluated as an optimistic/restricted envelope.",
     "Each explicitly observed resource contributes independently; unknown resources contribute no value and remain incomplete.",
     "Resource ranges and approximate quantities are retained as evidence, not substituted for exact valuation inputs or complete resource fields.",
+    "Declared package ranges and unresolved-count bounds are diagnostic evidence only; they never create GUIDs, exact coverage or complete model features.",
     "Model features are emitted only after an exact confirmed GUID list, matching canonical package count, complete binding evidence, and all four resource fields.",
     "Ambiguous names never enter owned GUIDs.",
     "Overlap and interval gaps are exploratory listing-fit measures, not model accuracy metrics.",
