@@ -26,6 +26,7 @@
 - 追光傘與拾光相機分別顯示「大傘」「拾光畢業相機」，依[季節物品整理](https://forum.gamer.com.tw/Co.php?bsn=33024&sn=2316)區分具體物品；一般相機仍是另一個 GUID，不共用畢業名稱。
 - 飛行畢業服以「飛行畢業褲」標示具體物品，保留風行／飛翔舊稱搜尋；參考[玩家褲裝介紹](https://game.xiaomi.com/viewpoint/1312958803_1631021803629_13)的物品類型，不採用文中測試服數值。官方 GUID `SxX0bNDJaR`、ID、order 及非付費畢業身分不變。
 - 姆明畢業傘以「姆明紅傘」顯示，依[台灣玩家的紅色大傘描述](https://www.dcard.tw/f/sky/p/256907106)保留系列辨識；「姆明傘／姆明雨傘／姆明大傘」與舊泛稱仍可搜尋。GUID `dkfdFCaemY`、ID 2341、order 4100 與畢業身分不變，「大傘」仍對應追光畢業傘。
+- 彩虹面具保留兩件官方身分：`bQIy02O8pa` 為 [2026 付費款](https://www.dcard.tw/f/sky/p/261580685)，`NdTO2GQkMc` 為黑彩虹兌換款。新增年份、付費／兌換限定搜尋詞；泛稱「彩虹面具」仍保留歧義，不自動當作付費物品。顯示名、GUID、ID、order 與 IAP 判定不變。
 - 付費身分以已核對的 IAP 快照為準，人工顯示／文案分類不得將已確認付費的物品覆蓋成免費；沒有 IAP 的兌換物仍保留原分類。同一物品已列入禮包加值後，不再重複計入限定加值。
 - 女巫髮型與枯萎斗篷保留活動收藏文案，但不計付費禮包；[官方 0.19.0 公告](https://thatgamecompany.helpshift.com/hc/en/17-sky-children-of-the-light/faq/952-patch-notes---october-13-2022---0-19-0-202986-android-huawei-ios-202613-switch/)列為 66／99 蠟燭兌換，與另售的巫師帽不同。SkyGame-Data 1.3.10 對應 GUID 為 `si_8YhNtmr`／`-HtIAPjYsa`。
 - `Fortune Orange Hat`（`aRgiKoKavp`）採台灣社群的「橘子頭飾」，不是橘色帽子；用語參考[巴哈姆特春之日更新文](https://forum.gamer.com.tw/C.php?bsn=33024&snA=1142)，身分核對 SkyGame-Data 1.3.10 的 `HairAccessory`／ID 1725。舊稱保留搜尋，IAP 關聯不變。

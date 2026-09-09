@@ -8,6 +8,24 @@ const resolver = catalog.buildCatalogNameResolver(
   catalog.zhItemSearchNames,
 );
 
+test("rainbow mask variants remain ambiguous unless year or paid variant is explicit", () => {
+  // 2026 paid item: https://www.dcard.tw/f/sky/p/261580685
+  const paid = catalog.wikiItems.find(item => item.guid === "bQIy02O8pa");
+  const free = catalog.wikiItems.find(item => item.guid === "NdTO2GQkMc");
+  assert.deepEqual([paid.id, paid.order, paid.name], [3155, 10200, "Rainbow Mask"]);
+  assert.deepEqual([free.id, free.order, free.name], [2211, 10000, "Dark Rainbow Mask"]);
+  assert.equal(catalog.isPaidItem(paid), true);
+  assert.equal(catalog.isPaidItem(free), false);
+  for (const name of ["2026彩虹面具", "付費彩虹面具", "彩虹面具禮包"]) {
+    assert.deepEqual(resolver.resolve(name).candidates.map(item => item.guid), [paid.guid]);
+  }
+  for (const name of ["黑彩虹面具", "2024黑彩虹面具", "兌換黑彩虹面具"]) {
+    assert.deepEqual(resolver.resolve(name).candidates.map(item => item.guid), [free.guid]);
+  }
+  assert.deepEqual(new Set(resolver.resolve("彩虹面具").candidates.map(item => item.guid)), new Set([paid.guid, free.guid]));
+  assert.equal(resolver.scan("彩虹面具").matched.length, 0);
+});
+
 test("reviewed short names agree across wardrobe and sharing without losing old searches", () => {
   for (const [guid, id, order, name, terms] of [
     // Taiwan player description: https://www.dcard.tw/f/sky/p/238946230
