@@ -50,22 +50,60 @@ test("accepts only explicit complete binding statements", () => {
   }
 });
 
-test("retains only direct, unambiguous per-platform binding evidence", () => {
+test("retains bounded per-platform binding evidence", () => {
   assert.deepEqual(
     extractPartialBindings("GG,ID遺失｜NS可出｜其餘無綁"),
     { bindings: { nintendo: "transfer" }, conflicts: [] },
   );
   assert.deepEqual(
     extractPartialBindings("Ⱄ綁定║gg gc不出⸝st換綁"),
-    { bindings: { gameCenter: "keep" }, conflicts: [] },
+    { bindings: { google: "keep", gameCenter: "keep" }, conflicts: [] },
   );
   assert.deepEqual(
     extractPartialBindings("Google 遺失｜FB未綁｜PSN:出"),
     { bindings: { google: "issue", facebook: "none", playstation: "transfer" }, conflicts: [] },
   );
-  for (const text of ["不是GG可出", "請問 GG可出", "請問：GG可出", "是否 GG可出", "可否 GG可出", "不確定 GG可出", "GG可出嗎", "GG可出 嗎", "GG可出？", "GG可出現", "Apple ID可出", "GG、NS不出", "GG可出但不出"]) {
+  for (const text of ["不是GG可出", "請問 GG可出", "請問：GG可出", "是否 GG可出", "可否 GG可出", "不確定 GG可出", "GG可出嗎", "GG可出 嗎", "GG可出？", "GG可出現", "Apple ID可出", "GG可出但不出"]) {
     assert.deepEqual(extractPartialBindings(text).bindings, {}, text);
   }
+});
+
+test("shares grouped statuses only across bounded known-platform lists", () => {
+  assert.deepEqual(
+    extractPartialBindings("GG、NS不出｜GG,GC可出"),
+    { bindings: { nintendo: "keep", gameCenter: "transfer" }, conflicts: ["google"] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("GG Game Center可出"),
+    { bindings: { google: "transfer", gameCenter: "transfer" }, conflicts: [] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("GG可出,NS不出"),
+    { bindings: { google: "transfer", nintendo: "keep" }, conflicts: [] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("GG、NS可出/不出"),
+    { bindings: {}, conflicts: ["google", "nintendo"] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("帳號無綁｜GG、NS可出"),
+    { bindings: {}, conflicts: ["google", "nintendo"] },
+  );
+  assert.equal(extractCompleteBindings("綁全出｜GG、NS不出"), null);
+  for (const text of ["ID GG GC可出", "Apple ID GG GC可出", "ST GG GC不出", "ID/GG GC不出", "ST/GG GC不出", "Apple ID/GG GC不出", "GG NS不\n出", "GG NS\n不出"]) {
+    assert.deepEqual(extractPartialBindings(text).bindings, {}, text);
+  }
+  for (const text of ["GG/NS不出", "GG/NS,GC不出", "GG、Apple ID不出", "GG、ST不出", "Apple ID、NS不出", "不是 GG GC可出", "不是GG GC可出", "請問GG GC可出", "GG GC可出嗎"]) {
+    assert.deepEqual(extractPartialBindings(text).bindings, {}, text);
+  }
+  assert.deepEqual(
+    extractPartialBindings("GG\nNS不出"),
+    { bindings: { nintendo: "keep" }, conflicts: [] },
+  );
+  assert.deepEqual(
+    extractPartialBindings("GG、NS不\n出"),
+    { bindings: {}, conflicts: [] },
+  );
 });
 
 test("drops conflicting partial platform claims without deriving other bindings", () => {

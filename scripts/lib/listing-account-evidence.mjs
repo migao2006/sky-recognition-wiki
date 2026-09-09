@@ -54,6 +54,16 @@ const partialBindingPattern = new RegExp(
   String.raw`(?<![\p{L}\p{N}])(?:${platformPattern})\s*[:：]?\s*(?:(?:綁定|绑定|綁|绑)\s*)?(?<status>${partialStatusPattern})${partialEnding}`,
   "giu",
 );
+// A status may be shared only by an explicit list of recognized platforms.
+// Keep its whitespace horizontal so a status cannot spill across listing lines.
+const inlinePlatformAliases = Object.values(platformAliases)
+  .map((aliases) => aliases.replace("\\s*", String.raw`[ \t]*`));
+const groupedPlatformSeparator = String.raw`[ \t]*(?:[、,][ \t]*|[ \t]+)`;
+const groupedPartialStatusPattern = partialStatusPattern.replaceAll("\\s*", String.raw`[ \t]*`);
+const groupedPartialBindingPattern = new RegExp(
+  String.raw`(?<![A-Za-z0-9])(?<platformList>(?:${inlinePlatformAliases.join("|")})(?:${groupedPlatformSeparator}(?:${inlinePlatformAliases.join("|")}))+)[ \t]*[:：]?[ \t]*(?:(?:綁定|绑定|綁|绑)[ \t]*)?(?<status>${groupedPartialStatusPattern})${partialEnding}`,
+  "giu",
+);
 const partialContinuationPattern = new RegExp(
   String.raw`^\s*(?:或|/|、|與|和|and)\s*(?<status>${partialStatusPattern})${partialEnding}`,
   "iu",
@@ -74,6 +84,17 @@ const groupedPlatformPrefix = new RegExp(
   String.raw`(?:${Object.values(platformAliases).join("|")})\s*[、,，/]\s*$`,
   "iu",
 );
+const listPrefixItem = /(?:^|[\s｜|，,。；;║⸝/])\s*(?<item>[^\s｜|，,。；;║⸝/、]+)\s*[、,]\s*$/u;
+const platformAliasPattern = new RegExp(`^(?:${Object.values(platformAliases).join("|")})$`, "iu");
+const platformAliasTokenPattern = new RegExp(Object.values(platformAliases).join("|"), "giu");
+const declarationOrHeadingSuffix = new RegExp(
+  String.raw`(?:${partialStatusPattern}|(?:帳號\s*)?(?:綁定|绑定|綁|绑))$`, "iu",
+);
+const hasUnknownListPrefix = (prefix) => {
+  if (/(?:^|[^A-Za-z0-9])(?:Apple[ \t]+ID|ID|ST)(?:[ \t]+|\/[ \t]*)$/iu.test(prefix)) return true;
+  const item = prefix.match(listPrefixItem)?.groups?.item;
+  return Boolean(item) && !platformAliasPattern.test(item) && !declarationOrHeadingSuffix.test(item);
+};
 
 const platformKeyForMatch = (groups) =>
   bindingKeys.find((key) => groups[key] !== undefined);
@@ -85,40 +106,66 @@ const statusForPartialBinding = (status) => {
   return "none";
 };
 
-// This intentionally recognizes only direct, single-platform declarations.
-// In particular it does not inherit a status across a platform list, interpret
-// Apple ID/st, or turn a group/"其餘" statement into per-platform evidence.
+const platformKeysForList = (platformList) =>
+  [...platformList.matchAll(platformAliasTokenPattern)]
+    .map((match) => match[0])
+    .filter((name) => platformAliasPattern.test(name))
+    .map((name) => bindingKeys.find((key) => new RegExp(`^(?:${platformAliases[key]})$`, "iu").test(name)));
+
+// Only known platforms in an explicit comma/、 or horizontal-space list may
+// share a status. Do not interpret Apple ID/st, slash alternatives, or
+// group/"其餘" statements as per-platform evidence.
 export const extractPartialBindings = (content) => {
   const text = String(content ?? "").normalize("NFKC");
   const bindings = {};
   const conflicts = new Set();
+  // Preserve the meaning of a rejected whole group: its final platform must
+  // not be recovered later as a misleading direct declaration.
+  const groupedMatches = [...text.matchAll(groupedPartialBindingPattern)];
+  const register = (keys, status, after) => {
+    const continuation = after.match(partialContinuationPattern);
+    const contradictory =
+      ambiguousPartialContinuationPattern.test(after) ||
+      (continuation && statusForPartialBinding(continuation.groups.status) !== status);
+    for (const key of keys) {
+      if (contradictory) {
+        conflicts.add(key);
+        delete bindings[key];
+        continue;
+      }
+      if (conflicts.has(key)) continue;
+      if (bindings[key] && bindings[key] !== status) {
+        conflicts.add(key);
+        delete bindings[key];
+        continue;
+      }
+      bindings[key] = status;
+    }
+  };
+  for (const match of groupedMatches) {
+    const prefix = text.slice(Math.max(0, match.index - 24), match.index);
+    if (
+      invalidGlobalPrefix.test(prefix) ||
+      groupedPlatformPrefix.test(prefix) ||
+      hasUnknownListPrefix(prefix) ||
+      questionedPlatformSuffix.test(text.slice(match.index + match[0].length))
+    ) continue;
+    const status = statusForPartialBinding(match.groups.status);
+    register(platformKeysForList(match.groups.platformList), status, text.slice(match.index + match[0].length));
+  }
   for (const match of text.matchAll(partialBindingPattern)) {
     const key = platformKeyForMatch(match.groups);
     const prefix = text.slice(Math.max(0, match.index - 24), match.index);
     if (
       !key ||
+      /[\r\n]/u.test(match[0]) ||
+      groupedMatches.some((group) => match.index >= group.index && match.index < group.index + group[0].length) ||
       invalidGlobalPrefix.test(prefix) ||
       groupedPlatformPrefix.test(prefix) ||
+      hasUnknownListPrefix(prefix) ||
       questionedPlatformSuffix.test(text.slice(match.index + match[0].length))
     ) continue;
-    const status = statusForPartialBinding(match.groups.status);
-    const after = text.slice(match.index + match[0].length);
-    const continuation = after.match(partialContinuationPattern);
-    if (
-      ambiguousPartialContinuationPattern.test(after) ||
-      (continuation && statusForPartialBinding(continuation.groups.status) !== status)
-    ) {
-      conflicts.add(key);
-      delete bindings[key];
-      continue;
-    }
-    if (conflicts.has(key)) continue;
-    if (bindings[key] && bindings[key] !== status) {
-      conflicts.add(key);
-      delete bindings[key];
-      continue;
-    }
-    bindings[key] = status;
+    register([key], statusForPartialBinding(match.groups.status), text.slice(match.index + match[0].length));
   }
   const declaredNone = hasEffectiveGlobalStatement(text, noBindingsPattern);
   const declaredAllTransfer = hasEffectiveGlobalStatement(text, allTransferPattern);

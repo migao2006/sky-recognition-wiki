@@ -19,7 +19,7 @@ test("partial platform evidence changes scenarios without fabricating complete b
   const id = randomUUID();
   const paths = ["documents", "market", "output", "summary"].map((label) => new URL(`bindings-${id}-${label}.jsonl`, work));
   const [documents, market, output, summary] = paths;
-  const statements = ["", "GG可出｜NS不出", "GG無綁", "GG可出｜GG不出", "無綁", "綁全出嗎？"];
+  const statements = ["", "GG可出｜NS不出", "GG無綁", "GG可出｜GG不出", "無綁", "綁全出嗎？", "GG、NS不出", "GG不出｜NS不出", "GG、NS不出｜GG可出", "GG NS不出"];
   try {
     await writeFile(documents, statements.map((statement, index) => JSON.stringify({ post_hash: String(index), content: `星夜之傘｜${statement}｜白蠟0｜愛心0｜昇華蠟0｜副卡0` })).join("\n"));
     await writeFile(market, statements.map((_, index) => JSON.stringify({ post_hash: String(index), price_twd: 3000, price_kind: "ask", season_progress: { enchantment: "3/3" } })).join("\n"));
@@ -39,6 +39,16 @@ test("partial platform evidence changes scenarios without fabricating complete b
     assert.equal(rows[4].binding_evidence, "none");
     assert.equal(rows[5].binding_evidence, null);
     assert.deepEqual(rows[5].estimate_envelope, rows[0].estimate_envelope);
+    assert.deepEqual(rows[6].binding_values, { google: "keep", nintendo: "keep" });
+    assert.deepEqual(rows[6].estimate_envelope, rows[7].estimate_envelope);
+    assert.deepEqual(rows[9].estimate_envelope, rows[7].estimate_envelope);
+    assert.deepEqual(rows[9].binding_values, rows[7].binding_values);
+    assert.ok(rows[6].estimate_envelope.high < rows[0].estimate_envelope.high);
+    assert.equal(rows[6].binding_evidence, null);
+    assert.equal(rows[6].model_features_ready, false);
+    assert.ok(rows[6].missing_fields.includes("bindings"));
+    assert.deepEqual(rows[8].binding_values, { nintendo: "keep" });
+    assert.deepEqual(rows[8].binding_conflicts, ["google"]);
   } finally {
     await Promise.all(paths.map((path) => rm(path, { force: true })));
   }
