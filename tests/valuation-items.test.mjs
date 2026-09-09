@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { tsImport } from "tsx/esm/api";
 
 const [marketModule, valuationItems] = await Promise.all([
@@ -191,10 +192,27 @@ test("deduplicates verified multi-item collaboration packs", () => {
   for (const names of [
     ["Transcendent Journey Hair", "Transcendent Journey Mask", "Transcendent Journey Cape"],
     ["Charming Creature Outfit", "Charming Creature Head Accessory"],
-    ["Fortune Fish Accessory", "Fortune Fish Hood", "Fortune Fish Cape"],
+    ["Fortune Fish Hood", "Fortune Fish Cape"],
     ["Moth Cape", "Moth Antennae"],
   ]) {
     const keys = names.map((name) => canonicalPackageKey(item({ name })));
     assert.equal(new Set(keys).size, 1, names.join(", "));
   }
+  assert.notEqual(canonicalPackageKey(item({ name: "Fortune Fish Accessory" })), canonicalPackageKey(item({ name: "Fortune Fish Cape" })));
+});
+
+test("curated package groups never merge separately sold official packages", async () => {
+  const source = JSON.parse(await readFile(new URL("../app/iap-catalog.json", import.meta.url), "utf8"));
+  const official = new Map(source.items.map(entry => [entry.guid, entry.packageKey]));
+  const groups = new Map();
+  for (const profile of marketModule.importantMarketCollectibles) {
+    if (!profile.curated || !profile.guid || !profile.packageKey) continue;
+    const key = official.get(profile.guid);
+    assert.ok(key, profile.name);
+    const keys = groups.get(profile.packageKey) ?? new Set();
+    keys.add(key);
+    groups.set(profile.packageKey, keys);
+  }
+  assert.ok(groups.size > 0);
+  for (const [group, keys] of groups) assert.equal(keys.size, 1, group);
 });

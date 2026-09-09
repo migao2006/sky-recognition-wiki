@@ -473,6 +473,25 @@ test("fortune doll set aliases reconstruct three cosmetics but one paid package"
   assert.equal(result.marketProfile.canonicalPackageCount, 1);
 });
 
+test("fortune fish pack excludes the separately purchased fish accessory", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);
+  const [group] = resolver.scan("錦鯉套裝").groups;
+  assert.deepEqual(group.candidates.map(item => item.guid).sort(), ["A26TJj3cSl", "mzF6ZaHa1s"]);
+  const accessory = catalog.wikiItems.find(item => item.guid === "OjSfpOgFoR");
+  assert.deepEqual([accessory.id, accessory.order, accessory.name, accessory.type], [1731, 3600, "Fortune Fish Accessory", "HairAccessory"]);
+  assert.equal(catalog.isPaidItem(accessory), true);
+  const price = chosen => estimateValuation({ analysis: analyzeValuation({
+    chosen, bindings: bindings(), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName },
+  }) });
+  const packOnly = price(group.candidates);
+  const withAccessory = price([...group.candidates, accessory]);
+  assert.equal(packOnly.marketProfile.canonicalPackageCount, 1);
+  assert.equal(withAccessory.marketProfile.canonicalPackageCount, 2);
+  assert.ok(withAccessory.midpoint >= packOnly.midpoint);
+  assert.equal(resolver.scan("沒有錦鯉套裝").groups.length, 0);
+});
+
 test("market package tier and value count one real package only once", () => {
   const items = Array.from({ length: 100 }, (_, index) =>
     item({

@@ -247,7 +247,7 @@ const standardPaidProfiles = defineProfiles(
     ["Anniversary Popcorn", "週年爆米花", "anniversary-cinema-set", ["爆米花組", "週年影院套餐", "週年爆米花道具", "Anniversary Popcorn Prop"]],
     ["Anniversary Cinema 3D Glasses", "週年電影院 3D 眼鏡", "anniversary-cinema-set", ["爆米花組", "週年影院套餐"]],
     ["Feast Hat", "聖誕毛帽", "feast-hat-pack", ["宴會毛帽"]],
-    ["Fortune Fish Accessory", "福瑞魚頭飾", "fortune-fish-pack"],
+    ["Fortune Fish Accessory", "福瑞魚頭飾"],
     ["Fortune Fish Hood", "福瑞魚頭套", "fortune-fish-pack"],
     ["Fortune Fish Cape", "福瑞魚斗篷", "fortune-fish-pack"],
     ["Fortune Bun Hair", "福瑞包子頭", "fortune-bun-pack"],

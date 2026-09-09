@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "A26TJj3cSl": { "aliases": ["錦鯉套裝"] },
     "rNDDbcjS4G": { "aliases": ["福娃套裝", "新春福娃套裝"] },
     "HnCWgj7aoA": { "aliases": ["福娃套裝", "新春福娃套裝"] },
     "o8CAzM0x1c": { "aliases": ["福娃套裝", "新春福娃套裝"] },
@@ -544,7 +545,7 @@
     "5om2HL6eRw": { "displayName": "雙星季：暮星篇畢業禮斗", "aliases": ["雙星季：暮星篇畢業禮斗篷", "雙星暮星篇禮遇斗篷"] },
     "kiVKAerKu7": { "displayName": "狂歡活力舞者斗", "aliases": ["狂歡活力舞者斗篷"] },
     "DMaDfY9Ddl": { "displayName": "歡樂的回憶斗", "saleName": "歡樂的回憶斗", "aliases": ["歡樂的回憶斗篷"] },
-    "mzF6ZaHa1s": { "displayName": "年年有魚斗", "saleName": "年年有魚斗", "aliases": ["年年有魚斗篷"] },
+    "mzF6ZaHa1s": { "displayName": "年年有魚斗", "saleName": "年年有魚斗", "aliases": ["年年有魚斗篷", "錦鯉套裝"] },
     "4c9HLTfREP": { "displayName": "任天堂紅斗", "saleName": "紅斗", "aliases": ["任天堂紅斗篷", "紅色斗篷"] },
     "KtlqKC7whS": { "displayName": "任天堂藍斗", "saleName": "藍斗", "aliases": ["任天堂藍斗篷", "藍色斗篷"] },
     "-MNQs3xBoB": { "aliases": ["包容的啟發頸飾"] },
