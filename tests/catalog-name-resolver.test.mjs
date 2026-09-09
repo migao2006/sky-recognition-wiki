@@ -10,6 +10,8 @@ const resolver = catalog.buildCatalogNameResolver(
 
 test("reviewed short names agree across wardrobe and sharing without losing old searches", () => {
   for (const [guid, id, order, name, terms] of [
+    // Taiwan player description: https://www.dcard.tw/f/sky/p/238946230
+    ["bOQzUAzYfV", 1940, 1100, "白吉他", ["音韻吉他", "節奏吉他", "白色吉他"]],
     // Taiwan player usage: https://www.dcard.tw/f/sky/p/256468904
     // Shoulder item also named by https://www.youtube.com/watch?v=1eSi02ackQg
     ["Ay3g-0JAeW", 1913, 4800, "水母肩飾", ["果凍肩部夥伴"]],

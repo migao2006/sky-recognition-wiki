@@ -46,7 +46,7 @@
     "EZ_nfEHgOx": { "displayName": "貢多拉船", "aliases": ["愛之小船", "情人小船小型家具", "情人小船"], "saleName": "貢多拉船" },
     "yWCpBlHsWa": { "displayName": "小蹺蹺板", "aliases": ["愛之翹翹板", "雙人翹翹板", "情人蹺蹺板", "蹺蹺板"], "saleName": "蹺蹺板" },
     "1xIwQnxHV-": { "displayName": "雛鳥之琴", "aliases": ["雛鳥豎琴"] },
-    "bOQzUAzYfV": { "displayName": "音韻吉他", "aliases": ["節奏吉他"] },
+    "bOQzUAzYfV": { "displayName": "白吉他", "saleName": "白吉他", "aliases": ["音韻吉他", "節奏吉他", "白色吉他"] },
     "8KXtBlvNRO": { "displayName": "幸運鼓", "aliases": ["幸運小堂鼓"] },
     "10Ol7H9jKg": { "displayName": "直立鋼琴", "aliases": ["新手鋼琴"] },
     "WMNr4yo_35": { "displayName": "音樂工作台" },

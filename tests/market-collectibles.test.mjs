@@ -86,6 +86,20 @@ test("Fortune Orange is an orange head accessory, not an orange-colored hat", ()
   assert.equal(marketCollectibleProfile("Fortune Orange Hat", "different-guid"), null);
 });
 
+test("white guitar naming keeps red and electric guitars separate", () => {
+  const guitar = catalog.wikiItems.find((entry) => entry.guid === "bOQzUAzYfV");
+  assert.equal(guitar?.name, "Rhythm Guitar");
+  assert.equal(marketCollectibleProfile(guitar.name, guitar.guid)?.packageKey, "iap:5VJfMMrFV1");
+  assert.equal(catalog.isPaidItem(guitar), true);
+  for (const [guid, paid] of [["Zvi-5bPtxs", false], ["ARf5D2Bu4v", false], ["hcuS6xsmHg", true]]) {
+    const other = catalog.wikiItems.find((entry) => entry.guid === guid);
+    assert.ok(other);
+    assert.notEqual(catalog.zhItemName(other), "白吉他");
+    assert.equal(catalog.isPaidItem(other), paid);
+    assert.equal(marketCollectibleProfile("Rhythm Guitar", guid)?.name === "Rhythm Guitar", false);
+  }
+});
+
 test("reviewed IAP player terms replace machine translations by exact GUID", () => {
   const rows = new Map(iapCatalog.items.map((item) => [item.guid, item]));
   assert.ok(Object.keys(reviewedIapNames.items).length >= 35);

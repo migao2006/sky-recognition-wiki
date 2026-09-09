@@ -804,8 +804,13 @@
     {
       "guid": "bOQzUAzYfV",
       "name": "Rhythm Guitar",
-      "playerName": "節奏吉他",
-      "aliases": [],
+      "playerName": "白吉他",
+      "aliases": [
+        "音韻吉他",
+        "節奏吉他",
+        "白色吉他"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:5VJfMMrFV1",
       "packageName": "Rhythm Guitar",
       "paid": true,
