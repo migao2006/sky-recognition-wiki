@@ -132,6 +132,13 @@ const reconstructed = documents.map((document) => {
     : null;
   const optimistic = knownEstimate ?? estimateFor(bindingsForStatus("none"));
   const restricted = knownEstimate ?? estimateFor(bindingsForStatus("keep"));
+  const reconstructedStartSeason = chosen.length
+    ? analyze(bindingEvidence?.bindings ?? bindingsForStatus("none")).startSeasonSlug
+    : null;
+  const sourceStartSeason = catalog.graduationSeasonSlugs.includes(market?.start_season_slug)
+    ? market.start_season_slug : null;
+  const startSeasonConflict = sourceStartSeason && reconstructedStartSeason
+    ? sourceStartSeason !== reconstructedStartSeason : null;
   const exactPaidItemCount = chosen.filter(catalog.isPaidItem).length;
   const exactPaidCount = optimistic?.marketProfile?.canonicalPackageCount ?? 0;
   const declaredPaidCount = market?.paid_package_count ?? null;
@@ -164,7 +171,7 @@ const reconstructed = documents.map((document) => {
     ...(!resourceEvidence.complete ? ["resources"] : []),
   ];
   const modelFeaturesReady =
-    !excludedFromModel && missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
+    !excludedFromModel && startSeasonConflict !== true && missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
   const envelope =
     optimistic && restricted
       ? {
@@ -202,6 +209,8 @@ const reconstructed = documents.map((document) => {
     price_twd_low: hasPrice ? listingLow : null,
     price_twd_high: hasPrice ? listingHigh : null,
     start_season_slug: market?.start_season_slug ?? null,
+    reconstructed_start_season_slug: reconstructedStartSeason,
+    start_season_conflict: startSeasonConflict,
     owned_guids: [...owned].sort(),
     exact_text_guid_count: textGuids.size,
     season_guid_count: owned.size - textGuids.size,
@@ -308,6 +317,12 @@ const summary = {
   excluded_document_count: reconstructed.filter((row) => row.exclude_from_model).length,
   paid_count_covered_exploration: summarize(exact),
   all_partial_reconstructions: summarize(comparable),
+  start_season_consistency: {
+    matching: comparable.filter(row => row.start_season_conflict === false).length,
+    conflicting: comparable.filter(row => row.start_season_conflict === true).length,
+    unknown: comparable.filter(row => row.start_season_conflict === null).length,
+  },
+  matching_start_reconstructions: summarize(comparable.filter(row => row.start_season_conflict === false)),
   by_price_kind_all_partial: summarizeKinds(comparable),
   partial_guid_count: comparable.length - exact.length,
   guid_count: {
@@ -335,6 +350,7 @@ const summary = {
     ),
   },
   limitations: [
+    "Source and reconstructed start-season conflicts remain exploratory comparisons, are counted separately, and cannot emit complete model features. Missing either start is unknown, not a verified match.",
     "Explicitly excluded market rows retain GUID diagnostics but emit no model features or price comparison and do not enter fit summaries.",
     "Prices are listings or quick-sale asks, not verified completed sales.",
     "Unknown bindings are evaluated as an optimistic/restricted envelope.",

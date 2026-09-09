@@ -140,6 +140,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+GUID 重播會同時輸出來源的 `start_season_slug`、實算的 `reconstructed_start_season_slug` 與 `start_season_conflict`。兩者皆可確認時才比較；缺少任一方標為 `null`，不能當作一致。摘要分開統計一致、衝突與未知，另列起季一致的比較結果。衝突文案仍保留物品、價格與探索區間，但不輸出完整模型 features，也不自動以來源起季覆寫已辨識衣櫃；應先核對是否誤讀贈送數據、魔法、徽章或其他區塊，而非直接調整季節行情。
+
 文案 GUID 重播的價格欄接受正數及純十進位數字文字（如 `"4000"`、`"4000.50"`），不再因 JSON 儲存型別不同漏掉明確金額；仍要求區間兩端有效且順序正確。共用金額轉換拒絕布林值、陣列、物件、空白、科學／十六進位記法及含單位文字，避免 JavaScript 隱式轉換製造假價格。正式稽核原有的單價型別限制不變；刊登、秒價、成交等來源性質仍分開。
 
 Sunlight Helios Hoops（`lv_MnKorJN`）顯示與分享短名改為「太陽耳環」，保留「陽光太陽神圓環／太陽耳墜」搜尋。依[台灣玩家活動介紹](https://www.youtube.com/watch?v=w2B12NP9Bnk)、[交易用語](https://www.8591.com.hk/mall/detail/51274180)與[2024 陽光日物品資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight/2024)核對太陽造型、年份及付費身分；IAP 使用 SkyGame-Data 1.3.10 精確 GUID，不與月華耳環、向日葵耳飾混用。

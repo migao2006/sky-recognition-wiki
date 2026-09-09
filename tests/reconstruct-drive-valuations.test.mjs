@@ -97,6 +97,8 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     rows.push({ ...rows[0], post_hash });
     prices.push({ ...prices[0], ...price, post_hash });
   }
+  rows.push({ ...rows[0], post_hash: "start-conflict", content: "星夜之傘｜追光大傘｜無綁｜白蠟0｜愛心0｜昇華蠟0｜副卡0" });
+  prices.push({ ...prices[0], post_hash: "start-conflict", start_season_slug: "rhythm", season_progress: {}, confirmed_owned_guids: ["OAGgi-B-xa", "2o3CEU9QhM"] });
   try {
     await Promise.all([
       writeFile(
@@ -142,7 +144,15 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.ok(reconstructed[1].season_guid_count > 0);
     assert.equal(reconstructed[1].price_twd_low, 4000);
     assert.equal(reconstructed[1].price_twd_high, 4000);
-    assert.deepEqual(reconstructed.slice(-2).map(row => [row.price_twd_low, row.price_twd_high]), [[4000, 4000], [3000, 3500]]);
+    assert.deepEqual(reconstructed.slice(-3, -1).map(row => [row.price_twd_low, row.price_twd_high]), [[4000, 4000], [3000, 3500]]);
+    const conflict = reconstructed.at(-1);
+    assert.equal(conflict.reconstructed_start_season_slug, "lightseekers");
+    assert.equal(conflict.start_season_conflict, true);
+    assert.equal(conflict.inventory_complete, true);
+    assert.equal(conflict.model_features_ready, false);
+    assert.equal(conflict.valuation_model, undefined);
+    assert.ok(conflict.estimate_envelope);
+    assert.equal(reconstructed[0].start_season_conflict, null);
     assert.equal(typeof reconstructed[1].listing_overlaps_estimate, "boolean");
     assert.ok(Number.isFinite(reconstructed[1].listing_interval_gap));
     for (const [index, [, complete]] of progressCases.entries()) {
@@ -200,18 +210,19 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       market_sha256: createHash("sha256").update(await readFile(market, "utf8")).digest("hex"),
       market_row_count: prices.length,
     });
-    assert.equal(report.document_count, 7 + progressCases.length);
-    assert.equal(report.priced_document_count, 7);
-    assert.equal(report.comparable_document_count, 6);
+    assert.equal(report.document_count, 8 + progressCases.length);
+    assert.equal(report.priced_document_count, 8);
+    assert.equal(report.comparable_document_count, 7);
+    assert.deepEqual(report.start_season_consistency, { matching: 0, conflicting: 1, unknown: 6 });
     assert.equal(report.excluded_document_count, 1);
-    assert.equal(report.all_partial_reconstructions.count, 6);
-    assert.equal(report.evidence_completeness.priced_documents.count, 7);
-    assert.equal(report.evidence_completeness.comparable_documents.count, 6);
+    assert.equal(report.all_partial_reconstructions.count, 7);
+    assert.equal(report.evidence_completeness.priced_documents.count, 8);
+    assert.equal(report.evidence_completeness.comparable_documents.count, 7);
     assert.equal(
       report.evidence_completeness.priced_documents.model_features_ready,
       3,
     );
-    assert.equal(report.by_price_kind_all_partial.ask.count, 5);
+    assert.equal(report.by_price_kind_all_partial.ask.count, 6);
     assert.equal(report.by_price_kind_all_partial.quick_sale.count, 1);
   } finally {
     await Promise.all(
