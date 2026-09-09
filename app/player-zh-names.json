@@ -1,6 +1,9 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "rNDDbcjS4G": { "aliases": ["福娃套裝", "新春福娃套裝"] },
+    "HnCWgj7aoA": { "aliases": ["福娃套裝", "新春福娃套裝"] },
+    "o8CAzM0x1c": { "aliases": ["福娃套裝", "新春福娃套裝"] },
     "ADJiva5H2Z": { "aliases": ["祥雲褲", "壁畫家褲子"] },
     "sTIyha_lg1": { "aliases": ["櫻花茶桌"] },
     "l6GE013zrh": { "aliases": ["紫藤花茶桌", "紫藤花茶具"] },
@@ -432,7 +435,7 @@
     "jM8xKFwbTE": { "saleName": "飛蛾觸角", "aliases": ["飛蛾裝扮髮飾"], "displayName": "飛蛾觸角" },
     "bBQbGQh1PU": { "saleName": "紅耳機", "aliases": ["蓬頭青年耳飾", "紅耳機"] },
     "v5NKOAkwza": { "saleName": "紅耳機", "aliases": ["皇家蓬頭青年耳飾", "紅耳機"] },
-    "DI0RLfo9Sj": { "saleName": "創始人斗", "aliases": ["創始人斗篷"], "displayName": "創始人斗" },
+    "DI0RLfo9Sj": { "saleName": "創始人斗", "aliases": ["創始人斗篷", "辦公室斗", "辦公室斗篷", "辦公室藍斗篷"], "displayName": "創始人斗" },
     "WCPTi8XYZy": { "saleName": "白金斗", "aliases": ["智慧長者斗篷", "白金斗"] },
     "Bm0aFDGHk2": { "saleName": "白鳥斗", "aliases": ["沉思編導斗篷"], "displayName": "白鳥斗" },
     "EQYKoHE95s": { "saleName": "歐若拉之翼", "aliases": ["歐若拉之翼斗篷"], "displayName": "歐若拉之翼" },

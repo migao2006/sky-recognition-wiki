@@ -461,6 +461,18 @@ test("adding later graduation items never reduces a complete starting-season acc
   }
 });
 
+test("fortune doll set aliases reconstruct three cosmetics but one paid package", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);
+  const matches = resolver.scan("福娃套裝｜新春福娃套裝｜雙丸子頭");
+  const chosen = [...new Map([...matches.matched, ...matches.groups].flatMap(match => match.candidates.map(item => [item.guid, item]))).values()];
+  assert.equal(chosen.length, 3);
+  const result = estimateValuation({ analysis: analyzeValuation({
+    chosen, bindings: bindings(), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName },
+  }) });
+  assert.equal(result.marketProfile.canonicalPackageCount, 1);
+});
+
 test("market package tier and value count one real package only once", () => {
   const items = Array.from({ length: 100 }, (_, index) =>
     item({

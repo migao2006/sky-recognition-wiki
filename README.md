@@ -140,6 +140,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「福娃套裝／新春福娃套裝」只展開為 Fortune Bun Hair、Blushing Mask、Cape 三個官方 GUID，仍計一個真實禮包，不更改單件顯示名。成員依[2021 活動物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2021)、[台灣玩家禮包整理](https://forum.gamer.com.tw/G2.php?bsn=33024&sn=467)及[販售文案的三件成員描述](https://www.carousell.com.hk/p/sky%E5%85%89%E9%81%87%E5%A4%9A%E7%A6%AE%E5%8C%85%E8%99%9F-%E5%B0%8F%E7%8E%8B%E5%AD%90%E9%83%BD%E5%85%A8%E7%A6%AE%E5%8C%85-%E7%99%BD%E6%A2%9F-%E6%9E%97%E5%85%8B-%E5%A4%A7%E7%BE%BD%E6%AF%9B-1458877656/)交叉核對。「辦公室斗／辦公室斗篷／辦公室藍斗篷」補作付費 Founder's Cape 的搜尋別名，保留原顯示名；依[台灣玩家辦公室討論](https://www.dcard.tw/f/sky/p/235097205)與[官方 Beta／Founder 區分](https://thatgamecompany.helpshift.com/hc/en/17-sky-children-of-the-light/faq/725-how-do-i-get-the-beta-cape/)核對，不把 Beta 白底斗或普通藍斗合併，也不採用外站價格作台幣估價。
+
 估價數值核心先將 500 元刻度的參考中位價限制於原始價格上下限內，再計算顯示區間，避免低價／窄區間出現上下限倒置或中位價越界。一般價格權重不變；瀏覽器與驗證器共用同一修正。
 
 Fortune Muralist's Smock（`ADJiva5H2Z`）支援「祥雲褲／壁畫家褲子」搜尋，保留原顯示名。依[2023 禮包介紹](https://www.dailiantong.com/news/content_160106.html)、[玩家交易用語](https://www.sina.cn/news/detail/5320693957789435.html)與[2023 福瑞節物品頁](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Fortune/2023)核對兔尾、雲紋、活動年份及付費身分；不與免費白棉褲合併。「新年棉褲」目前只有販售文案用例，尚未直接綁定，不據此補 GUID。

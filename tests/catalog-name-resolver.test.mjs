@@ -4,6 +4,34 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("office cape aliases refer to the paid founder cape, not the beta reward", () => {
+  for (const term of ["辦公室斗", "辦公室斗篷", "辦公室藍斗篷"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["DI0RLfo9Sj"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type], [1937, 300, "Founder's Cape", "Cape"]);
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.deepEqual(resolver.resolve("白底TGC斗篷").candidates.map(item => item.guid), ["xaX_sfWwKV"]);
+  assert.equal(resolver.scan("沒有辦公室斗篷").matched.length, 0);
+});
+
+test("fortune doll set preserves three official members and respects negative wording", () => {
+  for (const [guid, id, order, type, name] of [
+    ["rNDDbcjS4G", 1729, 14500, "Hair", "Fortune Bun Hair"],
+    ["HnCWgj7aoA", 1728, 9100, "Mask", "Fortune Blushing Mask"],
+    ["o8CAzM0x1c", 1727, 12700, "Cape", "Fortune Cape"],
+  ]) {
+    const item = catalog.wikiItems.find(item => item.guid === guid);
+    assert.deepEqual([item.id, item.order, item.type, item.name, item.collection], [id, order, type, name, "days-of-fortune"]);
+    assert.equal(catalog.isPaidItem(item), true);
+    assert.notEqual(catalog.zhItemName(item), "福娃套裝");
+  }
+  assert.equal(resolver.scan("沒有福娃套裝").groups.length, 0);
+  const repeated = resolver.scan("福娃套裝｜新春福娃套裝");
+  assert.equal(new Set(repeated.groups.flatMap(group => group.candidates.map(item => item.guid))).size, 3);
+});
+
 test("fortune muralist pants aliases remain paid and separate from white cotton pants", () => {
   for (const term of ["祥雲褲", "壁畫家褲子", "福瑞壁畫家工作服"]) {
     const match = resolver.resolve(term);
@@ -543,6 +571,8 @@ test("expands only confirmed player-facing set aliases during a text scan", () =
 });
 
 const confirmedSets = new Map([
+  ["福娃套裝", ["rNDDbcjS4G", "HnCWgj7aoA", "o8CAzM0x1c"]],
+  ["新春福娃套裝", ["rNDDbcjS4G", "HnCWgj7aoA", "o8CAzM0x1c"]],
   ["貓咪耳尾", ["Dhkf_3dAhf", "wXLGNti3db"]],
   ["冥龍耳尾組", ["Io4R50c-s1", "nBIm3PkDea"]],
   ["海牛耳尾組", ["cXaPt2zi0Q", "y69WKTTyw7"]],
