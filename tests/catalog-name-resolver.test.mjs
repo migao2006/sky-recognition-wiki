@@ -5,6 +5,22 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("Oreo plush player names stay separate from other dog cosmetics and plushies", () => {
+  for (const term of ["奧利奧玩偶", "Oreo 玩偶", "奧利奧娃娃", "奧利奧小狗玩偶"]) {
+    const candidates = resolver.resolve(term).candidates;
+    assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order, i.type, i.collection]),
+      [["dEWiCE1-6D", 1836, 6400, "SmallProp", "event-sky-anniversary"]]);
+    assert.equal(catalog.zhItemName(candidates[0]), "奧利奧玩偶");
+    assert.equal(catalog.saleItemName(candidates[0]), "奧利奧玩偶");
+    assert.equal(catalog.isPaidItem(candidates[0]), true);
+    assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
+  }
+  assert.equal(resolver.scan("奧利奧玩偶｜Oreo 玩偶｜奧利奧娃娃").matched.length, 1);
+  for (const term of ["小狗娃娃", "大耳狗娃娃", "小狗頭飾", "小狗拖鞋", "萌新玩偶"]) {
+    assert.ok(!resolver.scan(term).matched.some(m => m.candidates.some(i => i.guid === "dEWiCE1-6D")));
+  }
+});
+
 test("snowglobe player terms preserve the paid prop and old search names", () => {
   for (const term of ["雪花水晶球", "聖誕水晶球", "水晶球", "宴會雪景球", "冬日宴會雪景球"]) {
     const candidates = resolver.resolve(term).candidates;

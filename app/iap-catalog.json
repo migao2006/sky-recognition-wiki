@@ -1086,9 +1086,11 @@
     {
       "guid": "dEWiCE1-6D",
       "name": "Oreo Plush",
-      "playerName": "Oreo 玩偶",
+      "playerName": "奧利奧玩偶",
       "aliases": [
-        "奧利奧玩偶"
+        "Oreo 玩偶",
+        "奧利奧娃娃",
+        "奧利奧小狗玩偶"
       ],
       "nameReviewed": true,
       "packageKey": "iap:-ffdnMJH4w",
