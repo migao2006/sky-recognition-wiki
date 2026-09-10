@@ -5,6 +5,27 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("deer cape shorthand cannot silently become a season ultimate", () => {
+  const scan = resolver.scan("九色鹿斗");
+  assert.equal(scan.matched.length, 0);
+  assert.equal(scan.groups.length, 0);
+  assert.deepEqual(scan.ambiguous[0].candidates.map(i => i.guid).sort(), ["BTogmcHcr5", "gLB3Tnn8mb"].sort());
+  for (const [term, guid, id, order, group] of [
+    ["異彩蓮花斗", "BTogmcHcr5", 2047, 9500, "Limited"],
+    ["九色鹿畢業斗", "gLB3Tnn8mb", 2034, 9100, "Ultimate"],
+  ]) {
+    const candidates = resolver.resolve(term).candidates;
+    assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order, i.group]), [[guid, id, order, group]]);
+    assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
+  }
+  const paid = catalog.wikiItems.find(i => i.guid === "BTogmcHcr5");
+  const ultimate = catalog.wikiItems.find(i => i.guid === "gLB3Tnn8mb");
+  assert.equal(catalog.saleItemName(paid), "九色鹿斗");
+  assert.equal(catalog.saleItemName(ultimate), "九色鹿畢業斗");
+  assert.equal(catalog.isPaidItem(paid), true);
+  assert.equal(catalog.isPaidItem(ultimate), false);
+});
+
 test("registered player display names remain searchable when another source wins display priority", async () => {
   const names = JSON.parse(await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8")).items;
   for (const item of catalog.wikiItems) {
