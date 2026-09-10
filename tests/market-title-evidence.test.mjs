@@ -110,6 +110,10 @@ test("explicit package upper limits retain zero-to-bound evidence, never exact c
 });
 
 test("explicit single-season completion needs no extra account or start suffix", () => {
+  for (const title of ["姆明毕业礼多礼号", "不是姆明毕业多礼号", "姆明毕业面具少礼号", "姆明畢業進度中禮號", "姆明畢業？多禮號"]) {
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
+    assert.notEqual(extractMarketTitleEvidence(title).salePackageTier, null, title);
+  }
   for (const [title, slug] of [["光遇姆明季毕业", "moomin"], ["安卓开服号，圣岛季毕业，多复刻，价格可议", "sanctuary"], ["童真面具狂欢毕业永久无翼", "carnival"], ["14号身高欧若拉毕业有绊爱", "aurora"], ["姆明已畢業", "moomin"], ["姆明畢", "moomin"]]) {
     const result = extractMarketTitleEvidence(title);
     assert.equal(result.startSeasonSlug, slug, title);
@@ -119,6 +123,21 @@ test("explicit single-season completion needs no extra account or start suffix",
   for (const title of ["有姆明毕业礼可看截图", "迁徙毕业面具", "姆明畢業斗篷", "姆明毕业发型", "姆明畢業進度", "姆明可畢業", "姆明未畢業", "非姆明畢業", "沒有姆明畢業", "代姆明畢業", "預計姆明畢業", "姆明畢業？", "姆明畢業了？", "姆明季卡畢業號", "預言季聖島季畢業"]) {
     assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
   }
+});
+
+test("explicit graduation lists use the earliest listed season without filling gaps", () => {
+  for (const title of [
+    "【毕业季节】：表演季，破晓季，欧若拉季，追忆季，夜行季，狂欢季【毕业物品】：白枭发",
+    "[畢業季節]:狂歡／表演季／極光季",
+    "【毕业季节】：狂欢季，表演季，",
+  ]) {
+    const result = extractMarketTitleEvidence(title);
+    assert.equal(result.startSeasonSlug, "performance");
+    assert.equal(result.breakClass, null);
+    assert.equal(result.paidPackageCount, null);
+  }
+  for (const title of ["【毕业季节】：", "【毕业季节】：表演季卡，狂欢季", "【未毕业季节】：表演季，狂欢季", "【毕业地图】：表演季，狂欢季", "【毕业季节】：表演面具，狂欢季", "【毕业季节】：表演季，未知季", "【毕业季节】：表演季【毕业季节】：狂欢季"])
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
 });
 
 test("explicit English completed-season ranges provide only starting-season evidence", () => {

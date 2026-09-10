@@ -206,6 +206,8 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   const completedSeason = /^(?:季)?(?:已|全)?(?:畢業|毕业|畢|毕)(?![業业禮礼物面斗髮发飾饰琴進进狀状率度計计?？])/u.test(after) &&
     !/(?:非|不|不是|沒|没|沒有|没有|未|無|无|可|能|包|代|將|将|想|準備|准备|預計|预计)(?:已|全)?$/u.test(before) &&
     !/^(?:季)?(?:已|全)?(?:畢業|毕业|畢|毕)(?:了)?[?？]/u.test(after);
+  // Do not let a generic "多禮號" suffix bypass a rejected graduation claim.
+  if (/^(?:季)?(?:已|全)?(?:畢業|毕业|畢|毕)/u.test(after) && !completedSeason) return null;
   const accountTitle = /(?:號|号|帳|帐)/u.test(text);
   const sellerSummary = /(?:少|中|多)(?:禮|礼)|(?:禮包|礼包)\d+|\d+(?:禮|礼)(?:包)?/u.test(normalizedPackageText(text));
   const explicitBreakSeason = /(?:斷|断)季/u.test(text);
@@ -240,6 +242,18 @@ const englishRangeStartFor = (title) => {
   return start;
 };
 
+const graduationListStartFor = (text) => {
+  const sections = [...text.matchAll(/[【\[](?:畢業季節|毕业季节)[】\]]:?(?<list>[^【\[]+)/gu)];
+  if (sections.length !== 1) return null;
+  const names = sections[0].groups.list.split(/[,，、｜|/]+/u).filter(Boolean);
+  if (!names.length) return null;
+  const slugs = names.map(name => seasonAliases.find(([, aliases]) =>
+    aliases.some(alias => name === alias || name === `${alias}季`))?.[0]);
+  // A partially filled heading or an item list is not a completed-season list.
+  if (slugs.some(slug => !slug)) return null;
+  return seasonAliases.find(([slug]) => slugs.includes(slug))?.[0] ?? null;
+};
+
 export const extractMarketTitleEvidence = (title) => {
   const text = normalizedTitle(title);
   const breakClass = breakClassForTitle(text);
@@ -248,7 +262,7 @@ export const extractMarketTitleEvidence = (title) => {
   const wingless = /無翼|无翼/u.test(text) && !hasNegated(text, "(?:無翼|无翼)");
 
   return {
-    startSeasonSlug: startSeasonFor(text, breakClass, accountStyle) ?? englishRangeStartFor(title),
+    startSeasonSlug: startSeasonFor(text, breakClass, accountStyle) ?? graduationListStartFor(text) ?? englishRangeStartFor(title),
     breakClass,
     paidPackageCount,
     salePackageTier: salePackageTierFor(text),
