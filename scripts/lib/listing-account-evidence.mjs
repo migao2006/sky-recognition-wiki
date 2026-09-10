@@ -72,8 +72,9 @@ const ambiguousPartialContinuationPattern = new RegExp(
   String.raw`^\s*(?:或|/|、|與|和|and)\s*(?:已綁|已绑|有綁|有绑|不可出|不能出|無法解|无法解|解不了)${partialEnding}`,
   "iu",
 );
-const questionedPlatformSuffix = /^\s*(?:[?？]|嗎|吗|可否|是否)/u;
-const invalidGlobalPrefix = /(?:不是|並非|并非|不算|非|沒有|没有|未|不|不確定|不确定|請問|请问|是否|可否)\s*[:：]?\s*$/u;
+// Qualifiers affect this declaration, not an unrelated following line.
+const questionedPlatformSuffix = /^(?:\s*(?:[?？]|嗎|吗|可否|是否)|[ \t]*[（(]?[ \t]*(?:不確定|不确定|待確認|待确认|待核實|待核实)(?=$|[\s｜|，,。；;║⸝/、）)]))/u;
+const invalidGlobalPrefix = /(?:(?:不是|並非|并非|不算|非|沒有|没有|未|不|不確定|不确定|請問|请问|是否|可否)\s*[:：]?\s*|(?:可能|應該|应该|大概|據說|据说)[ \t]*[:：]?[ \t]*)$/u;
 
 const hasEffectiveGlobalStatement = (text, pattern) =>
   [...text.matchAll(pattern)].some((match) =>

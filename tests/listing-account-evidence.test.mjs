@@ -106,6 +106,29 @@ test("shares grouped statuses only across bounded known-platform lists", () => {
   );
 });
 
+test("uncertain binding qualifiers preserve other explicitly known platforms", () => {
+  for (const claim of ["GG可出 不確定", "GG GC可出 待確認", "可能GG GC可出", "大概 GG可出", "應該 GG GC可出", "據說 GG可出"]) {
+    assert.deepEqual(extractPartialBindings(`${claim}｜NS不出`),
+      { bindings: { nintendo: "keep" }, conflicts: [] }, claim);
+  }
+  for (const claim of ["綁全出 待確認", "綁全出（不確定）", "無綁 不確定", "可能綁全出", "應該綁全出", "據說綁全出"]) {
+    assert.equal(extractCompleteBindings(claim), null, claim);
+  }
+  assert.deepEqual(extractPartialBindings("GG GC可出\n不確定價格"),
+    { bindings: { google: "transfer", gameCenter: "transfer" }, conflicts: [] });
+  assert.deepEqual(extractPartialBindings("GG可出｜NS可出 不確定"),
+    { bindings: { google: "transfer" }, conflicts: [] });
+  assert.equal(extractCompleteBindings("綁全出\n待確認價格")?.kind, "all-transfer");
+  assert.deepEqual(extractPartialBindings("價格大概\nGG GC可出"),
+    { bindings: { google: "transfer", gameCenter: "transfer" }, conflicts: [] });
+  assert.equal(extractCompleteBindings("價格大概\n綁全出")?.kind, "all-transfer");
+  for (const suffix of ["待確認價格", "不確定售價", "待核實資源"]) {
+    assert.deepEqual(extractPartialBindings(`GG GC可出 ${suffix}`),
+      { bindings: { google: "transfer", gameCenter: "transfer" }, conflicts: [] });
+    assert.equal(extractCompleteBindings(`綁全出 ${suffix}`)?.kind, "all-transfer");
+  }
+});
+
 test("drops conflicting partial platform claims without deriving other bindings", () => {
   assert.deepEqual(extractPartialBindings("不是綁全出｜GG不出"), { bindings: { google: "keep" }, conflicts: [] });
   assert.deepEqual(
