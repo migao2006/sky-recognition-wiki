@@ -150,7 +150,7 @@ Winter Feast Snowglobe（`4i2CdmSgmX`）使用「雪花水晶球」，保留「�
 
 九色鹿畢業斗（`gLB3Tnn8mb`）與付費聯動斗（`BTogmcHcr5`）不再共用顯示／分享短名。「九色鹿斗」保留兩者候選，不再單憑泛稱加入畢業禮；明寫「九色鹿畢業斗／九色鹿終極斗篷」或「異彩蓮花斗」仍唯一辨識。依 SkyGame-Data 1.3.10 的 ID 2034／2047、Ultimate／Limited、order 9100／9500、不同圖示與聯動單件禮包 `lISB28039d` 核對；[繁體交易用語](https://www.8591.com.hk/mall/detail/51274180)亦把「九色鹿斗」放在禮包收藏中。這只修名稱與還原身分，不以該刊登價格校準模型。
 
-「線框斗／線框斗篷」保留為 SkyFest（`meld4SQL8l`）與 TGC（`8l3QuiKC_8`）兩款的歧義搜尋詞，不作套組或自動加入任一件；「天空線框斗／五週年斗篷」與「TGC線框斗」仍各自唯一辨識。身分核對 SkyGame-Data 1.3.10 的 ID 2229／2658、Cape、order 14800／14900、不同圖示與獨立單件禮包；[官方更新說明](https://thatgamecompany.helpshift.com/hc/zh-hant/17-sky-children-of-the-light/faq/1398-patch-notes---may-29-2025---0-29-5-325756-android-huawei-ios-playstation-steam-switch/)亦分列兩款，[台灣玩家六週年介紹](https://www.dcard.tw/f/sky/p/259260519)明確指出與五週年款不同。只補名稱辨識，不變更物品身分或估價係數。
+「線框斗／線框斗篷」保留為 SkyFest（`meld4SQL8l`）與 TGC（`8l3QuiKC_8`）兩款的歧義搜尋詞，不作套組或自動加入任一件；「天空線框斗／五週年斗篷」與「TGC線框斗」仍各自唯一辨識。帶年份的「五週線條斗／五週年線框斗篷／5週年線框斗篷」可唯一辨識 SkyFest，不要求作者使用完整原名；縮寫只補搜尋，不取代顯示名。依既有交易文案與[台灣玩家五週年介紹](https://www.youtube.com/watch?v=4t0qGya3-90)核對。身分核對 SkyGame-Data 1.3.10 的 ID 2229／2658、Cape、order 14800／14900、不同圖示與獨立單件禮包；[官方更新說明](https://thatgamecompany.helpshift.com/hc/zh-hant/17-sky-children-of-the-light/faq/1398-patch-notes---may-29-2025---0-29-5-325756-android-huawei-ios-playstation-steam-switch/)亦分列兩款，[台灣玩家六週年介紹](https://www.dcard.tw/f/sky/p/259260519)明確指出與五週年款不同。只補名稱辨識，不變更物品身分或估價係數。
 
 已登記的 `player-zh-names.json` 顯示名一律保留於該 GUID 的搜尋名稱，即使畫面顯示由較高優先權的收藏／人工審核名稱覆蓋。例如顯示「萌新斗篷」仍接受「飛蛾斗」，不需要另抄一份別名。這只保留既有玩家名稱，不更動顯示優先順序，也不將依賴系列語境的出售短名（如 Nintendo 下的「紅斗／藍斗」）自動加入全域搜尋；名稱撞名仍由原有歧義規則處理。
 

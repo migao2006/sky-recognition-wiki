@@ -79,6 +79,12 @@ test("registered player display names remain searchable when another source wins
 });
 
 test("generic wireframe names remain ambiguous between the two separate capes", () => {
+  for (const term of ["五週線條斗", "五週年線框斗篷", "5週年線框斗篷"]) {
+    assert.deepEqual(resolver.resolve(term).candidates.map(i => i.guid), ["meld4SQL8l"]);
+    assert.deepEqual(resolver.scan(term).matched.flatMap(m => m.candidates.map(i => i.guid)), ["meld4SQL8l"]);
+    assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
+  }
+  assert.equal(resolver.scan("五週線條斗｜天空線框斗｜5週年線框斗篷").matched.length, 1);
   for (const term of ["線框斗", "線框斗篷"]) {
     assert.deepEqual(resolver.resolve(term).candidates.map(i => i.guid).sort(), ["8l3QuiKC_8", "meld4SQL8l"].sort());
     const scan = resolver.scan(term);
