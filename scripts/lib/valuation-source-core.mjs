@@ -312,6 +312,16 @@ export const hasReplayableSeasonProgress = (
   );
 };
 
+// Exploratory, unweighted prices only; do not replace evidence-weighted model
+// quantiles with this helper. Type 7 averages both middle prices for even n.
+export const unweightedQuantile = (values, percentile) => {
+  const ordered = [...values].sort((a, b) => a - b);
+  if (!ordered.length) return null;
+  const position = (ordered.length - 1) * percentile;
+  const lower = Math.floor(position);
+  return ordered[lower] + (ordered[Math.ceil(position)] - ordered[lower]) * (position - lower);
+};
+
 export const isExcludedFromModel = (row) => {
   const explicit = row?.exclude_from_model;
   const normalized = String(explicit ?? "").trim().toLowerCase();

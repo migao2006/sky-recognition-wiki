@@ -3,12 +3,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { seasonSlugs } from "./collect-public-market-listings.mjs";
 import { channelFor } from "./lib/market-channel.mjs";
-
-const quantile = (values, percentile) => {
-  const ordered = [...values].sort((left, right) => left - right);
-  if (!ordered.length) return null;
-  return ordered[Math.floor((ordered.length - 1) * percentile)];
-};
+import { isExcludedFromModel, unweightedQuantile as quantile } from "./lib/valuation-source-core.mjs";
 
 const roundRatio = (value) => Math.round(value * 1_000) / 1_000;
 
@@ -19,6 +14,7 @@ const marketKeyFor = (row) => {
 };
 
 const isEligible = (row) =>
+  !isExcludedFromModel(row) &&
   row?.account_candidate === true &&
   row?.relative_price_candidate === true &&
   row?.price_outlier !== true &&

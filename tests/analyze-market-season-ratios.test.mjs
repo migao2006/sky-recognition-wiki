@@ -44,13 +44,13 @@ test("computes season ratios separately for every source and currency", () => {
   ]);
   assert.deepEqual(report.markets.map((market) => market.market), ["market-a:CNY:unknown", "market-b:USD:unknown"]);
   const first = report.markets[0];
-  assert.equal(first.market_median_original, 300);
+  assert.equal(first.market_median_original, 350);
   assert.deepEqual(first.seasons.map((season) => [season.slug, season.sample_count]), [
     ["remembrance", 3],
     ["nesting", 3],
   ]);
-  assert.equal(first.seasons[0].ratio_to_market_median, 1.667);
-  assert.equal(first.seasons[1].ratio_to_market_median, 0.833);
+  assert.equal(first.seasons[0].ratio_to_market_median, 1.429);
+  assert.equal(first.seasons[1].ratio_to_market_median, 0.714);
 });
 
 test("channel-specific medians preserve unknown rows and do not create cross-channel inversions", () => {
@@ -87,6 +87,25 @@ test("excludes weak or confounded rows and marks sparse seasons insufficient", (
   assert.equal(report.source_rows, 6);
   assert.equal(report.eligible_rows, 2);
   assert.equal(report.markets[0].seasons[0].sufficient_samples, false);
+});
+
+test("manual exclusions cannot re-enter season ratios through stale candidate flags", () => {
+  const included = [row({ price_original: 100 }), row({ price_original: 300 })];
+  for (const exclusion of [{ exclude_from_model: true }, { exclude_from_model: 1 }, { exclude_from_model: "true" }, { exclusion_reason: "account and physical badge bundle" }]) {
+    const report = buildSeasonRatioReport([...included, row({ price_original: 9000, ...exclusion })]);
+    assert.equal(report.source_rows, 3);
+    assert.equal(report.eligible_rows, 2);
+    assert.deepEqual(report.markets, buildSeasonRatioReport(included).markets);
+  }
+  assert.equal(buildSeasonRatioReport([row({ exclude_from_model: false })]).eligible_rows, 1);
+});
+
+test("season ratio quartiles interpolate even samples without mutating prices", () => {
+  const input = [400, 100, 300, 200].map(price_original => row({ price_original }));
+  const original = structuredClone(input);
+  const season = buildSeasonRatioReport(input).markets[0].seasons[0];
+  assert.deepEqual([season.p25_original, season.median_original, season.p75_original], [175, 250, 325]);
+  assert.deepEqual(input, original);
 });
 
 test("reports only material chronological inversions between comparable seasons", () => {

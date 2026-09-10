@@ -15,6 +15,7 @@ import {
   priceFor,
   marketExclusionReason,
   seasonProgressParts,
+  unweightedQuantile as quantile,
 } from "./lib/valuation-source-core.mjs";
 import { seasonBandSeeds } from "../app/valuation-season-band-core.js";
 
@@ -41,14 +42,6 @@ const knownIdentity = value => known(value)?.toLowerCase() === "none" ? null : k
 // Reviewed quotation context, not inferred market location or currency conversion.
 const quoteBasisFor = row => ["single_currency", "seller_multi_currency"].includes(row.price_quote_basis)
   ? row.price_quote_basis : "unknown";
-const quantile = (values, percentile) => {
-  const ordered = [...values].sort((a, b) => a - b);
-  if (!ordered.length) return null;
-  // Linear interpolation (type 7): even-sized samples use both middle prices.
-  const position = (ordered.length - 1) * percentile;
-  const lower = Math.floor(position);
-  return ordered[lower] + (ordered[Math.ceil(position)] - ordered[lower]) * (position - lower);
-};
 const priceSummary = (rows, minimumSamples) => {
   const prices = rows.map(row => row.__market.price);
   return { sample_count: rows.length, sufficient_samples: rows.length >= minimumSamples,
