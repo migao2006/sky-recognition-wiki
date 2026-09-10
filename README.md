@@ -182,7 +182,7 @@ GUID 重播會同時輸出來源的 `start_season_slug`、實算的 `reconstruct
 
 文案 GUID 重播的價格欄接受正數及純十進位數字文字（如 `"4000"`、`"4000.50"`），不再因 JSON 儲存型別不同漏掉明確金額；仍要求區間兩端有效且順序正確。共用金額轉換拒絕布林值、陣列、物件、空白、科學／十六進位記法及含單位文字，避免 JavaScript 隱式轉換製造假價格。正式稽核原有的單價型別限制不變；刊登、秒價、成交等來源性質仍分開。
 
-Sunlight Helios Hoops（`lv_MnKorJN`）顯示與分享短名改為「太陽耳環」，保留「陽光太陽神圓環／太陽耳墜」搜尋。依[台灣玩家活動介紹](https://www.youtube.com/watch?v=w2B12NP9Bnk)、[交易用語](https://www.8591.com.hk/mall/detail/51274180)與[2024 陽光日物品資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight/2024)核對太陽造型、年份及付費身分；IAP 使用 SkyGame-Data 1.3.10 精確 GUID，不與月華耳環、向日葵耳飾混用。
+Sunlight Helios Hoops（`lv_MnKorJN`）顯示與分享短名使用「太陽耳環」，保留「陽光太陽神圓環／太陽耳墜」搜尋，並支援「夏日耳環／夏日耳墜／日光耳環／陽光耳墜」及對應簡體。依[台灣玩家活動介紹](https://www.youtube.com/watch?v=w2B12NP9Bnk)、[夏日耳環圖文](https://www.dcard.tw/f/sky/p/256468904)、[BWiki 日光耳環禮包名稱](https://wiki.biligame.com/sky/礼包图鉴)與[陽光耳墜展示](https://www.bilibili.com/video/BV1Mb421J7Hp/)核對太陽造型、年份及用語；付費身分使用 SkyGame-Data 1.3.10 精確 GUID、ID 2290、HeadAccessory、order 1900 與首次／返場單件禮包，不與月華耳環、向日葵耳飾混用。跨地區文案只補名稱證據，不引入其售價或其他國服物品。
 
 「棉花糖架／烤棉花糖架／烤棉花糖禮包」對應 Campfire Snack Kit（`TXYOTW9Qyn`），保留原顯示名與一件道具身分，不因英文 Kit 或中文套組而拆成多個物品。依[台灣玩家陽光日用語](https://www.dcard.tw/f/sky/p/256468904)、[2022 活動棉花糖架稱呼](https://www.9game.cn/skygy/7015104.html)及[國際服物品描述](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Sunlight/2022)交叉核對木架、棉花糖互動及活動來源；付費關係使用 `iap-catalog.json` 1.3.10，不使用中國服價格。
 

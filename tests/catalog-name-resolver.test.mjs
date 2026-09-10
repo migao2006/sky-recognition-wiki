@@ -267,7 +267,7 @@ test("dragon scale earrings resolve the paid fortune head accessory, not a brace
 });
 
 test("sun earrings use the player name while preserving the official sunlight identity", () => {
-  for (const term of ["太陽耳環", "太陽耳墜", "陽光太陽神圓環"]) {
+  for (const term of ["太陽耳環", "太陽耳墜", "陽光太陽神圓環", "夏日耳環", "夏日耳墜", "日光耳環", "陽光耳墜", "夏日耳环", "夏日耳坠", "日光耳环", "阳光耳坠"]) {
     const match = resolver.resolve(term);
     assert.deepEqual(match.candidates.map(item => item.guid), ["lv_MnKorJN"]);
     const [item] = match.candidates;
@@ -277,8 +277,10 @@ test("sun earrings use the player name while preserving the official sunlight id
     assert.equal(catalog.saleItemName(item), "太陽耳環");
     assert.equal(catalog.isPaidItem(item), true);
   }
-  assert.equal(resolver.scan("太陽耳環｜太陽耳墜").matched.length, 1);
+  assert.equal(resolver.scan("太陽耳環｜太陽耳墜｜夏日耳墜｜日光耳環").matched.length, 1);
   assert.equal(resolver.scan("沒有太陽耳環").matched.length, 0);
+  assert.equal(resolver.scan("沒有夏日耳墜").matched.length, 0);
+  assert.equal(resolver.scan("夏日耳墜｜月光耳墜｜向日葵耳飾").matched.length, 3);
   assert.equal(resolver.scan("太陽耳環｜月光耳墜｜向日葵耳飾").matched.length, 3);
 });
 
