@@ -10,6 +10,7 @@ import {
   firstSeasonWithProgress,
   isExcludedFromModel,
   postKeyFor,
+  positivePriceNumber,
   preferredRow,
   priceFor,
   marketExclusionReason,
@@ -101,7 +102,7 @@ const priceAndMarketFor = (row) => {
   if (!isPublic && marketExclusionReason({ ...row, listing_text: `${titleFor(row)} ${row.listing_text ?? ""}` }) === "foreign_currency")
     return { reason: "converted_currency_only" };
   const price = isPublic
-    ? (typeof row.price_original === "number" && Number.isFinite(row.price_original) && row.price_original > 0 ? row.price_original : null)
+    ? positivePriceNumber(row.price_original)
     : priceFor(row);
   if (!currency || !region || !price || price <= 0) return { reason: "price_or_market_unknown" };
   return { price, currency: currency.toUpperCase(), region: region.toLowerCase() };

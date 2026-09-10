@@ -12,6 +12,24 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("public headline prices accept decimal text without admitting coercions or merging currencies", () => {
+  const first = listing({ price_original: 4000 });
+  const report = buildMarketHeadlineReport([first, { ...first, price_original: "4000" },
+    listing({ price_original: " 4000.50 " }),
+    listing({ price_original: "9000", currency_original: "CNY", market_scope: "cn" })]);
+  assert.equal(report.eligible_rows, 3);
+  assert.equal(report.markets.length, 2);
+  const twd = report.season_overviews.find(g => g.currency === "TWD");
+  assert.equal(twd.sample_count, 2);
+  assert.equal(twd.median, 4000.25);
+  assert.equal(report.season_overviews.find(g => g.currency === "CNY").median, 9000);
+  for (const price_original of [true, false, [], [4000], {}, null, "", " ", "4k", "4,000", "0x100", "4e3", "4000元", "-1", "0", Infinity, NaN]) {
+    const rejected = buildMarketHeadlineReport([listing({ price_original })]);
+    assert.equal(rejected.eligible_rows, 0, String(price_original));
+    assert.equal(rejected.diagnostics.price_or_market_unknown, 1);
+  }
+});
+
 test("season overview pools deduplicated raw prices while preserving condition coverage", () => {
   const first = listing({ price_original: 1000, binding_class: "transferable", wingless: false });
   const report = buildMarketHeadlineReport([
