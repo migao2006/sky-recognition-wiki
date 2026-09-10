@@ -17,6 +17,18 @@ test("separate gifted-account sections do not establish main-account ownership",
   assert.equal(splitListingInventoryContext("赠号上数据：\n追光大傘").inventory, "");
 });
 
+test("physical badge sections are not in-game inventory evidence", () => {
+  for (const title of ["⚝ › 實體徽章", "✦ 實體 STAR 徽章：", "实体徽章:"]) {
+    const result = splitListingInventoryContext(`大傘\n${title}\n大傘｜海龜\n公主抱\n\n星夜之傘`);
+    assert.equal(result.inventory, "大傘\n\n星夜之傘");
+    assert.equal(result.physicalCollectibles, "大傘｜海龜\n公主抱");
+    assert.equal(result.separateAccount, "");
+  }
+  for (const text of ["沒有實體徽章\n大傘", "GG 綁全出\n大傘", "實體徽章另售但有大傘\n海龜斗"]) {
+    assert.equal(splitListingInventoryContext(text).inventory, text);
+  }
+});
+
 test("accepts only explicit complete binding statements", () => {
   assert.equal(extractCompleteBindings("帳號無綁｜可直接改密碼")?.kind, "none");
   assert.equal(extractCompleteBindings("綁全出｜售後不退")?.kind, "all-transfer");

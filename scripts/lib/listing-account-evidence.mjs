@@ -11,21 +11,26 @@ export const bindingKeys = [
 export const bindingsForStatus = (status) =>
   Object.fromEntries(bindingKeys.map((key) => [key, status]));
 
-// An explicitly separate gifted account is not proof of the main wardrobe.
-// Stop at the next blank line; do not infer ownership from generic 「數據」.
+// Explicit gifted-account and physical-badge sections are not main wardrobe evidence.
+// Stop at the next blank line; generic 「數據」 or binding text does not establish a section.
 export const splitListingInventoryContext = (content) => {
   const inventory = [];
   const separateAccount = [];
-  let separate = false;
+  const physicalCollectibles = [];
+  let section = inventory;
   for (const line of String(content ?? "").split(/\r?\n/u)) {
     if (/^[^\p{L}\p{N}]*(?:贈號上數據|赠号上数据)\s*[:：]?\s*$/u.test(line)) {
-      separate = true;
+      section = separateAccount;
       continue;
     }
-    if (!line.trim()) separate = false;
-    (separate ? separateAccount : inventory).push(line);
+    if (/^[^\p{L}\p{N}]*(?:實體|实体)\s*(?:STAR\s*)?徽章\s*[:：]?\s*$/iu.test(line)) {
+      section = physicalCollectibles;
+      continue;
+    }
+    if (!line.trim()) section = inventory;
+    section.push(line);
   }
-  return { inventory: inventory.join("\n"), separateAccount: separateAccount.join("\n") };
+  return { inventory: inventory.join("\n"), separateAccount: separateAccount.join("\n"), physicalCollectibles: physicalCollectibles.join("\n") };
 };
 const boundary = String.raw`(?:^|[\s｜|，,。；;])`;
 const ending = String.raw`(?=$|[\s｜|，,。；;])`;

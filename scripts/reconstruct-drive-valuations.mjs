@@ -190,6 +190,7 @@ const reconstructed = documents.map((document) => {
     ...(!bindingEvidence ? ["bindings"] : []),
     ...(!resourceEvidence.complete ? ["resources"] : []),
     ...(context.separateAccount.trim() ? ["separate_account_scope"] : []),
+    ...(context.physicalCollectibles.trim() ? ["physical_collectibles_scope"] : []),
   ];
   const modelFeaturesReady =
     !excludedFromModel && startSeasonConflict !== true && missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
@@ -234,6 +235,7 @@ const reconstructed = documents.map((document) => {
     start_season_conflict: startSeasonConflict,
     owned_guids: [...owned].sort(),
     separate_account_guids: separateAccountGuids,
+    physical_collectibles_present: Boolean(context.physicalCollectibles.trim()),
     exact_text_guid_count: textGuids.size,
     season_guid_count: owned.size - textGuids.size,
     ambiguous: ambiguity,
