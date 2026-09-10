@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+標題只提到一個季節且明寫「姆明季畢業／姆明已畢業」時，可保留該季作起始季節證據，不再要求額外寫「起／號／無斷」。不由單季畢業推定後續季節、斷季程度或物品 GUID；「畢業禮／畢業面具」、可畢業、未畢業、代畢業與多季不明起點仍不作同等證據。
+
 Blue Pinned Cap（`PpIpcfoNDH`）保留「藍色帽子」顯示名，補「藍護士帽／藍色護士帽／護士帽」及簡體搜尋別名。依[公開交易用語](https://www.sina.cn/news/detail/5289488297493327.html)、[國際服玩家對性格測試帽子的稱呼](https://www.reddit.com/r/SkyGame/comments/1qj8jnv/personality_test_is_right/)及 SkyGame-Data 1.3.10 核對 ID 2929、HairAccessory、order 7300、精確 icon 與單件 IAP `AFPoxs_J4q`；不加入國服專屬物品、不引用其價格，也不將護士服或其他帽子視為同件。
 
 英文刊登標題如 `Completed 4 seasons from Duets to Blue Bird` 可提供起始季節證據，不要求完整 GUID；僅解析明確的完成季節範圍句型與已知季名，不由季數補成無斷、逐季畢業或禮包數。拼錯季名、反向範圍及帶額外限定／矛盾句子的標題保留待查；沒有章節的 `Two Embers` 僅可作範圍終點，不推定暮星起季。此路徑仍按原幣與市場分組，不直接換算成台幣或改寫正式估價。

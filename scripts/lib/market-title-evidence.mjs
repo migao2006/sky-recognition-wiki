@@ -201,6 +201,11 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   if (/(?:非|不是|並非|并非)(?:季)?$/.test(before) && /^(?:季)?起/u.test(after))
     return null;
   const explicitStart = /^(?:季)?起/u.test(after) || /(?:起季|起號|起号|入坑)$/.test(before);
+  // A seller can state completion without adding "起" or "號". A graduation
+  // reward, promised completion, or progress heading is not the same claim.
+  const completedSeason = /^(?:季)?(?:已|全)?(?:畢業|毕业|畢|毕)(?![業业禮礼物面斗髮发飾饰琴進进狀状率度計计?？])/u.test(after) &&
+    !/(?:非|不|不是|沒|没|沒有|没有|未|無|无|可|能|包|代|將|将|想|準備|准备|預計|预计)(?:已|全)?$/u.test(before) &&
+    !/^(?:季)?(?:已|全)?(?:畢業|毕业|畢|毕)(?:了)?[?？]/u.test(after);
   const accountTitle = /(?:號|号|帳|帐)/u.test(text);
   const sellerSummary = /(?:少|中|多)(?:禮|礼)|(?:禮包|礼包)\d+|\d+(?:禮|礼)(?:包)?/u.test(normalizedPackageText(text));
   const explicitBreakSeason = /(?:斷|断)季/u.test(text);
@@ -208,7 +213,7 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
   const transferableWingless = /^(?:季)?(?:(?:綁全出|绑全出)(?:無翼|无翼)|(?:無翼|无翼)(?:綁全出|绑全出))/u.test(after);
   const adjacentAccountStyle = accountStyle !== null && /^(?:季)?(?:綁全出|绑全出)?(?:簡|简|普|普通)/u.test(after);
   const accountEvidence = accountTitle || accountStyle !== null || breakClass !== null || explicitBreakSeason || packageAccount || transferableWingless;
-  return explicitStart || (accountEvidence && (breakClass !== null || sellerSummary || explicitBreakSeason || adjacentAccountStyle || countedSeasons || packageAccount || transferableWingless))
+  return explicitStart || completedSeason || (accountEvidence && (breakClass !== null || sellerSummary || explicitBreakSeason || adjacentAccountStyle || countedSeasons || packageAccount || transferableWingless))
     ? claim.slug
     : null;
 };

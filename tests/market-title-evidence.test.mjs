@@ -109,6 +109,18 @@ test("explicit package upper limits retain zero-to-bound evidence, never exact c
   }
 });
 
+test("explicit single-season completion needs no extra account or start suffix", () => {
+  for (const [title, slug] of [["光遇姆明季毕业", "moomin"], ["安卓开服号，圣岛季毕业，多复刻，价格可议", "sanctuary"], ["童真面具狂欢毕业永久无翼", "carnival"], ["14号身高欧若拉毕业有绊爱", "aurora"], ["姆明已畢業", "moomin"], ["姆明畢", "moomin"]]) {
+    const result = extractMarketTitleEvidence(title);
+    assert.equal(result.startSeasonSlug, slug, title);
+    assert.equal(result.breakClass, null, title);
+    assert.equal(result.paidPackageCount, null, title);
+  }
+  for (const title of ["有姆明毕业礼可看截图", "迁徙毕业面具", "姆明畢業斗篷", "姆明毕业发型", "姆明畢業進度", "姆明可畢業", "姆明未畢業", "非姆明畢業", "沒有姆明畢業", "代姆明畢業", "預計姆明畢業", "姆明畢業？", "姆明畢業了？", "姆明季卡畢業號", "預言季聖島季畢業"]) {
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
+  }
+});
+
 test("explicit English completed-season ranges provide only starting-season evidence", () => {
   for (const [title, start] of [
     ["SCOTL-P03: Completed 7 seasons from Passage to Two Embers.", "passage"],
