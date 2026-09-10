@@ -391,7 +391,7 @@ test("fortune doll set preserves three official members and respects negative wo
 });
 
 test("fortune muralist pants aliases remain paid and separate from white cotton pants", () => {
-  for (const term of ["祥雲褲", "壁畫家褲子", "福瑞壁畫家工作服", "兔尾褲", "兔子棉褲"]) {
+  for (const term of ["祥雲褲", "壁畫家褲子", "福瑞壁畫家工作服", "兔尾褲", "兔子棉褲", "新年棉褲", "新年棉裤"]) {
     const match = resolver.resolve(term);
     assert.deepEqual(match.candidates.map(item => item.guid), ["ADJiva5H2Z"]);
     const [item] = match.candidates;
@@ -400,8 +400,8 @@ test("fortune muralist pants aliases remain paid and separate from white cotton 
     assert.equal(catalog.zhItemName(item), "祥雲褲");
     assert.equal(catalog.saleItemName(item), "祥雲褲");
   }
-  assert.equal(resolver.scan("祥雲褲｜壁畫家褲子").matched.length, 1);
-  assert.equal(resolver.scan("沒有祥雲褲").matched.length, 0);
+  assert.equal(resolver.scan("祥雲褲｜壁畫家褲子｜新年棉褲｜新年棉裤").matched.length, 1);
+  assert.equal(resolver.scan("沒有祥雲褲｜沒有新年棉褲｜没有新年棉裤").matched.length, 0);
   const cotton = resolver.resolve("白棉褲").candidates;
   assert.deepEqual(cotton.map(item => item.guid), ["qrP9vZPLlk"]);
   assert.equal(catalog.isPaidItem(cotton[0]), false);

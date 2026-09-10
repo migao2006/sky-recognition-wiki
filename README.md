@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「新年棉褲／新年棉裤」僅補為祥雲褲 `ADJiva5H2Z` 的搜尋別名，顯示／出售名不變。依[玩家原貼與衣櫃圖片](https://www.taptap.cn/moment/699657587292899715)、[2023 新年物品介紹](https://www.dailiantong.com/news/content_160106.html)交叉判斷，再核對 SkyGame-Data 1.3.10 的 `Fortune Muralist's Smock`（ID 1734、OutfitShoes、order 3600、單件付費禮包）。這是跨來源推斷，不是原作者提供 GUID；不將通稱「棉褲」或免費白棉褲一併配入。未改價格係數，但補認物品後的文案重播估價可能改變。
+
 「蓬鬆冬裝」作為已確認套組搜尋詞，僅展開粉色毛毛帽與粉色襪子兩個 GUID；以同一 IAP key 去重後仍是一包。套組詞不取代單件顯示名，不包含獨立販售的雪人頭飾、暖冬圍巾斗或免費毛毛冬裝。
 
 2025 盛宴物品依[台灣玩家介紹](https://www.dcard.tw/f/sky/p/260451962)改用「雪人頭飾／粉色毛毛帽／粉色襪子」，舊名「雪孩配件／冬日筒帽／冬日腿套」保留搜尋。SkyGame-Data 1.3.10 核對：`6T4gsS3ZUX` 為獨立 IAP `S4K4JiRvmZ`；`8aWnwc3_C6` 與 `aoUa2jtXfL` 同屬 `3PMpLqW_rH`，仍計同一包，不混入免費毛毛冬裝或雪人魔法。
