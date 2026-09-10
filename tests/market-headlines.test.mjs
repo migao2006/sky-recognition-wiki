@@ -12,6 +12,38 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("headline price quantiles interpolate without rounding or inflating sparse samples", () => {
+  for (const [prices, expected] of [
+    [[3500], [3500, 3500, 3500]],
+    [[5000, 3000], [3500, 4000, 4500]],
+    [[5000, 1000, 3000], [2000, 3000, 4000]],
+    [[9000, 1000, 5000, 3000], [2500, 4000, 6000]],
+    [[1001, 1000], [1000.25, 1000.5, 1000.75]],
+    [[3000, 3000, 3000, 3000], [3000, 3000, 3000]],
+  ]) {
+    const rows = prices.map(price => listing({ price_original: price }));
+    const report = buildMarketHeadlineReport(rows);
+    const item = report.markets[0].season_breaks[0].packages[0];
+    assert.deepEqual([item.p25, item.median, item.p75], expected);
+    assert.equal(item.sample_count, prices.length);
+    assert.equal(item.sufficient_samples, prices.length >= 3);
+    assert.deepEqual(rows.map(row => row.price_original), prices);
+  }
+  assert.deepEqual(buildMarketHeadlineReport([]).markets, []);
+});
+
+test("package differences use interpolated medians after deduplicating listings", () => {
+  const rows = [1000, 3000, 5000, 9000].map(price => listing({ price_original: price }));
+  rows.push({ ...rows[0] });
+  rows.push(...[2000, 6000, 8000, 10000].map(price => listing({ title: "緬懷起 無斷 禮包10 簡號", price_original: price })));
+  const report = buildMarketHeadlineReport(rows);
+  assert.equal(report.eligible_rows, 8);
+  const group = report.markets[0].season_breaks[0];
+  assert.deepEqual(group.packages.map(item => item.median), [4000, 7000]);
+  assert.equal(group.package_differences[0].median_total_difference, 3000);
+  assert.equal(report.status, "headline-unvalidated");
+});
+
 test("reviewed relisting IDs join transitively within one source without inflating sample thresholds", () => {
   const report = buildMarketHeadlineReport([
     listing({ listing_id: "first", duplicate_listing_ids: ["second"] }),

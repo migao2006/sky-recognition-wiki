@@ -38,7 +38,11 @@ const known = (value) => {
 const knownIdentity = value => known(value)?.toLowerCase() === "none" ? null : known(value);
 const quantile = (values, percentile) => {
   const ordered = [...values].sort((a, b) => a - b);
-  return ordered.length ? ordered[Math.floor((ordered.length - 1) * percentile)] : null;
+  if (!ordered.length) return null;
+  // Linear interpolation (type 7): even-sized samples use both middle prices.
+  const position = (ordered.length - 1) * percentile;
+  const lower = Math.floor(position);
+  return ordered[lower] + (ordered[Math.ceil(position)] - ordered[lower]) * (position - lower);
 };
 const packageTierFor = (count, sellerTier) => {
   if (Number.isSafeInteger(count) && count >= 0) {
