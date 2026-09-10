@@ -20,7 +20,7 @@ test("season overview pools deduplicated raw prices while preserving condition c
     listing({ title: "緬懷起", price_original: 9000 }),
     listing({ title: "緬懷起30禮普號", price_original: 6000 }),
   ]);
-  assert.equal(report.schema_version, 2);
+  assert.equal(report.schema_version, 3);
   assert.equal(report.eligible_rows, 4);
   assert.equal(report.season_overviews.length, 1);
   const group = report.season_overviews[0];
@@ -71,6 +71,53 @@ test("market tuple separators cannot merge different sources or regions", () => 
   assert.equal(report.season_overviews.length, 2);
   assert.deepEqual(report.season_overviews.map(g => g.median).sort((a, b) => a - b), [1000, 9000]);
   assert.ok(report.season_overviews.every(g => g.sample_count === 1));
+});
+
+test("reviewed quotation bases separate equal-currency account prices without conversion", () => {
+  const report = buildMarketHeadlineReport([
+    listing({ price_original: 1000, price_quote_basis: "single_currency" }),
+    listing({ price_original: 9000, price_quote_basis: "seller_multi_currency" }),
+    listing({ price_original: 5000 }),
+  ]);
+  assert.equal(report.eligible_rows, 3);
+  assert.equal(report.markets.length, 3);
+  assert.equal(report.season_overviews.length, 3);
+  assert.deepEqual(Object.fromEntries(report.season_overviews.map(g => [g.price_quote_basis, g.median])),
+    { single_currency: 1000, seller_multi_currency: 9000, unknown: 5000 });
+  assert.ok(report.markets.every(g => g.currency === "TWD" && g.sample_count === 1));
+});
+
+test("quotation context is optional and never adds account identities or bypasses price gates", () => {
+  const original = listing();
+  const report = buildMarketHeadlineReport([original, { ...original, price_quote_basis: "seller_multi_currency" },
+    listing({ price_quote_basis: "unreviewed private seller text" })]);
+  assert.equal(report.eligible_rows, 2);
+  assert.equal(report.season_overviews.reduce((n, g) => n + g.sample_count, 0), 2);
+  assert.doesNotMatch(JSON.stringify(report), /unreviewed private seller text/);
+  assert.ok(report.season_overviews.some(g => g.price_quote_basis === "unknown"));
+  const rejected = buildMarketHeadlineReport([
+    { source: "facebook", post_hash: "converted", region: "international", currency: "TWD", original_currency: "MYR", price_twd: 9000, price_kind: "ask", start_season_slug: "lightseekers", price_quote_basis: "seller_multi_currency" },
+    listing({ price_quote_basis: "seller_multi_currency", exclude_from_model: true }),
+    listing({ price_quote_basis: "single_currency", price_original: 0 }),
+  ]);
+  assert.equal(rejected.eligible_rows, 0);
+  assert.equal(rejected.diagnostics.converted_currency_only, 1);
+});
+
+test("exact duplicate quote reviews are order-independent and cannot leak to repriced snapshots", () => {
+  const original = listing({ observed_at: "2026-09-01" });
+  const reviewed = { ...original, price_quote_basis: "seller_multi_currency" };
+  for (const rows of [[original, reviewed], [reviewed, original]]) {
+    const report = buildMarketHeadlineReport(rows);
+    assert.equal(report.eligible_rows, 1);
+    assert.equal(report.markets[0].price_quote_basis, "seller_multi_currency");
+  }
+  const conflict = buildMarketHeadlineReport([reviewed, { ...original, price_quote_basis: "single_currency" }]);
+  assert.equal(conflict.markets[0].price_quote_basis, "unknown");
+  const later = { ...original, observed_at: "2026-09-02", price_original: 2500 };
+  const repriced = buildMarketHeadlineReport([reviewed, later]);
+  assert.equal(repriced.markets[0].price_quote_basis, "unknown");
+  assert.equal(repriced.season_overviews[0].median, 2500);
 });
 
 test("headline price quantiles interpolate without rounding or inflating sparse samples", () => {

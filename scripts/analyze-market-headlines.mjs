@@ -6,6 +6,7 @@ import { extractMarketTitleEvidence, extractMarketPackageRange, marketTitleBreak
 import {
   accountKeyFor,
   breakClasses,
+  canonicalJson,
   firstSeasonWithProgress,
   isExcludedFromModel,
   postKeyFor,
@@ -36,6 +37,9 @@ const known = (value) => {
   return text && !["unknown", "unk", "n/a", "null", "undefined", "-"].includes(text.toLowerCase()) ? text : null;
 };
 const knownIdentity = value => known(value)?.toLowerCase() === "none" ? null : known(value);
+// Reviewed quotation context, not inferred market location or currency conversion.
+const quoteBasisFor = row => ["single_currency", "seller_multi_currency"].includes(row.price_quote_basis)
+  ? row.price_quote_basis : "unknown";
 const quantile = (values, percentile) => {
   const ordered = [...values].sort((a, b) => a - b);
   if (!ordered.length) return null;
@@ -157,7 +161,16 @@ const deduplicate = (rows) => {
   rows.forEach((row, index) => {
     const key = find(index); const entries = groups.get(key) ?? []; entries.push(row); groups.set(key, entries);
   });
-  return [...groups.values()].map((entries) => entries.reduce(preferredRow));
+  return [...groups.values()].map((entries) => {
+    const selected = entries.reduce(preferredRow);
+    // Enrich exact copies only; never carry a quote context across a repricing,
+    // different currency or later observation. Conflicting reviews stay unknown.
+    const snapshot = row => canonicalJson(Object.fromEntries(Object.entries(row).filter(([key]) => key !== "price_quote_basis")));
+    const selectedSnapshot = snapshot(selected);
+    const bases = new Set(entries.filter(row => snapshot(row) === selectedSnapshot)
+      .map(quoteBasisFor).filter(basis => basis !== "unknown"));
+    return { ...selected, price_quote_basis: bases.size === 1 ? [...bases][0] : "unknown" };
+  });
 };
 
 export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => {
@@ -207,8 +220,9 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
     const binding = known(row.binding_class ?? row.bindingClass)?.toLowerCase() ?? "unknown";
     const source = known(row.source)?.toLowerCase() ?? "unknown";
     const channel = channelFor(row);
-    const key = JSON.stringify([source, row.__market.region, row.__market.currency, channel, row.__priceKind, binding, row.__style, row.__wingless]);
-    const entries = markets.get(key) ?? { key, source, region: row.__market.region, currency: row.__market.currency, channel, price_kind: row.__priceKind, binding_class: binding, account_style: row.__style, wingless: row.__wingless, rows: [] };
+    const price_quote_basis = quoteBasisFor(row);
+    const key = JSON.stringify([source, row.__market.region, row.__market.currency, channel, row.__priceKind, price_quote_basis, binding, row.__style, row.__wingless]);
+    const entries = markets.get(key) ?? { key, source, region: row.__market.region, currency: row.__market.currency, channel, price_kind: row.__priceKind, price_quote_basis, binding_class: binding, account_style: row.__style, wingless: row.__wingless, rows: [] };
     entries.rows.push(row); markets.set(key, entries);
   }
   const marketReports = [...markets.values()].sort((a, b) => a.key.localeCompare(b.key)).map((market) => {
@@ -232,15 +246,15 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
       })));
       return { season: group.season, break_class: group.break_class, sample_count: group.rows.length, packages, package_differences, no_package_baseline: packages.some((item) => item.package_tier === "0" && item.sufficient_samples) };
     });
-    return { source: market.source, region: market.region, currency: market.currency, channel: market.channel, price_kind: market.price_kind, binding_class: market.binding_class, account_style: market.account_style, wingless: market.wingless, sample_count: market.rows.length, season_breaks };
+    return { source: market.source, region: market.region, currency: market.currency, channel: market.channel, price_kind: market.price_kind, price_quote_basis: market.price_quote_basis, binding_class: market.binding_class, account_style: market.account_style, wingless: market.wingless, sample_count: market.rows.length, season_breaks };
   });
   // Reuse the same deduplicated rows, not medians of the sparse detailed cells.
   const overviewGroups = new Map();
   for (const market of markets.values()) {
-    const { source, region, currency, channel, price_kind } = market;
+    const { source, region, currency, channel, price_kind, price_quote_basis } = market;
     for (const row of market.rows) {
-      const key = JSON.stringify([source, region, currency, channel, price_kind, row.__season]);
-      const group = overviewGroups.get(key) ?? { source, region, currency, channel, price_kind, season: row.__season, rows: [] };
+      const key = JSON.stringify([source, region, currency, channel, price_kind, price_quote_basis, row.__season]);
+      const group = overviewGroups.get(key) ?? { source, region, currency, channel, price_kind, price_quote_basis, season: row.__season, rows: [] };
       group.rows.push(row); overviewGroups.set(key, group);
     }
   }
@@ -258,7 +272,7 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
       },
     };
   });
-  return { schema_version: 2, status: "headline-unvalidated", evidence_kind: "season-break-package-market-headline-diagnostic", minimum_samples: minimumSamples, source_rows: rows.length, eligible_rows_before_dedupe: candidates.length, eligible_rows: eligible.length, diagnostics, markets: marketReports, season_overviews, warning: "Diagnostic only: headline evidence is not a valuation baseline or model gate. Markets, currencies, and asking/sold kinds are never combined. Season overviews mix account conditions and already include packages; they are not bare-account prices or package premiums." };
+  return { schema_version: 3, status: "headline-unvalidated", evidence_kind: "season-break-package-market-headline-diagnostic", minimum_samples: minimumSamples, source_rows: rows.length, eligible_rows_before_dedupe: candidates.length, eligible_rows: eligible.length, diagnostics, markets: marketReports, season_overviews, warning: "Diagnostic only: headline evidence is not a valuation baseline or model gate. Markets, currencies, asking/sold kinds and reviewed quotation bases are never combined. A single-currency quote does not establish a local market or completed sale. Season overviews mix account conditions and already include packages; they are not bare-account prices or package premiums." };
 };
 
 const parseArgs = (argv) => ({ inputs: argv.filter((arg) => !arg.startsWith("--")), out: argv.find((arg) => arg.startsWith("--out="))?.slice(6) });
