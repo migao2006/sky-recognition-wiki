@@ -1149,6 +1149,7 @@ export const saleItemName = (item: WikiItem) => {
 export const zhItemSearchNames = (item: WikiItem) =>
   [
     zhItemName(item),
+    playerItemName(item.guid),
     ...(marketCollectibleProfile(item.name, item.guid)?.aliases ?? []),
     ...(playerHairByGuid[item.guid]?.aliases ?? []),
     ...playerItemAliases(item.guid),

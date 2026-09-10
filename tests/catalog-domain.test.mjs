@@ -84,7 +84,11 @@ test("uses compact sale names without changing wardrobe display names", () => {
   assert.ok(cape);
   assert.equal(zhItemName(cape), "姆明媽媽斗篷");
   assert.equal(saleItemName(cape), "姆明媽媽斗");
-  assert.equal(zhItemSearchNames(cape).includes("姆明媽媽斗"), false);
+  // This short form is also a registered player display name, not sale-only.
+  assert.equal(zhItemSearchNames(cape).includes("姆明媽媽斗"), true);
+  const nintendo = wikiItems.find((entry) => entry.guid === "4c9HLTfREP");
+  assert.equal(saleItemName(nintendo), "紅斗");
+  assert.equal(zhItemSearchNames(nintendo).includes("紅斗"), false);
 });
 
 test("uses reviewed player terms instead of generated IAP translations", () => {

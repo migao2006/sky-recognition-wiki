@@ -1,8 +1,39 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
+
+test("registered player display names remain searchable when another source wins display priority", async () => {
+  const names = JSON.parse(await readFile(new URL("../app/player-zh-names.json", import.meta.url), "utf8")).items;
+  for (const item of catalog.wikiItems) {
+    const entry = names[item.guid];
+    const name = typeof entry === "string" ? entry : entry?.displayName;
+    if (name) assert.ok(catalog.zhItemSearchNames(item).includes(name), `${item.guid}: ${name}`);
+  }
+  for (const [term, guid] of [["飛蛾斗", "bu7qgPtuB2"], ["飛蛾觸角", "jM8xKFwbTE"], ["海龜斗", "znjZlpHSt4"], ["黑彩虹耳環", "krzIL86J83"]]) {
+    assert.deepEqual(resolver.resolve(term).candidates.map(i => i.guid), [guid]);
+  }
+  const moth = catalog.wikiItems.find(i => i.guid === "bu7qgPtuB2");
+  assert.equal(catalog.zhItemName(moth), "萌新斗篷");
+  assert.equal(resolver.scan("沒有飛蛾斗").matched.length, 0);
+});
+
+test("generic wireframe names remain ambiguous between the two separate capes", () => {
+  for (const term of ["線框斗", "線框斗篷"]) {
+    assert.deepEqual(resolver.resolve(term).candidates.map(i => i.guid).sort(), ["8l3QuiKC_8", "meld4SQL8l"].sort());
+    const scan = resolver.scan(term);
+    assert.equal(scan.matched.length, 0);
+    assert.equal(scan.groups.length, 0);
+    assert.equal(scan.ambiguous.length, 1);
+  }
+  for (const [term, guid, id, order] of [["TGC線框斗", "8l3QuiKC_8", 2658, 14900], ["天空線框斗", "meld4SQL8l", 2229, 14800]]) {
+    const candidates = resolver.resolve(term).candidates;
+    assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order, i.type]), [[guid, id, order, "Cape"]]);
+    assert.equal(catalog.isPaidItem(candidates[0]), true);
+  }
+});
 
 test("fluffy cat player names resolve the paid prop without costume members", () => {
   for (const term of ["炸毛貓", "炸毛貓貓", "炸毛貓玩偶", "貓咪使魔"]) {

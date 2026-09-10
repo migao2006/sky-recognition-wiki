@@ -142,6 +142,10 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「線框斗／線框斗篷」保留為 SkyFest（`meld4SQL8l`）與 TGC（`8l3QuiKC_8`）兩款的歧義搜尋詞，不作套組或自動加入任一件；「天空線框斗／五週年斗篷」與「TGC線框斗」仍各自唯一辨識。身分核對 SkyGame-Data 1.3.10 的 ID 2229／2658、Cape、order 14800／14900、不同圖示與獨立單件禮包；[官方更新說明](https://thatgamecompany.helpshift.com/hc/zh-hant/17-sky-children-of-the-light/faq/1398-patch-notes---may-29-2025---0-29-5-325756-android-huawei-ios-playstation-steam-switch/)亦分列兩款，[台灣玩家六週年介紹](https://www.dcard.tw/f/sky/p/259260519)明確指出與五週年款不同。只補名稱辨識，不變更物品身分或估價係數。
+
+已登記的 `player-zh-names.json` 顯示名一律保留於該 GUID 的搜尋名稱，即使畫面顯示由較高優先權的收藏／人工審核名稱覆蓋。例如顯示「萌新斗篷」仍接受「飛蛾斗」，不需要另抄一份別名。這只保留既有玩家名稱，不更動顯示優先順序，也不將依賴系列語境的出售短名（如 Nintendo 下的「紅斗／藍斗」）自動加入全域搜尋；名稱撞名仍由原有歧義規則處理。
+
 Feline Familiar（`nz4W7amLch`）使用「炸毛貓」顯示與分享短名，支援「炸毛貓貓／炸毛貓玩偶」並保留舊名「貓咪使魔」。用語取自既有繁體交易文案與[玩家對炸毛貓的描述](https://www.taptap.cn/moment/342974278062313150)，身分核對 SkyGame-Data 1.3.10 的 ID 1869、Prop、order 5600、精確圖示及 `Feline Familiar Prop` 首次／返場單件禮包；[國際服活動資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2022#Feline_Familiar_Prop)確認它是可放置的黑貓道具。保留既有 SmallProp 分類，與貓咪服裝、貓咪耳尾各算獨立禮包，未改估價係數。
 
 「貓貓套裝／貓貓禮包／貓咪套組」辨識為 2022 Cat Costume Pack 的貓咪面具（`QeNQhxg3mv`）與貓咪斗篷（`pG1_D61KMT`）。依[台灣玩家活動影片](https://www.youtube.com/watch?v=KfZvLnMvnT0)、既有交易文案及 SkyGame-Data 1.3.10 的 `OWK46yMzBT` 與返場禮包完整成員核對。套組僅作搜尋群組，單件顯示名不變；兩件共計一包，不含另售炸毛貓道具、免費貓耳髮型或 2025 貓咪耳尾組。重複出現套組名與單件名不得重複計包。
