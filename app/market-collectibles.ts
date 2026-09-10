@@ -230,7 +230,7 @@ const standardPaidProfiles = defineProfiles(
   },
   [
     ["Feathery Lash Mask", "羽睫面具"],
-    ["Winter Feast Snowglobe", "宴會雪景球"],
+    ["Winter Feast Snowglobe", "雪花水晶球", undefined, ["宴會雪景球", "冬日宴會雪景球", "聖誕水晶球", "水晶球"]],
     ["Fledgling Harp", "雛鳥豎琴"],
     ["Rhythm Guitar", "音韻吉他", undefined, ["節奏吉他"]],
     ["Triumph Handpan", "凱旋手碟"],

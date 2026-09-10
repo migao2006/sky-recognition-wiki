@@ -5,6 +5,22 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("snowglobe player terms preserve the paid prop and old search names", () => {
+  for (const term of ["雪花水晶球", "聖誕水晶球", "水晶球", "宴會雪景球", "冬日宴會雪景球"]) {
+    const candidates = resolver.resolve(term).candidates;
+    assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order, i.type, i.collection]),
+      [["4i2CdmSgmX", 1893, 5800, "SmallProp", "days-of-feast"]]);
+    assert.equal(catalog.zhItemName(candidates[0]), "雪花水晶球");
+    assert.equal(catalog.saleItemName(candidates[0]), "雪花水晶球");
+    assert.equal(catalog.isPaidItem(candidates[0]), true);
+    assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
+  }
+  assert.equal(resolver.scan("雪花水晶球｜水晶球｜宴會雪景球").matched.length, 1);
+  for (const term of ["水晶燈球", "紫水晶擺飾", "雪花頭飾"]) {
+    assert.ok(!resolver.scan(term).matched.some(m => m.candidates.some(i => i.guid === "4i2CdmSgmX")));
+  }
+});
+
 test("bloom tea tables use reviewed player names without inferring generic seating counts", () => {
   for (const [guid, name, oldName, explicit, id, order] of [
     ["sTIyha_lg1", "櫻花茶桌", "粉紅色花憩茶具", "櫻花雙人茶桌", 1766, 3600],

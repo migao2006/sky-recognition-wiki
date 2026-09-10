@@ -335,8 +335,14 @@
     {
       "guid": "4i2CdmSgmX",
       "name": "Winter Feast Snowglobe",
-      "playerName": "冬日宴會雪景球",
-      "aliases": [],
+      "playerName": "雪花水晶球",
+      "aliases": [
+        "宴會雪景球",
+        "冬日宴會雪景球",
+        "聖誕水晶球",
+        "水晶球"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:H4HSEWVLK4",
       "packageName": "Feast Snow Globe",
       "paid": true,

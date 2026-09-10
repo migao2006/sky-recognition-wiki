@@ -1,6 +1,7 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "4i2CdmSgmX": { "playerName": "雪花水晶球", "aliases": ["宴會雪景球", "冬日宴會雪景球", "聖誕水晶球", "水晶球"] },
     "sTIyha_lg1": { "playerName": "櫻花茶桌", "aliases": ["粉紅色花憩茶具", "櫻花雙人茶桌"] },
     "l6GE013zrh": { "playerName": "紫藤花茶桌", "aliases": ["紫色花憩茶具", "紫藤花茶具", "紫藤花三人茶桌"] },
     "nz4W7amLch": { "playerName": "炸毛貓", "aliases": ["炸毛貓貓", "炸毛貓玩偶", "貓咪使魔"] },
