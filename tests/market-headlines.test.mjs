@@ -101,6 +101,22 @@ test("binding shorthand plus simple-account title is usable without GUIDs or bin
   assert.equal(group.packages[0].package_tier, "unknown");
 });
 
+test("Two Embers chapter-one aliases retain separate markets without inventing wardrobe details", () => {
+  const report = buildMarketHeadlineReport([
+    listing({ title: "雙星季：暮星篇起少禮號" }),
+    listing({ title: "双星季:暮星篇起少礼号", currency_original: "CNY", market_scope: "cn" }),
+  ]);
+  assert.equal(report.eligible_rows, 2);
+  assert.equal(report.markets.length, 2);
+  assert.deepEqual(new Set(report.markets.map(m => m.currency)), new Set(["TWD", "CNY"]));
+  for (const market of report.markets) {
+    assert.equal(market.binding_class, "unknown");
+    assert.equal(market.season_breaks[0].season, "two-embers-part-1");
+    assert.equal(market.season_breaks[0].break_class, "unknown");
+    assert.equal(market.season_breaks[0].packages[0].package_tier, "seller:few");
+  }
+});
+
 test("reviewed earlier partial graduation can resolve a later headline season", () => {
   const base = { title: "魔法無斷綁全出", start_season_slug: "rhythm", start_season_confidence: "structured", season_progress: { rhythm: "1/2", enchantment: "complete" } };
   const report = buildMarketHeadlineReport([listing(base)]);

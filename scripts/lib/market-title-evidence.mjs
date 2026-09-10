@@ -29,7 +29,7 @@ const seasonAliases = [
   ["moomin", ["姆明"]],
   ["radiance", ["染色", "彩染"]],
   ["blue-bird", ["青鳥", "青鸟"]],
-  ["two-embers-part-1", ["暮星"]],
+  ["two-embers-part-1", ["雙星季:暮星篇", "双星季:暮星篇", "雙星季暮星篇", "双星季暮星篇", "暮星篇", "暮星"]],
   ["migration", ["遷徙", "迁徙", "遷徒", "遷途"]],
   ["lightmending", ["織光", "织光"]],
   ["carnival", ["狂歡", "狂欢"]],

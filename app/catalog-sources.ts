@@ -41,6 +41,7 @@ export const seasonSearchAliases: Record<string, readonly string[]> = {
   passage: ["夜", "夜行"],
   moments: ["時光", "拾光"],
   "nine-colored-deer": ["彩鹿"],
+  "two-embers-part-1": ["雙星季", "双星季", "雙星季：暮星篇", "双星季：暮星篇", "暮星篇"],
   migration: ["遷徒", "遷徙"],
 };
 export const eventZh: Record<string, string> = {

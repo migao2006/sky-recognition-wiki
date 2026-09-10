@@ -109,6 +109,16 @@ test("explicit package upper limits retain zero-to-bound evidence, never exact c
   }
 });
 
+test("Two Embers part-one full names preserve account versus season-pass context", () => {
+  for (const name of ["雙星季：暮星篇", "双星季:暮星篇", "雙星季暮星篇", "暮星篇"]) {
+    assert.equal(extractMarketTitleEvidence(`${name}起少禮號`).startSeasonSlug, "two-embers-part-1");
+    for (const suffix of ["季卡少禮號", "斗篷少禮號", "面具少禮號"])
+      assert.equal(extractMarketTitleEvidence(`${name}${suffix}`).startSeasonSlug, null);
+  }
+  for (const title of ["雙星動畫", "雙星第二篇起少禮號", "雙星季第二部起少禮號", "雙星季：暮星篇起｜遷徙起少禮號"])
+    assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null);
+});
+
 test("alternate season names provide the same account evidence without changing market identity", () => {
   // Taiwan player usage: dcard.tw/f/sky/p/256115646 (Duets),
   // dcard.tw/f/sky/p/257795105 (Radiance); other aliases also used by source audit.

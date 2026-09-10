@@ -320,6 +320,9 @@ test("player season shorthand is searchable without replacing standard season la
     ["rhythm", "音韻", "音韻季"],
     ["nine-colored-deer", "彩鹿", "九色鹿季"],
     ["migration", "遷徒", "遷徙季"],
+    ["two-embers-part-1", "雙星季", "暮星季"],
+    ["two-embers-part-1", "双星季：暮星篇", "暮星季"],
+    ["two-embers-part-1", "暮星篇", "暮星季"],
   ]) {
     const entry = wikiItems.find(
       (candidate) => candidate.collection === collection && allClosetTypeSet.has(candidate.type),
