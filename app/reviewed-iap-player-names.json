@@ -1,6 +1,7 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "6T4gsS3ZUX": { "playerName": "雪人頭飾", "aliases": ["雪孩配件"] },
     "4i2CdmSgmX": { "playerName": "雪花水晶球", "aliases": ["宴會雪景球", "冬日宴會雪景球", "聖誕水晶球", "水晶球"] },
     "sTIyha_lg1": { "playerName": "櫻花茶桌", "aliases": ["粉紅色花憩茶具", "櫻花雙人茶桌"] },
     "l6GE013zrh": { "playerName": "紫藤花茶桌", "aliases": ["紫色花憩茶具", "紫藤花茶具", "紫藤花三人茶桌"] },
@@ -31,8 +32,8 @@
     "ARZC1Eg2jx": { "playerName": "蜘蛛頭", "aliases": ["蜘蛛龐克", "惡作劇蜘蛛飛機頭"] },
     "-ZIWymGtlX": { "playerName": "紫水晶頭飾", "aliases": ["愛之慶典紫水晶頭飾"] },
     "6Kn8VMa4go": { "playerName": "泡沫斗", "aliases": ["海洋泡沫斗篷"] },
-    "8aWnwc3_C6": { "playerName": "冬日筒帽", "aliases": ["蓬鬆冬日筒帽"] },
-    "aoUa2jtXfL": { "playerName": "冬日腿套", "aliases": ["蓬鬆冬日腿套"] },
+    "8aWnwc3_C6": { "playerName": "粉色毛毛帽", "aliases": ["冬日筒帽", "蓬鬆冬日筒帽"] },
+    "aoUa2jtXfL": { "playerName": "粉色襪子", "aliases": ["冬日腿套", "蓬鬆冬日腿套"] },
     "e8qFeoyXxK": { "playerName": "花朵髮飾", "aliases": ["花朵髮型配件"] },
     "EMG3a7883l": { "playerName": "泡沫靴", "aliases": ["海洋泡沫靴"] },
     "EocwmiV_Vf": { "playerName": "海浪面具", "aliases": ["海洋海浪面具"] },

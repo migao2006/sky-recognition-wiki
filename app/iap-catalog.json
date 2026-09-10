@@ -458,8 +458,11 @@
     {
       "guid": "6T4gsS3ZUX",
       "name": "Snowkid Accessory",
-      "playerName": "雪孩配件",
-      "aliases": [],
+      "playerName": "雪人頭飾",
+      "aliases": [
+        "雪孩配件"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:S4K4JiRvmZ",
       "packageName": "Snowkid Accessory",
       "paid": true,
@@ -514,8 +517,9 @@
     {
       "guid": "8aWnwc3_C6",
       "name": "Fluffy Winter Pillbox Hat",
-      "playerName": "冬日筒帽",
+      "playerName": "粉色毛毛帽",
       "aliases": [
+        "冬日筒帽",
         "蓬鬆冬日筒帽",
         "蓬鬆冬日筒帽帽子"
       ],
@@ -704,8 +708,9 @@
     {
       "guid": "aoUa2jtXfL",
       "name": "Fluffy Winter Leg Warmer",
-      "playerName": "冬日腿套",
+      "playerName": "粉色襪子",
       "aliases": [
+        "冬日腿套",
         "蓬鬆冬日腿套",
         "蓬鬆冬日腿部保暖"
       ],

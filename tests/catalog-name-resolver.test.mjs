@@ -5,6 +5,26 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("Taiwan winter names preserve item identity, old search and shared package", async () => {
+  const iaps = JSON.parse(await readFile(new URL("../app/iap-catalog.json", import.meta.url), "utf8")).items;
+  for (const [guid, id, order, name, type, display, oldName, packageKey] of [
+    ["6T4gsS3ZUX", 2921, 6300, "Snowkid Accessory", "HairAccessory", "雪人頭飾", "雪孩配件", "iap:S4K4JiRvmZ"],
+    ["8aWnwc3_C6", 2914, 5200, "Fluffy Winter Pillbox Hat", "HairAccessory", "粉色毛毛帽", "冬日筒帽", "iap:3PMpLqW_rH"],
+    ["aoUa2jtXfL", 2922, 2300, "Fluffy Winter Leg Warmer", "Shoes", "粉色襪子", "冬日腿套", "iap:3PMpLqW_rH"],
+  ]) {
+    for (const term of [display, oldName]) {
+      const items = resolver.resolve(term).candidates;
+      assert.deepEqual(items.map(i => [i.guid, i.id, i.order, i.name, i.type]), [[guid, id, order, name, type]]);
+      assert.equal(catalog.zhItemName(items[0]), display);
+      assert.equal(catalog.saleItemName(items[0]), display);
+      assert.equal(catalog.isPaidItem(items[0]), true);
+    }
+    assert.equal(resolver.scan(`${display}｜${oldName}`).matched.length, 1);
+    assert.equal(resolver.scan(`沒有${display}`).matched.length, 0);
+    assert.equal(iaps.find(i => i.guid === guid).packageKey, packageKey);
+  }
+});
+
 test("quilted winter cape aliases preserve the separate paid cape", () => {
   const terms = ["冬日絎縫斗篷", "暖冬夾棉斗篷", "暖冬夹棉斗篷", "暖冬夾棉斗蓬", "暖冬夹棉斗蓬"];
   for (const term of terms) {

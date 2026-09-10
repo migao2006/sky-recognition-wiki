@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+2025 盛宴物品依[台灣玩家介紹](https://www.dcard.tw/f/sky/p/260451962)改用「雪人頭飾／粉色毛毛帽／粉色襪子」，舊名「雪孩配件／冬日筒帽／冬日腿套」保留搜尋。SkyGame-Data 1.3.10 核對：`6T4gsS3ZUX` 為獨立 IAP `S4K4JiRvmZ`；`8aWnwc3_C6` 與 `aoUa2jtXfL` 同屬 `3PMpLqW_rH`，仍計同一包，不混入免費毛毛冬裝或雪人魔法。
+
 私人文案重播會將獨立「實體徽章／實體 STAR 徽章」標題下、到下一空白行為止的清單隔離，不拿來辨識衣櫃 GUID、綁定或資源。輸出 `physical_collectibles_present` 及缺漏標記 `physical_collectibles_scope`，保留未拆價的不完整性；此規則不自行斷定合售或自動排除市場資料，也不把單純「GG 綁全出」後的清單猜成徽章。正常衣櫃中的「大傘」別名仍保留。
 
 最新校準來源改為 `work/market-research-2026-09-10/physical-reviewed-calibration.jsonl`：由前一份 `tw-reviewed-calibration.jsonl` 保留全部 446 列，只將一筆無法拆出實體徽章價格的混合報價標為排除。以 `node scripts/audit-valuation-source.mjs --as-of=2026-09-10 work/market-research-2026-09-10/physical-reviewed-calibration.jsonl` 重建，目前有效 393、排除 50、探索校準 350、舊式保留組 43、有效 Drive 108 筆；以下較早統計是歷史紀錄。原始季節統計價格帶不變，但前端混合推導的音韻中位數 56,200 → 54,200、上限 67,000 → 65,300，其餘季節低／中／高不變。百禮乘數 1.189 → 1.207 是相同算法重算結果，不是手動加價；狀態仍為 `unvalidated`，不得稱成交驗證或盲測通過。

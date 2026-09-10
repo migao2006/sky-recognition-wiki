@@ -95,8 +95,8 @@ test("uses reviewed player terms instead of generated IAP translations", () => {
   for (const [guid, expected] of [
     ["-ZIWymGtlX", "紫水晶頭飾"],
     ["6Kn8VMa4go", "泡沫斗"],
-    ["8aWnwc3_C6", "冬日筒帽"],
-    ["aoUa2jtXfL", "冬日腿套"],
+    ["8aWnwc3_C6", "粉色毛毛帽"],
+    ["aoUa2jtXfL", "粉色襪子"],
     ["e8qFeoyXxK", "花朵髮飾"],
     ["EMG3a7883l", "泡沫靴"],
     ["EocwmiV_Vf", "海浪面具"],
