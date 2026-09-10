@@ -5,6 +5,27 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("bloom tea tables use reviewed player names without inferring generic seating counts", () => {
+  for (const [guid, name, oldName, explicit, id, order] of [
+    ["sTIyha_lg1", "櫻花茶桌", "粉紅色花憩茶具", "櫻花雙人茶桌", 1766, 3600],
+    ["l6GE013zrh", "紫藤花茶桌", "紫色花憩茶具", "紫藤花三人茶桌", 1771, 3800],
+  ]) {
+    for (const term of [name, oldName, explicit]) {
+      const candidates = resolver.resolve(term).candidates;
+      assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order]), [[guid, id, order]]);
+      assert.equal(catalog.zhItemName(candidates[0]), name);
+      assert.equal(catalog.saleItemName(candidates[0]), name);
+      assert.equal(catalog.isPaidItem(candidates[0]), true);
+    }
+    assert.equal(resolver.scan(`${name}｜${oldName}｜${explicit}`).matched.length, 1);
+    assert.equal(resolver.scan(`沒有${explicit}`).matched.length, 0);
+  }
+  for (const term of ["雙人茶几", "三人茶桌"]) {
+    assert.equal(resolver.scan(term).matched.length, 0);
+    assert.equal(resolver.scan(term).groups.length, 0);
+  }
+});
+
 test("deer cape shorthand cannot silently become a season ultimate", () => {
   const scan = resolver.scan("九色鹿斗");
   assert.equal(scan.matched.length, 0);

@@ -1946,8 +1946,13 @@
     {
       "guid": "l6GE013zrh",
       "name": "Purple Bloom Teaset",
-      "playerName": "紫色花憩茶具",
-      "aliases": [],
+      "playerName": "紫藤花茶桌",
+      "aliases": [
+        "紫色花憩茶具",
+        "紫藤花茶具",
+        "紫藤花三人茶桌"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:HQNwM6uvpQ",
       "packageName": "Purple Bloom Teaset",
       "paid": true,
@@ -2599,8 +2604,12 @@
     {
       "guid": "sTIyha_lg1",
       "name": "Pink Bloom Teaset",
-      "playerName": "粉紅色花憩茶具",
-      "aliases": [],
+      "playerName": "櫻花茶桌",
+      "aliases": [
+        "粉紅色花憩茶具",
+        "櫻花雙人茶桌"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:15aenJbpNM",
       "packageName": "Pink Bloom Teaset",
       "paid": true,

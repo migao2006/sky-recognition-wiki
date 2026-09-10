@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+花憩兩款付費茶具使用「櫻花茶桌」「紫藤花茶桌」，保留粉紅色／紫色花憩茶具舊名，並支援帶系列的「櫻花雙人茶桌／紫藤花三人茶桌」。名稱依既有玩家別名、[2021 櫻花茶桌介紹](https://www.9game.cn/skygy/5057027.html)及[台灣玩家紫藤花茶桌介紹](https://www.youtube.com/watch?v=hNR1z9_iIrc)，身分以 SkyGame-Data 1.3.10 的 `sTIyha_lg1`／`l6GE013zrh`、ID 1766／1771、原始 Furniture、order 3600／3800、精確圖示與首次／返場單件 IAP 核對；runtime 衣櫃分類維持 LargeProp。不引入中國服價格。裸稱「雙人茶几／三人茶桌」不自動配到花憩禮包，避免混入其他季節茶桌；禮包附帶的 35 蠟燭也不代表帳號目前資源，不能加入估價資源欄。
+
 九色鹿畢業斗（`gLB3Tnn8mb`）與付費聯動斗（`BTogmcHcr5`）不再共用顯示／分享短名。「九色鹿斗」保留兩者候選，不再單憑泛稱加入畢業禮；明寫「九色鹿畢業斗／九色鹿終極斗篷」或「異彩蓮花斗」仍唯一辨識。依 SkyGame-Data 1.3.10 的 ID 2034／2047、Ultimate／Limited、order 9100／9500、不同圖示與聯動單件禮包 `lISB28039d` 核對；[繁體交易用語](https://www.8591.com.hk/mall/detail/51274180)亦把「九色鹿斗」放在禮包收藏中。這只修名稱與還原身分，不以該刊登價格校準模型。
 
 「線框斗／線框斗篷」保留為 SkyFest（`meld4SQL8l`）與 TGC（`8l3QuiKC_8`）兩款的歧義搜尋詞，不作套組或自動加入任一件；「天空線框斗／五週年斗篷」與「TGC線框斗」仍各自唯一辨識。身分核對 SkyGame-Data 1.3.10 的 ID 2229／2658、Cape、order 14800／14900、不同圖示與獨立單件禮包；[官方更新說明](https://thatgamecompany.helpshift.com/hc/zh-hant/17-sky-children-of-the-light/faq/1398-patch-notes---may-29-2025---0-29-5-325756-android-huawei-ios-playstation-steam-switch/)亦分列兩款，[台灣玩家六週年介紹](https://www.dcard.tw/f/sky/p/259260519)明確指出與五週年款不同。只補名稱辨識，不變更物品身分或估價係數。
@@ -197,8 +199,6 @@ Fortune Muralist's Smock（`ADJiva5H2Z`）使用玩家短名「祥雲褲」顯�
 渠道分析共用 `market-channel.mjs`：淘手遊採集列未提供 `channel` 時，讀取來源明確的 `client`（安卓官方、蘋果官方、華為、B服、OPPO、小米、vivo），同時用於季節比例與標題行情報告。既有 `channel` 優先，不從標題或其他來源的 `client` 猜配；未識別渠道仍保留 unknown，不排除整列。
 
 私人 GUID 重播同時接受正數 `price_twd` 單一售價及完整 `price_twd_low/high` 價格區間；單價優先，統一輸出比較上下限。缺價、單邊區間或無效區間仍保留物品與帳號證據，但標為 `no-price`，不計入有價比較，也不把未知價格算成零。
-
-花憩茶具保留原顯示名，Pink Bloom Teaset（`sTIyha_lg1`）補「櫻花茶桌」，Purple Bloom Teaset（`l6GE013zrh`）補「紫藤花茶桌／紫藤花茶具」。依[2021 櫻花茶桌介紹](https://www.9game.cn/skygy/5057027.html)與[2022 玩家活動介紹](https://www.youtube.com/watch?v=hNR1z9_iIrc)，核對 catalog 的年份、GUID、LargeProp 與付費身分；不引入中國服價格。「雙人茶几／三人茶桌」等泛稱未直接綁定，避免與其他活動及季節茶桌錯配。
 
 GUID 重播保留已核對的 `paid_package_min/max`，輸出 `declared_paid_range` 與扣除已辨識唯一禮包後的 `unresolved_declared_paid_range`。未知上界仍為 null，僅供漏讀診斷；不補 GUID、不轉成精確包數、不據此宣告衣櫃完整或調高估價。
 
