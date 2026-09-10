@@ -4,6 +4,21 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("jeans player aliases preserve one paid outfit and do not match cowboy hats", () => {
+  for (const term of ["牛仔褲", "牛仔長褲", "牛仔垮褲", "闊腿牛仔", "闊腿牛仔褲", "時尚寬型腿部牛仔褲"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["E7RAu04_xI"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [1841, 5800, "Style Wide-Leg Jeans", "Outfit", "days-of-style"]);
+    assert.equal(catalog.zhItemName(item), "闊腿牛仔褲");
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("牛仔長褲｜牛仔垮褲｜闊腿牛仔").matched.length, 1);
+  assert.equal(resolver.scan("沒有牛仔長褲").matched.length, 0);
+  assert.ok(!resolver.scan("牛仔帽").matched.some(match => match.candidates.some(item => item.guid === "E7RAu04_xI")));
+});
+
 test("Alice player names distinguish the dress, hair bow and complete set", () => {
   for (const [term, guid, id, order, type, display] of [
     ["愛麗絲裙裝", "tSAl1nV-qo", 2416, 6300, "Outfit", "愛麗絲裙"],
