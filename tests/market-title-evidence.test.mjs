@@ -92,6 +92,14 @@ test("verbal lower bounds preserve unknown upper limits and respect negation", (
 });
 
 test("explicit package upper limits retain zero-to-bound evidence, never exact counts", () => {
+  for (const title of ["禮包80個以下", "禮包80以下", "礼包：８０个以内", "禮包 80 以內"]) {
+    assert.deepEqual(extractMarketPackageRange(title), { min: 0, max: 80 }, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
+  for (const title of ["不是禮包80個以下", "約禮包80個以下", "禮包80個以下左右", "禮包80以下｜90禮", "禮包80元以下", "禮包80件以下", "禮包80-90以下", "禮包1000個以下"]) {
+    assert.equal(extractMarketPackageRange(title), null, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
   for (const title of ["最多50禮+900蠟", "千翼+最多50禮"]) {
     assert.deepEqual(extractMarketPackageRange(title), { min: 0, max: 50 }, title);
     assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);

@@ -90,7 +90,10 @@ const breakClassForTitle = (text) => {
   return unique(matches).length === 1 ? matches[0] : null;
 };
 
-const normalizedPackageText = (value) => normalizedTitle(value)
+const normalizedUpperPackageText = (value) => normalizedTitle(value)
+  .replace(/(?:禮包|礼包):?(\d+)(?:個|个)?(以下|以內|以内)/gu, "$1禮包$2");
+
+const normalizedPackageText = (value) => normalizedUpperPackageText(value)
   .replace(/(?:禮包|礼包)(?:共計|共计|總共|总共|共):?(?=\d)/gu, "禮包")
   .replace(/(?:禮包|礼包):(?=\d)/gu, "禮包")
   .replace(/(?:禮包|礼包)(\d+)(?:個|个)?以上/gu, "$1+禮包")
@@ -130,7 +133,7 @@ const explicitPackageCountFor = (value) => {
 };
 
 const upperPackageRange = (value) => {
-  const text = normalizedTitle(value);
+  const text = normalizedUpperPackageText(value);
   const matches = [...text.matchAll(/(不到|不滿|不满|未滿|未满|少於|少于|最多|至多|不超過|不超过)(\d+)(?:個|个)?(?:禮包|礼包|禮|礼)(?!包|物|拜|金|盒|服|券|品|炮)|(?<![\d.\-~～至到+])(\d+)(?:個|个)?(?:禮包|礼包|禮|礼)(以下|以內|以内)/gu)];
   if (matches.length !== 1) return null;
   const match = matches[0];
