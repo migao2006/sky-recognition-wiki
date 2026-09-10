@@ -14,6 +14,32 @@ const script = fileURLToPath(
   new URL("../scripts/reconstruct-drive-valuations.mjs", import.meta.url),
 );
 
+test("replay summary averages even middle values rather than taking the lower value", async () => {
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const paths = ["documents", "market", "output", "summary"].map(label => new URL(`replay-median-${id}-${label}.jsonl`, work));
+  const [documents, market, output, summary] = paths;
+  try {
+    const contents = ["雪人頭飾", "蓬鬆冬裝｜雪人頭飾｜祥雲褲"];
+    await writeFile(documents, contents.map((content, index) => JSON.stringify({ post_hash: `median-${index}`, content })).join("\n"));
+    await writeFile(market, contents.map((_, index) => JSON.stringify({ post_hash: `median-${index}`, price_twd: 10000 + index * 10000, price_kind: "ask" })).join("\n"));
+    await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
+    const rows = (await readFile(output, "utf8")).trim().split(/\r?\n/).map(JSON.parse);
+    const report = JSON.parse(await readFile(summary, "utf8"));
+    assert.deepEqual(rows.map(row => row.owned_guids.length), [1, 4]);
+    assert.equal(report.guid_count.median, 2.5);
+    assert.equal(report.name_resolution.text_guid_median, 2.5);
+    const gaps = rows.map(row => row.listing_interval_gap);
+    assert.ok(gaps.every(Number.isFinite));
+    assert.notEqual(gaps[0], gaps[1]);
+    assert.equal(report.all_partial_reconstructions.listing_interval_gap_median, (gaps[0] + gaps[1]) / 2);
+    assert.equal(report.by_price_kind_all_partial.ask.listing_interval_gap_median, (gaps[0] + gaps[1]) / 2);
+    assert.equal(report.paid_count_covered_exploration.listing_interval_gap_median, null);
+  } finally {
+    await Promise.all(paths.map(path => rm(path, { force: true })));
+  }
+});
+
 test("winter set replay expands two items but counts one paid package", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();

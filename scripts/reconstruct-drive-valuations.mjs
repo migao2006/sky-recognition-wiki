@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 import { loadValuationRuntime } from "./load-valuation-runtime.mjs";
-import { positivePriceNumber, seasonProgressParts } from "./lib/valuation-source-core.mjs";
+import { positivePriceNumber, seasonProgressParts, unweightedQuantile as quantile } from "./lib/valuation-source-core.mjs";
 import {
   bindingsForStatus,
   extractCompleteBindings,
@@ -50,11 +50,6 @@ const assertPrivatePath = (path, label) => {
 const lines = (text) => text.split(/\r?\n/u).filter(Boolean).map(JSON.parse);
 const hashTerm = (term) =>
   createHash("sha256").update(term).digest("hex").slice(0, 16);
-const quantile = (values, ratio) => {
-  if (!values.length) return null;
-  const sorted = [...values].sort((left, right) => left - right);
-  return sorted[Math.floor((sorted.length - 1) * ratio)];
-};
 const isCompleteProgress = (value) => {
   const parts = seasonProgressParts(value);
   return Boolean(parts && Number.isSafeInteger(parts.expected) &&
