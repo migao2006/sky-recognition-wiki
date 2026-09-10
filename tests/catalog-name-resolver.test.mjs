@@ -4,6 +4,23 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("dark rainbow pants aliases do not imply Prophet of Fire pants", () => {
+  for (const term of ["暗彩褲", "暗彩武士褲", "彩虹武士褲", "黑彩虹服裝"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(item => item.guid), ["9ETwx3n-UZ"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [1813, 3900, "Dark Rainbow Tunic", "OutfitShoes", "days-of-rainbow"]);
+    assert.equal(catalog.isPaidItem(item), true);
+    assert.deepEqual(resolver.scan(term).matched.flatMap(m => m.candidates.map(i => i.guid)), ["9ETwx3n-UZ"]);
+  }
+  assert.deepEqual(resolver.resolve("武士褲").candidates.map(i => i.guid), ["V9HhQcek_9"]);
+  assert.deepEqual(resolver.scan("暗彩武士褲｜武士褲").matched.flatMap(m => m.candidates.map(i => i.guid)).sort(),
+    ["9ETwx3n-UZ", "V9HhQcek_9"].sort());
+  assert.equal(resolver.scan("暗彩褲｜彩虹武士褲｜暗彩武士褲").matched.length, 1);
+  assert.equal(resolver.scan("沒有暗彩武士褲").matched.length, 0);
+});
+
 test("jeans player aliases preserve one paid outfit and do not match cowboy hats", () => {
   for (const term of ["牛仔褲", "牛仔長褲", "牛仔垮褲", "闊腿牛仔", "闊腿牛仔褲", "時尚寬型腿部牛仔褲"]) {
     const match = resolver.resolve(term);

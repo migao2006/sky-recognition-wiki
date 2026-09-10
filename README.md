@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+Dark Rainbow Tunic（`9ETwx3n-UZ`）補「暗彩褲／暗彩武士褲／彩虹武士褲」搜尋，保留「黑彩虹服裝」顯示名。依[玩家兩種武士褲對照](https://www.bilibili.com/video/BV1Fk4y1W7Mc/)、[暗彩稱呼](https://www.douyin.com/video/7636084206359927163)及 SkyGame-Data 1.3.10 的 ID 1813、OutfitShoes、order 3900、精確圖示與單件付費禮包核對。中國社群僅作別名參考；不引入中國服售價，亦不將長名稱中的「武士褲」另配到 Prophet of Fire Outfit（`V9HhQcek_9`），或補成預言季畢業。
+
 Style Wide-Leg Jeans（`E7RAu04_xI`）保留「闊腿牛仔褲」顯示名，補「牛仔褲／牛仔長褲／牛仔垮褲／闊腿牛仔」搜尋。參考[台灣玩家時尚日影片](https://www.youtube.com/watch?v=jysLiC769io)、[活動整理](https://www.dcard.tw/f/sky/p/256819080)與既有交易文案，並核對 SkyGame-Data 1.3.10 的 Outfit、ID 1841、order 5800、圖示及首次／返場單件禮包；不與牛仔帽或其他褲裝合併，不改付費身分或估價係數。
 
 愛麗絲聯動的兩件付費服飾顯示為「愛麗絲裙」「愛麗絲蝴蝶結」，保留報春花舊名搜尋；用語與成員依[台灣玩家活動介紹](https://www.dcard.tw/f/sky/p/257565037)及 SkyGame-Data 1.3.10 的 `Wonderland Primose Pinafore Set` 核對，首次／返場禮包皆為 `tSAl1nV-qo`（Outfit）與 `fLbULqwumS`（HairAccessory）兩件。「愛麗絲套裝」才作整組辨識；「愛麗絲裙裝／愛麗絲裙子」只指裙子，不自動補髮飾。兩件共計一包，不包含另售咖啡廳傳送門，保留 GUID、ID、order 及原始圖示。
