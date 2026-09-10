@@ -144,6 +144,14 @@ test("prefix package intervals reach the report as ranges", () => {
   assert.deepEqual(group.package_differences, []);
 });
 
+test("over-count package evidence stays in a lower-bound report cohort", () => {
+  const rows = [1000, 1200, 1400].map(price => listing({ title: "緬懷起無斷禮包60多", price_original: price }));
+  const group = buildMarketHeadlineReport(rows).markets[0].season_breaks[0];
+  assert.deepEqual(group.packages.map(x => x.package_tier), ["range:61+"]);
+  assert.equal(group.packages[0].sample_count, 3);
+  assert.deepEqual(group.package_differences, []);
+});
+
 test("retains package bounds as distinct cohorts without exact-count premiums", () => {
   const rows = ["60+禮", "百禮", "60～80禮", "60禮"].flatMap(label =>
     [1000, 1200, 1400].map(price => listing({ title: `緬懷起無斷${label}`, price_original: price })));

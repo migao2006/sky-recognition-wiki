@@ -1,6 +1,30 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+test("package totals and over-count phrasing retain exact versus bounded evidence", () => {
+  for (const label of ["禮包共80", "禮包共計：80", "礼包总共80", "禮包總共８０"]) {
+    assert.equal(extractMarketTitleEvidence(label).paidPackageCount, 80, label);
+    assert.equal(extractMarketPackageRange(label), null, label);
+  }
+  for (const label of ["禮包共計80以上", "禮包總共80個以上"]) {
+    assert.equal(extractMarketTitleEvidence(label).paidPackageCount, null, label);
+    assert.deepEqual(extractMarketPackageRange(label), { min: 80, max: null }, label);
+  }
+  for (const label of ["禮包60多", "禮包60餘", "礼包60余", "60多禮", "60餘個禮包", "60余个礼包", "禮包共計60多"]) {
+    assert.equal(extractMarketTitleEvidence(label).paidPackageCount, null, label);
+    assert.deepEqual(extractMarketPackageRange(label), { min: 61, max: null }, label);
+    assert.equal(extractMarketTitleEvidence(`魔法起${label}`).startSeasonSlug, "enchantment");
+  }
+  for (const label of ["不是60多禮", "約禮包60多", "禮包60餘左右", "60多禮｜80禮", "999多禮", "禮包999多", "禮包60多元", "禮包共80元", "礼包共计80rmb", "禮包60-80多", "60到80多禮", "禮包60多-80", "禮包60多到80", "禮包60餘至80", "禮包共80台幣", "禮包共80港幣", "禮包共80人民幣"]) {
+    assert.equal(extractMarketTitleEvidence(label).paidPackageCount, null, label);
+    assert.equal(extractMarketPackageRange(label), null, label);
+  }
+  for (const label of ["禮包總共80蠟燭", "禮包60餘蠟燭", "禮包共計80愛心", "禮包60多件", "禮包共80份", "60多禮物", "60多禮拜", "60餘禮金", "不是禮包共80", "非禮包總共80", "不算禮包共計80", "沒有禮包共80", "不到禮包共80"]) {
+    assert.equal(extractMarketTitleEvidence(label).paidPackageCount, null, label);
+    assert.equal(extractMarketPackageRange(label), null, label);
+  }
+});
+
 test("package formatting is accepted without treating approximate quantities as exact", () => {
   for (const label of ["80個禮包", "80个礼包", "禮包：80", "礼包:80", "８０個禮包"]) {
     assert.equal(extractMarketTitleEvidence(`魔法起${label}`).paidPackageCount, 80, label);

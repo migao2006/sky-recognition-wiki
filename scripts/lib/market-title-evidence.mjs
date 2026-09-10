@@ -91,7 +91,11 @@ const breakClassForTitle = (text) => {
 };
 
 const normalizedPackageText = (value) => normalizedTitle(value)
+  .replace(/(?:禮包|礼包)(?:共計|共计|總共|总共|共):?(?=\d)/gu, "禮包")
   .replace(/(?:禮包|礼包):(?=\d)/gu, "禮包")
+  .replace(/(?:禮包|礼包)(\d+)(?:個|个)?以上/gu, "$1+禮包")
+  .replace(/(?:禮包|礼包)(\d+)(?:多|餘|余)(?![\d禮礼])/gu, (_, count) => `${Number(count) + 1}+禮包`)
+  .replace(/(?<![\d\-~～至到])(\d+)(?:多|餘|余)(?:個|个)?(?:禮包|礼包|禮|礼)/gu, (_, count) => `${Number(count) + 1}+禮包`)
   .replace(/(?:禮包|礼包)(\d+[-~～至到]\d+)(?!\d)(?:個|个)?(?:禮包|礼包)?/gu, "$1禮包")
   .replace(/(\d\+?)(?:個|个)(?=[禮礼])/gu, "$1")
   .replace(/(?:至少|最少)(\d+)(?:禮包|礼包|禮|礼)/gu, "$1+禮包")
@@ -101,9 +105,17 @@ const normalizedPackageText = (value) => normalizedTitle(value)
 const uncertainPackageQuantity = (text) =>
   /(?:沒有|没有|不是|並非|并非|不到|不滿|不满|不足|不破|不超過|不超过|未滿|未满|未達|未达|未到|未破|最多|至多|少於|少于|低於|低于|近|約|约|非)[^｜|,，]{0,6}(?:百|\d+)[^｜|,，]{0,3}(?:禮|礼)|(?:禮|礼)(?:包)?(?:以內|以内|以下|左右|上下)|(?:禮包|礼包)\d+(?:以內|以内|以下|左右|上下)|\d+[-~～至到]\d+(?:禮包|礼包|禮|礼)以上/u.test(text);
 
+// Check before normalizing bounds, so price units and approximate interval ends
+// cannot be detached from their numbers by the formatting replacements.
+const invalidRawPackageQuantity = (value) => {
+  const text = normalizedTitle(value);
+  return /(?:禮包|礼包):?(?:共計|共计|總共|总共|共)?:?\d+(?:\.\d+)?(?:多|餘|余)?(?:元|塊|块|台幣|臺幣|台币|港幣|港币|人民幣|人民币|蠟|蜡|燭|烛|愛心|爱心|件|份|rmb|twd|cny|usd|hkd)|\d+(?:多|餘|余)?(?:個|个)?[禮礼](?:物|拜|金)|\d+[-~～至到]\d+(?:多|餘|余)|\d+(?:多|餘|余)[-~～至到]\d+/u.test(text) ||
+    /(?:沒有|没有|不是|並非|并非|不算|不到|不滿|不满|不足|不超過|不超过|未滿|未满|未達|未达|最多|至多|少於|少于|低於|低于|近|約|约|非)(?:禮包|礼包):?(?:共計|共计|總共|总共|共)?:?\d/u.test(text);
+};
+
 const explicitPackageCountFor = (value) => {
   const text = normalizedPackageText(value);
-  if (uncertainPackageQuantity(text)) return null;
+  if (uncertainPackageQuantity(text) || invalidRawPackageQuantity(value)) return null;
   // Bounded/approximate counts are useful evidence, but never exact counts.
   if (/\d+\+(?:禮|礼)|(?:禮包|礼包)\d+\+|百(?:禮|礼)|\d+[-~～至到]\d+(?:禮|礼)/u.test(text)) return null;
   const values = [
@@ -120,7 +132,7 @@ const explicitPackageCountFor = (value) => {
 export const extractMarketPackageRange = (value) => {
   const text = normalizedPackageText(value);
   // Upper bounds, approximations and negations must not become lower bounds.
-  if (uncertainPackageQuantity(text)) return null;
+  if (uncertainPackageQuantity(text) || invalidRawPackageQuantity(value)) return null;
   const matches = [...text.matchAll(/(?<!\d)(\d+)[-~～至到](\d+)(?:禮|礼)(?:包)?|(?<!\d)(\d+)\+(?:禮|礼)(?:包)?|(?:禮包|礼包)(\d+)\+|(?<![半幾几數数兩两二三四五六七八九十])(?:破)?百(?:禮|礼)(?:包)?/gu)];
   if (matches.length !== 1) return null;
   const match = matches[0];
