@@ -129,9 +129,27 @@ const explicitPackageCountFor = (value) => {
   return counts.length === 1 ? counts[0] : null;
 };
 
+const upperPackageRange = (value) => {
+  const text = normalizedTitle(value);
+  const matches = [...text.matchAll(/(不到|不滿|不满|未滿|未满|少於|少于|最多|至多|不超過|不超过)(\d+)(?:個|个)?(?:禮包|礼包|禮|礼)(?!包|物|拜|金|盒|服|券|品|炮)|(?<![\d.\-~～至到+])(\d+)(?:個|个)?(?:禮包|礼包|禮|礼)(以下|以內|以内)/gu)];
+  if (matches.length !== 1) return null;
+  const match = matches[0];
+  const before = text.slice(0, match.index);
+  const after = text.slice(match.index + match[0].length);
+  if (/(?:不是|沒有|没有|並非|并非|不算|不一定|大概|大約|大约|可能|估計|估计|應該|应该|非|約|约|近|至少|最少|超過|超过)[\p{P}\p{S}]*$/u.test(before) || /(?:[\d.\-~～至到]|\d\+)$/u.test(before) ||
+      /^(?:以上|以下|以內|以内|左右|上下|多|餘|余|[\d~～至到])/u.test(after) ||
+      /(?:至少|最少|超過|超过|不到|不滿|不满|未滿|未满|少於|少于|最多|至多|不超過|不超过)\d|(?:禮包|礼包)\D{0,6}\d|\d+(?:\+|多|餘|余)?(?:個|个)?(?:禮|礼)|百(?:禮|礼)/u.test(before + "｜" + after)) return null;
+  const count = Number(match[2] ?? match[3]);
+  const exclusive = /^(?:不到|不滿|不满|未滿|未满|少於|少于)$/u.test(match[1] ?? "");
+  const max = count - (exclusive ? 1 : 0);
+  return Number.isSafeInteger(count) && count <= 999 && max >= 0 ? { min: 0, max } : null;
+};
+
 export const extractMarketPackageRange = (value) => {
+  const upper = upperPackageRange(value);
+  if (upper) return upper;
   const text = normalizedPackageText(value);
-  // Upper bounds, approximations and negations must not become lower bounds.
+  // Remaining approximations and negations must not become lower bounds.
   if (uncertainPackageQuantity(text) || invalidRawPackageQuantity(value)) return null;
   const matches = [...text.matchAll(/(?<!\d)(\d+)[-~～至到](\d+)(?:禮|礼)(?:包)?|(?<!\d)(\d+)\+(?:禮|礼)(?:包)?|(?:禮包|礼包)(\d+)\+|(?<![半幾几數数兩两二三四五六七八九十])(?:破)?百(?:禮|礼)(?:包)?/gu)];
   if (matches.length !== 1) return null;

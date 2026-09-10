@@ -158,6 +158,18 @@ test("uses partial structured progress when titles do not identify a starting se
   assert.equal(conflict.diagnostics.title_start_conflict, 1);
 });
 
+test("upper-bound packages stay ranged without a zero-package baseline or exact-tier differences", () => {
+  const rows = ["不到80禮", "最多50禮", "少於15禮"].flatMap(label =>
+    [1000, 2000, 3000].map(price => listing({ title: `魔法起${label}`, price_original: price })));
+  const report = buildMarketHeadlineReport(rows);
+  assert.equal(report.eligible_rows, 9);
+  const group = report.markets[0].season_breaks[0];
+  assert.deepEqual(new Set(group.packages.map(item => item.package_tier)), new Set(["range:0-79", "range:0-50", "range:0-14"]));
+  assert.ok(group.packages.every(item => item.sufficient_samples));
+  assert.equal(group.no_package_baseline, false);
+  assert.deepEqual(group.package_differences, []);
+});
+
 test("formatted exact counts are usable but approximate counts do not discard the listing", () => {
   for (const [label, tier] of [["80個禮包", "80-89"], ["禮包：80", "80-89"], ["約80禮", "unknown"], ["80禮左右", "unknown"], ["禮包：60+", "range:60+"]]) {
     const report = buildMarketHeadlineReport([listing({ title: `魔法起${label}` })]);

@@ -30,7 +30,7 @@ test("package formatting is accepted without treating approximate quantities as 
     assert.equal(extractMarketTitleEvidence(`魔法起${label}`).paidPackageCount, 80, label);
   }
   assert.equal(extractMarketTitleEvidence("拾光80個禮包號").startSeasonSlug, "moments");
-  for (const label of ["約80禮", "近80個禮包", "80禮左右", "80個禮包上下", "不到80禮", "非80禮", "禮包：80左右", "不滿80禮包"]) {
+  for (const label of ["約80禮", "近80個禮包", "80禮左右", "80個禮包上下", "非80禮", "禮包：80左右"]) {
     assert.equal(extractMarketTitleEvidence(`魔法起${label}`).paidPackageCount, null, label);
     assert.equal(extractMarketPackageRange(label), null, label);
     assert.equal(extractMarketTitleEvidence(`魔法起${label}`).startSeasonSlug, "enchantment");
@@ -85,9 +85,27 @@ test("verbal lower bounds preserve unknown upper limits and respect negation", (
     assert.deepEqual(extractMarketPackageRange(title), { min: 60, max: null }, title);
     assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
   }
-  for (const title of ["不是至少60禮包", "沒有60禮以上", "不到60禮包", "約60禮以上", "至少60禮包左右", "60～80禮以上", "禮包60～80以上", "至少1000禮包", "至少60禮包｜80禮包"]) {
+  for (const title of ["不是至少60禮包", "沒有60禮以上", "約60禮以上", "至少60禮包左右", "60～80禮以上", "禮包60～80以上", "至少1000禮包", "至少60禮包｜80禮包"]) {
     assert.equal(extractMarketPackageRange(title), null, title);
     assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
+});
+
+test("explicit package upper limits retain zero-to-bound evidence, never exact counts", () => {
+  for (const title of ["最多50禮+900蠟", "千翼+最多50禮"]) {
+    assert.deepEqual(extractMarketPackageRange(title), { min: 0, max: 50 }, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+  }
+  for (const title of ["不是，不到80禮", "沒有：最多80禮", "並非「80禮以下」", "約：最多80禮", "最多80禮盒", "最多80禮服", "最多80禮券", "最多80禮品", "最多80禮炮", "60+80禮以下", "至少20但最多10禮", "超過20但最多10禮", "不到20但最多10禮", "最多10禮但至少20", "估計最多80禮", "應該不到80禮", "不是【最多80禮】"]) {
+    assert.equal(extractMarketPackageRange(title), null, title);
+  }
+  for (const [title, max] of [["不到80禮", 79], ["不滿80禮包", 79], ["不到60禮包", 59], ["未满８０个礼包", 79], ["少於15禮", 14], ["最多50禮", 50], ["至多80個禮包", 80], ["不超過80禮包", 80], ["80禮以下", 80], ["80个礼包以内", 80], ["最多0禮", 0]]) {
+    assert.deepEqual(extractMarketPackageRange(title), { min: 0, max }, title);
+    assert.equal(extractMarketTitleEvidence(title).paidPackageCount, null, title);
+    assert.equal(extractMarketTitleEvidence(`魔法起${title}`).startSeasonSlug, "enchantment");
+  }
+  for (const title of ["不到0禮", "最多1000禮", "最多80禮物", "最多80禮金", "最多80元", "不是不到80禮", "約最多80禮", "80禮以下左右", "最多80禮以上", "60～80禮以下", "最多80禮｜90禮", "不到80禮｜至少60禮", "最多80禮包左右", "未滿80+禮", "60+禮｜80禮以下", "60多個禮包｜最多80禮", "不一定最多80禮", "大概最多80禮"]) {
+    assert.equal(extractMarketPackageRange(title), null, title);
   }
 });
 

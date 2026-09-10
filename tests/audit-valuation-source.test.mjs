@@ -13,6 +13,16 @@ import {
 const script = new URL("../scripts/audit-valuation-source.mjs", import.meta.url);
 const recent = new Date().toISOString();
 
+test("upper package bounds keep season evidence and only calibrate unambiguous tiers", async () => {
+  const base = { source: "google_drive", published_at: recent, currency: "TWD", region: "international", price_twd: 6000, evidence_kind: "ask", evidence_quality: "high" };
+  const result = await audit(["不到80禮", "最多50禮", "少於15禮", "不是不到80禮", "至少20但最多10禮"].map((label, index) =>
+    ({ ...base, post_hash: `upper-${index}`, title: `魔法起${label}` })));
+  assert.equal(result.eligibleRows, 5);
+  assert.equal(result.segments.startSeason.enchantment.sampleCount, 5);
+  assert.equal(result.segments.packageTier.few.sampleCount, 1);
+  for (const tier of ["medium", "many", "hundred"]) assert.equal(result.segments.packageTier[tier].sampleCount, 0);
+});
+
 test("conflicting package quantities omit only the package dimension", async () => {
   for (const fields of [
     { paid_package_count: 20, paid_package_min: 60 },
