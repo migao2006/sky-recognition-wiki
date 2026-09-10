@@ -492,6 +492,7 @@ test("cat costume and ear-tail duo are distinct packages with deduplicated membe
   };
   assert.equal(price("貓貓套裝｜貓咪面具｜貓咪斗篷｜貓貓禮包"), 1);
   assert.equal(price("貓貓套裝｜貓咪耳尾"), 2);
+  assert.equal(price("貓貓套裝｜貓咪耳尾｜炸毛貓貓｜炸毛貓玩偶"), 3);
 });
 
 test("fortune doll set aliases reconstruct three cosmetics but one paid package", async () => {

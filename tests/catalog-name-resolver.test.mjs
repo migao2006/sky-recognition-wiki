@@ -4,6 +4,23 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("fluffy cat player names resolve the paid prop without costume members", () => {
+  for (const term of ["炸毛貓", "炸毛貓貓", "炸毛貓玩偶", "貓咪使魔"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(i => i.guid), ["nz4W7amLch"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [1869, 5600, "Feline Familiar", "SmallProp", "days-of-mischief"]);
+    assert.equal(catalog.zhItemName(item), "炸毛貓");
+    assert.equal(catalog.saleItemName(item), "炸毛貓");
+    assert.equal(catalog.isPaidItem(item), true);
+  }
+  assert.equal(resolver.scan("炸毛貓｜炸毛貓貓｜炸毛貓玩偶").matched.length, 1);
+  assert.equal(resolver.scan("沒有炸毛貓貓").matched.length, 0);
+  assert.deepEqual(resolver.scan("貓貓套裝").groups[0].candidates.map(i => i.guid).sort(),
+    ["QeNQhxg3mv", "pG1_D61KMT"].sort());
+});
+
 test("cat costume groups contain cape and mask, not the separate ear and tail duo", () => {
   for (const term of ["貓貓套裝", "貓貓禮包", "貓咪套組"]) {
     const result = resolver.scan(term);

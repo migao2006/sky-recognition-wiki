@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+Feline Familiar（`nz4W7amLch`）使用「炸毛貓」顯示與分享短名，支援「炸毛貓貓／炸毛貓玩偶」並保留舊名「貓咪使魔」。用語取自既有繁體交易文案與[玩家對炸毛貓的描述](https://www.taptap.cn/moment/342974278062313150)，身分核對 SkyGame-Data 1.3.10 的 ID 1869、Prop、order 5600、精確圖示及 `Feline Familiar Prop` 首次／返場單件禮包；[國際服活動資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Mischief/2022#Feline_Familiar_Prop)確認它是可放置的黑貓道具。保留既有 SmallProp 分類，與貓咪服裝、貓咪耳尾各算獨立禮包，未改估價係數。
+
 「貓貓套裝／貓貓禮包／貓咪套組」辨識為 2022 Cat Costume Pack 的貓咪面具（`QeNQhxg3mv`）與貓咪斗篷（`pG1_D61KMT`）。依[台灣玩家活動影片](https://www.youtube.com/watch?v=KfZvLnMvnT0)、既有交易文案及 SkyGame-Data 1.3.10 的 `OWK46yMzBT` 與返場禮包完整成員核對。套組僅作搜尋群組，單件顯示名不變；兩件共計一包，不含另售炸毛貓道具、免費貓耳髮型或 2025 貓咪耳尾組。重複出現套組名與單件名不得重複計包。
 
 Mischief Withered Broom（`8rYQfi8VP3`）統一顯示與分享短名為「飛天掃帚」，移除舊收藏顯示名「枯萎樹枝」的覆蓋，舊名與「飛行掃帚／枯萎掃帚」仍可搜尋。依[台灣玩家 2024 惡作劇活動介紹](https://www.dcard.tw/f/sky/p/257008654)及 SkyGame-Data 1.3.10 的 ID 2394、Held、order 5800、精確圖示與首次／返場單件禮包核對；保留官方 GUID 與既有 HeldProp 衣櫃映射，不改價格係數。

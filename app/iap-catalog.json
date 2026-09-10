@@ -2267,8 +2267,13 @@
     {
       "guid": "nz4W7amLch",
       "name": "Feline Familiar",
-      "playerName": "貓咪使魔",
-      "aliases": [],
+      "playerName": "炸毛貓",
+      "aliases": [
+        "炸毛貓貓",
+        "炸毛貓玩偶",
+        "貓咪使魔"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:5G4gDL_3JS",
       "packageName": "Feline Familiar Prop",
       "paid": true,
