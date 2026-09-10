@@ -480,6 +480,20 @@ test("adding later graduation items never reduces a complete starting-season acc
   }
 });
 
+test("cat costume and ear-tail duo are distinct packages with deduplicated members", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);
+  const price = text => {
+    const matches = resolver.scan(text);
+    const chosen = [...new Map([...matches.matched, ...matches.groups].flatMap(m => m.candidates.map(i => [i.guid, i]))).values()];
+    return estimateValuation({ analysis: analyzeValuation({
+      chosen, bindings: bindings(), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName },
+    }) }).marketProfile.canonicalPackageCount;
+  };
+  assert.equal(price("貓貓套裝｜貓咪面具｜貓咪斗篷｜貓貓禮包"), 1);
+  assert.equal(price("貓貓套裝｜貓咪耳尾"), 2);
+});
+
 test("fortune doll set aliases reconstruct three cosmetics but one paid package", async () => {
   const catalog = await loadRuntimeCatalog();
   const resolver = catalog.buildCatalogNameResolver(catalog.wikiItems, catalog.zhItemSearchNames);

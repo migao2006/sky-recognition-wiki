@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+「貓貓套裝／貓貓禮包／貓咪套組」辨識為 2022 Cat Costume Pack 的貓咪面具（`QeNQhxg3mv`）與貓咪斗篷（`pG1_D61KMT`）。依[台灣玩家活動影片](https://www.youtube.com/watch?v=KfZvLnMvnT0)、既有交易文案及 SkyGame-Data 1.3.10 的 `OWK46yMzBT` 與返場禮包完整成員核對。套組僅作搜尋群組，單件顯示名不變；兩件共計一包，不含另售炸毛貓道具、免費貓耳髮型或 2025 貓咪耳尾組。重複出現套組名與單件名不得重複計包。
+
 Mischief Withered Broom（`8rYQfi8VP3`）統一顯示與分享短名為「飛天掃帚」，移除舊收藏顯示名「枯萎樹枝」的覆蓋，舊名與「飛行掃帚／枯萎掃帚」仍可搜尋。依[台灣玩家 2024 惡作劇活動介紹](https://www.dcard.tw/f/sky/p/257008654)及 SkyGame-Data 1.3.10 的 ID 2394、Held、order 5800、精確圖示與首次／返場單件禮包核對；保留官方 GUID 與既有 HeldProp 衣櫃映射，不改價格係數。
 
 Days Of Love Amethyst Accessory（`-ZIWymGtlX`）補「紫晶髮箍／紫水晶髮箍」搜尋，保留「紫水晶頭飾」顯示名。依既有交易文案、公開繁體交易搜尋中的「紫水晶髮箍」用法、[國際服活動資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2025#Days_of_Love_Amethyst_Accessory)及 SkyGame-Data 1.3.10 的 ID 2517、HairAccessory、order 7100、精確圖示與首次／返場單件付費禮包核對。不把同活動免費紫水晶擺飾或另售挑染雙馬尾併入，也不以外幣售價修改台幣估價。

@@ -4,6 +4,22 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("cat costume groups contain cape and mask, not the separate ear and tail duo", () => {
+  for (const term of ["貓貓套裝", "貓貓禮包", "貓咪套組"]) {
+    const result = resolver.scan(term);
+    assert.equal(result.groups.length, 1);
+    assert.deepEqual(result.groups[0].candidates.map(i => i.guid).sort(), ["QeNQhxg3mv", "pG1_D61KMT"].sort());
+    assert.equal(result.ambiguous.length, 0);
+    assert.equal(resolver.scan(`沒有${term}`).groups.length, 0);
+  }
+  assert.deepEqual(resolver.scan("貓咪耳尾").groups[0].candidates.map(i => i.guid).sort(),
+    ["Dhkf_3dAhf", "wXLGNti3db"].sort());
+  const [mask] = resolver.resolve("貓咪面具").candidates;
+  assert.deepEqual([mask.guid, mask.id, mask.order, mask.type], ["QeNQhxg3mv", 1867, 10400, "Mask"]);
+  const [cape] = resolver.resolve("貓咪斗篷").candidates;
+  assert.deepEqual([cape.guid, cape.id, cape.order, cape.type], ["pG1_D61KMT", 1868, 16300, "Cape"]);
+});
+
 test("flying broom uses the player name consistently and retains old aliases", () => {
   for (const term of ["飛天掃帚", "飛行掃帚", "枯萎樹枝", "枯萎掃帚", "惡作劇枯萎掃帚"]) {
     const match = resolver.resolve(term);
