@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+Blue Pinned Cap（`PpIpcfoNDH`）保留「藍色帽子」顯示名，補「藍護士帽／藍色護士帽／護士帽」及簡體搜尋別名。依[公開交易用語](https://www.sina.cn/news/detail/5289488297493327.html)、[國際服玩家對性格測試帽子的稱呼](https://www.reddit.com/r/SkyGame/comments/1qj8jnv/personality_test_is_right/)及 SkyGame-Data 1.3.10 核對 ID 2929、HairAccessory、order 7300、精確 icon 與單件 IAP `AFPoxs_J4q`；不加入國服專屬物品、不引用其價格，也不將護士服或其他帽子視為同件。
+
 英文刊登標題如 `Completed 4 seasons from Duets to Blue Bird` 可提供起始季節證據，不要求完整 GUID；僅解析明確的完成季節範圍句型與已知季名，不由季數補成無斷、逐季畢業或禮包數。拼錯季名、反向範圍及帶額外限定／矛盾句子的標題保留待查；沒有章節的 `Two Embers` 僅可作範圍終點，不推定暮星起季。此路徑仍按原幣與市場分組，不直接換算成台幣或改寫正式估價。
 
 Winter Feast Snowglobe（`4i2CdmSgmX`）使用「雪花水晶球」，保留「宴會雪景球／冬日宴會雪景球」與「聖誕水晶球／水晶球」搜尋。用語參考[國際服交易文案](https://m.8591.com.tw/v3/mall/detail/2399557756?style=detail)及[繁體收藏文案](https://www.carousell.com.hk/p/sky%E5%85%89%E9%81%87%E5%A4%9A%E7%A6%AE%E5%8C%85%E8%99%9F-%E5%B0%8F%E7%8E%8B%E5%AD%90%E9%83%BD%E5%85%A8%E7%A6%AE%E5%8C%85-%E7%99%BD%E6%A2%9F-%E6%9E%97%E5%85%8B-%E5%A4%A7%E7%BE%BD%E6%AF%9B-1458877656/)，核對 SkyGame-Data 1.3.10 的 ID 1893、Prop、order 5800、精確圖示及首次／返場單件 IAP；runtime 維持 SmallProp。未確認的「水晶燈球」不直接當作同義詞，不與紫水晶擺飾或雪花頭飾合併，亦不引用外站售價修改估價係數。

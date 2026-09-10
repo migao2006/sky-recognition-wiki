@@ -5,6 +5,21 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("nurse-cap player aliases resolve only the personality quiz hair accessory", () => {
+  const terms = ["藍色帽子", "藍色守護帽", "藍護士帽", "藍色護士帽", "護士帽", "蓝护士帽", "蓝色护士帽", "护士帽"];
+  for (const term of terms) {
+    const items = resolver.resolve(term).candidates;
+    assert.deepEqual(items.map(i => [i.guid, i.id, i.order, i.name, i.type, i.collection]),
+      [["PpIpcfoNDH", 2929, 7300, "Blue Pinned Cap", "HairAccessory", "personality-quiz-event"]]);
+    assert.equal(catalog.zhItemName(items[0]), "藍色帽子");
+    assert.equal(catalog.isPaidItem(items[0]), true);
+    assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
+  }
+  assert.equal(resolver.scan(terms.join("｜")).matched.length, 1);
+  for (const term of ["護士服", "藍斗", "綠絨卷耳", "黃畫家帽", "巫師帽"])
+    assert.ok(!resolver.scan(term).matched.some(m => m.candidates.some(i => i.guid === "PpIpcfoNDH")));
+});
+
 test("Oreo plush player names stay separate from other dog cosmetics and plushies", () => {
   for (const term of ["奧利奧玩偶", "Oreo 玩偶", "奧利奧娃娃", "奧利奧小狗玩偶"]) {
     const candidates = resolver.resolve(term).candidates;
