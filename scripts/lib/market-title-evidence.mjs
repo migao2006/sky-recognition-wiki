@@ -213,6 +213,28 @@ const startSeasonFor = (text, breakClass, accountStyle) => {
     : null;
 };
 
+// English range headings are account-level evidence, not generic season-name
+// mentions. Preserve spaces: "Passage" and "Flight" also occur in ordinary prose.
+const englishRangeStartFor = (title) => {
+  const text = String(title ?? "").normalize("NFKC").toLowerCase().trim();
+  const match = text.match(/^(?:[a-z0-9]+(?:-[a-z0-9]+)+:\s*)?completed\s+([1-9]\d?)\s+seasons?\s+from\s+([a-z -]+?)\s+to\s+([a-z0-9 -]+)(?:\.|$)/u);
+  if (!match) return null;
+  const name = value => value.trim().replace(/[-\s]+/gu, " ").replace(/^season of /u, "").replace(/^the /u, "");
+  const slugFor = value => seasonAliases.find(([slug]) => name(slug) === name(value))?.[0];
+  const start = slugFor(match[2]);
+  const end = slugFor(match[3]);
+  // "Two Embers" alone is an ambiguous chapter: permit it as an endpoint,
+  // never use it to create a chapter-one start or structured progress.
+  if (!start || (!end && name(match[3]) !== "two embers")) return null;
+  if (end) {
+    const span = seasonAliases.findIndex(([slug]) => slug === end) - seasonAliases.findIndex(([slug]) => slug === start) + 1;
+    if (span < Number(match[1])) return null;
+  }
+  // Additional clauses may qualify/contradict the range; leave them for review.
+  if (text.slice(match[0].length).trim()) return null;
+  return start;
+};
+
 export const extractMarketTitleEvidence = (title) => {
   const text = normalizedTitle(title);
   const breakClass = breakClassForTitle(text);
@@ -221,7 +243,7 @@ export const extractMarketTitleEvidence = (title) => {
   const wingless = /無翼|无翼/u.test(text) && !hasNegated(text, "(?:無翼|无翼)");
 
   return {
-    startSeasonSlug: startSeasonFor(text, breakClass, accountStyle),
+    startSeasonSlug: startSeasonFor(text, breakClass, accountStyle) ?? englishRangeStartFor(title),
     breakClass,
     paidPackageCount,
     salePackageTier: salePackageTierFor(text),

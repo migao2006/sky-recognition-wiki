@@ -109,6 +109,34 @@ test("explicit package upper limits retain zero-to-bound evidence, never exact c
   }
 });
 
+test("explicit English completed-season ranges provide only starting-season evidence", () => {
+  for (const [title, start] of [
+    ["SCOTL-P03: Completed 7 seasons from Passage to Two Embers.", "passage"],
+    ["SCOTL-P04: Completed 4 seasons from Duets to Blue Bird.", "duets"],
+    ["SCOTL-P11: Completed 14 seasons from Performance to Carnival.", "performance"],
+    ["Completed 2 seasons from Season of the Little Prince to Flight", "the-little-prince"],
+  ]) {
+    assert.deepEqual(extractMarketTitleEvidence(title), {
+      startSeasonSlug: start, breakClass: null, paidPackageCount: null,
+      salePackageTier: null, accountStyle: null, wingless: false,
+    });
+  }
+  for (const title of [
+    "Not completed 4 seasons from Duets to Blue Bird.",
+    "Will have completed 4 seasons from Duets to Blue Bird.",
+    "Completed season passes from Duets to Blue Bird.",
+    "Completed 0 seasons from Duets to Blue Bird.",
+    "Completed 4 seasons from Duets cape to Blue Bird.",
+    "Completed 4 seasons from Carnival to Duets.",
+    "Completed 99 seasons from Duets to Blue Bird.",
+    "Completed 4 seasons from Two Embers to Carnival.",
+    "SCOTL-P10: Completed 23 seasons from Rhymth to Carnival. Rhythm 50% (only mask)",
+    "Completed 4 seasons from Duets to Blue Bird. Not actually completed.",
+    "Completed 4 seasons from Duets to Blue Bird. Completed 7 seasons from Passage to Carnival.",
+    "Passage to Two Embers account", "Flight cape", "Duets instrument account",
+  ]) assert.equal(extractMarketTitleEvidence(title).startSeasonSlug, null, title);
+});
+
 test("Two Embers part-one full names preserve account versus season-pass context", () => {
   for (const name of ["雙星季：暮星篇", "双星季:暮星篇", "雙星季暮星篇", "暮星篇"]) {
     assert.equal(extractMarketTitleEvidence(`${name}起少禮號`).startSeasonSlug, "two-embers-part-1");
