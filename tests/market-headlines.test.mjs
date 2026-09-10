@@ -12,6 +12,67 @@ const exec = promisify(execFile);
 
 const listing = (overrides = {}) => ({ title: "緬懷起 無斷 禮包0 簡號", price_original: 1000, currency_original: "TWD", market_scope: "tw", listing_id: crypto.randomUUID(), price_kind: "ask", account_candidate: true, price_outlier: false, source: "market", ...overrides });
 
+test("season overview pools deduplicated raw prices while preserving condition coverage", () => {
+  const first = listing({ price_original: 1000, binding_class: "transferable", wingless: false });
+  const report = buildMarketHeadlineReport([
+    first, { ...first },
+    listing({ title: "緬懷起微斷20禮普號", price_original: 4000, wingless: true }),
+    listing({ title: "緬懷起", price_original: 9000 }),
+    listing({ title: "緬懷起30禮普號", price_original: 6000 }),
+  ]);
+  assert.equal(report.schema_version, 2);
+  assert.equal(report.eligible_rows, 4);
+  assert.equal(report.season_overviews.length, 1);
+  const group = report.season_overviews[0];
+  assert.deepEqual([group.sample_count, group.p25, group.median, group.p75], [4, 3250, 5000, 6750]);
+  assert.equal(group.sufficient_samples, true);
+  assert.equal(group.scope, "mixed-condition-total-account-price");
+  assert.deepEqual(group.condition_counts, {
+    break_class: { none: 1, slight: 1, unknown: 2 },
+    package_tier: { "0": 1, "20-29": 1, "30-39": 1, unknown: 1 },
+    account_style: { simple: 1, regular: 2, unknown: 1 },
+    wingless: { no: 1, yes: 1, unknown: 2 },
+    binding: { known: 1, unknown: 3 },
+  });
+  assert.ok(report.markets.every(m => m.sample_count < 3));
+  assert.equal(report.status, "headline-unvalidated");
+  assert.equal(Object.hasOwn(group, "no_package_baseline"), false);
+  assert.equal(Object.hasOwn(group, "package_differences"), false);
+});
+
+test("overview percentiles use every raw price rather than medians of detailed cells", () => {
+  const rows = [1000, 2000, 3000].map(price => listing({ price_original: price }));
+  rows.push(listing({ title: "緬懷起大斷百禮號", price_original: 10000 }));
+  const report = buildMarketHeadlineReport(rows);
+  assert.equal(report.season_overviews[0].median, 2500);
+  assert.equal(report.season_overviews[0].sample_count, 4);
+  assert.equal(buildMarketHeadlineReport(rows, { minimumSamples: 5 }).season_overviews[0].sufficient_samples, false);
+});
+
+test("overviews never pool distinct market identities, currencies, channels, price kinds or seasons", () => {
+  const variations = [{}, { source: "other" }, { market_scope: "international" },
+    { currency_original: "CNY" }, { channel: "vivo" }, { price_kind: "sold" }, { title: "協奏起" }];
+  const report = buildMarketHeadlineReport(variations.flatMap((fields, index) =>
+    [1, 2, 3].map(n => listing({ ...fields, price_original: (index + 1) * 1000 + n }))));
+  assert.equal(report.season_overviews.length, variations.length);
+  assert.deepEqual(report.season_overviews.map(g => g.median).sort((a, b) => a - b), variations.map((_, i) => (i + 1) * 1000 + 2));
+  assert.equal(report.season_overviews.reduce((sum, g) => sum + g.sample_count, 0), report.eligible_rows);
+  const excluded = buildMarketHeadlineReport([listing({ exclude_from_model: true }), listing({ price_original: 0 })]);
+  assert.deepEqual(excluded.season_overviews, []);
+});
+
+test("market tuple separators cannot merge different sources or regions", () => {
+  const report = buildMarketHeadlineReport([
+    listing({ source: "a|b", market_scope: "c", price_original: 1000 }),
+    listing({ source: "a", market_scope: "b|c", price_original: 9000 }),
+  ]);
+  assert.equal(report.eligible_rows, 2);
+  assert.equal(report.markets.length, 2);
+  assert.equal(report.season_overviews.length, 2);
+  assert.deepEqual(report.season_overviews.map(g => g.median).sort((a, b) => a - b), [1000, 9000]);
+  assert.ok(report.season_overviews.every(g => g.sample_count === 1));
+});
+
 test("headline price quantiles interpolate without rounding or inflating sparse samples", () => {
   for (const [prices, expected] of [
     [[3500], [3500, 3500, 3500]],

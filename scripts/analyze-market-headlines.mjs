@@ -44,6 +44,16 @@ const quantile = (values, percentile) => {
   const lower = Math.floor(position);
   return ordered[lower] + (ordered[Math.ceil(position)] - ordered[lower]) * (position - lower);
 };
+const priceSummary = (rows, minimumSamples) => {
+  const prices = rows.map(row => row.__market.price);
+  return { sample_count: rows.length, sufficient_samples: rows.length >= minimumSamples,
+    p25: quantile(prices, .25), median: quantile(prices, .5), p75: quantile(prices, .75) };
+};
+const countsFor = (values) => {
+  const counts = new Map();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  return Object.fromEntries([...counts].sort(([a], [b]) => a.localeCompare(b)));
+};
 const packageTierFor = (count, sellerTier) => {
   if (Number.isSafeInteger(count) && count >= 0) {
     if (count === 0) return "0";
@@ -197,7 +207,7 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
     const binding = known(row.binding_class ?? row.bindingClass)?.toLowerCase() ?? "unknown";
     const source = known(row.source)?.toLowerCase() ?? "unknown";
     const channel = channelFor(row);
-    const key = [source, row.__market.region, row.__market.currency, channel, row.__priceKind, binding, row.__style, row.__wingless].join("|");
+    const key = JSON.stringify([source, row.__market.region, row.__market.currency, channel, row.__priceKind, binding, row.__style, row.__wingless]);
     const entries = markets.get(key) ?? { key, source, region: row.__market.region, currency: row.__market.currency, channel, price_kind: row.__priceKind, binding_class: binding, account_style: row.__style, wingless: row.__wingless, rows: [] };
     entries.rows.push(row); markets.set(key, entries);
   }
@@ -211,8 +221,7 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
       group.rows.forEach((row) => { const values = tiers.get(row.__package) ?? []; values.push(row); tiers.set(row.__package, values); });
       const tierOrder = (tier) => /^\d/.test(tier) ? Number(tier.split("-")[0]) : Number.POSITIVE_INFINITY;
       const packages = [...tiers.entries()].sort(([a], [b]) => tierOrder(a) - tierOrder(b) || a.localeCompare(b)).map(([tier, values]) => ({
-        package_tier: tier, sample_count: values.length, sufficient_samples: values.length >= minimumSamples,
-        p25: quantile(values.map((row) => row.__market.price), .25), median: quantile(values.map((row) => row.__market.price), .5), p75: quantile(values.map((row) => row.__market.price), .75),
+        package_tier: tier, ...priceSummary(values, minimumSamples),
       }));
       const exact = packages.filter((item) => /^\d/.test(item.package_tier) && item.sufficient_samples)
         .sort((a, b) => tierOrder(a.package_tier) - tierOrder(b.package_tier));
@@ -225,7 +234,31 @@ export const buildMarketHeadlineReport = (rows, { minimumSamples = 3 } = {}) => 
     });
     return { source: market.source, region: market.region, currency: market.currency, channel: market.channel, price_kind: market.price_kind, binding_class: market.binding_class, account_style: market.account_style, wingless: market.wingless, sample_count: market.rows.length, season_breaks };
   });
-  return { schema_version: 1, status: "headline-unvalidated", evidence_kind: "season-break-package-market-headline-diagnostic", minimum_samples: minimumSamples, source_rows: rows.length, eligible_rows_before_dedupe: candidates.length, eligible_rows: eligible.length, diagnostics, markets: marketReports, warning: "Diagnostic only: headline evidence is not a valuation baseline or model gate. Markets, currencies, and asking/sold kinds are never combined." };
+  // Reuse the same deduplicated rows, not medians of the sparse detailed cells.
+  const overviewGroups = new Map();
+  for (const market of markets.values()) {
+    const { source, region, currency, channel, price_kind } = market;
+    for (const row of market.rows) {
+      const key = JSON.stringify([source, region, currency, channel, price_kind, row.__season]);
+      const group = overviewGroups.get(key) ?? { source, region, currency, channel, price_kind, season: row.__season, rows: [] };
+      group.rows.push(row); overviewGroups.set(key, group);
+    }
+  }
+  const season_overviews = [...overviewGroups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, group]) => {
+    const { rows: values, ...identity } = group;
+    const bindingKnown = values.filter(row => known(row.binding_class ?? row.bindingClass)).length;
+    return { ...identity, ...priceSummary(values, minimumSamples),
+      scope: "mixed-condition-total-account-price",
+      condition_counts: {
+        break_class: countsFor(values.map(row => row.__break)),
+        package_tier: countsFor(values.map(row => row.__package)),
+        account_style: countsFor(values.map(row => ["simple", "regular"].includes(row.__style) ? row.__style : "unknown")),
+        wingless: countsFor(values.map(row => row.__wingless)),
+        binding: { known: bindingKnown, unknown: values.length - bindingKnown },
+      },
+    };
+  });
+  return { schema_version: 2, status: "headline-unvalidated", evidence_kind: "season-break-package-market-headline-diagnostic", minimum_samples: minimumSamples, source_rows: rows.length, eligible_rows_before_dedupe: candidates.length, eligible_rows: eligible.length, diagnostics, markets: marketReports, season_overviews, warning: "Diagnostic only: headline evidence is not a valuation baseline or model gate. Markets, currencies, and asking/sold kinds are never combined. Season overviews mix account conditions and already include packages; they are not bare-account prices or package premiums." };
 };
 
 const parseArgs = (argv) => ({ inputs: argv.filter((arg) => !arg.startsWith("--")), out: argv.find((arg) => arg.startsWith("--out="))?.slice(6) });
