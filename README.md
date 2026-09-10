@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+Mischief Withered Broom（`8rYQfi8VP3`）統一顯示與分享短名為「飛天掃帚」，移除舊收藏顯示名「枯萎樹枝」的覆蓋，舊名與「飛行掃帚／枯萎掃帚」仍可搜尋。依[台灣玩家 2024 惡作劇活動介紹](https://www.dcard.tw/f/sky/p/257008654)及 SkyGame-Data 1.3.10 的 ID 2394、Held、order 5800、精確圖示與首次／返場單件禮包核對；保留官方 GUID 與既有 HeldProp 衣櫃映射，不改價格係數。
+
 Days Of Love Amethyst Accessory（`-ZIWymGtlX`）補「紫晶髮箍／紫水晶髮箍」搜尋，保留「紫水晶頭飾」顯示名。依既有交易文案、公開繁體交易搜尋中的「紫水晶髮箍」用法、[國際服活動資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2025#Days_of_Love_Amethyst_Accessory)及 SkyGame-Data 1.3.10 的 ID 2517、HairAccessory、order 7100、精確圖示與首次／返場單件付費禮包核對。不把同活動免費紫水晶擺飾或另售挑染雙馬尾併入，也不以外幣售價修改台幣估價。
 
 綁定宣告前的「可能／應該／大概／據說」與緊接同一宣告、獨立成詞的「不確定／待確認／待核實」不當作已確認綁定。例如「GG GC可出 待確認｜NS不出」只採 NS 不出，其他欄位與整份行情仍保留；「待確認價格／不確定售價」或下一行的價格待確認不反向否定明確綁定。這不代表已確認可拆綁或售後。

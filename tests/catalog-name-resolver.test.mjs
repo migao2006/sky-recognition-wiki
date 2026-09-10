@@ -4,6 +4,21 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("flying broom uses the player name consistently and retains old aliases", () => {
+  for (const term of ["飛天掃帚", "飛行掃帚", "枯萎樹枝", "枯萎掃帚", "惡作劇枯萎掃帚"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(i => i.guid), ["8rYQfi8VP3"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [2394, 5800, "Mischief Withered Broom", "HeldProp", "days-of-mischief"]);
+    assert.equal(catalog.isPaidItem(item), true);
+    assert.equal(catalog.zhItemName(item), "飛天掃帚");
+    assert.equal(catalog.saleItemName(item), "飛天掃帚");
+  }
+  assert.equal(resolver.scan("飛天掃帚｜枯萎樹枝｜飛行掃帚").matched.length, 1);
+  assert.equal(resolver.scan("沒有飛天掃帚").matched.length, 0);
+});
+
 test("amethyst headband aliases preserve the separate paid accessory", () => {
   for (const term of ["紫晶髮箍", "紫水晶髮箍", "紫水晶頭飾", "愛之慶典紫水晶頭飾"]) {
     const match = resolver.resolve(term);

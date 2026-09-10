@@ -1,6 +1,7 @@
 {
   "description": "人工核對的付費物品玩家稱呼。以官方 GUID 綁定；未列入的自動翻譯不得直接進入出售文案。",
   "items": {
+    "8rYQfi8VP3": { "playerName": "飛天掃帚", "aliases": ["飛行掃帚", "枯萎樹枝", "枯萎掃帚", "惡作劇枯萎掃帚"] },
     "ADJiva5H2Z": { "playerName": "祥雲褲", "aliases": ["壁畫家褲子", "福瑞壁畫家工作服", "兔尾褲", "兔子棉褲"] },
     "lv_MnKorJN": { "playerName": "太陽耳環", "aliases": ["陽光太陽神圓環", "太陽耳墜"] },
     "IOBWcIpOY9": { "playerName": "藍色墨鏡", "aliases": ["自然日眼鏡", "自然眼鏡", "自然墨鏡", "海洋日墨鏡"] },

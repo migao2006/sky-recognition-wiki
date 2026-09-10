@@ -242,7 +242,7 @@ const standardPaidProfiles = defineProfiles(
     ["Days of Love Serendipitous Scepter", "愛之權杖", undefined, ["邂逅權杖"]],
     ["Bloom Lilypad Umbrella", "荷葉綠傘", undefined, ["睡蓮傘"]],
     ["Bloom Sunflower Umbrella", "向日葵傘"],
-    ["Mischief Withered Broom", "枯萎樹枝", undefined, ["枯萎掃帚"]],
+    ["Mischief Withered Broom", "飛天掃帚", undefined, ["枯萎樹枝", "枯萎掃帚", "飛行掃帚"]],
     ["Fortune Plush Mount", "福瑞絨偶坐騎"],
     ["Anniversary Popcorn", "週年爆米花", "anniversary-cinema-set", ["爆米花組", "週年影院套餐", "週年爆米花道具", "Anniversary Popcorn Prop"]],
     ["Anniversary Cinema 3D Glasses", "週年電影院 3D 眼鏡", "anniversary-cinema-set", ["爆米花組", "週年影院套餐"]],

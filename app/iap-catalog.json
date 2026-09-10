@@ -552,8 +552,14 @@
     {
       "guid": "8rYQfi8VP3",
       "name": "Mischief Withered Broom",
-      "playerName": "惡作劇枯萎掃帚",
-      "aliases": [],
+      "playerName": "飛天掃帚",
+      "aliases": [
+        "飛行掃帚",
+        "枯萎樹枝",
+        "枯萎掃帚",
+        "惡作劇枯萎掃帚"
+      ],
+      "nameReviewed": true,
       "packageKey": "iap:ObY89zyeG-",
       "packageName": "Mischief Withered Broom",
       "paid": true,
