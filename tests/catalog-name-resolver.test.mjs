@@ -942,6 +942,7 @@ test("expands only confirmed player-facing set aliases during a text scan", () =
 });
 
 const confirmedSets = new Map([
+  ["蓬鬆冬裝", ["8aWnwc3_C6", "aoUa2jtXfL"]],
   ["錦鯉套裝", ["A26TJj3cSl", "mzF6ZaHa1s"]],
   ["福娃套裝", ["rNDDbcjS4G", "HnCWgj7aoA", "o8CAzM0x1c"]],
   ["新春福娃套裝", ["rNDDbcjS4G", "HnCWgj7aoA", "o8CAzM0x1c"]],

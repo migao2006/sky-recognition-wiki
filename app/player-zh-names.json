@@ -2,7 +2,7 @@
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
     "6T4gsS3ZUX": { "displayName": "雪人頭飾", "saleName": "雪人頭飾", "aliases": ["雪孩配件"] },
-    "aoUa2jtXfL": { "displayName": "粉色襪子", "saleName": "粉色襪子", "aliases": ["冬日腿套", "蓬鬆冬日腿套", "蓬鬆冬日腿部保暖"] },
+    "aoUa2jtXfL": { "displayName": "粉色襪子", "saleName": "粉色襪子", "aliases": ["冬日腿套", "蓬鬆冬日腿套", "蓬鬆冬日腿部保暖", "蓬鬆冬裝"] },
     "quSFDuWUoV": { "aliases": ["暖冬夾棉斗篷", "暖冬夹棉斗篷", "暖冬夾棉斗蓬", "暖冬夹棉斗蓬"] },
     "4i2CdmSgmX": { "displayName": "雪花水晶球", "saleName": "雪花水晶球", "aliases": ["宴會雪景球", "冬日宴會雪景球", "聖誕水晶球", "水晶球"] },
     "nz4W7amLch": { "displayName": "炸毛貓", "saleName": "炸毛貓", "aliases": ["炸毛貓貓", "炸毛貓玩偶", "貓咪使魔"] },
@@ -685,7 +685,7 @@
     "KpS-2FdasB": { "aliases": ["彩虹小花髮飾"] },
     "gNWmRUkpFo": { "aliases": ["雙彩虹小花髮飾"] },
     "fLbULqwumS": { "displayName": "愛麗絲蝴蝶結", "saleName": "愛麗絲蝴蝶結", "aliases": ["報春花蝴蝶結", "仙境報春花蝴蝶結", "愛麗絲圍裙套裝髮飾", "愛麗絲套裝"] },
-    "8aWnwc3_C6": { "displayName": "粉色毛毛帽", "saleName": "粉色毛毛帽", "aliases": ["暖冬絨絨髮飾", "冬日筒帽", "蓬鬆冬日筒帽", "蓬鬆冬日筒帽帽子"] },
+    "8aWnwc3_C6": { "displayName": "粉色毛毛帽", "saleName": "粉色毛毛帽", "aliases": ["暖冬絨絨髮飾", "冬日筒帽", "蓬鬆冬日筒帽", "蓬鬆冬日筒帽帽子", "蓬鬆冬裝"] },
     "HdoyB06O4V": { "aliases": ["錦標賽桂冠"] },
     "2XujEQcN6n": { "aliases": ["綠茸茸卷耳髮飾", "綠絨卷耳", "綠絨絨卷耳髮飾", "綠絨狗耳", "绿绒狗耳"] },
     "i9-S4tuhpn": { "aliases": ["綴黃畫筆髮箍髮飾", "畫筆髮箍", "黃筆刷髮帶"], "saleName": "畫筆髮箍" },

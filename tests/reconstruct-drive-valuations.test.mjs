@@ -14,6 +14,31 @@ const script = fileURLToPath(
   new URL("../scripts/reconstruct-drive-valuations.mjs", import.meta.url),
 );
 
+test("winter set replay expands two items but counts one paid package", async () => {
+  await mkdir(work, { recursive: true });
+  const id = randomUUID();
+  const paths = ["documents", "market", "output", "summary"].map(label => new URL(`winter-set-${id}-${label}.jsonl`, work));
+  const [documents, market, output, summary] = paths;
+  try {
+    const contents = ["蓬鬆冬裝", "蓬鬆冬裝｜粉色襪子｜粉色毛毛帽", "沒有蓬鬆冬裝", "蓬鬆冬裝｜雪人頭飾"];
+    await writeFile(documents, contents.map((content, index) => JSON.stringify({ post_hash: `winter-${index}`, content })).join("\n"));
+    await writeFile(market, contents.map((_, index) => JSON.stringify({ post_hash: `winter-${index}`, price_twd: 1000, price_kind: "ask" })).join("\n"));
+    await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
+    const rows = (await readFile(output, "utf8")).trim().split(/\r?\n/).map(JSON.parse);
+    for (const row of rows.slice(0, 2)) {
+      assert.deepEqual(row.owned_guids, ["8aWnwc3_C6", "aoUa2jtXfL"]);
+      assert.equal(row.exact_paid_count, 1);
+      assert.equal(row.exact_paid_item_count, 2);
+    }
+    assert.deepEqual(rows[2].owned_guids, []);
+    assert.equal(rows[2].exact_paid_count, 0);
+    assert.equal(rows[3].exact_paid_count, 2);
+    assert.equal(rows[3].exact_paid_item_count, 3);
+  } finally {
+    await Promise.all(paths.map(path => rm(path, { force: true })));
+  }
+});
+
 test("partial platform evidence changes scenarios without fabricating complete bindings", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();
