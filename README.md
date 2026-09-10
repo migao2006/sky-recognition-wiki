@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+Days Of Love Amethyst Accessory（`-ZIWymGtlX`）補「紫晶髮箍／紫水晶髮箍」搜尋，保留「紫水晶頭飾」顯示名。依既有交易文案、公開繁體交易搜尋中的「紫水晶髮箍」用法、[國際服活動資料](https://sky-children-of-the-light.fandom.com/wiki/Days_of_Love/2025#Days_of_Love_Amethyst_Accessory)及 SkyGame-Data 1.3.10 的 ID 2517、HairAccessory、order 7100、精確圖示與首次／返場單件付費禮包核對。不把同活動免費紫水晶擺飾或另售挑染雙馬尾併入，也不以外幣售價修改台幣估價。
+
 綁定宣告前的「可能／應該／大概／據說」與緊接同一宣告、獨立成詞的「不確定／待確認／待核實」不當作已確認綁定。例如「GG GC可出 待確認｜NS不出」只採 NS 不出，其他欄位與整份行情仍保留；「待確認價格／不確定售價」或下一行的價格待確認不反向否定明確綁定。這不代表已確認可拆綁或售後。
 
 Dark Rainbow Tunic（`9ETwx3n-UZ`）補「暗彩褲／暗彩武士褲／彩虹武士褲」搜尋，保留「黑彩虹服裝」顯示名。依[玩家兩種武士褲對照](https://www.bilibili.com/video/BV1Fk4y1W7Mc/)、[暗彩稱呼](https://www.douyin.com/video/7636084206359927163)及 SkyGame-Data 1.3.10 的 ID 1813、OutfitShoes、order 3900、精確圖示與單件付費禮包核對。中國社群僅作別名參考；不引入中國服售價，亦不將長名稱中的「武士褲」另配到 Prophet of Fire Outfit（`V9HhQcek_9`），或補成預言季畢業。

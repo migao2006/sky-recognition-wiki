@@ -1,6 +1,7 @@
 {
   "description": "台灣玩家容易理解的顯示短名、出售短名與搜尋別名。以 SkyGame-Data GUID 為鍵；Wiki 名稱仍保留在 wiki-zh-names.json。玩家用語參考 2026-08-31 Google Drive 116 份出售文案、2026-09-01 全物件交易用語重查清單，以及 2026-09-04 從五個 Facebook 交易社團兩輪搜尋整理的 642 篇貼文核對結果；國服名稱不會自動寫入。",
   "items": {
+    "-ZIWymGtlX": { "aliases": ["紫晶髮箍", "紫水晶髮箍"] },
     "tSAl1nV-qo": { "displayName": "愛麗絲裙", "saleName": "愛麗絲裙", "aliases": ["愛麗絲裙子", "愛麗絲裙裝", "報春花洋裝", "仙境報春花圍裙洋裝", "愛麗絲套裝"] },
     "lv_MnKorJN": { "displayName": "太陽耳環", "saleName": "太陽耳環", "aliases": ["陽光太陽神圓環", "太陽耳墜"] },
     "TXYOTW9Qyn": { "aliases": ["棉花糖架", "烤棉花糖架", "烤棉花糖禮包"] },

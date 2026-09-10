@@ -4,6 +4,24 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("amethyst headband aliases preserve the separate paid accessory", () => {
+  for (const term of ["紫晶髮箍", "紫水晶髮箍", "紫水晶頭飾", "愛之慶典紫水晶頭飾"]) {
+    const match = resolver.resolve(term);
+    assert.deepEqual(match.candidates.map(i => i.guid), ["-ZIWymGtlX"]);
+    const [item] = match.candidates;
+    assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
+      [2517, 7100, "Days Of Love Amethyst Accessory", "HairAccessory", "days-of-love"]);
+    assert.equal(catalog.isPaidItem(item), true);
+    assert.equal(catalog.zhItemName(item), "紫水晶頭飾");
+    assert.deepEqual(resolver.scan(term).matched.flatMap(m => m.candidates.map(i => i.guid)), ["-ZIWymGtlX"]);
+  }
+  assert.equal(resolver.scan("紫晶髮箍｜紫水晶髮箍").matched.length, 1);
+  assert.equal(resolver.scan("沒有紫晶髮箍").matched.length, 0);
+  for (const term of ["紫水晶擺飾", "挑染雙馬尾"]) {
+    assert.ok(!resolver.scan(term).matched.some(m => m.candidates.some(i => i.guid === "-ZIWymGtlX")));
+  }
+});
+
 test("dark rainbow pants aliases do not imply Prophet of Fire pants", () => {
   for (const term of ["暗彩褲", "暗彩武士褲", "彩虹武士褲", "黑彩虹服裝"]) {
     const match = resolver.resolve(term);
