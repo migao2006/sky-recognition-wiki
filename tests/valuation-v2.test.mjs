@@ -22,11 +22,11 @@ test("season bands contain all thirty ordered seasons with valid price ranges", 
   assert.equal(seasonPriceBands.length, 30);
   assert.deepEqual(valuationSampleSummary, {
     sourceRows: 446,
-    eligibleRows: 394,
+    eligibleRows: 393,
     facebookRows: 279,
     facebookEligibleRows: 269,
     driveRows: 115,
-    driveEligibleRows: 109,
+    driveEligibleRows: 108,
     marketplaceRows: 36,
     marketplaceEligibleRows: 2,
     secondaryMarketRows: 74,
@@ -91,7 +91,7 @@ test("keeps the published thirty-season price bands numerically stable", () => {
     createHash("sha256")
       .update(JSON.stringify(publishedFields))
       .digest("hex"),
-    "35164a2eedcb948280c16d20643863c93ffc038f12df7d13cb34d55e5db7d71c",
+    "886b1937f9e13a62466456fd4ad4db1d8531f69771ef2a6b0a6a3d1902182fb9",
   );
 });
 
@@ -104,7 +104,7 @@ test("sample confidence reflects direct eligible mentions", () => {
     }),
     [
       ["gratitude", 0, "inferred"],
-      ["rhythm", 31, "medium"],
+      ["rhythm", 30, "medium"],
       ["enchantment", 36, "medium"],
       ["carnival", 8, "low"],
     ],
@@ -133,9 +133,10 @@ test("anonymous market aggregate keeps the current audited source summary", () =
   assert.equal(marketAggregate.schemaVersion, 4);
   assert.equal(marketAggregate.validationStatus, "unvalidated");
   assert.equal(marketAggregate.sourceRows, 446);
-  assert.equal(marketAggregate.eligibleRows, 394);
+  assert.equal(marketAggregate.eligibleRows, 393);
+  assert.equal(marketAggregate.excludedRows, 50);
   assert.equal(marketAggregate.uniqueAccountRows, 269);
-  assert.equal(marketAggregate.split.trainingRows, 351);
+  assert.equal(marketAggregate.split.trainingRows, 350);
   assert.equal(marketAggregate.split.holdoutRows, 43);
   assert.equal(marketAggregate.split.trainingMode, "calibration-only");
   assert.equal(marketAggregate.predictorCoverage.completeRows, 0);
@@ -147,7 +148,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
     "8591_tw": 1,
     carousell_tw: 1,
     facebook: 269,
-    google_drive: 109,
+    google_drive: 108,
     unknown: 14,
   });
   assert.deepEqual(marketAggregate.sourceRowsBySource, {
@@ -165,7 +166,7 @@ test("anonymous market aggregate keeps the current audited source summary", () =
       ),
     ),
     // Full-source review separates pass-only, partial progress and mixed bundles.
-    { none: 44, slight: 60, medium: 67, big: 108 },
+    { none: 44, slight: 60, medium: 67, big: 107 },
   );
   assert.deepEqual(
     Object.fromEntries(
@@ -173,10 +174,10 @@ test("anonymous market aggregate keeps the current audited source summary", () =
         ([key, value]) => [key, value.sampleCount],
       ),
     ),
-    { few: 112, medium: 54, many: 68, hundred: 16 },
+    { few: 112, medium: 54, many: 68, hundred: 15 },
   );
   assert.equal(marketAggregate.segments.accountStyle.simple.sampleCount, 80);
-  assert.equal(marketAggregate.segments.accountStyle.regular.sampleCount, 249);
+  assert.equal(marketAggregate.segments.accountStyle.regular.sampleCount, 248);
 });
 
 test("priors add no observations, and only audited start-season samples affect bands", () => {

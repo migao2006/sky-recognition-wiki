@@ -142,6 +142,8 @@ Facebook 原始貼文只能保存在被 Git 忽略的 `work/` 目錄。匿名化
 
 ### 不需完整 GUID 的標題行情
 
+最新校準來源改為 `work/market-research-2026-09-10/physical-reviewed-calibration.jsonl`：由前一份 `tw-reviewed-calibration.jsonl` 保留全部 446 列，只將一筆無法拆出實體徽章價格的混合報價標為排除。以 `node scripts/audit-valuation-source.mjs --as-of=2026-09-10 work/market-research-2026-09-10/physical-reviewed-calibration.jsonl` 重建，目前有效 393、排除 50、探索校準 350、舊式保留組 43、有效 Drive 108 筆；以下較早統計是歷史紀錄。原始季節統計價格帶不變，但前端混合推導的音韻中位數 56,200 → 54,200、上限 67,000 → 65,300，其餘季節低／中／高不變。百禮乘數 1.189 → 1.207 是相同算法重算結果，不是手動加價；狀態仍為 `unvalidated`，不得稱成交驗證或盲測通過。
+
 前置禮包上限也保留為區間：「禮包 80 個以下／礼包：80 个以内」與「80 禮包以下」皆為 0～80，不是精確 80 包。近似、否定、金額、物品件數及衝突數量不會因此轉成有效包數。
 
 Winter Quilted Cape（`quSFDuWUoV`）補入「暖冬夾棉斗篷／暖冬夾棉斗蓬」繁簡搜尋，依 [2023 宴會節更新](https://m.ali213.net/news/231225/207351.html)與 SkyGame-Data 1.3.10 核對 ID 1980、Cape、order 17200、單件 IAP `f2l8flrTXW` 及返場關聯。保留顯示名，不與 2025 暖冬圍巾斗、其他年份冬日斗篷合併；中國服用語僅供別名，不採其售價。
