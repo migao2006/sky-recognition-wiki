@@ -214,9 +214,9 @@ Fortune Muralist's Smock（`ADJiva5H2Z`）使用玩家短名「祥雲褲」顯�
 
 私人 GUID 重播同時接受正數 `price_twd` 單一售價及完整 `price_twd_low/high` 價格區間；單價優先，統一輸出比較上下限。缺價、單邊區間或無效區間仍保留物品與帳號證據，但標為 `no-price`，不計入有價比較，也不把未知價格算成零。
 
-GUID 重播保留已核對的 `paid_package_min/max`，輸出 `declared_paid_range` 與扣除已辨識唯一禮包後的 `unresolved_declared_paid_range`。未知上界仍為 null，僅供漏讀診斷；不補 GUID、不轉成精確包數、不據此宣告衣櫃完整或調高估價。
+GUID 重播保留已核對的 `paid_package_min/max`，輸出 `declared_paid_range` 與扣除已辨識唯一禮包後的 `unresolved_declared_paid_range`。未知上界仍為 null，僅供漏讀診斷；不補 GUID、不轉成精確包數、不據此宣告衣櫃完整或調高估價。物品否定語境同時辨識「沒有／没有」「無／无」「不帶／不带」，避免簡體文案明確未持有的物品被算入。
 
-性格測試的 Green Folded Ears 支援「綠絨卷耳／綠絨絨卷耳髮飾」，用語參考[活動整理](https://game.xiaomi.com/viewpoint/1543958016_1769498317632_149)；2023 宴會節 Cozy Hermit Boots 支援「隱士雪人靴／雪人靴」，依[物品介紹](https://www.biubiu001.com/skygyand/83007.html)核對。保留目前顯示名、GUID、原始分類與 IAP 身分，只補搜尋別名，不採中國服價格。「綠野犬耳／雪絨圍巾」仍缺唯一身分證據，不直接補入。
+性格測試的 Green Folded Ears 支援「綠絨卷耳／綠絨絨卷耳髮飾」，用語參考[活動整理](https://game.xiaomi.com/viewpoint/1543958016_1769498317632_149)，另依[玩家交易用例](https://www.sina.cn/media/7585213813)補入「綠絨狗耳」繁簡搜尋。SkyGame-Data 1.3.10 的 `2XujEQcN6n`（ID 2931、HairAccessory、order 7200）及單件禮包 `oU3UyKF6TU` 保持不變。2023 宴會節 Cozy Hermit Boots 支援「隱士雪人靴／雪人靴」，依[物品介紹](https://www.biubiu001.com/skygyand/83007.html)核對。保留目前顯示名、GUID、原始分類與 IAP 身分，只補搜尋別名，不採中國服價格。「綠野犬耳／雪絨圍巾」仍缺唯一身分證據，不直接補入。
 
 「大耳狗頭飾」依[台灣玩家活動介紹](https://www.dcard.tw/f/sky/p/255375235)及[PTT 四款禮包整理](https://www.ptt.cc/bbs/Steam/M.1714730404.A.127.html)，對應獨立販售的迷你夥伴（`eWqTtgnrmt`），不是與雲朵斗篷同包的領結。移除領結上的錯誤別名，不作相容保留；領結、耳朵與迷你夥伴保持不同 GUID 與正確禮包去重。
 

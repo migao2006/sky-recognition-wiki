@@ -407,7 +407,7 @@ test("bloom tea aliases preserve the two paid tables and do not invent generic t
 
 test("green folded ears and hermit snow boots retain their paid identities", () => {
   for (const [guid, id, order, name, type, terms] of [
-    ["2XujEQcN6n", 2931, 7200, "Green Folded Ears", "HairAccessory", ["綠絨卷耳", "綠絨絨卷耳髮飾", "毛茸綠折耳"]],
+    ["2XujEQcN6n", 2931, 7200, "Green Folded Ears", "HairAccessory", ["綠絨卷耳", "綠絨絨卷耳髮飾", "毛茸綠折耳", "綠絨狗耳", "绿绒狗耳"]],
     ["pT4AVkYVZP", 1979, 2200, "Cozy Hermit Boots", "Shoes", ["隱士雪人靴", "雪人靴", "暖心隱士靴子"]],
   ]) {
     for (const term of terms) {
@@ -420,6 +420,17 @@ test("green folded ears and hermit snow boots retain their paid identities", () 
     assert.equal(resolver.scan(terms.join("｜")).matched.length, 1);
   }
   assert.equal(resolver.scan("沒有綠絨卷耳｜沒有雪人靴").matched.length, 0);
+  assert.equal(resolver.scan("沒有綠絨狗耳｜没有绿绒狗耳").matched.length, 0);
+  assert.equal(resolver.scan("綠野犬耳").matched.length, 0);
+});
+
+test("simplified negative ownership phrases do not add paid items", () => {
+  for (const text of ["没有綠絨卷耳", "无綠絨卷耳", "不带綠絨卷耳", "綠絨卷耳没有", "綠絨卷耳不带"]) {
+    const result = resolver.scan(text);
+    assert.equal(result.matched.length, 0, text);
+    assert.equal(result.excluded.length, 1, text);
+  }
+  assert.equal(resolver.scan("有綠絨卷耳").matched.length, 1);
 });
 
 test("Cinnamoroll head accessory means the mini companion rather than the cape bowtie", () => {

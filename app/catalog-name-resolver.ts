@@ -81,10 +81,10 @@ const hasNegativeContext = (normalized: string, start: number, end: number) => {
   const before = normalized.slice(Math.max(0, start - 5), start);
   const after = normalized.slice(end, end + 5);
   return (
-    /(?:沒有|不含|不帶|未有|未持有|未收|缺少|缺|無|已售|售出|拔掉)$/u.test(
+    /(?:[沒没]有|不含|不[帶带]|未有|未持有|未收|缺少|缺|[無无]|已售|售出|拔掉)$/u.test(
       before,
     ) ||
-    /^(?:沒有|不含|不帶|未有|未持有|未收|缺少|已售|售出|拔掉)/u.test(
+    /^(?:[沒没]有|不含|不[帶带]|未有|未持有|未收|缺少|已售|售出|拔掉)/u.test(
       after,
     )
   );
