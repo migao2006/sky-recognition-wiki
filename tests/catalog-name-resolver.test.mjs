@@ -5,6 +5,20 @@ import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
 
 const catalog = await loadRuntimeCatalog();
 
+test("quilted winter cape aliases preserve the separate paid cape", () => {
+  const terms = ["冬日絎縫斗篷", "暖冬夾棉斗篷", "暖冬夹棉斗篷", "暖冬夾棉斗蓬", "暖冬夹棉斗蓬"];
+  for (const term of terms) {
+    const items = resolver.resolve(term).candidates;
+    assert.deepEqual(items.map(i => [i.guid, i.id, i.order, i.name, i.type]),
+      [["quSFDuWUoV", 1980, 17200, "Winter Quilted Cape", "Cape"]]);
+    assert.equal(catalog.isPaidItem(items[0]), true);
+    assert.equal(catalog.zhItemName(items[0]), "冬日絎縫斗篷");
+    assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
+  }
+  assert.equal(resolver.scan(terms.join("｜")).matched.length, 1);
+  assert.equal(resolver.scan("暖冬夾棉斗篷｜暖冬圍巾斗").matched.length, 2);
+});
+
 test("nurse-cap player aliases resolve only the personality quiz hair accessory", () => {
   const terms = ["藍色帽子", "藍色守護帽", "藍護士帽", "藍色護士帽", "護士帽", "蓝护士帽", "蓝色护士帽", "护士帽"];
   for (const term of terms) {
