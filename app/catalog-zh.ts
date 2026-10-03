@@ -9,6 +9,12 @@ import {
   verifiedUltimateZh,
 } from "./catalog-seeds";
 const exactZh: Record<string, string> = {
+  "Moonlight Trousers": "月光長褲",
+  "Moonlight Ears": "月光耳飾",
+  "Moonlight Lotus Cushion": "蓮花坐墊",
+  "Moonlight Lute": "月光琵琶",
+  "Moonlight Nimbus": "蓮花光環",
+  "Moonlight Veil": "花朵面紗",
   "Feathery Lash Mask": "羽睫面具",
   "Yellow Tent Wall": "黃色帳篷牆",
   "Yellow Tent Top": "黃色帳篷頂",

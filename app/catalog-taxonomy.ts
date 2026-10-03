@@ -42,6 +42,7 @@ const heldClosetGuids = [
     "Mischief Withered Broom", "Treasure Shovel", "Fortune Plush Mount",
     "Company-Issued Laptop", "Anniversary Popcorn Prop", "Winter Feast Snowboard",
   ]),
+  "BkMLE3ku3r",
 ] as const;
 export const heldClosetOrder = new Map<string, number>(
   heldClosetGuids.map((guid, index) => [guid, index]),

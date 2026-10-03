@@ -64,7 +64,9 @@ Fortune Dragon Bangles（`xsTxIqIX8E`）保留「幸運節龍耳飾」顯示名�
 
 - `npm run sync:iap:check`：檢查 SkyGame-Data 付費物品快照；資料不同時只回報，不寫檔
 - `npm run sync:iap:write`：人工確認後更新付費物品快照
-- `npm run sync:catalog:check`：以 SkyGame-Data 1.3.10 逐 GUID 核對所有可對應物品的身分與原始類型
+- `npm run sync:catalog:check`：以 SkyGame-Data 1.3.19 逐 GUID 核對所有可對應物品的身分與原始類型
+
+衣櫃已補入 SkyGame-Data 1.3.19 的六件 2026 月光物品，共 1,177 件：月光琵琶放在手持道具，蓮花坐墊放在小型可放置道具；琵琶、光環、面紗依上游 IAP 計付費，其餘三件不計付費。中文名稱暫用辨識性名稱，未宣稱為已核對玩家俗稱。禮包表為 233 個物品映射／526 筆上游禮包記錄（包含返場記錄，不等於 526 個唯一禮包）。星夜之傘與畫架已改用合併後正式資料，移除待合併 IAP 補丁；星夜之傘維持 GUID、更新 ID 3293 與 order 6400，既有 GUID 備份不需遷移。
 - `npm run sync:names:check`：產生中文 Wiki 名稱比對報告至 `dist/tmp`
 - `npm run sync:names:write`：通過來源與縮減保護後更新中文名稱快照
 - `npm run sync:trade-names:check -- <清單.txt>`：以分類順序與既有名稱交叉比對交易用語，產生 GUID 對照報告但不寫檔；未採用資料會再區分「目前別名已可唯一辨識」及「仍需外部核對」

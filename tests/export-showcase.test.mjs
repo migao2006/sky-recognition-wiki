@@ -250,7 +250,7 @@ test("keeps the complete catalog export within mobile canvas limits", async () =
   );
   const settings = catalogOptions(catalog, selected);
   const size = measureShowcaseCanvas(settings);
-  assert.equal(selected.length, 1171);
+  assert.equal(selected.length, 1177);
   assert.equal(size.width, 1600);
   const pages = planShowcasePages(settings);
   assert.ok(pages.every((page) => page.height <= 10_000));

@@ -1,9 +1,9 @@
 {
   "source": "SkyGame-Data",
-  "sourceUrl": "https://unpkg.com/skygame-data@1.3.10/assets/everything.json",
-  "sourceVersion": "1.3.10",
-  "packages": 515,
-  "multiPackageItems": 131,
+  "sourceUrl": "https://unpkg.com/skygame-data@1.3.19/assets/everything.json",
+  "sourceVersion": "1.3.19",
+  "packages": 526,
+  "multiPackageItems": 135,
   "packageSelection": "fewest-items, lowest-price, guid",
   "items": [
     {
@@ -127,13 +127,14 @@
       "name": "Gift of the Nine-Colored Deer Antlers",
       "playerName": "禮物之九色鹿鹿角",
       "aliases": [],
-      "packageKey": "iap:j8hpj0Tr2X",
+      "packageKey": "iap:FfbdMAn_6M",
       "packageName": "Gift of the Nine-Colored Deer",
       "paid": true,
       "series": "九色鹿",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "10Ol7H9jKg",
@@ -228,7 +229,7 @@
       "availability": "global",
       "importance": "standard",
       "returning": "unknown",
-      "alternativePackageCount": 1
+      "alternativePackageCount": 2
     },
     {
       "guid": "2XujEQcN6n",
@@ -394,7 +395,8 @@
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "5V_r38RVGd",
@@ -422,7 +424,7 @@
       "availability": "global",
       "importance": "standard",
       "returning": "unknown",
-      "alternativePackageCount": 6
+      "alternativePackageCount": 7
     },
     {
       "guid": "6Kn8VMa4go",
@@ -825,6 +827,19 @@
       "returning": "unknown"
     },
     {
+      "guid": "BkMLE3ku3r",
+      "name": "Moonlight Lute",
+      "playerName": "月光琵琶",
+      "aliases": [],
+      "packageKey": "iap:N2BkfIu-4M",
+      "packageName": "Moonlight Lute",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown"
+    },
+    {
       "guid": "bOQzUAzYfV",
       "name": "Rhythm Guitar",
       "playerName": "白吉他",
@@ -866,7 +881,8 @@
       "series": "九色鹿",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "bu7qgPtuB2",
@@ -1054,13 +1070,14 @@
       "name": "Gift of the Nine-Colored Deer Mask",
       "playerName": "禮物之九色鹿面具",
       "aliases": [],
-      "packageKey": "iap:j8hpj0Tr2X",
+      "packageKey": "iap:FfbdMAn_6M",
       "packageName": "Gift of the Nine-Colored Deer",
       "paid": true,
       "series": "九色鹿",
       "availability": "global",
       "importance": "standard",
-      "returning": "unknown"
+      "returning": "unknown",
+      "alternativePackageCount": 1
     },
     {
       "guid": "daH57TClK7",
@@ -1228,7 +1245,7 @@
       "availability": "global",
       "importance": "standard",
       "returning": "unknown",
-      "alternativePackageCount": 5
+      "alternativePackageCount": 6
     },
     {
       "guid": "EK5ApidEe_",
@@ -1697,6 +1714,19 @@
       "returning": "unknown"
     },
     {
+      "guid": "ismrxXIblv",
+      "name": "Moonlight Nimbus",
+      "playerName": "蓮花光環",
+      "aliases": [],
+      "packageKey": "iap:0HIEo1bhxu",
+      "packageName": "Moonlight Nimbus",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown"
+    },
+    {
       "guid": "IZNxLq33GB",
       "name": "Anniversary Cinema 3D Glasses",
       "playerName": "3D眼鏡",
@@ -2131,14 +2161,14 @@
         "月光兔兔拖鞋"
       ],
       "nameReviewed": true,
-      "packageKey": "iap:dwa7xvLVxV",
-      "packageName": "Style Bunny Slippers",
+      "packageKey": "iap:9C2dO7Pq9P",
+      "packageName": "Moonlight Bunny Slippers",
       "paid": true,
       "series": "付費禮包",
       "availability": "global",
       "importance": "standard",
       "returning": "unknown",
-      "alternativePackageCount": 2
+      "alternativePackageCount": 3
     },
     {
       "guid": "mzF6ZaHa1s",
@@ -2348,7 +2378,7 @@
       "availability": "global",
       "importance": "standard",
       "returning": "unknown",
-      "alternativePackageCount": 1
+      "alternativePackageCount": 2
     },
     {
       "guid": "OfOc3xQdCQ",
@@ -2897,6 +2927,19 @@
       "alternativePackageCount": 1
     },
     {
+      "guid": "uviJw8fLzA",
+      "name": "Moonlight Veil",
+      "playerName": "花朵面紗",
+      "aliases": [],
+      "packageKey": "iap:yes9jlWURD",
+      "packageName": "Moonlight Veil",
+      "paid": true,
+      "series": "付費禮包",
+      "availability": "global",
+      "importance": "standard",
+      "returning": "unknown"
+    },
+    {
       "guid": "uvx7_B9OyH",
       "name": "Mischief Raven-Feathered Cloak",
       "playerName": "惡作劇鴉羽斗",
@@ -3225,7 +3268,7 @@
       "availability": "global",
       "importance": "standard",
       "returning": "unknown",
-      "alternativePackageCount": 1
+      "alternativePackageCount": 2
     },
     {
       "guid": "y69WKTTyw7",

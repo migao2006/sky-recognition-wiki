@@ -10,6 +10,7 @@ type OfficialIdentity = Pick<
 // wiki snapshot. The seed rows below only supply our closet/source taxonomy and
 // Chinese display copy; they must never mint replacement item identifiers.
 export const officialHeldIdentities: Record<string, OfficialIdentity> = {
+  "Starry Night's Canopy": { id: 3293, order: 6400, guid: "OAGgi-B-xa", name: "Starry Night's Canopy", group: "" },
   "Harp": { id: 82, order: 100, guid: "biKOov4qJQ", name: "Harp", group: "" },
   "Fledgling Harp": { id: 1939, order: 200, guid: "1xIwQnxHV-", name: "Fledgling Harp", group: "" },
   "Contrabass": { id: 261, order: 300, guid: "k1JghrvRyd", name: "Contrabass", group: "" },
@@ -117,8 +118,14 @@ const verifiedUltimateItems: WikiItem[] = [
     collection: "moomin",
   },
 ];
-// Upstream overlay: SkyGame-Data v1.3.10 (base snapshot remains compact).
+// Upstream additions: SkyGame-Data v1.3.19 (base snapshot remains compact).
 const skyGameDataUpdates: WikiItem[] = [
+{"id":3294,"order":6900,"guid":"SFXOQOroII","name":"Moonlight Trousers","type":"Outfit","group":"","icon":"https://static.wikia.nocookie.net/sky-children-of-the-light/images/6/66/Moonlight-Trousers-icon.png","wiki":"https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2026#Moonlight_Trousers","section":"events","collection":"days-of-moonlight"},
+{"id":3295,"order":2600,"guid":"I-8_QoT8C6","name":"Moonlight Ears","type":"HeadAccessory","group":"","icon":"https://static.wikia.nocookie.net/sky-children-of-the-light/images/5/58/Moonlight-Ears-icon.png","wiki":"https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2026#Moonlight_Ears","section":"events","collection":"days-of-moonlight"},
+{"id":3296,"order":13900,"guid":"3wNka_C9KV","name":"Moonlight Lotus Cushion","type":"Prop","group":"","icon":"https://static.wikia.nocookie.net/sky-children-of-the-light/images/f/f6/Moonlight-Lotus-Cushion-Icon.png","wiki":"https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2026#Moonlight_Lotus_Cushion","section":"events","collection":"days-of-moonlight"},
+{"id":3297,"order":14000,"guid":"BkMLE3ku3r","name":"Moonlight Lute","type":"Instrument","sourceType":"Held","group":"","icon":"https://static.wikia.nocookie.net/sky-children-of-the-light/images/d/d4/Moonlight-Pipa-Icon.png","wiki":"https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2026#Moonlight_Pipa","section":"events","collection":"days-of-moonlight"},
+{"id":3298,"order":8500,"guid":"ismrxXIblv","name":"Moonlight Nimbus","type":"HairAccessory","group":"","icon":"https://static.wikia.nocookie.net/sky-children-of-the-light/images/3/39/Moonlight-Lotus-Halo-Icon.png","wiki":"https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2026#Lotus_Halo","section":"events","collection":"days-of-moonlight"},
+{"id":3299,"order":11400,"guid":"uviJw8fLzA","name":"Moonlight Veil","type":"Mask","group":"","icon":"https://static.wikia.nocookie.net/sky-children-of-the-light/images/4/45/Moonlight-Floral-Veil-icon.png","wiki":"https://sky-children-of-the-light.fandom.com/wiki/Days_of_Moonlight/2026#Floral_Veil","section":"events","collection":"days-of-moonlight"},
   {
     id: 3277,
     order: 10975,
@@ -179,9 +186,6 @@ const skyGameDataUpdates: WikiItem[] = [
     section: "events",
     collection: "summer-camping",
   },
-];
-// Pending upstream overlay: Silverfeelin/SkyGame-Data PR #125.
-const pendingSkyGameDataUpdates: WikiItem[] = [
   {
     id: 3292,
     order: 11750,
@@ -315,18 +319,6 @@ const heldPropSeeds: readonly HeldPropSeed[] = [
 
 const heldPropItems: WikiItem[] = heldPropSeeds.map((item) => {
   const identity = officialHeldIdentities[item.name];
-  // This item is a separately tracked pre-release overlay. It has no 1.3.10
-  // identity yet, so keep its explicit PR GUID rather than minting one.
-  if (item.name === "Starry Night's Canopy")
-    return {
-      ...item,
-      id: 3269,
-      order: 5500,
-      guid: "OAGgi-B-xa",
-      type: "HeldProp",
-      sourceType: "Held",
-      group: item.group ?? "",
-    };
   if (!identity)
     throw new Error(`Missing SkyGame-Data 1.3.10 identity for ${item.name}`);
   return {
@@ -354,7 +346,6 @@ export const wikiItems: WikiItem[] = [
     .filter((item) => !officialHeldGuids.has(item.guid))
     .map(normalizePlaceableProp),
   ...skyGameDataUpdates.map(normalizePlaceableProp),
-  ...pendingSkyGameDataUpdates.map(normalizePlaceableProp),
   ...verifiedUltimateItems,
   ...instrumentItems,
   ...heldPropItems,

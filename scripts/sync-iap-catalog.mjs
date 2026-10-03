@@ -16,25 +16,6 @@ const FETCH_TIMEOUT_MS = 20_000;
 const reviewedNames = JSON.parse(await readFile(REVIEWED_NAMES_PATH, "utf8"));
 
 
-// Exact data from Silverfeelin/SkyGame-Data PR #125 while it awaits merge.
-const pendingUpstreamIaps = [
-  {
-    guid: "h09-v8Mh-Q",
-    name: "Starry Night's Canopy",
-    price: 14.99,
-    items: ["OAGgi-B-xa"],
-  },
-];
-const pendingUpstreamItems = [
-  {
-    id: 3269,
-    order: 5500,
-    guid: "OAGgi-B-xa",
-    name: "Starry Night's Canopy",
-    type: "Held",
-  },
-];
-
 const fetchJson = async (url, label) => {
   let response;
   try {
@@ -84,12 +65,9 @@ if (!Array.isArray(source?.items?.items) || !source.items.items.every(hasItemSha
 if (!Array.isArray(source?.iaps?.items) || !source.iaps.items.every(hasIapShape))
   throw new Error("SkyGame-Data IAP schema is invalid.");
 const iaps = [...source.iaps.items];
-for (const pending of pendingUpstreamIaps) {
-  if (!iaps.some((iap) => iap.guid === pending.guid)) iaps.push(pending);
-}
 uniqueMap(iaps, "IAP");
 const catalog = await loadRuntimeCatalog();
-uniqueMap([...source.items.items, ...pendingUpstreamItems], "item");
+uniqueMap(source.items.items, "item");
 const localByGuid = new Map(catalog.wikiItems.map((item) => [item.guid, item]));
 if (localByGuid.size !== catalog.wikiItems.length)
   throw new Error("Runtime catalog contains duplicate item GUIDs.");
@@ -111,7 +89,7 @@ for (const [guid, entry] of Object.entries(reviewedNames.items ?? {})) {
 // refuses any item GUID that cannot be resolved in the runtime catalog.
 const { rows, offersByItem } = buildIapCatalogRows({
   iaps,
-  upstreamItems: [...source.items.items, ...pendingUpstreamItems],
+  upstreamItems: source.items.items,
   catalogItems: catalog.wikiItems,
   zhName: catalog.zhName,
   reviewedNames: reviewedNames.items,

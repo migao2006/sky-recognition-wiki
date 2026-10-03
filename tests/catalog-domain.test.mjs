@@ -17,6 +17,7 @@ const {
   graduationSeasonSlugs,
   heldClosetOrder,
   isProfessionalVideoFocus,
+  isPaidItem,
   matchesSub,
   matchesSourceFilter,
   seasonGraduationItems,
@@ -430,7 +431,7 @@ test("reviewed Wiki snapshot contains only catalog guids and complete Chinese na
 
 test("every visible wardrobe item has a Chinese display name", () => {
   const wardrobeItems = wikiItems.filter((entry) => allClosetTypeSet.has(entry.type));
-  assert.equal(wardrobeItems.length, 1171);
+  assert.equal(wardrobeItems.length, 1177);
   for (const entry of wardrobeItems) {
     assert.match(zhItemName(entry), /[\u3400-\u9fff]/, entry.name);
   }
@@ -522,11 +523,33 @@ test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {
   }
 });
 
-test("includes the pending Dear Van Gogh umbrella and easel from upstream PR 125", () => {
+test("includes all six Moonlight 2026 items without treating free rewards as paid", () => {
+  for (const [guid, id, order, type, paid, name] of [
+    ["SFXOQOroII", 3294, 6900, "Outfit", false, "月光長褲"],
+    ["I-8_QoT8C6", 3295, 2600, "HeadAccessory", false, "月光耳飾"],
+    ["3wNka_C9KV", 3296, 13900, "SmallProp", false, "蓮花坐墊"],
+    ["BkMLE3ku3r", 3297, 14000, "Instrument", true, "月光琵琶"],
+    ["ismrxXIblv", 3298, 8500, "HairAccessory", true, "蓮花光環"],
+    ["uviJw8fLzA", 3299, 11400, "Mask", true, "花朵面紗"],
+  ]) {
+    const matches = wikiItems.filter(entry => entry.guid === guid);
+    assert.equal(matches.length, 1);
+    const entry = matches[0];
+    assert.deepEqual([entry.id, entry.order, entry.type, entry.collection], [id, order, type, "days-of-moonlight"]);
+    assert.equal(isPaidItem(entry), paid);
+    assert.equal(zhItemName(entry), name);
+    assert.ok(closetGroups.some(group => group.subs.some(sub => matchesSub(entry, sub.key))));
+  }
+  assert.equal(matchesSub(wikiItems.find(entry => entry.guid === "BkMLE3ku3r"), "held"), true);
+});
+
+test("includes the merged Dear Van Gogh umbrella and easel with official identities", () => {
   const umbrella = wikiItems.find((entry) => entry.guid === "OAGgi-B-xa");
   const easel = wikiItems.find((entry) => entry.guid === "KwENV96jIh");
   assert.equal(umbrella?.name, "Starry Night's Canopy");
   assert.equal(umbrella?.type, "HeldProp");
+  assert.equal(umbrella?.id, 3293);
+  assert.equal(umbrella?.order, 6400);
   assert.equal(zhItemName(umbrella), "星夜之傘");
   assert.equal(matchesSub(umbrella, "held"), true);
   assert.equal(easel?.name, "Easel");
@@ -546,8 +569,8 @@ test("matches the three in-game prop closet tabs", () => {
   );
 
   const instruments = wikiItems.filter((entry) => entry.type === "Instrument");
-  assert.equal(instruments.length, 38);
-  assert.equal(new Set(instruments.map((entry) => entry.guid)).size, 38);
+  assert.equal(instruments.length, 39);
+  assert.equal(new Set(instruments.map((entry) => entry.guid)).size, 39);
   assert.ok(instruments.some((entry) => entry.name === "Harp"));
   assert.ok(
     instruments.some((entry) => entry.name === "Lightmending Light Catcher Flute"),
@@ -583,7 +606,7 @@ test("matches the three in-game prop closet tabs", () => {
     ["held", "large", "small"].map(
       (tab) => instruments.filter((entry) => matchesSub(entry, tab)).length,
     ),
-    [34, 4, 0],
+    [35, 4, 0],
   );
   assert.equal(matchesSub(instrumentByName("Jam Station"), "large"), true);
   for (const [name, order] of [
@@ -663,7 +686,7 @@ test("uses verified game placement categories for representative props", () => {
   ]);
   assert.equal(
     wikiItems.filter((entry) => matchesSub(entry, "held")).length,
-    64,
+    65,
   );
   const heldItems = wikiItems
     .filter((entry) => matchesSub(entry, "held"))

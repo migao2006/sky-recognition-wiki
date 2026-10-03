@@ -1,6 +1,6 @@
 import { loadRuntimeCatalog } from "./load-runtime-catalog.mjs";
 
-const SOURCE_VERSION = "1.3.10";
+const SOURCE_VERSION = "1.3.19";
 const SOURCE_URL = `https://unpkg.com/skygame-data@${SOURCE_VERSION}/assets/everything.json`;
 const FETCH_TIMEOUT_MS = 20_000;
 const visibleWardrobeSourceTypes = new Set([
