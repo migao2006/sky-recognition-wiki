@@ -16,6 +16,7 @@ import { CatalogIcon } from "./catalog-icon";
 import { formatMarketBindings, formatMarketPlatform } from "./market-copy";
 import { isSeasonPendant } from "./season-items";
 import { useAccountBackupActions } from "./use-account-backup-actions";
+import { GiftArchiveImport } from "./gift-archive-import";
 import type { AccountRuntime } from "./use-organizer-runtime";
 
 type AccountStepProps = {
@@ -442,6 +443,7 @@ export function AccountStep({
             匯入 JSON
           </button>
         </div>
+        <GiftArchiveImport runtime={runtime} owned={owned} setOwned={setOwned} onOwnershipChanged={onOwnershipChanged} setNotice={setNotice} />
       </details>
       <input
         ref={importRef}

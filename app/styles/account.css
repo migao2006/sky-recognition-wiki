@@ -545,3 +545,9 @@
   font-size: 12px;
   text-align: center;
 }
+.gift-archive-import { margin-top: 1rem; }
+.gift-archive-import > small { display: block; margin: .6rem 0; color: #aab8ca; }
+.gift-archive-import section { padding: 1rem; }
+.gift-archive-import p { margin: .6rem 0; }
+.gift-archive-import ul { max-height: 15rem; overflow: auto; padding-left: 1.5rem; overflow-wrap: anywhere; }
+.gift-archive-import details { margin: .8rem 0; }
