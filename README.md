@@ -92,7 +92,7 @@ Wiki 蒐集可用 `--source=fandom-zh` 或 `--source=bwiki-zh-cn` 分站更新�
 
 第一步「更多匯出方式 → 匯入網頁封存檔」可讀取 Safari 在 Sky Info 禮包查詢結果頁儲存的二進位 `.webarchive`（上限 20 MB，主 HTML 上限 2 MB）。只在瀏覽器本機解析主頁，不執行封存腳本、不載入內嵌圖片、不呼叫第三方查詢 API、不保存 Sky ID。預覽後確認才追加物品；既有衣櫃、帳號身分、綁定與資源保持原樣，衣櫃完整確認會重設。一般 JSON 備份匯入仍是取代模式。
 
-`app/webarchive.ts` 僅讀取 binary plist 主資源；`app/sky-info-import.ts` 以不掛載的 template 解析 `#gl .g-item` 內的物品圖示，核對頁面禮包總數，拒絕未完成／空白／其他網站的封存。`app/sky-info-item-guids.json` 保存 Sky Info `CharSkyKid_*` 到現有官方 GUID 的明確對照，初版 39 件依查詢站物品內部名、套組成員與 SkyGame-Data 1.3.19 catalog 核對（含絆愛三件、福娃三件、九色鹿兩件、影院兩件）；這是有限對照表，不是全禮包支援。未對應項目會顯示待確認，不以模糊名稱猜配、不把附贈貨幣當帳號餘額，也不使用來源價格調整估價模型。個人封存與查詢結果不得提交 Git。
+`app/webarchive.ts` 僅讀取 binary plist 主資源；`app/sky-info-import.ts` 以不掛載的 template 解析 `#gl .g-item` 內的物品圖示，核對頁面禮包總數，拒絕未完成／空白／其他網站的封存。`app/sky-info-item-guids.json` 保存 Sky Info `CharSkyKid_*` 到現有官方 GUID 的明確對照，目前支援 209 件。2026-10-04 以 Sky Info 原始回應的 `name_key`、`unlocks`、套組成員與 SkyGame-Data 1.3.19 catalog／IAP 關聯核對；包括絆愛三件、Nintendo 四件、兩款各三件的風之旅人、史力奇衣巾、星夜披肩兩件等。同名燈籠指定手持付費 GUID，不連到家具燈籠。這是有限對照表，不是全禮包支援；原始 API JSON 不是網站帳號備份，匯入入口仍使用 `.webarchive`。未對應項目會顯示待確認，不以模糊名稱猜配、不把附贈貨幣當帳號餘額，也不使用來源價格調整估價模型。個人封存與查詢結果不得提交 Git。
 
 目前匯出格式為 v4，物品保存 SkyGame-Data 官方 GUID；上游尚未收錄的新品則保存上述明確追蹤的 overlay GUID。v1–v3 與無版本的舊備份會在匯入時遷移；未知物品會被略過並顯示數量，較新的未知版本則拒絕匯入。本機草稿保存 30 天，舊 v2 草稿會自動搬移至 v3。
 

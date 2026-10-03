@@ -1,5 +1,22 @@
 import { expect, test } from "@playwright/test";
 import { giftHtml, webarchiveFixture } from "../tests/helpers/webarchive-fixture.mjs";
+import { readFile } from "node:fs/promises";
+
+test("previews the complete supported mapping without dropping bundle members", async ({ page }) => {
+  const mapping = JSON.parse(await readFile(new URL("../app/sky-info-item-guids.json", import.meta.url), "utf8"));
+  await page.goto("/");
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
+  await page.getByText("更多匯出方式").click();
+  await page.getByLabel("匯入禮包網頁封存檔").setInputFiles({
+    name: "catalog.webarchive", mimeType: "application/x-webarchive",
+    buffer: webarchiveFixture(giftHtml(Object.keys(mapping))),
+  });
+  const preview = page.getByRole("region", { name: "禮包匯入預覽" });
+  await expect(preview).toContainText("可辨識 209 件 · 新增 209 件");
+  await expect(preview.getByText(/待確認/)).toHaveCount(0);
+  await page.getByRole("button", { name: "確認追加 209 件" }).click();
+  await expect(preview).toHaveCount(0);
+});
 
 test("archive import previews, appends, deduplicates and never executes archived content", async ({ page }) => {
   const requests = [];
