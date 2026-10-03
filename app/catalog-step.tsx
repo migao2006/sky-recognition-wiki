@@ -193,14 +193,10 @@ export function CatalogStep({
     if (!nextClosetSub) return;
     const connection = (
       navigator as Navigator & {
-        connection?: { effectiveType?: string; saveData?: boolean };
+        connection?: ConnectionHint;
       }
     ).connection;
-    if (
-      connection?.saveData ||
-      ["slow-2g", "2g", "3g"].includes(connection?.effectiveType ?? "")
-    )
-      return;
+    if (!shouldIdlePreload(connection)) return;
     const nextIcons = wikiItems
       .filter((item) => matchesSub(item, nextClosetSub.subKey))
       .slice(0, 4)

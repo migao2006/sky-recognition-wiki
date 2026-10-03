@@ -53,25 +53,25 @@ export type ValuationDomain = {
   sortSeasonSlugs: (slugs: string[]) => string[];
   getZhName: (item: WikiItem) => string;
 };
-export type ValuationResources = {
+type ValuationResources = {
   candles?: string | number;
   hearts?: string | number;
   ascended?: string | number;
   passes?: string | number;
 };
-export type ValuationContribution = {
+type ValuationContribution = {
   group: "season" | "package" | "limited" | "binding" | "resource" | "market";
   label: string;
   low: number;
   high: number;
   percent?: number;
 };
-export type ValuationSeasonRow = SeasonPriceBand & {
+type ValuationSeasonRow = SeasonPriceBand & {
   selected: number;
   expected: number;
   completion: number;
 };
-export type ValuationModelFeatures = {
+type ValuationModelFeatures = {
   baseLow: number;
   baseHigh: number;
   breakMultiplier: number;

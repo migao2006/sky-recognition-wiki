@@ -17,6 +17,7 @@ import {
 import { useAccountDraft } from "./use-account-draft";
 import { useOwnedItems } from "./use-owned-items";
 import { useOrganizerRuntime } from "./use-organizer-runtime";
+import { shouldIdlePreload, type ConnectionHint } from "./idle-preload";
 
 const CatalogStep = dynamic(
   () => import("./catalog-step").then((module) => module.CatalogStep),
@@ -100,14 +101,10 @@ export default function AccountOrganizer() {
     if (!draftReady || runtime.catalogDomain) return;
     const connection = (
       navigator as Navigator & {
-        connection?: { effectiveType?: string; saveData?: boolean };
+        connection?: ConnectionHint;
       }
     ).connection;
-    if (
-      connection?.saveData ||
-      /2g|3g/.test(connection?.effectiveType ?? "")
-    )
-      return;
+    if (!shouldIdlePreload(connection)) return;
     const timer = window.setTimeout(safelyLoadCatalog, 1_200);
     return () => window.clearTimeout(timer);
   }, [
