@@ -53,6 +53,8 @@ Fortune Dragon Bangles（`xsTxIqIX8E`）保留「幸運節龍耳飾」顯示名�
 
 ## 本機開發
 
+Next.js 與 `eslint-config-next` 固定為 16.3.8，包含 [next/og 安全修補](https://github.com/advisories/GHSA-vcvr-r3jv-pc5j)；保留 CI 的正式依賴漏洞檢查，不以略過 audit 解決失敗。
+
 - `npm install`：安裝相依套件
 - `npm run dev`：啟動 Next.js 開發伺服器
 - `npm run build`：建立正式版 Next.js 產物
