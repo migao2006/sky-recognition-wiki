@@ -12,6 +12,7 @@ Fortune Dragon Bangles（`xsTxIqIX8E`）保留「幸運節龍耳飾」顯示名�
 - `app/account-step.tsx`：帳號資料與綁定設定
 - `app/use-account-backup-actions.ts`：第一步的 JSON 備份匯入與匯出
 - `app/catalog-step.tsx`：衣櫃搜尋、分類與快速選取
+- `app/catalog-filter.ts`：可獨立測試的搜尋、來源／季節／快捷篩選與排序；搜尋跨衣櫃，未搜尋時依目前子分類顯示
 - `app/valuation-step.tsx`：估價與匯出頁面組裝
 - `app/use-valuation-export-actions.ts`：估價摘要分享與圖片匯出動作
 - `app/valuation-showcase-preview.tsx`：成品圖片預覽

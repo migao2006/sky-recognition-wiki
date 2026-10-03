@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { CatalogItemCard } from "./catalog-item-card";
+import { filterCatalogItems } from "./catalog-filter";
 import { shouldIdlePreload, type ConnectionHint } from "./idle-preload";
 import {
   INITIAL_VISIBLE_ITEMS,
@@ -17,7 +18,6 @@ import {
 import type { ClosetSubRoute } from "./catalog-taxonomy";
 import type { CatalogRuntime } from "./use-organizer-runtime";
 import {
-  isPaidItem,
   isSeasonPendant,
   isSeasonUltimate,
 } from "./valuation-items";
@@ -84,13 +84,7 @@ export function CatalogStep({
   const {
     wikiItems,
     closetGroups,
-    allClosetTypeSet,
-    compareCatalogItems,
-    isLimitedItem,
-    isProfessionalVideoFocus,
-    matchesSourceFilter,
     matchesSub,
-    searchIndex,
     seasonZh,
     seasons,
     sourceFilters,
@@ -229,56 +223,17 @@ export function CatalogStep({
     };
   }, [matchesSub, nextClosetSub, wikiItems]);
 
-  const filtered = useMemo(() => {
-    const normalizedQuery = deferredQuery.trim().toLocaleLowerCase("zh-Hant");
-    return wikiItems
-      .filter(
-        (item) =>
-          (normalizedQuery
-            ? allClosetTypeSet.has(item.type)
-            : activeCloset.types.includes(item.type)) &&
-          (!normalizedQuery ? matchesSub(item, sub) : true) &&
-          matchesSourceFilter(item, sourceFilter) &&
-          (sourceFilter !== "seasons" ||
-            season === "全部季節" ||
-            item.collection === season) &&
-          (focusMode !== "ultimate" || isSeasonUltimate(item)) &&
-          (focusMode !== "limited" ||
-            isPaidItem(item) ||
-            isLimitedItem(item)) &&
-          (focusMode !== "video" || isProfessionalVideoFocus(item)) &&
-          (!normalizedQuery ||
-            searchIndex.get(item.guid)?.includes(normalizedQuery)),
-      )
-      .sort((left, right) =>
-        compareCatalogItems(
-          left,
-          right,
-          normalizedQuery
-            ? "type"
-            : sub === "held"
-              ? "held"
-              : sub === "large"
-                ? "shared"
-                : "type",
-        ),
-      );
-  }, [
-    activeCloset,
-    allClosetTypeSet,
-    compareCatalogItems,
-    deferredQuery,
-    focusMode,
-    isLimitedItem,
-    isProfessionalVideoFocus,
-    matchesSourceFilter,
-    matchesSub,
-    searchIndex,
-    season,
-    sourceFilter,
-    sub,
-    wikiItems,
-  ]);
+  const filtered = useMemo(
+    () => filterCatalogItems(runtime, {
+      closetTypes: activeCloset.types,
+      sub,
+      query: deferredQuery,
+      season,
+      sourceFilter,
+      focusMode,
+    }),
+    [runtime, activeCloset, sub, deferredQuery, season, sourceFilter, focusMode],
+  );
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),
     [filtered, visibleCount],
