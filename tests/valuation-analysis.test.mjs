@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { tsImport } from "tsx/esm/api";
 import { loadValuationRuntime } from "../scripts/load-valuation-runtime.mjs";
@@ -10,6 +9,7 @@ const calibrationLoaded = await tsImport(
   "../app/valuation-calibration.ts",
   import.meta.url,
 );
+const { marketPackageMultiplierForCount } = await tsImport("../app/valuation-market.ts", import.meta.url);
 const marketModule = await tsImport(
   "../app/market-collectibles.ts",
   import.meta.url,
@@ -20,12 +20,6 @@ const marketGuidByName = new Map(
   ),
 );
 const loaded = await loadValuationRuntime();
-const marketAggregate = JSON.parse(
-  await readFile(
-    new URL("../app/valuation-market-aggregate.json", import.meta.url),
-    "utf8",
-  ),
-);
 const { analyzeValuation, estimateValuation, summarizeValuationRange } = loaded;
 const bindings = (values = {}) => ({
   google: "none",
@@ -623,10 +617,10 @@ test("package calibration stays monotonic across tier boundaries", () => {
     const nextCap = packageValueCap(after);
     const priorSignal =
       priorTier.premium *
-      marketAggregate.modifiers.packageTier[priorTier.key].multiplier;
+      marketPackageMultiplierForCount(before);
     const nextSignal =
       nextTier.premium *
-      marketAggregate.modifiers.packageTier[nextTier.key].multiplier;
+      marketPackageMultiplierForCount(after);
     assert.ok(nextSignal >= priorSignal);
     assert.ok(nextSignal <= priorSignal * 1.15);
     assert.ok(nextCap.low >= priorCap.low);

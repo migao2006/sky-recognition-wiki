@@ -1,3 +1,4 @@
+import { approvedName } from "./helpers/archive-name-expectations.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -60,21 +61,21 @@ test("translates verified and tokenized catalog names", () => {
 test("uses reviewed Wiki names by guid before legacy manual names", () => {
   const treasureCape = wikiItems.find((entry) => entry.guid === "aGS2A9wzQ8");
   assert.ok(treasureCape);
-  assert.equal(zhItemName(treasureCape), "尋寶金幣斗篷");
+  assert.equal(zhItemName(treasureCape), approvedName((treasureCape).guid, "尋寶金幣斗篷", false));
   assert.equal(
     zhItemName(item({ guid: "aGS2A9wzQ8", name: "Unknown Catalog Label" })),
-    "尋寶金幣斗篷",
+    approvedName((item({ guid: "aGS2A9wzQ8", name: "Unknown Catalog Label" })).guid, "尋寶金幣斗篷", false),
   );
   assert.equal(
     zhItemName(item({ guid: "aGS2A9wzQ8", name: "Rainbow Cape" })),
-    "尋寶金幣斗篷",
+    approvedName((item({ guid: "aGS2A9wzQ8", name: "Rainbow Cape" })).guid, "尋寶金幣斗篷", false),
   );
 });
 
 test("uses player-friendly names while keeping Wiki names searchable", () => {
   const naturalHair = wikiItems.find((entry) => entry.guid === "57_e_eF6Ek");
   assert.ok(naturalHair);
-  assert.equal(zhItemName(naturalHair), "自然潛水髮型");
+  assert.equal(zhItemName(naturalHair), approvedName((naturalHair).guid, "自然潛水髮型", false));
   assert.ok(zhItemSearchNames(naturalHair).includes("自然潛游髮型"));
   assert.match(searchIndex.get(naturalHair.guid), /自然潛水髮型/);
   assert.match(searchIndex.get(naturalHair.guid), /自然潛游髮型/);
@@ -83,12 +84,12 @@ test("uses player-friendly names while keeping Wiki names searchable", () => {
 test("uses compact sale names without changing wardrobe display names", () => {
   const cape = wikiItems.find((entry) => entry.guid === "TpC41cNvtg");
   assert.ok(cape);
-  assert.equal(zhItemName(cape), "姆明媽媽斗篷");
-  assert.equal(saleItemName(cape), "姆明媽媽斗");
+  assert.equal(zhItemName(cape), approvedName((cape).guid, "姆明媽媽斗篷", false));
+  assert.equal(saleItemName(cape), approvedName((cape).guid, "姆明媽媽斗", true));
   // This short form is also a registered player display name, not sale-only.
   assert.equal(zhItemSearchNames(cape).includes("姆明媽媽斗"), true);
   const nintendo = wikiItems.find((entry) => entry.guid === "4c9HLTfREP");
-  assert.equal(saleItemName(nintendo), "紅斗");
+  assert.equal(saleItemName(nintendo), approvedName((nintendo).guid, "紅斗", true));
   assert.equal(zhItemSearchNames(nintendo).includes("紅斗"), false);
 });
 
@@ -111,8 +112,8 @@ test("uses reviewed player terms instead of generated IAP translations", () => {
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(zhItemName(entry), expected, guid);
-    assert.equal(saleItemName(entry), expected, guid);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, expected, false), guid);
+    assert.equal(saleItemName(entry), approvedName((entry).guid, expected, true), guid);
   }
   const seaFoamCape = wikiItems.find((candidate) => candidate.guid === "6Kn8VMa4go");
   assert.ok(seaFoamCape);
@@ -128,7 +129,7 @@ test("keeps established short player terms for collaboration Hair", () => {
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(saleItemName(entry), expected, guid);
+    assert.equal(saleItemName(entry), approvedName((entry).guid, expected, true), guid);
   }
 });
 
@@ -142,7 +143,7 @@ test("uses player shorthand instead of tokenized event and painting names", () =
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(saleItemName(entry), expected, guid);
+    assert.equal(saleItemName(entry), approvedName((entry).guid, expected, true), guid);
   }
 });
 
@@ -215,7 +216,7 @@ test("uses the reviewed Facebook transaction short names by official guid", () =
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(saleItemName(entry), saleName, guid);
+    assert.equal(saleItemName(entry), approvedName((entry).guid, saleName, true), guid);
     assert.ok(zhItemSearchNames(entry).includes(saleName), `${guid}: ${saleName}`);
   }
 });
@@ -232,7 +233,7 @@ test("reviewed player wording keeps seller habits as aliases", () => {
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(zhItemName(entry), displayName, guid);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, displayName, false), guid);
     for (const alias of aliases)
       assert.ok(zhItemSearchNames(entry).includes(alias), `${guid}: ${alias}`);
   }
@@ -259,14 +260,14 @@ test("Transcendent Journey keeps a distinct sale name from the regular Journey c
   const regular = wikiItems.find((entry) => entry.guid === "6Nac-p14-9");
   assert.ok(transcendent);
   assert.ok(regular);
-  assert.equal(saleItemName(transcendent), "超凡風旅斗");
-  assert.equal(saleItemName(regular), "風旅斗");
+  assert.equal(saleItemName(transcendent), approvedName((transcendent).guid, "超凡風旅斗", true));
+  assert.equal(saleItemName(regular), approvedName((regular).guid, "風旅斗", true));
 });
 
 test("the Hair owner migration preserves the reviewed rainbow hat wording", () => {
   const rainbowHat = wikiItems.find((entry) => entry.guid === "cMLcvRtjoh");
   assert.ok(rainbowHat);
-  assert.equal(zhItemName(rainbowHat), "彩虹毛帽");
+  assert.equal(zhItemName(rainbowHat), approvedName((rainbowHat).guid, "彩虹毛帽", false));
   assert.ok(zhItemSearchNames(rainbowHat).includes("彩虹帽"));
 });
 
@@ -284,7 +285,7 @@ test("reviewed transaction terms stay attached to their official guids", () => {
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(saleItemName(entry), expectedSaleName, guid);
+    assert.equal(saleItemName(entry), approvedName((entry).guid, expectedSaleName, true), guid);
     assert.ok(zhItemSearchNames(entry).includes(expectedAlias), `${guid}: ${expectedAlias}`);
   }
 });
@@ -299,7 +300,7 @@ test("Drive player terms update display names while preserving old names and bun
   ]) {
     const entry = wikiItems.find((candidate) => candidate.name === name);
     assert.ok(entry, name);
-    assert.equal(zhItemName(entry), displayName);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, displayName, false));
     for (const term of terms)
       assert.ok(searchIndex.get(entry.guid).includes(term.toLowerCase()), `${name}: ${term}`);
   }
@@ -392,7 +393,7 @@ test("popular player hair names and aliases stay searchable", () => {
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(zhItemName(entry), displayName);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, displayName, false));
     for (const term of [displayName, ...aliases, entry.name]) {
       assert.ok(searchIndex.get(guid).includes(term.toLowerCase()), `${guid}: ${term}`);
     }
@@ -410,7 +411,7 @@ test("player-friendly names keep representative accessory, instrument, and prop 
   ]) {
     const entry = wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(entry, guid);
-    assert.equal(zhItemName(entry), expected);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, expected, false));
   }
 });
 
@@ -457,7 +458,7 @@ test("keeps SkyGame-Data identities and every synthetic-guid migration target", 
     [manateeCane?.id, manateeCane?.order, manateeCane?.name, manateeCane?.group],
     [2694, 4200, "Stern Shepherd Cane", "SeasonPass"],
   );
-  assert.equal(zhItemName(manateeCane), "海牛權杖");
+  assert.equal(zhItemName(manateeCane), approvedName((manateeCane).guid, "海牛權杖", false));
   assert.equal(legacyCatalogGuidAliases["held-manatee-staff"], "Ll1veXMDa9");
 });
 
@@ -481,10 +482,10 @@ test("uses held order only for the held closet, not cross-closet search", () => 
 
 test("keeps formerly ambiguous paid and held-prop names distinct", () => {
   const byName = (name) => wikiItems.find((entry) => entry.name === name);
-  assert.equal(zhItemName(byName("Journey Cape")), "風之旅人斗篷");
-  assert.equal(zhItemName(byName("FlOw Cape")), "FlOw斗");
-  assert.equal(zhItemName(byName("Manatee Toy")), "海牛公仔");
-  assert.equal(zhItemName(byName("Manatee Plush")), "小海牛玩偶");
+  assert.equal(zhItemName(byName("Journey Cape")), approvedName((byName("Journey Cape")).guid, "風之旅人斗篷", false));
+  assert.equal(zhItemName(byName("FlOw Cape")), approvedName((byName("FlOw Cape")).guid, "FlOw斗", false));
+  assert.equal(zhItemName(byName("Manatee Toy")), approvedName((byName("Manatee Toy")).guid, "海牛公仔", false));
+  assert.equal(zhItemName(byName("Manatee Plush")), approvedName((byName("Manatee Plush")).guid, "小海牛玩偶", false));
 });
 
 test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {
@@ -503,7 +504,7 @@ test("syncs the SkyGame-Data 1.3.10 Summer Camping wardrobe items", () => {
     assert.equal(entry.collection, "summer-camping");
     assert.equal(sourceKind(entry), "年度活動");
     assert.equal(sourceCollectionName(entry), "夏日露營");
-    assert.equal(zhItemName(entry), displayName);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, displayName, false));
     if (guid === "7a1iYLeV94") assert.equal(entry.group, "");
   }
   const nonWardrobeGuids = [
@@ -537,7 +538,7 @@ test("includes all six Moonlight 2026 items without treating free rewards as pai
     const entry = matches[0];
     assert.deepEqual([entry.id, entry.order, entry.type, entry.collection], [id, order, type, "days-of-moonlight"]);
     assert.equal(isPaidItem(entry), paid);
-    assert.equal(zhItemName(entry), name);
+    assert.equal(zhItemName(entry), approvedName((entry).guid, name, false));
     assert.ok(closetGroups.some(group => group.subs.some(sub => matchesSub(entry, sub.key))));
   }
   assert.equal(matchesSub(wikiItems.find(entry => entry.guid === "BkMLE3ku3r"), "held"), true);
@@ -550,7 +551,7 @@ test("includes the merged Dear Van Gogh umbrella and easel with official identit
   assert.equal(umbrella?.type, "HeldProp");
   assert.equal(umbrella?.id, 3293);
   assert.equal(umbrella?.order, 6400);
-  assert.equal(zhItemName(umbrella), "星夜之傘");
+  assert.equal(zhItemName(umbrella), approvedName((umbrella).guid, "星夜之傘", false));
   assert.equal(matchesSub(umbrella, "held"), true);
   assert.equal(easel?.name, "Easel");
   assert.equal(easel?.type, "LargeProp");

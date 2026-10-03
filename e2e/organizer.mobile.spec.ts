@@ -80,7 +80,7 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await expect(page.getByText("更多匯出方式")).toHaveCount(0);
   await expect(page.locator(".valuation-contributions")).toHaveCount(0);
   await expect(page.locator(".valuation-season-table")).toHaveCount(0);
-  await page.getByText("查看全部季節價位").click();
+  await page.getByText("歷史季節樣本參考").click();
   await expect(page.locator(".valuation-season-table")).toBeVisible();
   await page.getByText("估價依據").click();
   await expect(page.locator(".valuation-method p")).toBeVisible();

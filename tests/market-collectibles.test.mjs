@@ -1,3 +1,4 @@
+import { approvedName } from "./helpers/archive-name-expectations.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -78,8 +79,8 @@ test("Fortune Orange is an orange head accessory, not an orange-colored hat", ()
   assert.equal(item.type, "HairAccessory");
   assert.equal(item.id, 1725);
   assert.equal(item.order, 3500);
-  assert.equal(catalog.zhItemName(item), "橘子頭飾");
-  assert.equal(catalog.saleItemName(item), "橘子頭飾");
+  assert.equal(catalog.zhItemName(item), approvedName((item).guid, "橘子頭飾", false));
+  assert.equal(catalog.saleItemName(item), approvedName((item).guid, "橘子頭飾", true));
   assert.equal(catalog.isPaidItem(item), true);
   for (const name of ["福瑞橘色帽子", "橘子髮飾", "小橘子"])
     assert.ok(catalog.zhItemSearchNames(item).includes(name), name);
@@ -144,8 +145,8 @@ test("same English name never transfers paid metadata to a different GUID", () =
   assert.equal(marketCollectibleProfile(furniture.name, furniture.guid), null);
   assert.equal(catalog.isPaidItem(held), true);
   assert.equal(catalog.isPaidItem(furniture), false);
-  assert.equal(catalog.zhItemName(held), "夏日燈籠");
-  assert.equal(catalog.zhItemName(furniture), "月華燈籠");
+  assert.equal(catalog.zhItemName(held), approvedName((held).guid, "夏日燈籠", false));
+  assert.equal(catalog.zhItemName(furniture), approvedName((furniture).guid, "月華燈籠", false));
 });
 
 test("uses exact GUID mappings for the corrected paid held props", () => {

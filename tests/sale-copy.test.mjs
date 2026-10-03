@@ -306,9 +306,9 @@ test("uses player names and keeps every selected item in only one section", () =
       ],
     }),
   ).join("\n");
-  assert.match(copy, /AURORA｜極光短髮型/);
-  assert.match(copy, /✦ 重要禮包\n蝙蝠斗篷/);
-  assert.equal(copy.match(/極光短髮型/g)?.length, 1);
+  assert.match(copy, /AURORA｜Runaway 髮型/);
+  assert.match(copy, /✦ 重要禮包\n陰森蝙蝠斗篷/);
+  assert.equal(copy.match(/Runaway 髮型/g)?.length, 1);
   assert.doesNotMatch(copy, /逃跑髮型/);
   assert.equal(copy.match(/蝙蝠斗篷/g)?.length, 1);
 });

@@ -94,9 +94,11 @@ test("keeps complete evidence consistent from backup through audit and validatio
     assert.equal(candidate.predictorCoverage.eligibleRows, 1);
     assert.equal(candidate.predictorCoverage.completeRows, 1);
     assert.equal(report.criteria.candidateRebuild.pass, true);
+    // Evidence remains complete, but legacy replay must not certify a new
+    // manual-reference revision it cannot rebuild.
     assert.equal(report.eligibleRows, 1);
-    assert.equal(report.criteria.completeModelPredictors.actual, 1);
-    assert.equal(report.criteria.completeModelPredictors.missing, 0);
+    assert.equal(report.criteria.completeModelPredictors.actual, 0);
+    assert.equal(report.criteria.completeModelPredictors.missing, 1);
     assert.equal(report.criteria.minimumEligibleRows.pass, false);
     assert.equal(report.outcome, "fail");
   } finally {

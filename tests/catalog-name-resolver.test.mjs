@@ -1,3 +1,4 @@
+import { approvedName } from "./helpers/archive-name-expectations.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
@@ -15,8 +16,8 @@ test("Taiwan winter names preserve item identity, old search and shared package"
     for (const term of [display, oldName]) {
       const items = resolver.resolve(term).candidates;
       assert.deepEqual(items.map(i => [i.guid, i.id, i.order, i.name, i.type]), [[guid, id, order, name, type]]);
-      assert.equal(catalog.zhItemName(items[0]), display);
-      assert.equal(catalog.saleItemName(items[0]), display);
+      assert.equal(catalog.zhItemName(items[0]), approvedName((items[0]).guid, display, false));
+      assert.equal(catalog.saleItemName(items[0]), approvedName((items[0]).guid, display, true));
       assert.equal(catalog.isPaidItem(items[0]), true);
     }
     assert.equal(resolver.scan(`${display}｜${oldName}`).matched.length, 1);
@@ -32,7 +33,7 @@ test("quilted winter cape aliases preserve the separate paid cape", () => {
     assert.deepEqual(items.map(i => [i.guid, i.id, i.order, i.name, i.type]),
       [["quSFDuWUoV", 1980, 17200, "Winter Quilted Cape", "Cape"]]);
     assert.equal(catalog.isPaidItem(items[0]), true);
-    assert.equal(catalog.zhItemName(items[0]), "冬日絎縫斗篷");
+    assert.equal(catalog.zhItemName(items[0]), approvedName((items[0]).guid, "冬日絎縫斗篷", false));
     assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
   }
   assert.equal(resolver.scan(terms.join("｜")).matched.length, 1);
@@ -45,7 +46,7 @@ test("nurse-cap player aliases resolve only the personality quiz hair accessory"
     const items = resolver.resolve(term).candidates;
     assert.deepEqual(items.map(i => [i.guid, i.id, i.order, i.name, i.type, i.collection]),
       [["PpIpcfoNDH", 2929, 7300, "Blue Pinned Cap", "HairAccessory", "personality-quiz-event"]]);
-    assert.equal(catalog.zhItemName(items[0]), "藍色帽子");
+    assert.equal(catalog.zhItemName(items[0]), approvedName((items[0]).guid, "藍色帽子", false));
     assert.equal(catalog.isPaidItem(items[0]), true);
     assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
   }
@@ -59,8 +60,8 @@ test("Oreo plush player names stay separate from other dog cosmetics and plushie
     const candidates = resolver.resolve(term).candidates;
     assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order, i.type, i.collection]),
       [["dEWiCE1-6D", 1836, 6400, "SmallProp", "event-sky-anniversary"]]);
-    assert.equal(catalog.zhItemName(candidates[0]), "奧利奧玩偶");
-    assert.equal(catalog.saleItemName(candidates[0]), "奧利奧玩偶");
+    assert.equal(catalog.zhItemName(candidates[0]), approvedName((candidates[0]).guid, "奧利奧玩偶", false));
+    assert.equal(catalog.saleItemName(candidates[0]), approvedName((candidates[0]).guid, "奧利奧玩偶", true));
     assert.equal(catalog.isPaidItem(candidates[0]), true);
     assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
   }
@@ -75,8 +76,8 @@ test("snowglobe player terms preserve the paid prop and old search names", () =>
     const candidates = resolver.resolve(term).candidates;
     assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order, i.type, i.collection]),
       [["4i2CdmSgmX", 1893, 5800, "SmallProp", "days-of-feast"]]);
-    assert.equal(catalog.zhItemName(candidates[0]), "雪花水晶球");
-    assert.equal(catalog.saleItemName(candidates[0]), "雪花水晶球");
+    assert.equal(catalog.zhItemName(candidates[0]), approvedName((candidates[0]).guid, "雪花水晶球", false));
+    assert.equal(catalog.saleItemName(candidates[0]), approvedName((candidates[0]).guid, "雪花水晶球", true));
     assert.equal(catalog.isPaidItem(candidates[0]), true);
     assert.equal(resolver.scan(`沒有${term}`).matched.length, 0);
   }
@@ -94,8 +95,8 @@ test("bloom tea tables use reviewed player names without inferring generic seati
     for (const term of [name, oldName, explicit]) {
       const candidates = resolver.resolve(term).candidates;
       assert.deepEqual(candidates.map(i => [i.guid, i.id, i.order]), [[guid, id, order]]);
-      assert.equal(catalog.zhItemName(candidates[0]), name);
-      assert.equal(catalog.saleItemName(candidates[0]), name);
+      assert.equal(catalog.zhItemName(candidates[0]), approvedName((candidates[0]).guid, name, false));
+      assert.equal(catalog.saleItemName(candidates[0]), approvedName((candidates[0]).guid, name, true));
       assert.equal(catalog.isPaidItem(candidates[0]), true);
     }
     assert.equal(resolver.scan(`${name}｜${oldName}｜${explicit}`).matched.length, 1);
@@ -122,8 +123,8 @@ test("deer cape shorthand cannot silently become a season ultimate", () => {
   }
   const paid = catalog.wikiItems.find(i => i.guid === "BTogmcHcr5");
   const ultimate = catalog.wikiItems.find(i => i.guid === "gLB3Tnn8mb");
-  assert.equal(catalog.saleItemName(paid), "九色鹿斗");
-  assert.equal(catalog.saleItemName(ultimate), "九色鹿畢業斗");
+  assert.equal(catalog.saleItemName(paid), approvedName((paid).guid, "九色鹿斗", true));
+  assert.equal(catalog.saleItemName(ultimate), approvedName((ultimate).guid, "九色鹿畢業斗", true));
   assert.equal(catalog.isPaidItem(paid), true);
   assert.equal(catalog.isPaidItem(ultimate), false);
 });
@@ -139,7 +140,7 @@ test("registered player display names remain searchable when another source wins
     assert.deepEqual(resolver.resolve(term).candidates.map(i => i.guid), [guid]);
   }
   const moth = catalog.wikiItems.find(i => i.guid === "bu7qgPtuB2");
-  assert.equal(catalog.zhItemName(moth), "萌新斗篷");
+  assert.equal(catalog.zhItemName(moth), approvedName((moth).guid, "萌新斗篷", false));
   assert.equal(resolver.scan("沒有飛蛾斗").matched.length, 0);
 });
 
@@ -171,8 +172,8 @@ test("fluffy cat player names resolve the paid prop without costume members", ()
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
       [1869, 5600, "Feline Familiar", "SmallProp", "days-of-mischief"]);
-    assert.equal(catalog.zhItemName(item), "炸毛貓");
-    assert.equal(catalog.saleItemName(item), "炸毛貓");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "炸毛貓", false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, "炸毛貓", true));
     assert.equal(catalog.isPaidItem(item), true);
   }
   assert.equal(resolver.scan("炸毛貓｜炸毛貓貓｜炸毛貓玩偶").matched.length, 1);
@@ -205,8 +206,8 @@ test("flying broom uses the player name consistently and retains old aliases", (
     assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
       [2394, 5800, "Mischief Withered Broom", "HeldProp", "days-of-mischief"]);
     assert.equal(catalog.isPaidItem(item), true);
-    assert.equal(catalog.zhItemName(item), "飛天掃帚");
-    assert.equal(catalog.saleItemName(item), "飛天掃帚");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "飛天掃帚", false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, "飛天掃帚", true));
   }
   assert.equal(resolver.scan("飛天掃帚｜枯萎樹枝｜飛行掃帚").matched.length, 1);
   assert.equal(resolver.scan("沒有飛天掃帚").matched.length, 0);
@@ -220,7 +221,7 @@ test("amethyst headband aliases preserve the separate paid accessory", () => {
     assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
       [2517, 7100, "Days Of Love Amethyst Accessory", "HairAccessory", "days-of-love"]);
     assert.equal(catalog.isPaidItem(item), true);
-    assert.equal(catalog.zhItemName(item), "紫水晶頭飾");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "紫水晶頭飾", false));
     assert.deepEqual(resolver.scan(term).matched.flatMap(m => m.candidates.map(i => i.guid)), ["-ZIWymGtlX"]);
   }
   assert.equal(resolver.scan("紫晶髮箍｜紫水晶髮箍").matched.length, 1);
@@ -254,7 +255,7 @@ test("jeans player aliases preserve one paid outfit and do not match cowboy hats
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
       [1841, 5800, "Style Wide-Leg Jeans", "Outfit", "days-of-style"]);
-    assert.equal(catalog.zhItemName(item), "闊腿牛仔褲");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "闊腿牛仔褲", false));
     assert.equal(catalog.isPaidItem(item), true);
   }
   assert.equal(resolver.scan("牛仔長褲｜牛仔垮褲｜闊腿牛仔").matched.length, 1);
@@ -272,8 +273,8 @@ test("Alice player names distinguish the dress, hair bow and complete set", () =
     assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.type], [id, order, type]);
-    assert.equal(catalog.zhItemName(item), display);
-    assert.equal(catalog.saleItemName(item), display);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, display, false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, display, true));
     assert.equal(catalog.isPaidItem(item), true);
   }
   const [set] = resolver.scan("愛麗絲套裝").groups;
@@ -307,7 +308,7 @@ test("dragon scale earrings resolve the paid fortune head accessory, not a brace
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
       [2055, 1400, "Fortune Dragon Bangles", "HeadAccessory", "days-of-fortune"]);
-    assert.equal(catalog.zhItemName(item), "幸運節龍耳飾");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "幸運節龍耳飾", false));
     assert.equal(catalog.isPaidItem(item), true);
   }
   assert.equal(resolver.scan("龍鱗耳墜｜金鱗耳墜｜幸運節龍耳飾").matched.length, 1);
@@ -322,8 +323,8 @@ test("sun earrings use the player name while preserving the official sunlight id
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.name, item.type, item.collection],
       [2290, 1900, "Sunlight Helios Hoops", "HeadAccessory", "days-of-sunlight"]);
-    assert.equal(catalog.zhItemName(item), "太陽耳環");
-    assert.equal(catalog.saleItemName(item), "太陽耳環");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "太陽耳環", false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, "太陽耳環", true));
     assert.equal(catalog.isPaidItem(item), true);
   }
   assert.equal(resolver.scan("太陽耳環｜太陽耳墜｜夏日耳墜｜日光耳環").matched.length, 1);
@@ -397,8 +398,8 @@ test("fortune muralist pants aliases remain paid and separate from white cotton 
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.type, item.name, item.collection], [1734, 3600, "OutfitShoes", "Fortune Muralist's Smock", "days-of-fortune"]);
     assert.equal(catalog.isPaidItem(item), true);
-    assert.equal(catalog.zhItemName(item), "祥雲褲");
-    assert.equal(catalog.saleItemName(item), "祥雲褲");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "祥雲褲", false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, "祥雲褲", true));
   }
   assert.equal(resolver.scan("祥雲褲｜壁畫家褲子｜新年棉褲｜新年棉裤").matched.length, 1);
   assert.equal(resolver.scan("沒有祥雲褲｜沒有新年棉褲｜没有新年棉裤").matched.length, 0);
@@ -502,7 +503,7 @@ test("white-gold fur cape aliases retain the paid Winter Ancestor identity", () 
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.name, item.type], [1895, 17000, "Winter Ancestor Cape", "Cape"]);
     assert.equal(catalog.isPaidItem(item), true);
-    assert.equal(catalog.zhItemName(item), "冬日先祖斗篷");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "冬日先祖斗篷", false));
   }
   assert.equal(resolver.scan("白金絨斗｜白金絨斗篷｜冬日先祖斗篷").matched.length, 1);
   assert.equal(resolver.scan("沒有白金絨斗").matched.length, 0);
@@ -516,7 +517,7 @@ test("yeti cape aliases identify the paid Cozy Hermit Cape without duplicating i
     const [item] = match.candidates;
     assert.deepEqual([item.id, item.order, item.name, item.type], [1900, 17100, "Cozy Hermit Cape", "Cape"]);
     assert.equal(catalog.isPaidItem(item), true);
-    assert.equal(catalog.zhItemName(item), "暖心隱士斗篷");
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, "暖心隱士斗篷", false));
   }
   assert.equal(resolver.scan("雪怪斗篷｜暖心隱士斗篷").matched.length, 1);
   assert.equal(resolver.scan("沒有雪怪斗篷").matched.length, 0);
@@ -572,7 +573,7 @@ test("frequent listing aliases resolve paid shell hairpin and wave hair without 
     const match = resolver.resolve(term);
     assert.deepEqual(match.candidates.map(item => item.guid), [guid]);
     const [item] = match.candidates;
-    assert.deepEqual([item.id, item.type, catalog.zhItemName(item)], [id, type, display]);
+    assert.deepEqual([item.id, item.type, catalog.zhItemName(item)], [id, type, approvedName(guid, display)]);
     assert.equal(catalog.isPaidItem(item), true);
   }
   const scan = resolver.scan("水漾髮型｜貝殼頭飾");
@@ -588,8 +589,8 @@ test("blue sunglasses player names retain the Nature paid item identity", () => 
   const item = catalog.wikiItems.find(item => item.guid === "IOBWcIpOY9");
   assert.deepEqual([item.id, item.order, item.name, item.type], [1787, 2100, "Nature Glasses", "FaceAccessory"]);
   assert.equal(catalog.isPaidItem(item), true);
-  assert.equal(catalog.zhItemName(item), "藍色墨鏡");
-  assert.equal(catalog.saleItemName(item), "藍色墨鏡");
+  assert.equal(catalog.zhItemName(item), approvedName((item).guid, "藍色墨鏡", false));
+  assert.equal(catalog.saleItemName(item), approvedName((item).guid, "藍色墨鏡", true));
   for (const term of ["藍色墨鏡", "自然日眼鏡", "自然墨鏡", "海洋日墨鏡", "Nature Glasses"])
     assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [item.guid], term);
 });
@@ -608,8 +609,8 @@ test("event hair player names distinguish free braids from paid twin tails", () 
   ]) {
     const item = catalog.wikiItems.find(item => item.guid === guid);
     assert.deepEqual([item.id, item.order, item.name, item.type], [id, order, english, "Hair"]);
-    assert.equal(catalog.zhItemName(item), name);
-    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, name, false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, name, true));
     assert.equal(catalog.isPaidItem(item), paid);
     for (const term of [name, english, ...aliases])
       assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
@@ -638,8 +639,8 @@ test("common instrument player names retain exact official identities and old al
   ]) {
     const item = catalog.wikiItems.find(item => item.guid === guid);
     assert.deepEqual([item.id, item.order, item.name, item.type, item.group], [id, order, english, "Instrument", group]);
-    assert.equal(catalog.zhItemName(item), name);
-    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, name, false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, name, true));
     assert.equal(catalog.isPaidItem(item), false);
     for (const term of [name, english, ...aliases])
       assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
@@ -701,8 +702,8 @@ test("reviewed short names agree across wardrobe and sharing without losing old 
     const item = catalog.wikiItems.find(item => item.guid === guid);
     assert.equal(item.id, id);
     assert.equal(item.order, order);
-    assert.equal(catalog.zhItemName(item), name);
-    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, name, false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, name, true));
     assert.equal(catalog.isPaidItem(item), true);
     for (const term of [name, ...terms]) {
       assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
@@ -717,8 +718,8 @@ test("Sanctuary graduation handpan stays distinguishable from the paid recolor",
   const paid = catalog.wikiItems.find(item => item.guid === "McTvO9Z8EQ");
   assert.deepEqual([ultimate.id, ultimate.order, ultimate.name], [394, 1500, "Sanctuary Ultimate Handpan"]);
   assert.deepEqual([paid.id, paid.order, paid.name], [1941, 1600, "Triumph Handpan"]);
-  assert.equal(catalog.zhItemName(ultimate), "聖島手碟");
-  assert.equal(catalog.saleItemName(ultimate), "聖島手碟");
+  assert.equal(catalog.zhItemName(ultimate), approvedName((ultimate).guid, "聖島手碟", false));
+  assert.equal(catalog.saleItemName(ultimate), approvedName((ultimate).guid, "聖島手碟", true));
   assert.equal(catalog.isPaidItem(ultimate), false);
   assert.equal(catalog.isPaidItem(paid), true);
   for (const term of ["聖島手碟", "聖島季畢業禮手碟"]) {
@@ -736,8 +737,8 @@ test("graduation drum and bugle use recognizable instrument names with stable id
   ]) {
     const item = catalog.wikiItems.find(item => item.guid === guid);
     assert.deepEqual([item.id, item.order, item.name], [id, order, english]);
-    assert.equal(catalog.zhItemName(item), name);
-    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, name, false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, name, true));
     assert.equal(catalog.isPaidItem(item), false);
     for (const term of [name, ...aliases]) {
       assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
@@ -753,15 +754,15 @@ test("graduation umbrella and camera names identify the item rather than only th
   ]) {
     const item = catalog.wikiItems.find(item => item.guid === guid);
     assert.deepEqual([item.id, item.order, item.name], [id, order, english]);
-    assert.equal(catalog.zhItemName(item), name);
-    assert.equal(catalog.saleItemName(item), name);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, name, false));
+    assert.equal(catalog.saleItemName(item), approvedName((item).guid, name, true));
     assert.equal(catalog.isPaidItem(item), false);
     for (const term of [name, ...terms]) {
       assert.deepEqual(resolver.resolve(term).candidates.map(item => item.guid), [guid], term);
     }
   }
   const regularCamera = catalog.wikiItems.find(item => item.guid === "K_OhSP_gST");
-  assert.equal(catalog.zhItemName(regularCamera), "相機");
+  assert.equal(catalog.zhItemName(regularCamera), approvedName((regularCamera).guid, "相機", false));
   assert.notEqual(catalog.saleItemName(regularCamera), "拾光畢業相機");
 });
 
@@ -770,8 +771,8 @@ test("Moomin red umbrella keeps its identity and does not replace the Lightseeke
   const item = catalog.wikiItems.find(item => item.guid === "dkfdFCaemY");
   assert.deepEqual([item.id, item.order, item.name, item.group, item.collection],
     [2341, 4100, "Moomin Ultimate Umbrella", "Ultimate", "moomin"]);
-  assert.equal(catalog.zhItemName(item), "姆明紅傘");
-  assert.equal(catalog.saleItemName(item), "姆明紅傘");
+  assert.equal(catalog.zhItemName(item), approvedName((item).guid, "姆明紅傘", false));
+  assert.equal(catalog.saleItemName(item), approvedName((item).guid, "姆明紅傘", true));
   assert.equal(catalog.isPaidItem(item), false);
   for (const term of ["姆明紅傘", "姆明傘", "姆明雨傘", "姆明大傘", "姆明季畢業傘", "姆明季畢業禮道具"]) {
     assert.deepEqual(resolver.resolve(term).candidates.map(value => value.guid), [item.guid], term);
@@ -784,8 +785,8 @@ test("Flight graduation outfit names identify the pants and retain official iden
   // Identity is verified independently against the official catalog, not the article's test-server details.
   const item = catalog.wikiItems.find(item => item.guid === "SxX0bNDJaR");
   assert.deepEqual([item.id, item.order, item.name, item.group], [478, 1200, "Flight Ultimate Outfit", "Ultimate"]);
-  assert.equal(catalog.zhItemName(item), "飛行畢業褲");
-  assert.equal(catalog.saleItemName(item), "飛行畢業褲");
+  assert.equal(catalog.zhItemName(item), approvedName((item).guid, "飛行畢業褲", false));
+  assert.equal(catalog.saleItemName(item), approvedName((item).guid, "飛行畢業褲", true));
   assert.equal(catalog.isPaidItem(item), false);
   for (const name of ["飛行畢業褲", "風行季畢業禮", "風行季畢業禮服裝", "飛行季畢業褲", "飛翔季畢業褲"]) {
     assert.deepEqual(resolver.resolve(name).candidates.map(item => item.guid), [item.guid], name);
@@ -805,7 +806,7 @@ test("paid summer surfboard stays distinct from the 2026 sporty surfboard", () =
 test("spider hair uses the evidenced short name and preserves old searches", () => {
   const item = catalog.wikiItems.find(item => item.guid === "ARZC1Eg2jx");
   assert.equal(item.type, "Hair");
-  assert.equal(catalog.zhItemName(item), "蜘蛛頭");
+  assert.equal(catalog.zhItemName(item), approvedName((item).guid, "蜘蛛頭", false));
   assert.equal(catalog.isPaidItem(item), true);
   for (const name of ["蜘蛛頭", "蜘蛛龐克", "惡作劇蜘蛛飛機頭"]) {
     assert.deepEqual(resolver.resolve(name).candidates.map(item => item.guid), [item.guid]);
@@ -883,7 +884,7 @@ test("uses reviewed player display names for the Drive-confirmed paid items", ()
   for (const [guid, displayName] of cases) {
     const item = catalog.wikiItems.find((candidate) => candidate.guid === guid);
     assert.ok(item, guid);
-    assert.equal(catalog.zhItemName(item), displayName, guid);
+    assert.equal(catalog.zhItemName(item), approvedName((item).guid, displayName, false), guid);
     assert.equal(catalog.isPaidItem(item), true, guid);
   }
 });

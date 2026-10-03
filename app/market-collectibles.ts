@@ -403,7 +403,7 @@ for (const curated of curatedProfiles) {
       (curated.packageKey ? curatedPackageNames[curated.packageKey] : undefined) ??
       generated?.packageName,
     aliases: Array.from(
-      new Set([...(generated?.aliases ?? []), ...curated.aliases]),
+      new Set([...(generated?.aliases ?? []), curated.playerName, ...curated.aliases]),
     ),
     importance:
       curated.saleSection === "important" ? "important" : curated.importance,

@@ -1,4 +1,5 @@
 import marketAggregate from "./valuation-market-aggregate.json";
+import { interpolateIncreasing } from "./valuation-reference";
 
 export type MarketBreakClass = "none" | "slight" | "medium" | "big";
 export type MarketAccountStyle = "simple" | "regular";
@@ -30,22 +31,13 @@ type MarketValidationStatus =
   | "legacy-unvalidated"
   | "unvalidated";
 
-const validationStatus =
-  (marketAggregate as { validationStatus?: string }).validationStatus === "validated" ||
-  (marketAggregate as { validationStatus?: string }).validationStatus === "legacy-unvalidated"
-    ? (marketAggregate as { validationStatus?: "validated" | "legacy-unvalidated" }).validationStatus
-    : "unvalidated";
-
 /** A UI-safe summary of whether the published aggregate passed the full model gates. */
 export const marketValidation = {
-  status: validationStatus as MarketValidationStatus,
-  isValidated: validationStatus === "validated",
-  confidenceCap:
-    validationStatus === "validated" ? "high" : "low",
-  label:
-    validationStatus === "validated"
-      ? "市場驗證完成"
-      : "資料不足・參考估價",
+  // The manual-reference revision has not passed a full holdout evaluation.
+  status: "unvalidated" as MarketValidationStatus,
+  isValidated: false,
+  confidenceCap: "low",
+  label: "人工行情・參考估價",
 } as const;
 
 export const classifyBreakClass = (
@@ -103,3 +95,11 @@ export const marketPackageMultiplier = (
 
 export const marketAccountStyleMultiplier = (key: MarketAccountStyle) =>
   marketAggregate.modifiers.accountStyle[key].multiplier;
+
+export const marketPackageMultiplierForCount = (count: number) =>
+  interpolateIncreasing(Math.min(count, 100), [
+    [0, marketPackageMultiplier("few")],
+    [15, marketPackageMultiplier("medium")],
+    [40, marketPackageMultiplier("many")],
+    [100, marketPackageMultiplier("hundred")],
+  ]);

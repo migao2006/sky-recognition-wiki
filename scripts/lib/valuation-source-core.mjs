@@ -403,6 +403,7 @@ export const valuationModelFeaturesFor = (row) => {
     valuationModelInputKeys.map((key) => [key, value[key]]),
   );
   result.confidence = value.confidence;
+  if (value.modelRevision != null) result.modelRevision = value.modelRevision;
   if (!hasCompleteValuationModelFeatures(result)) return null;
   if (row?.valuation_model_schema_version === 5) {
     const bindingRisk = bindingRiskForModelEvidence(row);
@@ -508,7 +509,7 @@ const stableValuationModel = (row) => {
   const value = row.valuation_model ?? row.valuationModel ?? row.model_features;
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return Object.fromEntries(
-    [...valuationModelInputKeys, "confidence"].map((key) => [key, value[key] ?? null]),
+    [...valuationModelInputKeys, "confidence", ...(value.modelRevision != null ? ["modelRevision"] : [])].map((key) => [key, value[key] ?? null]),
   );
 };
 export const stableRowKey = (row, { accountTrim = true } = {}) =>

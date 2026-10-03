@@ -342,7 +342,7 @@ export function ValuationStep({
             <DeferredDetails
               summary={
                 <>
-                  <b>查看全部季節價位</b>
+                  <b>歷史季節樣本參考</b>
                   <span>{runtime.seasonPriceBands.length} 季</span>
                 </>
               }

@@ -242,6 +242,8 @@ export const predictValuationAggregate = (
   } = {},
 ) => {
   const legacyBaseline = allowLegacyBaseline && hasLegacyBaselinePredictor(aggregate);
+  // Legacy replay cannot certify the new reference curve.
+  if (sample.modelFeatures?.modelRevision != null) return null;
   if (
     aggregate?.provenance?.predictorSchema === "valuation_model" &&
     !hasFullModelPredictor(aggregate) &&

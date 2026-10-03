@@ -1,3 +1,4 @@
+import { manualReferenceBase, referencePackageValue, valuationRevision } from "./valuation-reference";
 import {
   accountResourceAmount,
   type BindingKey,
@@ -15,7 +16,7 @@ import {
   classifyBreakClass,
   marketAccountStyleMultiplier,
   marketBreakMultiplier,
-  marketPackageMultiplier,
+  marketPackageMultiplierForCount,
   marketValidation,
   valuationMarketAggregate,
   type MarketAccountStyle,
@@ -72,6 +73,7 @@ type ValuationSeasonRow = SeasonPriceBand & {
   completion: number;
 };
 type ValuationModelFeatures = {
+  modelRevision: string;
   baseLow: number;
   baseHigh: number;
   breakMultiplier: number;
@@ -338,17 +340,18 @@ export const estimateValuation = ({
       },
     ];
   });
+  const manualBase = manualReferenceBase(analysis.startSeasonSlug);
   let low = 500;
   let high = 1200;
   const startBand = analysis.startSeasonSlug
     ? seasonBandBySlug.get(analysis.startSeasonSlug)
     : undefined;
   if (startBand) {
-    low = startBand.low;
-    high = startBand.high;
+    low = manualBase?.low ?? startBand.low;
+    high = manualBase?.high ?? startBand.high;
     contributions.push({
       group: "season",
-      label: "起始畢業季基準",
+      label: manualBase ? "人工整號基準（已扣參考禮包）" : "起始畢業季基準",
       low,
       high,
     });
@@ -373,8 +376,8 @@ export const estimateValuation = ({
       if (row.slug !== analysis.startSeasonSlug || !row.selected || row.selected >= row.expected) return total;
       const missingRatio = Math.max(0, 1 - row.completion);
       return {
-        low: total.low + row.contributionLow * missingRatio,
-        high: total.high + row.contributionHigh * missingRatio,
+        low: total.low + (manualBase?.low ?? row.contributionLow) * missingRatio,
+        high: total.high + (manualBase?.high ?? row.contributionHigh) * missingRatio,
       };
     },
     { low: 0, high: 0 },
@@ -408,12 +411,12 @@ export const estimateValuation = ({
   const canonicalPackageCount = packageMap.size;
   const packageTier = classifyPackageTier(canonicalPackageCount);
   const salePackageTier = classifySalePackageTier(canonicalPackageCount);
-  const packageMarketMultiplier = marketPackageMultiplier(packageTier.key);
+  const packageMarketMultiplier = manualBase ? 1 : marketPackageMultiplierForCount(canonicalPackageCount);
   const packageWeightTotal = [...packageMap.values()].reduce(
     (sum, item) => sum + packageValuationMultiplier(item),
     0,
   );
-  for (const item of packageMap.values()) {
+  for (const item of manualBase ? [] : packageMap.values()) {
     const multiplier = packageValuationMultiplier(item);
     const base = packageWeightTotal
       ? (packageTier.premium * packageMarketMultiplier * multiplier) /
@@ -426,9 +429,18 @@ export const estimateValuation = ({
       high: Math.round(base * 1.15),
     });
   }
+  if (manualBase) {
+    const value = referencePackageValue(analysis.startSeasonSlug, canonicalPackageCount);
+    if (canonicalPackageCount) contributions.push({ group: "package", label: `連續禮包加值・${canonicalPackageCount} 禮`, low: value, high: value });
+    warnings.push("人工行情校準，非成交樣本；一般限定收藏已含於整號基準，不重複加值。");
+    if (analysis.startSeasonSlug === "enchantment"
+      ? canonicalPackageCount < 60 || canonicalPackageCount > 100
+      : canonicalPackageCount !== 100)
+      warnings.push("禮包數超出人工校準點，價格差額為曲線外推。");
+  }
   const packageKeys = new Set(packageMap.keys());
   const limitedKeys = new Set<string>();
-  for (const item of analysis.limited) {
+  for (const item of manualBase ? [] : analysis.limited) {
     if (isChinaOnlyItem(item)) {
       warnings.push("國服限定物品不列入國際服參考價格。");
       continue;
@@ -481,8 +493,8 @@ export const estimateValuation = ({
   const capContext = { conservative: analysis.conservativeAddOnCaps };
   const packageCap = packageValueCap(canonicalPackageCount, capContext);
   const limitedCap = limitedValueCap(limitedKeys.size, capContext);
-  const packageLow = Math.min(rawPackageLow, packageCap.low);
-  const packageHigh = Math.min(rawPackageHigh, packageCap.high);
+  const packageLow = manualBase ? rawPackageLow : Math.min(rawPackageLow, packageCap.low);
+  const packageHigh = manualBase ? rawPackageHigh : Math.min(rawPackageHigh, packageCap.high);
   const limitedLow = Math.min(rawLimitedLow, limitedCap.low);
   const limitedHigh = Math.min(rawLimitedHigh, limitedCap.high);
   if (rawPackageLow > packageLow || rawPackageHigh > packageHigh) {
@@ -562,6 +574,7 @@ export const estimateValuation = ({
       ? 1.03
       : 1;
   const modelFeatures: ValuationModelFeatures = {
+    modelRevision: valuationRevision,
     baseLow,
     baseHigh,
     breakMultiplier,
