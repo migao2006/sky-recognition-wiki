@@ -80,8 +80,12 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await expect(page.getByText("更多匯出方式")).toHaveCount(0);
   await expect(page.locator(".valuation-contributions")).toHaveCount(0);
   await expect(page.locator(".valuation-season-table")).toHaveCount(0);
-  await page.getByText("歷史季節樣本參考").click();
+  await expect(page.locator(".model-price")).toHaveText("資料不足");
+  await expect(page.locator(".showcase-price strong")).toHaveText("資料不足");
+  await page.getByText("各季新行情狀態").click();
   await expect(page.locator(".valuation-season-table")).toBeVisible();
+  await expect(page.locator(".valuation-season-table tbody tr")).toHaveCount(30);
+  await expect(page.locator(".valuation-season-table")).not.toContainText("NT$");
   await page.getByText("估價依據").click();
   await expect(page.locator(".valuation-method p")).toBeVisible();
   await page.evaluate(() => {

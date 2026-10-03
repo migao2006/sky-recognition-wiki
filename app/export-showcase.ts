@@ -465,7 +465,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.font = "900 48px system-ui";
     ctx.fillText(
       valuation.midpoint === null
-        ? "NT$ —"
+        ? "資料不足"
         : `NT$ ${valuation.midpoint.toLocaleString("zh-TW")}`,
       pad + 28,
       pad + 106,
@@ -474,7 +474,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.font = "700 18px system-ui";
     const range = valuation.range
       ? `價格區間 NT$ ${valuation.range.low.toLocaleString("zh-TW")}～NT$ ${valuation.range.high.toLocaleString("zh-TW")}`
-      : "選取估價物品後顯示";
+      : "尚無足夠的新台幣行情";
     ctx.fillText(range, pad + 28, pad + 142);
     ctx.fillText(
       `估價完整度 ${valuation.completeness}% · ${valuation.confidence} · 已納入 ${valuation.itemCount} 件`,
@@ -484,7 +484,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.fillStyle = "#8fa6c2";
     ctx.font = "600 15px system-ui";
     ctx.fillText(
-      valuation.highlights.slice(0, 5).join("　") || "尚未選取估價物品",
+      valuation.highlights.slice(0, 5).join("　") || "不沿用舊價格或固定加值",
       pad + 28,
       pad + 206,
     );

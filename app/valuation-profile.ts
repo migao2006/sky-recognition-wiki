@@ -1,6 +1,3 @@
-import marketAggregate from "./valuation-market-aggregate.json";
-import { interpolateIncreasing } from "./valuation-reference";
-
 export type MarketBreakClass = "none" | "slight" | "medium" | "big";
 export type MarketAccountStyle = "simple" | "regular";
 export type PackageTierKey = "few" | "medium" | "many" | "hundred";
@@ -24,21 +21,7 @@ export const marketPackageTierNames: Record<PackageTierKey, string> = {
   hundred: "百禮",
 };
 
-export const valuationMarketAggregate = marketAggregate;
-
-type MarketValidationStatus =
-  | "validated"
-  | "legacy-unvalidated"
-  | "unvalidated";
-
-/** A UI-safe summary of whether the published aggregate passed the full model gates. */
-export const marketValidation = {
-  // The manual-reference revision has not passed a full holdout evaluation.
-  status: "unvalidated" as MarketValidationStatus,
-  isValidated: false,
-  confidenceCap: "low",
-  label: "人工行情・參考估價",
-} as const;
+export const marketValidation = { status: "unvalidated", isValidated: false, label: "新行情模型" } as const;
 
 export const classifyBreakClass = (
   completion: ReadonlyMap<string, { selected: number; expected: number }>,
@@ -86,20 +69,7 @@ export const classifyAccountStyle = ({
     ? "simple"
     : "regular";
 
-export const marketBreakMultiplier = (key: MarketBreakClass) =>
-  marketAggregate.modifiers.breakClass[key].multiplier;
 
-export const marketPackageMultiplier = (
-  key: PackageTierKey,
-) => marketAggregate.modifiers.packageTier[key].multiplier;
-
-export const marketAccountStyleMultiplier = (key: MarketAccountStyle) =>
-  marketAggregate.modifiers.accountStyle[key].multiplier;
-
-export const marketPackageMultiplierForCount = (count: number) =>
-  interpolateIncreasing(Math.min(count, 100), [
-    [0, marketPackageMultiplier("few")],
-    [15, marketPackageMultiplier("medium")],
-    [40, marketPackageMultiplier("many")],
-    [100, marketPackageMultiplier("hundred")],
-  ]);
+export type SalePackageTierKey = "few" | "medium" | "many";
+export const classifySalePackageTier = (count: number): { key: SalePackageTierKey; label: string } =>
+  count >= 90 ? { key: "many", label: "多禮" } : count >= 60 ? { key: "medium", label: "中禮" } : { key: "few", label: "少禮" };

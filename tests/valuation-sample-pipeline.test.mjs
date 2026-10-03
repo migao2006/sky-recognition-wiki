@@ -31,7 +31,7 @@ const commandOptions = {
   },
 };
 
-test("keeps complete evidence consistent from backup through audit and validation", async () => {
+test("preserves new evidence but rejects legacy certification", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();
   const backupPath = new URL(`valuation-pipeline-${id}.json`, work);
@@ -92,7 +92,7 @@ test("keeps complete evidence consistent from backup through audit and validatio
     const report = JSON.parse(validationFailure.stdout);
 
     assert.equal(candidate.predictorCoverage.eligibleRows, 1);
-    assert.equal(candidate.predictorCoverage.completeRows, 1);
+    assert.equal(candidate.predictorCoverage.completeRows, 0);
     assert.equal(report.criteria.candidateRebuild.pass, true);
     // Evidence remains complete, but legacy replay must not certify a new
     // manual-reference revision it cannot rebuild.

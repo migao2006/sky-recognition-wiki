@@ -36,12 +36,12 @@ export function ShowcasePreview({
       </header>
       {preset === "valuation" && (
         <div className="showcase-price">
-          <span>刊登樣本中位估算</span>
-          <strong>{estimate ? formatTwd(estimate.midpoint) : "NT$ —"}</strong>
+          <span>新行情模型</span>
+          <strong>{estimate?.midpoint != null ? formatTwd(estimate.midpoint) : "資料不足"}</strong>
           <small>
-            {estimate
+            {estimate?.range
               ? `價格區間 ${formatTwd(estimate.range.low)}～${formatTwd(estimate.range.high)}`
-              : "選取估價物品後顯示"}
+              : "尚無足夠的新台幣行情"}
           </small>
         </div>
       )}

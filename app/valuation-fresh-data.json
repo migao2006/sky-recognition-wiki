@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "revision": "fresh-candidate-v1",
+  "asOf": "2026-10-04",
+  "validation": "unvalidated",
+  "model": null,
+  "sourceRows": 622,
+  "foreignRows": 622,
+  "eligibleRows": 0,
+  "collectionComplete": false,
+  "reason": "No freshly reviewed Taiwan cohort qualifies for numerical fitting. Foreign listing prices are not converted into Taiwan valuations."
+}

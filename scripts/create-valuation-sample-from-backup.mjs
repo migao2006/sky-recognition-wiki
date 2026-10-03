@@ -146,10 +146,9 @@ const row = {
   snapshot_hash: snapshotHash,
   inventory_complete: true,
   bindings_complete: true,
-  // v5 only discounts an incomplete graduation at the account's starting
-  // season. Later gaps remain part of the break classification, so they must
-  // not also be subtracted as independent season-value penalties.
-  valuation_model_schema_version: 5,
+  // Raw fresh predictors are not the legacy v5 numeric price adjustments.
+  // Preserve source evidence, but legacy validation must reject this revision.
+  valuation_model_schema_version: 6,
   model_evidence: {
     bindings: Object.fromEntries(
       accountConfig.bindingKeys.map((key) => [key, imported.bindings[key]]),
@@ -185,5 +184,7 @@ console.log(JSON.stringify({
   recognized_items: chosen.length,
   start_season_slug: row.start_season_slug,
   price_twd: row.price_twd,
-  predictor_complete: true,
+  predictor_complete: false,
+  predictor_revision: estimate.modelFeatures.modelRevision,
+  valuation_available: estimate.midpoint !== null,
 }, null, 2));

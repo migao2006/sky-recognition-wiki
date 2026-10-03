@@ -15,8 +15,8 @@ import {
   marketBreakClassNames,
   marketPackageTierNames,
   marketValidation,
-} from "./valuation-market";
-import type { SeasonConfidence } from "./valuation-season-bands";
+} from "./valuation-profile";
+import type { SeasonConfidence, SeasonPriceBand } from "./valuation-season-bands";
 import {
   ShowcasePreview,
   showcasePresetNames,
@@ -237,16 +237,16 @@ export function ValuationStep({
           <article className="valuation-verdict">
             <span>
               {marketValidation.label}
-              {valuationEstimate
+              {valuationEstimate?.status === "unvalidated"
                 ? ` · ${confidenceNames[valuationEstimate.confidence]}`
                 : ""}
             </span>
             <h3 className="model-price">
-              {valuationEstimate
+              {valuationEstimate?.midpoint != null
                 ? formatTwd(valuationEstimate.midpoint)
-                : "NT$ —"}
+                : "資料不足"}
             </h3>
-            {valuationEstimate && (
+            {valuationEstimate?.range && (
               <div className="valuation-range">
                 價格區間 {formatTwd(valuationEstimate.range.low)}～
                 {formatTwd(valuationEstimate.range.high)}
@@ -342,7 +342,7 @@ export function ValuationStep({
             <DeferredDetails
               summary={
                 <>
-                  <b>歷史季節樣本參考</b>
+                  <b>各季新行情狀態</b>
                   <span>{runtime.seasonPriceBands.length} 季</span>
                 </>
               }
@@ -393,42 +393,13 @@ export function ValuationStep({
                 <br />
               </>
             )}
-            依季節完成度、禮包、限定、綁定與資源加權；價格以近期台幣刊登樣本推估，實際交易條件可能不同。
+            新模型只採重新核對的台幣整號行情，不沿用舊季節底價、禮包上限或固定資源加價。
             <br />
-            資源採小額封頂，季卡項鍊不代表畢業；國服資料不混入台幣價格，結果僅供參考。
+            新取得 {runtime.valuationSampleSummary.sourceRows} 筆海外刊登，僅供分市場研究；
+            可納入新台幣模型 {runtime.valuationSampleSummary.eligibleRows} 筆
+            （{runtime.valuationSampleSummary.asOf}）。資料不足時不顯示數字估價。
             <br />
-            資料：
-            {runtime.valuationSampleSummary.sourceRows.toLocaleString(
-              "zh-TW",
-            )}{" "}
-            筆帳號樣本，其中 {runtime.valuationSampleSummary.eligibleRows}{" "}
-            筆台幣刊登樣本納入推斷（
-            {runtime.valuationSampleSummary.asOf}）。
-            本次納入 {runtime.valuationSampleSummary.driveEligibleRows} 筆雲端市場文案、
-            {runtime.valuationSampleSummary.facebookEligibleRows} 筆社團刊登價與
-            {runtime.valuationSampleSummary.marketplaceEligibleRows} 筆公開交易平台刊登；
-            公開平台、社團刊登與資料完整度採不同權重。
-            <a
-              href="https://drive.google.com/drive/folders/1lX7g1HnugqZWgIfL47CTmbp6-uHUfyXm"
-              target="_blank"
-              rel="noreferrer"
-            >
-              雲端市場樣本
-            </a>
-            、
-            <a
-              href="https://m.kejinshou.com/report/high/d_28268174"
-              target="_blank"
-              rel="noreferrer"
-            >
-              中國估價案例
-            </a>
-            、
-            <a href="https://skygj.cn/" target="_blank" rel="noreferrer">
-              SKY 估價平台
-            </a>
-            ；另以 {runtime.valuationSampleSummary.secondaryMarketRows}{" "}
-            筆國服資料校驗趨勢。
+            衣櫃、備份與圖片匯出仍可正常使用。
           </p>
         </DeferredDetails>
       </section>
@@ -456,28 +427,11 @@ export function ValuationStep({
   );
 }
 
-type SeasonRow = {
-  slug: string;
-  low: number;
-  median: number;
-  high: number;
-  contributionLow: number;
-  contributionHigh: number;
-  confidence: SeasonConfidence;
-  sampleCount: number;
-  effectiveWeight: number;
-  evidenceBreakdown: {
-    directSale: number;
-    professionalEstimate: number;
-    commentSignal: number;
-  };
-  completion?: number;
-};
+type SeasonRow = SeasonPriceBand & { completion?: number };
 
 function SeasonRows({
   rows,
   seasonZh,
-  confidenceNames: names,
   includeCompletion = false,
 }: {
   rows: readonly SeasonRow[];
@@ -493,7 +447,6 @@ function SeasonRows({
             <th>季節</th>
             {includeCompletion && <th>完成</th>}
             <th>起季帳號</th>
-            <th>單季加價</th>
             <th>證據</th>
           </tr>
         </thead>
@@ -504,17 +457,8 @@ function SeasonRows({
               {includeCompletion && (
                 <td>{Math.round((row.completion ?? 0) * 100)}%</td>
               )}
-              <td>
-                {formatTwd(row.low)}～{formatTwd(row.high)}
-                <small>中位 {formatTwd(row.median)}</small>
-              </td>
-              <td>
-                {formatTwd(row.contributionLow)}～
-                {formatTwd(row.contributionHigh)}
-              </td>
-              <td>
-                刊登 {row.evidenceBreakdown.directSale} · {names[row.confidence]}
-              </td>
+              <td>資料不足</td>
+              <td>新台幣樣本 {row.sampleCount}</td>
             </tr>
           ))}
         </tbody>

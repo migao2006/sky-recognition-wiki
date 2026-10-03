@@ -15,7 +15,7 @@ import type { ValuationAnalysis, ValuationEstimate } from "./valuation-analysis"
 import {
   marketBreakClassNames,
   marketPackageTierNames,
-} from "./valuation-market";
+} from "./valuation-profile";
 import type { SeasonConfidence } from "./valuation-season-bands";
 import { showcasePresetNames } from "./valuation-showcase-preview";
 import type { ValuationRuntimeCapabilities } from "./use-organizer-runtime";
@@ -174,7 +174,7 @@ export const useValuationExportActions = ({
         valuation: {
           midpoint: valuationEstimate?.midpoint ?? null,
           range: valuationEstimate?.range ?? null,
-          confidence: valuationEstimate
+          confidence: valuationEstimate?.midpoint != null
             ? confidenceNames[valuationEstimate.confidence]
             : "資料不足",
           completeness: valuationAnalysis.completeness,

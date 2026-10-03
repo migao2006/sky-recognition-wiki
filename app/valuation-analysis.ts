@@ -1,49 +1,11 @@
-import { manualReferenceBase, referencePackageValue, valuationRevision } from "./valuation-reference";
-import {
-  accountResourceAmount,
-  type BindingKey,
-  type BindingStatus,
-} from "./account-config";
-import {
-  classifyPackageTier,
-  classifySalePackageTier,
-  limitedValueCap,
-  packageValueCap,
-  type SalePackageTierKey,
-} from "./valuation-calibration";
-import {
-  classifyAccountStyle,
-  classifyBreakClass,
-  marketAccountStyleMultiplier,
-  marketBreakMultiplier,
-  marketPackageMultiplierForCount,
-  marketValidation,
-  valuationMarketAggregate,
-  type MarketAccountStyle,
-  type MarketBreakClass,
-  type PackageTierKey,
-} from "./valuation-market";
-import {
-  canonicalPackageKey,
-  isChinaOnlyItem,
-  isGraduationGift,
-  isPaidItem,
-  isSeasonPendant,
-  limitedItemKind,
-  packageValuationMultiplier,
-  platformBindingForItem,
-} from "./valuation-items";
-import {
-  seasonBandBySlug,
-  type SeasonConfidence,
-  type SeasonPriceBand,
-} from "./valuation-season-bands";
+import type { BindingKey, BindingStatus } from "./account-config";
+import { classifyAccountStyle, classifyBreakClass, classifySalePackageTier,
+  type SalePackageTierKey, type MarketAccountStyle, type MarketBreakClass, type PackageTierKey } from "./valuation-profile";
+import { canonicalPackageKey, isChinaOnlyItem, isGraduationGift, isPaidItem, isSeasonPendant, platformBindingForItem } from "./valuation-items";
+import { seasonBandBySlug, type SeasonConfidence, type SeasonPriceBand } from "./valuation-season-bands";
+import { predictFreshModel, freshModelRevision } from "./valuation-fresh-core.js";
+import freshData from "./valuation-fresh-data.json";
 import type { WikiItem } from "./wiki-data";
-import { bindingRiskForCounts, calculateValuationModel } from "./valuation-model-core.js";
-import {
-  adjustConfidenceForEvidence,
-  valuationEvidenceProfile,
-} from "./valuation-season-band-core.js";
 
 export type ValuationDomain = {
   isValuationFocus: (item: WikiItem) => boolean;
@@ -72,34 +34,16 @@ type ValuationSeasonRow = SeasonPriceBand & {
   expected: number;
   completion: number;
 };
-type ValuationModelFeatures = {
-  modelRevision: string;
-  baseLow: number;
-  baseHigh: number;
-  breakMultiplier: number;
-  partialDiscountLow: number;
-  partialDiscountHigh: number;
-  packageLow: number;
-  packageHigh: number;
-  packageMarketMultiplier: number;
-  limitedLow: number;
-  limitedHigh: number;
-  resourceLow: number;
-  resourceHigh: number;
-  accountStyleMultiplier: number;
-  bindingRisk: number;
-  transferHighMultiplier: number;
-  confidence: SeasonConfidence;
-};
 export type ValuationEstimate = {
-  range: { low: number; high: number; currency: "TWD" };
-  midpoint: number;
+  status: "unavailable" | "unvalidated";
+  range: { low: number; high: number; currency: "TWD" } | null;
+  midpoint: number | null;
   confidence: SeasonConfidence;
   contributions: ValuationContribution[];
   warnings: string[];
   seasonRows: ValuationSeasonRow[];
   /** Exact numeric inputs used by the browser calculation for model replay. */
-  modelFeatures?: ValuationModelFeatures;
+  modelFeatures?: { modelRevision: string; season: string | null; packageCount: number; breakFraction: number; bindingRiskCount: number | null };
   marketProfile: {
     breakClass: MarketBreakClass;
     packageTier: PackageTierKey;
@@ -123,7 +67,6 @@ export type ValuationAnalysis = {
   packages: WikiItem[];
   limited: WikiItem[];
   startSeasonSlug: string | null;
-  conservativeAddOnCaps: boolean;
   seasonCompletion: ReadonlyMap<string, { selected: number; expected: number }>;
   completeness: number;
   issueCount: number;
@@ -132,9 +75,6 @@ export type ValuationAnalysis = {
   bindingsConfirmed?: boolean;
   getZhName: (item: WikiItem) => string;
 };
-
-export { summarizeValuationRange } from "./valuation-model-core.js";
-const roundHundred = (value: number) => Math.round(value / 100) * 100;
 
 export const analyzeValuation = ({
   chosen,
@@ -165,22 +105,6 @@ export const analyzeValuation = ({
   const startIndex = startSeasonSlug
     ? domain.graduationSeasonSlugs.indexOf(startSeasonSlug)
     : -1;
-  const recentStartIndex = domain.graduationSeasonSlugs.indexOf("moments");
-  const fallbackSeasonEvidence = domain.sortSeasonSlugs([
-    ...new Set([...pendants, ...ultimates].map((item) => item.collection)),
-  ])[0];
-  // The earliest season with graduation-reward progress is the primary
-  // market-age signal. Pendants only provide a fallback when no graduation
-  // reward is selected; partial progress is discounted later and is not a break.
-  const accountAgeEvidence = startSeasonSlug ?? fallbackSeasonEvidence;
-  const evidenceIndex = accountAgeEvidence
-    ? domain.graduationSeasonSlugs.indexOf(accountAgeEvidence)
-    : -1;
-  const conservativeAddOnCaps =
-    !accountAgeEvidence ||
-    domain.ongoingSeasonSlugs.has(accountAgeEvidence) ||
-    evidenceIndex < 0 ||
-    (recentStartIndex >= 0 && evidenceIndex >= recentStartIndex);
   const expectedSlugs =
     startIndex >= 0 ? domain.graduationSeasonSlugs.slice(startIndex) : [];
   const seasonCompletion = new Map(
@@ -206,7 +130,6 @@ export const analyzeValuation = ({
     packages,
     limited,
     startSeasonSlug,
-    conservativeAddOnCaps,
     seasonCompletion,
     completeness: Math.round(
       ([
@@ -226,397 +149,61 @@ export const analyzeValuation = ({
   };
 };
 
-const resourceValue = (
-  resources: ValuationResources | undefined,
-  conservative = false,
-) => {
-  const tier = (
-    value: number,
-    thresholds: readonly [number, number, number][],
-  ) =>
-    thresholds.reduce<[number, number]>(
-      (result, [minimum, low, high]) =>
-        value >= minimum ? [low, high] : result,
-      [0, 0],
-    );
-  const values = [
-    tier(accountResourceAmount(resources?.candles, "candles"), [
-      [200, 100, 200],
-      [500, 250, 450],
-      [1000, 500, 800],
-      [2000, 800, 1200],
-    ]),
-    tier(accountResourceAmount(resources?.hearts, "hearts"), [
-      [50, 100, 200],
-      [200, 200, 400],
-      [500, 400, 700],
-    ]),
-    tier(accountResourceAmount(resources?.ascended, "ascended"), [
-      [20, 50, 100],
-      [50, 100, 200],
-      [100, 200, 350],
-    ]),
-    [
-      Math.min(accountResourceAmount(resources?.passes, "passes"), 5) * 80,
-      Math.min(accountResourceAmount(resources?.passes, "passes"), 5) * 150,
-    ],
-  ];
-  return {
-    low: Math.min(
-      values.reduce((sum, value) => sum + value[0], 0),
-      conservative ? 250 : 1500,
-    ),
-    high: Math.min(
-      values.reduce((sum, value) => sum + value[1], 0),
-      conservative ? 400 : 2500,
-    ),
-  };
-};
-
-const isPlatformTransferable = (
-  item: WikiItem,
-  bindings: Readonly<Record<string, BindingStatus>>,
-  warnings: string[],
-  label: string,
-) => {
-  const platform = platformBindingForItem(item);
-  if (
-    !platform ||
-    bindings[platform] === "none" ||
-    bindings[platform] === "transfer"
-  )
-    return true;
-  warnings.push(`${platform} 未標示可出或綁定異常，該平台${label}不列入參考價格。`);
-  return false;
-};
-
-export const estimateValuation = ({
-  analysis,
-  resources,
-}: {
+// Whole-account model only: no per-item premiums, fixed resource prices or caps.
+export const estimateValuation = ({ analysis }: {
   analysis: ValuationAnalysis;
   resources?: ValuationResources;
 }): ValuationEstimate | null => {
   if (!analysis.valuationItems.length) return null;
-  if (!analysis.valuationItems.some((item) => !isChinaOnlyItem(item))) {
-    return {
-      range: { low: 0, high: 0, currency: "TWD" },
-      midpoint: 0,
-      confidence: "inferred",
-      contributions: [],
-      warnings: ["國服限定物品不列入國際服參考價格。"],
-      seasonRows: [],
-      marketProfile: {
-        breakClass: "big",
-        packageTier: "few",
-        salePackageTier: "few",
-        accountStyle: "simple",
-        missingSeasons: 0,
-        partialSeasons: 0,
-        completionRatio: 0,
-        effectiveSample: 0,
-        paidItemCount: 0,
-        canonicalPackageCount: 0,
-        evidenceQuality: "limited",
-        priceStage: "低資訊參考",
-        sourceConcentration: 1,
-      },
-    };
-  }
   const warnings: string[] = [];
-  const contributions: ValuationContribution[] = [];
-  const seasonRows = [...analysis.seasonCompletion.keys()].flatMap((slug) => {
-    const band = seasonBandBySlug.get(slug);
-    if (!band) return [];
-    const state = analysis.seasonCompletion.get(slug) ?? {
-      selected: 0,
-      expected: 0,
-    };
-    return [
-      {
-        ...band,
-        ...state,
-        completion: state.expected ? state.selected / state.expected : 0,
-      },
-    ];
-  });
-  const manualBase = manualReferenceBase(analysis.startSeasonSlug);
-  let low = 500;
-  let high = 1200;
-  const startBand = analysis.startSeasonSlug
-    ? seasonBandBySlug.get(analysis.startSeasonSlug)
-    : undefined;
-  if (startBand) {
-    low = manualBase?.low ?? startBand.low;
-    high = manualBase?.high ?? startBand.high;
-    contributions.push({
-      group: "season",
-      label: manualBase ? "人工整號基準（已扣參考禮包）" : "起始畢業季基準",
-      low,
-      high,
-    });
-  } else if (analysis.startSeasonSlug)
-    warnings.push("最早畢業季不在目前的市場樣本範圍，已使用保守基準。");
-  const baseLow = low;
-  const baseHigh = high;
-  const breakProfile = classifyBreakClass(analysis.seasonCompletion);
-  const breakMultiplier = marketBreakMultiplier(breakProfile.key);
-  if (breakMultiplier !== 1)
-    contributions.push({
-      group: "market",
-      label: `${breakProfile.missingSeasons} 季缺少畢業禮`,
-      low: 0,
-      high: 0,
-      percent: Math.round((breakMultiplier - 1) * 100),
-    });
-  const partialSeasonDiscount = seasonRows.reduce(
-    (total, row) => {
-      // Only the starting-season anchor assumes full graduation. Later gaps
-      // already affect the break profile; charging them at 0 -> 1 lowers value.
-      if (row.slug !== analysis.startSeasonSlug || !row.selected || row.selected >= row.expected) return total;
-      const missingRatio = Math.max(0, 1 - row.completion);
-      return {
-        low: total.low + (manualBase?.low ?? row.contributionLow) * missingRatio,
-        high: total.high + (manualBase?.high ?? row.contributionHigh) * missingRatio,
-      };
-    },
-    { low: 0, high: 0 },
-  );
-  if (partialSeasonDiscount.low || partialSeasonDiscount.high) {
-    contributions.push({
-      group: "season",
-      label: "未完成畢業禮",
-      low: -roundHundred(partialSeasonDiscount.low),
-      high: -roundHundred(partialSeasonDiscount.high),
-    });
-  }
-  const packageMap = new Map<string, WikiItem>();
-  // Keep the raw item count for diagnostics, but price tiers and caps must use
-  // one entry per real package. Multi-item sets otherwise cross tier boundaries
-  // merely because one purchase contains several catalog records.
-  const transferablePaidItems = analysis.packages.filter((item) => {
-    if (isChinaOnlyItem(item)) {
-      warnings.push("國服限定物品不列入國際服參考價格。");
+  const paid = analysis.packages.filter(item => {
+    if (isChinaOnlyItem(item)) return false;
+    const platform = platformBindingForItem(item);
+    if (platform && !["none", "transfer"].includes(analysis.bindings[platform])) {
+      warnings.push(`${platform} 綁定未能轉移，該平台禮包不計入可出禮包數。`);
       return false;
     }
-    if (!isPlatformTransferable(item, analysis.bindings, warnings, "物品"))
-      return false;
     return true;
   });
-  const paidItemCount = transferablePaidItems.length;
-  transferablePaidItems.forEach((item) => {
-    const key = canonicalPackageKey(item);
-    if (key) packageMap.set(key, item);
+  const canonicalPackageCount = new Set(paid.map(canonicalPackageKey).filter(Boolean)).size;
+  const breaks = classifyBreakClass(analysis.seasonCompletion);
+  const tier = classifySalePackageTier(canonicalPackageCount);
+  const seasonRows = [...analysis.seasonCompletion].flatMap(([slug, state]) => {
+    const band = seasonBandBySlug.get(slug);
+    return band ? [{ ...band, ...state, completion: state.expected ? state.selected / state.expected : 0 }] : [];
   });
-  const canonicalPackageCount = packageMap.size;
-  const packageTier = classifyPackageTier(canonicalPackageCount);
-  const salePackageTier = classifySalePackageTier(canonicalPackageCount);
-  const packageMarketMultiplier = manualBase ? 1 : marketPackageMultiplierForCount(canonicalPackageCount);
-  const packageWeightTotal = [...packageMap.values()].reduce(
-    (sum, item) => sum + packageValuationMultiplier(item),
-    0,
-  );
-  for (const item of manualBase ? [] : packageMap.values()) {
-    const multiplier = packageValuationMultiplier(item);
-    const base = packageWeightTotal
-      ? (packageTier.premium * packageMarketMultiplier * multiplier) /
-        packageWeightTotal
-      : 0;
-    contributions.push({
-      group: "package",
-      label: analysis.getZhName(item),
-      low: Math.round(base * 0.7),
-      high: Math.round(base * 1.15),
-    });
-  }
-  if (manualBase) {
-    const value = referencePackageValue(analysis.startSeasonSlug, canonicalPackageCount);
-    if (canonicalPackageCount) contributions.push({ group: "package", label: `連續禮包加值・${canonicalPackageCount} 禮`, low: value, high: value });
-    warnings.push("人工行情校準，非成交樣本；一般限定收藏已含於整號基準，不重複加值。");
-    if (analysis.startSeasonSlug === "enchantment"
-      ? canonicalPackageCount < 60 || canonicalPackageCount > 100
-      : canonicalPackageCount !== 100)
-      warnings.push("禮包數超出人工校準點，價格差額為曲線外推。");
-  }
-  const packageKeys = new Set(packageMap.keys());
-  const limitedKeys = new Set<string>();
-  for (const item of manualBase ? [] : analysis.limited) {
-    if (isChinaOnlyItem(item)) {
-      warnings.push("國服限定物品不列入國際服參考價格。");
-      continue;
-    }
-    const packageKey = canonicalPackageKey(item);
-    if (packageKey && packageKeys.has(packageKey)) continue;
-    const kind = limitedItemKind(item);
-    if (!isPlatformTransferable(item, analysis.bindings, warnings, "限定"))
-      continue;
-    // A collection is an event series, not a single collectible. For example,
-    // the 4th, 5th and 6th anniversary rewards share one collection but are
-    // separate limited items. Real paid bundles were already deduplicated by
-    // canonicalPackageKey above, so only collapse duplicate catalog records here.
-    const key = `${kind}:${item.guid || item.name}`;
-    if (limitedKeys.has(key)) continue;
-    limitedKeys.add(key);
-    const [itemLow, itemHigh] =
-      kind === "permanent"
-        ? [300, 800]
-        : kind === "platform"
-          ? [200, 500]
-          : kind === "annual"
-            ? [100, 300]
-            : [100, 250];
-    contributions.push({
-      group: "limited",
-      label: analysis.getZhName(item),
-      low: itemLow,
-      high: itemHigh,
-    });
-  }
-  const packageRows = contributions.filter((row) => row.group === "package");
-  const limitedRows = contributions.filter((row) => row.group === "limited");
-  const rawPackageLow = packageRows.reduce(
-    (sum, row) => sum + Math.max(0, row.low),
-    0,
-  );
-  const rawPackageHigh = packageRows.reduce(
-    (sum, row) => sum + Math.max(0, row.high),
-    0,
-  );
-  const rawLimitedLow = limitedRows.reduce(
-    (sum, row) => sum + Math.max(0, row.low),
-    0,
-  );
-  const rawLimitedHigh = limitedRows.reduce(
-    (sum, row) => sum + Math.max(0, row.high),
-    0,
-  );
-  const capContext = { conservative: analysis.conservativeAddOnCaps };
-  const packageCap = packageValueCap(canonicalPackageCount, capContext);
-  const limitedCap = limitedValueCap(limitedKeys.size, capContext);
-  const packageLow = manualBase ? rawPackageLow : Math.min(rawPackageLow, packageCap.low);
-  const packageHigh = manualBase ? rawPackageHigh : Math.min(rawPackageHigh, packageCap.high);
-  const limitedLow = Math.min(rawLimitedLow, limitedCap.low);
-  const limitedHigh = Math.min(rawLimitedHigh, limitedCap.high);
-  if (rawPackageLow > packageLow || rawPackageHigh > packageHigh) {
-    contributions.push({
-      group: "package",
-      label: "禮包加值上限",
-      low: packageLow - rawPackageLow,
-      high: packageHigh - rawPackageHigh,
-    });
-  }
-  if (rawLimitedLow > limitedLow || rawLimitedHigh > limitedHigh) {
-    contributions.push({
-      group: "limited",
-      label: "限定加值上限",
-      low: limitedLow - rawLimitedLow,
-      high: limitedHigh - rawLimitedHigh,
-    });
-  }
-  const resource = resourceValue(resources, analysis.conservativeAddOnCaps);
-  if (resource.low || resource.high)
-    contributions.push({ group: "resource", label: "帳號資源", ...resource });
-  const accountStyle = classifyAccountStyle({
-    paidItemCount: canonicalPackageCount,
-    graduationCount: analysis.ultimates.length,
-    seasonCount: analysis.seasonCompletion.size,
-  });
-  const accountStyleMultiplier = marketAccountStyleMultiplier(accountStyle);
-  if (accountStyleMultiplier !== 1)
-    contributions.push({
-      group: "market",
-      label: "簡號市場區間",
-      low: 0,
-      high: 0,
-      percent: Math.round((accountStyleMultiplier - 1) * 100),
-    });
-  const risk = bindingRiskForCounts(analysis.issueCount, analysis.keepCount);
-  if (risk < 1)
-    contributions.push({
-      group: "binding",
-      label: "綁定限制",
-      low: 0,
-      high: 0,
-      percent: Math.round((risk - 1) * 100),
-    });
-  if (
-    Object.values(analysis.bindings).some((value) => value === "transfer") &&
-    !analysis.issueCount &&
-    !analysis.keepCount
-  ) {
-    contributions.push({
-      group: "binding",
-      label: "可出綁定",
-      low: 0,
-      high: 0,
-      percent: 3,
-    });
-  }
-  const startEvidence = analysis.startSeasonSlug
-    ? valuationMarketAggregate.segments.startSeason[
-        analysis.startSeasonSlug as keyof typeof valuationMarketAggregate.segments.startSeason
-      ]
-    : undefined;
-  const evidenceProfile = valuationEvidenceProfile({
-    aggregate: valuationMarketAggregate,
-    evidence: startEvidence,
-  });
-  const confidence = adjustConfidenceForEvidence({
-    aggregate: valuationMarketAggregate,
-    confidence: startBand?.confidence ?? "inferred",
-    evidence: startEvidence,
-    validated: marketValidation.isValidated,
-  }) as SeasonConfidence;
-  const transferHighMultiplier =
-    Object.values(analysis.bindings).some((value) => value === "transfer") &&
-    !analysis.issueCount &&
-    !analysis.keepCount
-      ? 1.03
-      : 1;
-  const modelFeatures: ValuationModelFeatures = {
-    modelRevision: valuationRevision,
-    baseLow,
-    baseHigh,
-    breakMultiplier,
-    partialDiscountLow: partialSeasonDiscount.low,
-    partialDiscountHigh: partialSeasonDiscount.high,
-    packageLow,
-    packageHigh,
-    limitedLow,
-    limitedHigh,
-    resourceLow: resource.low,
-    resourceHigh: resource.high,
-    accountStyleMultiplier,
-    bindingRisk: risk,
-    transferHighMultiplier,
-    confidence,
-    packageMarketMultiplier,
+  const input = {
+    season: analysis.startSeasonSlug,
+    packageCount: canonicalPackageCount,
+    breakFraction: 1 - breaks.completionRatio,
+    bindingRiskCount: analysis.bindingsConfirmed ? analysis.issueCount + analysis.keepCount : null,
   };
-  const summary = calculateValuationModel(modelFeatures);
-  if (!analysis.startSeasonSlug)
-    warnings.push("未辨識到完整畢業季，參考價格採禮包／限定保守基準。");
-  if (!marketValidation.isValidated)
-    warnings.push("市場資料尚未通過完整模型驗證，目前為參考估價。");
+  const result = predictFreshModel(freshData.model, input);
+  if (result.status === "unavailable") {
+    warnings.push("此帳號缺少可用的新台幣行情，暫不提供數字估價；未沿用舊價格。");
+  } else {
+    warnings.push("新行情模型尚未通過獨立驗證；區間為校準樣本殘差範圍，不代表成交保證。");
+  }
+  if (!analysis.bindingsConfirmed) warnings.push("綁定尚未確認，不推測為無綁。");
+  if (!analysis.startSeasonSlug) warnings.push("未辨識到畢業進度起始季；季卡項鍊不代表畢業。");
+  warnings.push("限定收藏與資源尚無獨立加價證據，不另加固定金額；海外標價不直接換算台幣。");
   return {
-    range: { low: summary.low, high: summary.high, currency: "TWD" },
-    midpoint: summary.midpoint,
-    confidence,
-    contributions,
+    status: result.status === "unavailable" ? "unavailable" : "unvalidated",
+    range: result.range ? { ...result.range, currency: "TWD" } : null,
+    midpoint: result.midpoint,
+    confidence: "inferred",
+    contributions: [],
     warnings: [...new Set(warnings)],
     seasonRows,
-    modelFeatures,
+    modelFeatures: { modelRevision: freshModelRevision, ...input },
     marketProfile: {
-      breakClass: breakProfile.key,
-      packageTier: packageTier.key,
-      salePackageTier: salePackageTier.key,
-      accountStyle,
-      missingSeasons: breakProfile.missingSeasons,
-      partialSeasons: breakProfile.partialSeasons,
-      completionRatio: breakProfile.completionRatio,
-      effectiveSample: startEvidence?.sampleCount ?? 0,
-      paidItemCount,
-      canonicalPackageCount,
-      ...evidenceProfile,
+      breakClass: breaks.key, packageTier: tier.key, salePackageTier: tier.key,
+      accountStyle: classifyAccountStyle({ paidItemCount: canonicalPackageCount,
+        graduationCount: analysis.ultimates.length, seasonCount: analysis.seasonCompletion.size }),
+      missingSeasons: breaks.missingSeasons, partialSeasons: breaks.partialSeasons,
+      completionRatio: breaks.completionRatio, effectiveSample: 0,
+      paidItemCount: paid.length, canonicalPackageCount,
+      evidenceQuality: "limited", priceStage: "低資訊參考", sourceConcentration: 0,
     },
   };
 };

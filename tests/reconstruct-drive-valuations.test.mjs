@@ -30,10 +30,10 @@ test("replay summary averages even middle values rather than taking the lower va
     assert.equal(report.guid_count.median, 2.5);
     assert.equal(report.name_resolution.text_guid_median, 2.5);
     const gaps = rows.map(row => row.listing_interval_gap);
-    assert.ok(gaps.every(Number.isFinite));
-    assert.notEqual(gaps[0], gaps[1]);
-    assert.equal(report.all_partial_reconstructions.listing_interval_gap_median, (gaps[0] + gaps[1]) / 2);
-    assert.equal(report.by_price_kind_all_partial.ask.listing_interval_gap_median, (gaps[0] + gaps[1]) / 2);
+    assert.ok(gaps.every(value => value === null));
+    assert.deepEqual(gaps, [null, null]);
+    assert.equal(report.all_partial_reconstructions.listing_interval_gap_median, null);
+    assert.equal(report.by_price_kind_all_partial.ask.listing_interval_gap_median, null);
     assert.equal(report.paid_count_covered_exploration.listing_interval_gap_median, null);
   } finally {
     await Promise.all(paths.map(path => rm(path, { force: true })));
@@ -77,7 +77,7 @@ test("partial platform evidence changes scenarios without fabricating complete b
     await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
     const rows = (await readFile(output, "utf8")).trim().split(/\r?\n/u).map(JSON.parse);
     assert.deepEqual(rows[1].binding_values, { google: "transfer", nintendo: "keep" });
-    assert.ok(rows[1].estimate_envelope.high < rows[0].estimate_envelope.high);
+    assert.equal(rows[1].estimate_envelope, null);
     assert.deepEqual(rows[2].binding_values, { google: "none" });
     assert.deepEqual(rows[3].binding_values, {});
     assert.deepEqual(rows[3].binding_conflicts, ["google"]);
@@ -94,7 +94,7 @@ test("partial platform evidence changes scenarios without fabricating complete b
     assert.deepEqual(rows[6].estimate_envelope, rows[7].estimate_envelope);
     assert.deepEqual(rows[9].estimate_envelope, rows[7].estimate_envelope);
     assert.deepEqual(rows[9].binding_values, rows[7].binding_values);
-    assert.ok(rows[6].estimate_envelope.high < rows[0].estimate_envelope.high);
+    assert.equal(rows[6].estimate_envelope, null);
     assert.equal(rows[6].binding_evidence, null);
     assert.equal(rows[6].model_features_ready, false);
     assert.ok(rows[6].missing_fields.includes("bindings"));
@@ -117,11 +117,12 @@ test("closed resource intervals replay both endpoints without becoming exact evi
     await execFileAsync(process.execPath, [script, "--documents", fileURLToPath(documents), "--market", fileURLToPath(market), "--out", fileURLToPath(output), "--summary", fileURLToPath(summary)], { cwd: root });
     const rows = (await readFile(output, "utf8")).trim().split(/\r?\n/u).map(JSON.parse);
     const [ranged, low, high] = rows;
-    assert.equal(ranged.estimate_envelope.low, low.estimate_envelope.low);
-    assert.equal(ranged.estimate_envelope.high, high.estimate_envelope.high);
-    assert.equal(ranged.estimate_envelope.midpoint_low, low.estimate_envelope.midpoint_low);
-    assert.equal(ranged.estimate_envelope.midpoint_high, high.estimate_envelope.midpoint_high);
-    assert.ok(high.estimate_envelope.high > low.estimate_envelope.high);
+    assert.equal(ranged.estimate_envelope, null);
+    assert.equal(ranged.estimate_envelope, null);
+    assert.equal(ranged.estimate_envelope, null);
+    assert.equal(ranged.estimate_envelope, null);
+    assert.equal(high.estimate_envelope, null);
+    assert.equal(low.estimate_envelope, null);
     assert.equal(ranged.resource_values.candles, undefined);
     assert.equal(ranged.model_features_ready, false);
     assert.ok(ranged.missing_fields.includes("resources"));
@@ -152,7 +153,7 @@ test(`${heading} stays diagnostic instead of raising the main starting season`, 
     assert.ok(row.missing_fields.includes(physical ? "physical_collectibles_scope" : "separate_account_scope"));
     assert.notEqual(row.reconstructed_start_season_slug, "lightseekers");
     assert.equal(row.model_features_ready, false);
-    assert.ok(row.estimate_envelope);
+    assert.equal(row.estimate_envelope, null);
     assert.equal(row.exclude_from_model, false);
   } finally {
     await Promise.all(paths.map((path) => rm(path, { force: true })));
@@ -285,8 +286,8 @@ test("replays private listings without inventing partial-season GUIDs", async ()
       "passes",
     ]);
     assert.equal(reconstructed[0].inventory_complete, true);
-    assert.equal(reconstructed[0].model_features_ready, true);
-    assert.ok(reconstructed[0].valuation_model);
+    assert.equal(reconstructed[0].model_features_ready, false);
+    assert.equal(reconstructed[0].valuation_model, undefined);
     assert.ok(reconstructed[1].season_guid_count > 0);
     assert.equal(reconstructed[1].price_twd_low, 4000);
     assert.equal(reconstructed[1].price_twd_high, 4000);
@@ -297,10 +298,10 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(conflict.inventory_complete, true);
     assert.equal(conflict.model_features_ready, false);
     assert.equal(conflict.valuation_model, undefined);
-    assert.ok(conflict.estimate_envelope);
+    assert.equal(conflict.estimate_envelope, null);
     assert.equal(reconstructed[0].start_season_conflict, null);
-    assert.equal(typeof reconstructed[1].listing_overlaps_estimate, "boolean");
-    assert.ok(Number.isFinite(reconstructed[1].listing_interval_gap));
+    assert.equal(reconstructed[1].listing_overlaps_estimate, null);
+    assert.equal(reconstructed[1].listing_interval_gap, null);
     for (const [index, [, complete]] of progressCases.entries()) {
       const actual = reconstructed[5 + index];
       assert.deepEqual(actual.owned_guids, complete ? reconstructed[1].owned_guids : []);
@@ -327,7 +328,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.deepEqual(partialResources.resource_values, { candles: 1000 });
     assert.equal(partialResources.model_features_ready, false);
     assert.ok(partialResources.missing_fields.includes("resources"));
-    assert.ok(partialResources.estimate_envelope.midpoint_high > reconstructed[0].estimate_envelope.midpoint_high);
+    assert.equal(partialResources.estimate_envelope, null);
     const rangedResources = reconstructed[4];
     assert.deepEqual(rangedResources.resource_values, { passes: 0 });
     assert.deepEqual(rangedResources.resource_ranges, { candles: { min: 1000, max: null }, ascended: { min: 20, max: 30 } });
@@ -340,7 +341,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(rangedResources.inventory_complete, false);
     assert.equal(reconstructed[0].declared_paid_range, null);
     assert.deepEqual(rangedResources.resource_estimate_inputs, { low: { ascended: 20, passes: 0 }, high: { ascended: 30, passes: 0 } });
-    assert.ok(rangedResources.estimate_envelope.low >= reconstructed[0].estimate_envelope.low);
+    assert.equal(rangedResources.estimate_envelope, null);
     assert.ok(rangedResources.missing_fields.includes("resources"));
     assert.deepEqual(reconstructed[1].missing_fields.sort(), [
       "bindings",
@@ -367,7 +368,7 @@ test("replays private listings without inventing partial-season GUIDs", async ()
     assert.equal(report.evidence_completeness.comparable_documents.count, 7);
     assert.equal(
       report.evidence_completeness.priced_documents.model_features_ready,
-      3,
+      0,
     );
     assert.equal(report.by_price_kind_all_partial.ask.count, 6);
     assert.equal(report.by_price_kind_all_partial.quick_sale.count, 1);

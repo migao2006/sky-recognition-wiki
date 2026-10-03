@@ -5,7 +5,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
-import { valuationModelInputKeys } from "../app/valuation-model-core.js";
+import { freshModelRevision } from "../app/valuation-fresh-core.js";
 
 const execFileAsync = promisify(execFile);
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -51,7 +51,7 @@ const completeBackup = () => ({
   items: [],
 });
 
-test("creates a private replayable predictor from a complete backup", async () => {
+test("preserves raw fresh predictors without legacy compatibility", async () => {
   await mkdir(work, { recursive: true });
   const id = randomUUID();
   const backupPath = new URL(`valuation-sample-${id}.json`, work);
@@ -84,7 +84,7 @@ test("creates a private replayable predictor from a complete backup", async () =
     assert.equal(row.snapshot_hash.length, 64);
     assert.equal(row.inventory_complete, true);
     assert.equal(row.bindings_complete, true);
-    assert.equal(row.valuation_model_schema_version, 5);
+    assert.equal(row.valuation_model_schema_version, 6);
     assert.deepEqual(row.model_evidence.bindings, backup.bindings);
     assert.deepEqual(row.model_evidence.resources, {
       candles: 900,
@@ -93,7 +93,9 @@ test("creates a private replayable predictor from a complete backup", async () =
       passes: 0,
     });
     assert.match(row.evidence_signature, /^[a-f0-9]{64}$/u);
-    assert.ok(valuationModelInputKeys.every((key) => Number.isFinite(row.valuation_model[key])));
+    assert.equal(row.valuation_model.modelRevision, freshModelRevision);
+    assert.equal(row.valuation_model.season, "moments");
+    assert.equal(row.valuation_model.baseLow, undefined);
     assert.ok(!JSON.stringify(row).includes("must not leak"));
     assert.ok(!JSON.stringify(row).includes("123e4567-e89b-42d3-a456-426614174000"));
   } finally {

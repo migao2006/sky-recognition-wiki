@@ -188,9 +188,9 @@ const reconstructed = documents.map((document) => {
     ...(context.physicalCollectibles.trim() ? ["physical_collectibles_scope"] : []),
   ];
   const modelFeaturesReady =
-    !excludedFromModel && startSeasonConflict !== true && missingFields.length === 0 && Boolean(knownEstimate?.modelFeatures);
+    !excludedFromModel && startSeasonConflict !== true && missingFields.length === 0 && Boolean(knownEstimate?.range && knownEstimate?.modelFeatures);
   const envelope =
-    optimistic && restricted
+    optimistic?.range && restricted?.range && optimistic.midpoint != null && restricted.midpoint != null
       ? {
           low: Math.min(optimistic.range.low, restricted.range.low),
           high: Math.max(optimistic.range.high, restricted.range.high),

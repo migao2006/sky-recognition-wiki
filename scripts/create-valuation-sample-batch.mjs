@@ -140,6 +140,7 @@ const countsByStartSeason = Object.fromEntries(
 console.log(JSON.stringify({
   output: relative(projectRoot, outputPath),
   samples: samples.length,
-  completePredictors: samples.filter((sample) => sample.valuation_model).length,
+  completePredictors: 0, // Fresh raw predictors are not validated legacy price inputs.
+  rawPredictors: samples.filter((sample) => sample.valuation_model).length,
   countsByStartSeason,
 }, null, 2));

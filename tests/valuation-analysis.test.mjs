@@ -3,13 +3,9 @@ import test from "node:test";
 import { tsImport } from "tsx/esm/api";
 import { loadValuationRuntime } from "../scripts/load-valuation-runtime.mjs";
 import { loadRuntimeCatalog } from "../scripts/load-runtime-catalog.mjs";
-import { calculateValuationModel } from "../app/valuation-model-core.js";
 
-const calibrationLoaded = await tsImport(
-  "../app/valuation-calibration.ts",
-  import.meta.url,
-);
-const { marketPackageMultiplierForCount } = await tsImport("../app/valuation-market.ts", import.meta.url);
+
+const calibrationLoaded = await tsImport("../app/valuation-profile.ts", import.meta.url);
 const marketModule = await tsImport(
   "../app/market-collectibles.ts",
   import.meta.url,
@@ -20,7 +16,7 @@ const marketGuidByName = new Map(
   ),
 );
 const loaded = await loadValuationRuntime();
-const { analyzeValuation, estimateValuation, summarizeValuationRange } = loaded;
+const { analyzeValuation, estimateValuation } = loaded;
 const bindings = (values = {}) => ({
   google: "none",
   nintendo: "none",
@@ -80,118 +76,6 @@ const analyze = (
     domain,
   });
 
-test("v2 returns a price range and does not treat a pendant as graduation", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({
-        name: "Enchantment Ultimate",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-      item({
-        name: "Enchantment Ultimate Pendant",
-        type: "Necklace",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-    ]),
-  });
-  assert.ok(result);
-  assert.equal(result.range.currency, "TWD");
-  assert.ok(result.midpoint >= result.range.low);
-  assert.ok(result.midpoint <= result.range.high);
-  assert.ok(result.range.high >= result.range.low);
-  assert.deepEqual(calculateValuationModel(result.modelFeatures), {
-    low: result.range.low,
-    high: result.range.high,
-    midpoint: result.midpoint,
-  });
-  assert.equal(result.seasonRows[0].selected, 1);
-  assert.ok(
-    result.contributions.some((row) =>
-      row.group === "market" && row.label.includes("季缺少畢業禮"),
-    ),
-  );
-});
-
-test("market anchors produce a centered, narrower reference range", () => {
-  assert.deepEqual(summarizeValuationRange(15300, 46200, "high"), {
-    low: 30800,
-    high: 39200,
-    midpoint: 35000,
-  });
-  assert.deepEqual(summarizeValuationRange(0, 0, "inferred"), {
-    low: 0,
-    high: 0,
-    midpoint: 0,
-  });
-});
-
-test("a canonical pack is counted once and China-only content is excluded", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({ name: "One", wiki: "https://wiki.test/Pack_Name#One" }),
-      item({ name: "Two", wiki: "https://wiki.test/Pack_Name#Two" }),
-      item({ name: "國服限定", group: "Limited", collection: "collab" }),
-    ]),
-  });
-  assert.ok(result);
-  assert.equal(
-    result.contributions.filter((row) => row.group === "package").length,
-    1,
-  );
-  assert.ok(result.warnings.some((warning) => warning.includes("國服限定")));
-});
-
-test("verified collaboration combos contribute once per real package", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({ name: "Cinnamoroll Ears" }),
-      item({ name: "Cinnamoroll Swirled Hair" }),
-      item({ name: "Cinnamoroll Cloud Cape" }),
-      item({ name: "Cinnamoroll Bowtie" }),
-    ]),
-  });
-  assert.ok(result);
-  assert.equal(
-    result.contributions.filter((row) => row.group === "package").length,
-    2,
-  );
-});
-
-test("renamed Dapper Trio members remain three items but one paid package", async () => {
-  const { loadRuntimeCatalog } = await import("../scripts/load-runtime-catalog.mjs");
-  const catalog = await loadRuntimeCatalog();
-  // SkyGame-Data 1.3.10: IAP aOfqv766r8, not three standalone purchases.
-  const guids = ["4c-yCAGV5U", "gZoseEbqGz", "yuO7uDMle8"];
-  const chosen = guids.map(guid => catalog.wikiItems.find(item => item.guid === guid));
-  assert.ok(chosen.every(Boolean));
-  const result = estimateValuation({ analysis: analyze(chosen) });
-  const single = estimateValuation({ analysis: analyze(chosen.slice(0, 1)) });
-  assert.equal(result.marketProfile.paidItemCount, 3);
-  assert.equal(result.marketProfile.canonicalPackageCount, 1);
-  assert.equal(result.contributions.filter(row => row.group === "package").length, 1);
-  assert.deepEqual(result.range, single.range);
-});
-
-test("verified wireframe and AURORA IAPs count as five packages without limited double charging", async () => {
-  const { loadRuntimeCatalog } = await import("../scripts/load-runtime-catalog.mjs");
-  const catalog = await loadRuntimeCatalog();
-  // SkyGame-Data 1.3.10: five distinct paid offers with stable official GUIDs.
-  const guids = ["8l3QuiKC_8", "meld4SQL8l", "9kbdAvVwR4", "i0BYuPKZYe", "wZGUtak1mb"];
-  const chosen = guids.map(guid => catalog.wikiItems.find(item => item.guid === guid));
-  assert.ok(chosen.every(Boolean));
-  const analysis = analyzeValuation({ chosen, bindings: bindings(), bindingNote: "", domain: { ...domain, isLimitedItem: () => true } });
-  const result = estimateValuation({ analysis });
-  assert.equal(analysis.limited.length, 5);
-  assert.equal(result.marketProfile.paidItemCount, 5);
-  assert.equal(result.marketProfile.canonicalPackageCount, 5);
-  assert.equal(result.contributions.filter(row => row.group === "package").length, 5);
-  assert.equal(result.contributions.filter(row => row.group === "limited").length, 0);
-});
-
 test("candle redemptions do not increase paid package count or package contributions", async () => {
   const { loadRuntimeCatalog } = await import("../scripts/load-runtime-catalog.mjs");
   const catalog = await loadRuntimeCatalog();
@@ -202,147 +86,6 @@ test("candle redemptions do not increase paid package count or package contribut
   assert.equal(result.marketProfile.paidItemCount, 0);
   assert.equal(result.marketProfile.canonicalPackageCount, 0);
   assert.equal(result.contributions.filter(row => row.group === "package").length, 0);
-});
-
-test("distinct anniversary rewards in one event collection are all retained", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({ name: "4th Anniversary Hat", guid: "anniversary-4", group: "Limited" }),
-      item({ name: "5th Anniversary Headband", guid: "anniversary-5", group: "Limited" }),
-      item({ name: "6th Anniversary Hat", guid: "anniversary-6", group: "Limited" }),
-    ]),
-  });
-  assert.ok(result);
-  const labels = result.contributions
-    .filter((row) => row.group === "limited")
-    .map((row) => row.label);
-  assert.ok(labels.includes("4th Anniversary Hat"));
-  assert.ok(labels.includes("5th Anniversary Headband"));
-  assert.ok(labels.includes("6th Anniversary Hat"));
-  const netLimitedLow = result.contributions
-    .filter((row) => row.group === "limited")
-    .reduce((sum, row) => sum + row.low, 0);
-  const netLimitedHigh = result.contributions
-    .filter((row) => row.group === "limited")
-    .reduce((sum, row) => sum + row.high, 0);
-  assert.ok(netLimitedLow > 0);
-  assert.ok(netLimitedHigh > 0);
-});
-
-test("valuation contribution labels use the catalog Chinese name", () => {
-  const translatedAnalysis = analyzeValuation({
-    chosen: [item({ name: "Kizuna AI Cape", wiki: "https://wiki.test/Kizuna_AI_Pack" })],
-    bindings: bindings(),
-    bindingNote: "",
-    domain: { ...domain, getZhName: () => "絆愛雪紡斗篷" },
-  });
-  const result = estimateValuation({ analysis: translatedAnalysis });
-  assert.ok(result);
-  assert.ok(
-    result.contributions.some(
-      (row) => row.group === "package" && row.label === "絆愛雪紡斗篷",
-    ),
-  );
-});
-
-test("binding penalties are capped and platform issues remove platform value", () => {
-  const platform = item({
-    name: "Nintendo Cape",
-    wiki: "https://wiki.test/Nintendo_Pack",
-    group: "Limited",
-    collection: "collab",
-  });
-  const safe = estimateValuation({
-    analysis: analyze([platform], bindings({ nintendo: "transfer" })),
-  });
-  const risky = estimateValuation({
-    analysis: analyze(
-      [platform],
-      bindings({
-        nintendo: "issue",
-        google: "issue",
-        steam: "issue",
-        twitch: "issue",
-      }),
-    ),
-  });
-  const unbound = estimateValuation({ analysis: analyze([platform]) });
-  assert.ok(safe && risky);
-  assert.ok(unbound);
-  assert.ok(risky.range.high < safe.range.high);
-  assert.equal(
-    risky.contributions.filter((row) => row.group === "package").length,
-    0,
-  );
-  assert.equal(
-    unbound.contributions.filter((row) => row.group === "package").length,
-    1,
-  );
-});
-
-test("resource brackets preserve their explicit low and high values", () => {
-  const analysis = analyze([
-    item({
-      name: "Enchantment Ultimate",
-      group: "Ultimate",
-      section: "seasons",
-      collection: "enchantment",
-    }),
-    item({ name: "Pack", wiki: "https://wiki.test/Pack" }),
-  ]);
-  const cases = [
-    [200, [100, 200]],
-    [500, [250, 450]],
-    [1000, [500, 800]],
-    [2000, [800, 1200]],
-  ];
-  for (const [candles, expected] of cases) {
-    const result = estimateValuation({ analysis, resources: { candles } });
-    const resource = result?.contributions.find(
-      (row) => row.group === "resource",
-    );
-    assert.deepEqual(resource && [resource.low, resource.high], expected);
-  }
-});
-
-test("China-only content has zero international-market value", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({ name: "國服限定斗篷", group: "Limited", collection: "collab" }),
-    ]),
-  });
-  assert.ok(result);
-  assert.deepEqual(result.range, { low: 0, high: 0, currency: "TWD" });
-});
-
-test("resources add a small capped contribution", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({
-        name: "Enchantment Ultimate",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-      item({ name: "Pack", wiki: "https://wiki.test/Pack" }),
-    ]),
-    resources: { candles: 9000, hearts: 9000, ascended: 9000, passes: 99 },
-  });
-  assert.ok(result);
-  const resource = result.contributions.find((row) => row.group === "resource");
-  assert.deepEqual(resource && [resource.low, resource.high], [1500, 2500]);
-});
-
-test("empty resources add no value", () => {
-  const result = estimateValuation({
-    analysis: analyze([item({ name: "Pack", wiki: "https://wiki.test/Pack" })]),
-    resources: { candles: "", hearts: "", ascended: "", passes: "" },
-  });
-  assert.ok(result);
-  assert.equal(
-    result.contributions.some((row) => row.group === "resource"),
-    false,
-  );
 });
 
 test("a partial season is not treated as a break and kept platform content is excluded", () => {
@@ -384,94 +127,6 @@ test("a partial season is not treated as a break and kept platform content is ex
     false,
   );
   assert.ok(result.warnings.some((warning) => warning.includes("playstation")));
-});
-
-test("partial graduation is below full graduation without a second break penalty", () => {
-  const firstUltimate = item({
-    name: "Enchantment Ultimate 1",
-    group: "Ultimate",
-    section: "seasons",
-    collection: "enchantment",
-  });
-  const secondUltimate = item({
-    name: "Enchantment Ultimate 2",
-    group: "Ultimate",
-    section: "seasons",
-    collection: "enchantment",
-  });
-  const nextUltimate = item({
-    name: "Sanctuary Ultimate",
-    group: "Ultimate",
-    section: "seasons",
-    collection: "sanctuary",
-  });
-  const partialAnalysis = analyze([firstUltimate, nextUltimate]);
-  const partial = estimateValuation({ analysis: partialAnalysis });
-  const complete = estimateValuation({
-    analysis: analyze([firstUltimate, secondUltimate, nextUltimate]),
-  });
-  assert.ok(partial && complete);
-  assert.equal(partialAnalysis.startSeasonSlug, "enchantment");
-  assert.equal(partial.marketProfile.breakClass, "none");
-  assert.equal(partial.marketProfile.partialSeasons, 1);
-  assert.ok(partial.midpoint < complete.midpoint);
-  assert.equal(
-    partial.contributions.some((row) => row.label.includes("缺少畢業禮")),
-    false,
-  );
-  assert.ok(
-    partial.contributions.some((row) => row.label === "未完成畢業禮"),
-  );
-});
-
-test("changing an issue binding to keep cannot lower the runtime estimate", async () => {
-  const catalog = await loadRuntimeCatalog();
-  const chosen = ["FlOSNmw_38", "RpAC3rlPrR"].map((guid) => {
-    const entry = catalog.wikiItems.find((item) => item.guid === guid);
-    assert.ok(entry, guid);
-    return entry;
-  });
-  const estimate = (google) => estimateValuation({
-    analysis: analyzeValuation({ chosen, bindings: bindings({ google, nintendo: "issue", gameCenter: "issue", facebook: "issue" }), bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName } }),
-    resources: {},
-  });
-  const before = estimate("issue");
-  const after = estimate("keep");
-  assert.equal(before.modelFeatures.bindingRisk, 0.7);
-  assert.equal(after.modelFeatures.bindingRisk, 0.7);
-  assert.ok(after.midpoint >= before.midpoint);
-  for (const key of ["low", "high"]) assert.ok(after.range[key] >= before.range[key]);
-});
-
-test("adding later graduation items never reduces a complete starting-season account", async () => {
-  const catalog = await loadRuntimeCatalog();
-  const liveDomain = { ...catalog, getZhName: catalog.zhItemName };
-  const estimate = (chosen) => estimateValuation({
-    analysis: analyzeValuation({ chosen, bindings: bindings(), bindingNote: "", domain: liveDomain }),
-    resources: {},
-  });
-  const magic = catalog.seasonGraduationItems.get("enchantment");
-  const performanceHair = catalog.wikiItems.find((entry) => entry.guid === "Lw93RiDG46");
-  assert.ok(magic?.length && performanceHair);
-  const before = estimate(magic);
-  const after = estimate([...magic, performanceHair]);
-  assert.equal(after.modelFeatures.partialDiscountHigh, 0);
-  assert.ok(after.midpoint >= before.midpoint);
-
-  for (const [index, slug] of catalog.graduationSeasonSlugs.entries()) {
-    const chosen = catalog.seasonGraduationItems.get(slug);
-    if (!chosen?.length) continue;
-    const baseline = estimate(chosen);
-    for (const later of catalog.graduationSeasonSlugs.slice(index + 1)) {
-      for (const addition of catalog.seasonGraduationItems.get(later) ?? []) {
-        const result = estimate([...chosen, addition]);
-        for (const field of ["low", "high"]) {
-          assert.ok(result.range[field] >= baseline.range[field], `${slug} + ${addition.guid}: ${field}`);
-        }
-        assert.ok(result.midpoint >= baseline.midpoint, `${slug} + ${addition.guid}: midpoint`);
-      }
-    }
-  }
 });
 
 test("cat costume and ear-tail duo are distinct packages with deduplicated members", async () => {
@@ -546,89 +201,6 @@ test("fortune fish pack excludes the separately purchased fish accessory", async
   assert.equal(resolver.scan("沒有錦鯉套裝").groups.length, 0);
 });
 
-test("market package tier and value count one real package only once", () => {
-  const items = Array.from({ length: 100 }, (_, index) =>
-    item({
-      name: `Same Pack Item ${index}`,
-      wiki: "https://wiki.test/Shared_Pack",
-    }),
-  );
-  const result = estimateValuation({
-    analysis: analyze([
-      item({
-        name: "Enchantment Ultimate",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-      ...items,
-    ]),
-  });
-  const singleItemResult = estimateValuation({
-    analysis: analyze([
-      item({
-        name: "Enchantment Ultimate",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-      items[0],
-    ]),
-  });
-  assert.ok(result);
-  assert.ok(singleItemResult);
-  assert.equal(result.marketProfile.paidItemCount, 100);
-  assert.equal(result.marketProfile.canonicalPackageCount, 1);
-  assert.equal(result.marketProfile.packageTier, "few");
-  assert.equal(result.marketProfile.salePackageTier, "few");
-  assert.equal(result.marketProfile.accountStyle, "simple");
-  assert.deepEqual(result.range, singleItemResult.range);
-  assert.equal(result.midpoint, singleItemResult.midpoint);
-  assert.equal(
-    result.contributions.filter((row) => row.group === "package").length,
-    1,
-  );
-});
-
-test("modern multi-pack accounts use diminishing bundled resale value", () => {
-  const paid = Array.from({ length: 48 }, (_, index) =>
-    item({
-      name: `Modern Pack ${index}`,
-      wiki: `https://wiki.test/Modern_Pack_${index}`,
-    }),
-  );
-  const result = estimateValuation({ analysis: analyze(paid) });
-  assert.ok(result);
-  assert.equal(result.marketProfile.packageTier, "many");
-  assert.equal(result.marketProfile.salePackageTier, "few");
-  const packageTotal = result.contributions
-    .filter((row) => row.group === "package" && row.low > 0)
-    .reduce((sum, row) => sum + row.low, 0);
-  assert.ok(packageTotal >= 500);
-  assert.ok(packageTotal <= 2000);
-});
-
-test("package calibration stays monotonic across tier boundaries", () => {
-  const { classifyPackageTier, packageValueCap } = calibrationLoaded;
-  for (const [before, after] of [[14, 15], [39, 40], [99, 100]]) {
-    const priorTier = classifyPackageTier(before);
-    const nextTier = classifyPackageTier(after);
-    const priorCap = packageValueCap(before);
-    const nextCap = packageValueCap(after);
-    const priorSignal =
-      priorTier.premium *
-      marketPackageMultiplierForCount(before);
-    const nextSignal =
-      nextTier.premium *
-      marketPackageMultiplierForCount(after);
-    assert.ok(nextSignal >= priorSignal);
-    assert.ok(nextSignal <= priorSignal * 1.15);
-    assert.ok(nextCap.low >= priorCap.low);
-    assert.ok(nextCap.high >= priorCap.high);
-    assert.ok(nextCap.high <= priorCap.high * 1.15);
-  }
-});
-
 test("sale package wording uses conservative unique-package thresholds", () => {
   const { classifySalePackageTier } = calibrationLoaded;
   assert.equal(classifySalePackageTier(0).key, "few");
@@ -639,135 +211,6 @@ test("sale package wording uses conservative unique-package thresholds", () => {
   assert.equal(classifySalePackageTier(189).key, "many");
 });
 
-test("recent-season accounts use conservative add-on caps", () => {
-  const { packageValueCap, limitedValueCap } = calibrationLoaded;
-  assert.deepEqual(packageValueCap(54, { conservative: true }), {
-    low: 700,
-    high: 1000,
-  });
-  assert.deepEqual(limitedValueCap(21, { conservative: true }), {
-    low: 300,
-    high: 500,
-  });
-  assert.deepEqual(packageValueCap(54), { low: 1920, high: 2620 });
-  assert.deepEqual(limitedValueCap(21), { low: 700, high: 1200 });
-});
-
-test("Moments-or-later starts cap resources without changing early accounts", () => {
-  const momentsUltimate = item({
-    name: "Moments Ultimate",
-    group: "Ultimate",
-    section: "seasons",
-    collection: "moments",
-  });
-  const recentDomain = {
-    ...domain,
-    graduationSeasonSlugs: ["enchantment", "sanctuary", "moments"],
-    seasonGraduationItems: new Map([
-      ...domain.seasonGraduationItems,
-      ["moments", [momentsUltimate]],
-    ]),
-  };
-  const paid = Array.from({ length: 54 }, (_, index) =>
-    item({
-      name: `Recent Pack ${index}`,
-      wiki: `https://wiki.test/Recent_Pack_${index}`,
-    }),
-  );
-  const limited = Array.from({ length: 21 }, (_, index) =>
-    item({ name: `Recent Limited ${index}`, group: "Limited" }),
-  );
-  const recentAnalysis = analyzeValuation({
-    chosen: [momentsUltimate, ...paid, ...limited],
-    bindings: bindings(),
-    bindingNote: "",
-    domain: recentDomain,
-  });
-  const earlyAnalysis = analyze([
-    item({
-      name: "Enchantment Ultimate",
-      group: "Ultimate",
-      section: "seasons",
-      collection: "enchantment",
-    }),
-  ]);
-  const resources = { candles: 3000, hearts: 800, ascended: 200, passes: 5 };
-  const recent = estimateValuation({ analysis: recentAnalysis, resources });
-  const early = estimateValuation({ analysis: earlyAnalysis, resources });
-  assert.equal(recentAnalysis.conservativeAddOnCaps, true);
-  assert.equal(earlyAnalysis.conservativeAddOnCaps, false);
-  assert.deepEqual(
-    recent.contributions.find((row) => row.group === "resource"),
-    { group: "resource", label: "帳號資源", low: 250, high: 400 },
-  );
-  assert.deepEqual(
-    early.contributions.find((row) => row.group === "resource"),
-    { group: "resource", label: "帳號資源", low: 1500, high: 2500 },
-  );
-  const contributionTotal = (group, side) =>
-    recent.contributions
-      .filter((row) => row.group === group)
-      .reduce((sum, row) => sum + row[side], 0);
-  assert.equal(contributionTotal("package", "low"), 700);
-  assert.equal(contributionTotal("package", "high"), 1000);
-  assert.equal(contributionTotal("limited", "low"), 300);
-  assert.equal(contributionTotal("limited", "high"), 500);
-  assert.ok(recent.midpoint >= recent.range.low);
-  assert.ok(recent.midpoint <= recent.range.high);
-});
-
-test("season evidence selects conservative caps at the Moments boundary", () => {
-  const seasonItem = (slug, type = "Cape") =>
-    item({
-      name: `${slug} Ultimate${type === "Necklace" ? " Pendant" : ""}`,
-      type,
-      group: "Ultimate",
-      section: "seasons",
-      collection: slug,
-    });
-  const passage = seasonItem("passage");
-  const momentsPendant = seasonItem("moments", "Necklace");
-  const revivalPendant = seasonItem("revival", "Necklace");
-  const currentUltimate = seasonItem("dear-van-gogh");
-  const ageDomain = {
-    ...domain,
-    ongoingSeasonSlugs: new Set(["dear-van-gogh"]),
-    graduationSeasonSlugs: ["passage", "moments", "revival"],
-    seasonGraduationItems: new Map([
-      ["passage", [passage]],
-      ["moments", [seasonItem("moments")]],
-      ["revival", [seasonItem("revival")]],
-    ]),
-    sortSeasonSlugs: (slugs) =>
-      [...slugs].sort(
-        (left, right) =>
-          ["passage", "moments", "revival", "dear-van-gogh"].indexOf(left) -
-          ["passage", "moments", "revival", "dear-van-gogh"].indexOf(right),
-      ),
-  };
-  const analyzeAge = (chosen) =>
-    analyzeValuation({
-      chosen,
-      bindings: bindings(),
-      bindingNote: "",
-      domain: ageDomain,
-    });
-  assert.equal(analyzeAge([passage]).conservativeAddOnCaps, false);
-  assert.equal(analyzeAge([momentsPendant]).conservativeAddOnCaps, true);
-  assert.equal(analyzeAge([revivalPendant]).conservativeAddOnCaps, true);
-  assert.equal(
-    analyzeAge([seasonItem("moments"), seasonItem("passage", "Necklace")])
-      .conservativeAddOnCaps,
-    true,
-  );
-  assert.equal(analyzeAge([currentUltimate]).conservativeAddOnCaps, true);
-  assert.equal(
-    analyzeAge([item({ wiki: "https://wiki.test/Recent_Pack" })])
-      .conservativeAddOnCaps,
-    true,
-  );
-});
-
 test("confirmed all-none bindings count as complete account information", () => {
   const unconfirmed = analyze([item({ wiki: "https://wiki.test/Pack" })]);
   const confirmed = analyze([item({ wiki: "https://wiki.test/Pack" })], bindings(), true);
@@ -775,86 +218,31 @@ test("confirmed all-none bindings count as complete account information", () => 
   assert.equal(confirmed.bindingsConfirmed, true);
 });
 
-test("mixed start-season evidence is never presented as completed-sale-only data", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({
-        name: "Enchantment Ultimate 1",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-      item({
-        name: "Enchantment Ultimate 2",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "enchantment",
-      }),
-    ]),
-  });
-  assert.ok(result);
-  assert.equal(result.marketProfile.priceStage, "混合參考");
-  assert.equal(result.confidence, "low");
+test("no old price is returned even for all items, resources and known bindings", async () => {
+  const catalog = await loadRuntimeCatalog();
+  const analysis = analyzeValuation({ chosen: catalog.wikiItems, bindings: bindings(),
+    bindingsConfirmed: true, bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName } });
+  const result = estimateValuation({ analysis, resources: { candles: 999999, hearts: 999999, passes: 999 } });
+  assert.equal(result.status, "unavailable");
+  assert.equal(result.range, null);
+  assert.equal(result.midpoint, null);
+  assert.deepEqual(result.contributions, []);
+  assert.equal(result.modelFeatures.modelRevision, "fresh-candidate-v1");
+  assert.ok(result.warnings.some(text => text.includes("未沿用舊價格")));
 });
 
-test("unvalidated mixed evidence can never produce the highest confidence", () => {
-  const result = estimateValuation({
-    analysis: analyze([
-      item({
-        name: "Prophecy Ultimate 1",
-        group: "Ultimate",
-        section: "seasons",
-        collection: "prophecy",
-      }),
-    ]),
-  });
-  assert.ok(result);
-  assert.equal(result.marketProfile.priceStage, "混合參考");
-  assert.notEqual(result.confidence, "high");
+test("pendants cannot create a graduation start, and unknown binding remains null", () => {
+  const analysis = analyze([item({ name: "Enchantment Ultimate Pendant", type: "Necklace", group: "Ultimate", section: "seasons", collection: "enchantment" })]);
+  assert.equal(analysis.startSeasonSlug, null);
+  const result = estimateValuation({ analysis });
+  assert.equal(result.modelFeatures.bindingRiskCount, null);
+  assert.equal(result.midpoint, null);
 });
 
-test("unbound platform items count while unavailable paid items do not", () => {
-  const transferable = Array.from({ length: 14 }, (_, index) =>
-    item({
-      name: `Pack ${index}`,
-      wiki: `https://wiki.test/Pack_${index}`,
-    }),
-  );
-  const excluded = [
-    ...Array.from({ length: 4 }, (_, index) => item({
-      name: `Nintendo Pack Item ${index}`,
-      wiki: "https://wiki.test/Nintendo_Pack",
-    })),
-    item({
-      name: "國服限定 Pack",
-      wiki: "https://wiki.test/China_Pack",
-    }),
-  ];
-  const baseline = estimateValuation({ analysis: analyze(transferable) });
-  const mixed = estimateValuation({
-    analysis: analyze([...transferable, ...excluded]),
-  });
-
-  assert.ok(baseline && mixed);
-  assert.equal(baseline.marketProfile.paidItemCount, 14);
-  assert.equal(mixed.marketProfile.paidItemCount, 18);
-  assert.equal(mixed.marketProfile.canonicalPackageCount, 15);
-  assert.equal(baseline.marketProfile.packageTier, "few");
-  assert.equal(mixed.marketProfile.packageTier, "medium");
-  const mixedPackageLabels = mixed.contributions
-    .filter((row) => row.group === "package")
-    .map((row) => row.label);
-  assert.equal(
-    mixedPackageLabels.filter((label) => label.startsWith("Nintendo Pack Item")).length,
-    1,
-  );
-  assert.equal(mixedPackageLabels.includes("國服限定 Pack"), false);
-
-  const unavailable = estimateValuation({
-    analysis: analyze([...transferable, ...excluded], bindings({ nintendo: "keep" })),
-  });
-  assert.ok(unavailable);
-  assert.equal(unavailable.marketProfile.paidItemCount, 14);
-  assert.equal(unavailable.marketProfile.canonicalPackageCount, 14);
-  assert.equal(unavailable.marketProfile.packageTier, "few");
+test("empty selection has no estimate; China-only selection is unavailable, not zero", () => {
+  assert.equal(estimateValuation({ analysis: analyze([]) }), null);
+  const result = estimateValuation({ analysis: analyze([item({ name: "China Pack", wiki: "https://example.test/China_Pack" })]) });
+  assert.equal(result.marketProfile.canonicalPackageCount, 0);
+  assert.equal(result.range, null);
+  assert.equal(result.midpoint, null);
 });

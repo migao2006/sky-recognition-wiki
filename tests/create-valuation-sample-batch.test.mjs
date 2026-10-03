@@ -70,11 +70,12 @@ test("converts a private manifest into complete signed samples", async () => {
     const summary = JSON.parse(stdout);
     const sample = JSON.parse(await readFile(outputPath, "utf8"));
     assert.equal(summary.samples, 1);
-    assert.equal(summary.completePredictors, 1);
+    assert.equal(summary.completePredictors, 0);
+    assert.equal(summary.rawPredictors, 1);
     assert.deepEqual(summary.countsByStartSeason, { moments: 1 });
     assert.equal(sample.inventory_complete, true);
     assert.equal(sample.bindings_complete, true);
-    assert.equal(sample.valuation_model_schema_version, 5);
+    assert.equal(sample.valuation_model_schema_version, 6);
     assert.equal(sample.evidence_signature.length, 64);
   } finally {
     await Promise.all(
