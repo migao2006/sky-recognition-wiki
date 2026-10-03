@@ -18,6 +18,7 @@ import { isSeasonPendant } from "./season-items";
 import { useAccountBackupActions } from "./use-account-backup-actions";
 import { GiftArchiveImport } from "./gift-archive-import";
 import type { AccountRuntime } from "./use-organizer-runtime";
+import type { WikiItem } from "./wiki-data";
 
 type AccountStepProps = {
   account: AccountInfo;
@@ -29,7 +30,7 @@ type AccountStepProps = {
   owned: ReadonlySet<string>;
   setOwned: React.Dispatch<React.SetStateAction<Set<string>>>;
   onToggleOwned: (guid: string) => void;
-  onOwnershipChanged: () => void;
+  updateOwned: React.Dispatch<React.SetStateAction<Set<string>>>;
   setNotice: React.Dispatch<React.SetStateAction<string>>;
   draftAvailable: boolean;
   runtime: AccountRuntime;
@@ -44,7 +45,7 @@ export function AccountStep({
   owned,
   setOwned,
   onToggleOwned,
-  onOwnershipChanged,
+  updateOwned,
   setNotice,
   draftAvailable,
   runtime,
@@ -63,17 +64,11 @@ export function AccountStep({
     catalogDomain,
     catalogLoadError,
     loadCatalog,
-    bundlePresetItems,
-    ongoingSeasonSlugs,
-    seasonUltimateItems,
-    seasonUltimateSlugs,
-    seasonZh,
-    zhItemName,
   } = runtime;
   const safelyLoadCatalog = useCallback(() => {
     void loadCatalog().catch(() => undefined);
   }, [loadCatalog]);
-  const quickPresetState = (items: (typeof runtime.wikiItems)[number][]) => {
+  const quickPresetState = (items: WikiItem[]) => {
     const selected = items.filter((item) => owned.has(item.guid)).length;
     return {
       selected,
@@ -83,16 +78,15 @@ export function AccountStep({
   };
   const toggleQuickPreset = (
     label: string,
-    items: (typeof runtime.wikiItems)[number][],
+    items: WikiItem[],
   ) => {
     const ids = [...new Set(items.map((item) => item.guid))];
     const complete = ids.length > 0 && ids.every((id) => owned.has(id));
-    setOwned((previous) => {
+    updateOwned((previous) => {
       const next = new Set(previous);
       ids.forEach((id) => (complete ? next.delete(id) : next.add(id)));
       return next;
     });
-    onOwnershipChanged();
     setNotice(
       complete
         ? `已取消「${label}」${ids.length} 件`
@@ -314,8 +308,8 @@ export function AccountStep({
               </div>
             )}
             <div className="season-ultimate-grid">
-              {seasonUltimateSlugs.map((slug) => {
-                const items = seasonUltimateItems.get(slug) || [];
+              {catalogDomain?.seasonUltimateSlugs.map((slug) => {
+                const items = catalogDomain.seasonUltimateItems.get(slug) || [];
                 const selectedCount = items.filter((item) =>
                   owned.has(item.guid),
                 ).length;
@@ -325,9 +319,9 @@ export function AccountStep({
                     key={slug}
                   >
                     <header>
-                      <b>{seasonZh[slug]}</b>
+                      <b>{catalogDomain.seasonZh[slug]}</b>
                       <span>
-                        {ongoingSeasonSlugs.has(slug)
+                        {catalogDomain.ongoingSeasonSlugs.has(slug)
                           ? `進行中 · ${selectedCount}／${items.length}`
                           : `${selectedCount}／${items.length}`}
                       </span>
@@ -336,14 +330,14 @@ export function AccountStep({
                       {items.map((item) => {
                         const selected = owned.has(item.guid);
                         const pendant = isSeasonPendant(item);
-                        const name = pendant ? "項鍊" : zhItemName(item);
+                        const name = pendant ? "項鍊" : catalogDomain.zhItemName(item);
                         return (
                           <button
                             type="button"
                             className={`season-ultimate-item${selected ? " selected" : ""}${pendant ? " pendant" : ""}`}
                             aria-pressed={selected}
-                            aria-label={`${seasonZh[slug]}　${name}`}
-                            title={`${seasonZh[slug]} · ${zhItemName(item)}`}
+                            aria-label={`${catalogDomain.seasonZh[slug]}　${name}`}
+                            title={`${catalogDomain.seasonZh[slug]} · ${catalogDomain.zhItemName(item)}`}
                             key={item.guid}
                             onClick={() => onToggleOwned(item.guid)}
                           >
@@ -390,7 +384,7 @@ export function AccountStep({
             {catalogDomain && (
               <div className="preset-grid">
                 {bundlePresets.map((preset) => {
-                  const items = bundlePresetItems.get(preset.key) || [];
+                  const items = catalogDomain.bundlePresetItems.get(preset.key) || [];
                   const state = quickPresetState(items);
                   return (
                     <button
@@ -443,7 +437,7 @@ export function AccountStep({
             匯入 JSON
           </button>
         </div>
-        <GiftArchiveImport runtime={runtime} owned={owned} setOwned={setOwned} onOwnershipChanged={onOwnershipChanged} setNotice={setNotice} />
+        <GiftArchiveImport runtime={runtime} owned={owned} setOwned={updateOwned} setNotice={setNotice} />
       </details>
       <input
         ref={importRef}

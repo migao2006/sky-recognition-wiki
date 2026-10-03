@@ -1,21 +1,9 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { bundlePresets } from "./bundle-presets";
 import type { WikiItem } from "./wiki-data";
 import type { ValuationDomain } from "./valuation-analysis";
-import {
-  isSeasonPendant,
-  isSeasonUltimate,
-} from "./season-items";
 
 type CatalogDomain = typeof import("./catalog-domain");
 type ValuationRuntime = {
@@ -23,73 +11,62 @@ type ValuationRuntime = {
   bands: typeof import("./valuation-season-bands");
 };
 
-const emptyWikiItems: WikiItem[] = [];
-const emptyStringSet = new Set<string>();
-const emptyStringMap = new Map<string, string>();
-const emptyNumberMap = new Map<string, number>();
-const emptyItemMap = new Map<string, WikiItem[]>();
-const emptyLabels: Record<string, string> = {};
-const emptyStringList: string[] = [];
-const alwaysFalse = () => false;
-const alwaysTrue = () => true;
-const emptyItemText = () => "";
-const itemEnglishName = (item: WikiItem) => item.name;
-const keepCatalogOrder = () => 0;
-const fallbackCloset = {
-  key: "outfit",
-  order: "01",
-  name: "服裝衣櫃",
-  types: ["Outfit", "Shoes", "OutfitShoes"],
-  subs: [{ key: "Outfit", name: "一般服裝", types: ["Outfit"] }],
-};
-const emptyValuationSampleSummary = {
-  sourceRows: 0,
-  eligibleRows: 0,
-  facebookRows: 0,
-  facebookEligibleRows: 0,
-  driveRows: 0,
-  driveEligibleRows: 0,
-  marketplaceRows: 0,
-  marketplaceEligibleRows: 0,
-  secondaryMarketRows: 0,
-  asOf: "",
-};
-
-export const useOrganizerRuntime = (
-  owned: Set<string>,
-  setOwned: Dispatch<SetStateAction<Set<string>>>,
-  onOwnedItemsRemoved: () => void,
-) => {
-  const [catalogDomain, setCatalogDomain] = useState<CatalogDomain | null>(
-    null,
+// Created once per successful load, never per selection. No placeholder catalog.
+function prepareCatalog(domain: CatalogDomain) {
+  const bundlePresetItems = new Map(
+    bundlePresets.map((preset) => [preset.key, domain.wikiItems.filter((item) =>
+      domain.allClosetTypeSet.has(item.type) && ("collection" in preset
+        ? item.collection === preset.collection
+        : preset.names.includes(item.name as never)),
+    )]),
   );
-  const [valuationRuntime, setValuationRuntime] =
-    useState<ValuationRuntime | null>(null);
+  const valuationDomain: ValuationDomain = {
+    isValuationFocus: domain.isValuationFocus,
+    isLimitedItem: domain.isLimitedItem,
+    ongoingSeasonSlugs: domain.ongoingSeasonSlugs,
+    graduationSeasonSlugs: domain.graduationSeasonSlugs,
+    seasonGraduationItems: domain.seasonGraduationItems,
+    sortSeasonSlugs: domain.sortSeasonSlugs,
+    getZhName: domain.zhItemName,
+  };
+  return {
+    ...domain,
+    validItemGuids: new Set(domain.wikiItems.map((item) => item.guid)),
+    bundlePresetItems,
+    saleCopyPresetGuids: new Set([...bundlePresetItems.values()].flatMap((items) => items.map((item) => item.guid))),
+    valuationDomain,
+    showcaseOrderOptions: (items: WikiItem[]) => ({
+      items,
+      isUltimate: domain.isSeasonUltimate,
+      isLimited: (item: WikiItem) => domain.isPaidItem(item) || domain.isLimitedItem(item),
+      isPendant: domain.isSeasonPendant,
+      getClusterName: domain.sourceCollectionName,
+      getClusterOrder: domain.showcaseClusterOrder,
+      getItemTypeName: (item: WikiItem) => domain.labels[item.type] || item.type,
+      getItemTypeOrder: (item: WikiItem) => domain.typeOrder.get(item.type) ?? 999,
+    }),
+  };
+}
+
+type ReadyCatalog = ReturnType<typeof prepareCatalog>;
+
+/** Only loads capabilities. Selection validation belongs to the account state. */
+export const useOrganizerRuntime = () => {
+  const [catalogDomain, setCatalogDomain] = useState<ReadyCatalog | null>(null);
+  const [valuationRuntime, setValuationRuntime] = useState<ValuationRuntime | null>(null);
   const [catalogLoadError, setCatalogLoadError] = useState(false);
   const [valuationLoadError, setValuationLoadError] = useState(false);
-  const catalogPromise = useRef<Promise<CatalogDomain> | null>(null);
+  const catalogPromise = useRef<Promise<ReadyCatalog> | null>(null);
   const valuationPromise = useRef<Promise<ValuationRuntime> | null>(null);
-  const ownedRef = useRef(owned);
-  useEffect(() => {
-    ownedRef.current = owned;
-  }, [owned]);
 
   const loadCatalog = useCallback(() => {
     if (!catalogPromise.current) {
       setCatalogLoadError(false);
       catalogPromise.current = import("./catalog-domain")
         .then((module) => {
-          const validGuids = new Set(module.wikiItems.map((item) => item.guid));
-          const previous = ownedRef.current;
-          const filtered = new Set(
-            [...previous].filter((guid) => validGuids.has(guid)),
-          );
-          if (filtered.size !== previous.size) {
-            setOwned(filtered);
-            onOwnedItemsRemoved();
-          }
-          setCatalogDomain(module);
-          return module;
+          const catalog = prepareCatalog(module);
+          setCatalogDomain(catalog);
+          return catalog;
         })
         .catch((error: unknown) => {
           catalogPromise.current = null;
@@ -98,232 +75,42 @@ export const useOrganizerRuntime = (
         });
     }
     return catalogPromise.current;
-  }, [onOwnedItemsRemoved, setOwned]);
+  }, []);
 
   const loadValuation = useCallback(() => {
     if (!valuationPromise.current) {
       setValuationLoadError(false);
       valuationPromise.current = Promise.all([
-        import("./valuation-analysis"),
-        import("./valuation-season-bands"),
-      ])
-        .then(([analysis, bands]) => {
-          const runtime = { analysis, bands };
-          setValuationRuntime(runtime);
-          return runtime;
-        })
-        .catch((error: unknown) => {
-          valuationPromise.current = null;
-          setValuationLoadError(true);
-          throw error;
-        });
+        import("./valuation-analysis"), import("./valuation-season-bands"),
+      ]).then(([analysis, bands]) => {
+        const runtime = { analysis, bands };
+        setValuationRuntime(runtime);
+        return runtime;
+      }).catch((error: unknown) => {
+        valuationPromise.current = null;
+        setValuationLoadError(true);
+        throw error;
+      });
     }
     return valuationPromise.current;
   }, []);
 
-  const wikiItems = catalogDomain?.wikiItems ?? emptyWikiItems;
-  const closetGroups = catalogDomain?.closetGroups ?? [fallbackCloset];
-  const compareCatalogItems =
-    catalogDomain?.compareCatalogItems ?? keepCatalogOrder;
-  const allClosetTypeSet = catalogDomain?.allClosetTypeSet ?? emptyStringSet;
-  const graduationSeasonSlugs =
-    catalogDomain?.graduationSeasonSlugs ?? emptyStringList;
-  const isLimitedItem = catalogDomain?.isLimitedItem ?? alwaysFalse;
-  const isPaidItem = catalogDomain?.isPaidItem ?? alwaysFalse;
-  const isProfessionalVideoFocus =
-    catalogDomain?.isProfessionalVideoFocus ?? alwaysFalse;
-  const isValuationFocus = catalogDomain?.isValuationFocus ?? alwaysFalse;
-  const labels = catalogDomain?.labels ?? emptyLabels;
-  const matchesSourceFilter = catalogDomain?.matchesSourceFilter ?? alwaysTrue;
-  const matchesSub = catalogDomain?.matchesSub ?? alwaysFalse;
-  const ongoingSeasonSlugs =
-    catalogDomain?.ongoingSeasonSlugs ?? emptyStringSet;
-  const searchIndex = catalogDomain?.searchIndex ?? emptyStringMap;
-  const seasonGraduationItems =
-    catalogDomain?.seasonGraduationItems ?? emptyItemMap;
-  const seasonUltimateItems =
-    catalogDomain?.seasonUltimateItems ?? emptyItemMap;
-  const seasonUltimateSlugs =
-    catalogDomain?.seasonUltimateSlugs ?? emptyStringList;
-  const seasonZh = catalogDomain?.seasonZh ?? emptyLabels;
-  const seasons = catalogDomain?.seasons ?? [];
-  const source = catalogDomain?.source ?? emptyItemText;
-  const sourceCollectionName =
-    catalogDomain?.sourceCollectionName ?? emptyItemText;
-  const sourceFilters = catalogDomain?.sourceFilters ?? [];
-  const sourceKind = catalogDomain?.sourceKind ?? emptyItemText;
-  const typeOrder = catalogDomain?.typeOrder ?? emptyNumberMap;
-  const zhItemName = catalogDomain?.zhItemName ?? itemEnglishName;
-  const saleItemName = catalogDomain?.saleItemName ?? zhItemName;
-  const uniqueByGuid =
-    catalogDomain?.uniqueByGuid ??
-    ((items: WikiItem[]) => [
-      ...new Map(items.map((item) => [item.guid, item])).values(),
-    ]);
-  const getNextClosetSub = catalogDomain?.getNextClosetSub ?? (() => null);
-  const validItemGuids = useMemo(
-    () => new Set(wikiItems.map((item) => item.guid)),
-    [wikiItems],
-  );
-  const bundlePresetItems = useMemo(
-    () =>
-      new Map(
-        bundlePresets.map((preset) => [
-          preset.key,
-          wikiItems.filter(
-            (item) =>
-              allClosetTypeSet.has(item.type) &&
-              ("collection" in preset
-                ? item.collection === preset.collection
-                : preset.names.includes(item.name as never)),
-          ),
-        ]),
-      ),
-    [allClosetTypeSet, wikiItems],
-  );
-  const saleCopyPresetGuids = useMemo(
-    () =>
-      new Set(
-        [...bundlePresetItems.values()].flatMap((items) =>
-          items.map((item) => item.guid),
-        ),
-      ),
-    [bundlePresetItems],
-  );
-  const valuationDomain = useMemo<ValuationDomain>(
-    () => ({
-      isValuationFocus,
-      isLimitedItem,
-      ongoingSeasonSlugs,
-      graduationSeasonSlugs,
-      seasonGraduationItems,
-      sortSeasonSlugs:
-        catalogDomain?.sortSeasonSlugs ?? ((slugs) => [...slugs]),
-      getZhName: zhItemName,
-    }),
-    [
-      catalogDomain,
-      graduationSeasonSlugs,
-      isLimitedItem,
-      isValuationFocus,
-      ongoingSeasonSlugs,
-      seasonGraduationItems,
-      zhItemName,
-    ],
-  );
-  const showcaseOrderOptions = useCallback(
-    (items: WikiItem[]) => ({
-      items,
-      isUltimate: isSeasonUltimate,
-      isLimited: (item: WikiItem) => isPaidItem(item) || isLimitedItem(item),
-      isPendant: isSeasonPendant,
-      getClusterName: sourceCollectionName,
-      getClusterOrder: catalogDomain?.showcaseClusterOrder ?? (() => 9999),
-      getItemTypeName: (item: WikiItem) => labels[item.type] || item.type,
-      getItemTypeOrder: (item: WikiItem) => typeOrder.get(item.type) ?? 999,
-    }),
-    [catalogDomain, isLimitedItem, isPaidItem, labels, sourceCollectionName, typeOrder],
-  );
-
-  return {
-    catalogDomain,
+  const valuationReady = useMemo(() => catalogDomain && valuationRuntime ? {
+    ...catalogDomain,
     valuationRuntime,
-    catalogLoadError,
-    valuationLoadError,
-    loadCatalog,
-    loadValuation,
-    wikiItems,
-    closetGroups,
-    compareCatalogItems,
-    allClosetTypeSet,
-    isValuationFocus,
-    isLimitedItem,
-    isProfessionalVideoFocus,
-    labels,
-    matchesSourceFilter,
-    matchesSub,
-    searchIndex,
-    ongoingSeasonSlugs,
-    seasonGraduationItems,
-    seasonUltimateItems,
-    seasonUltimateSlugs,
-    seasonZh,
-    seasons,
-    source,
-    sourceCollectionName,
-    sourceFilters,
-    sourceKind,
-    typeOrder,
-    uniqueByGuid,
-    zhItemName,
-    saleItemName,
-    getNextClosetSub,
-    validItemGuids,
-    bundlePresetItems,
-    saleCopyPresetGuids,
-    valuationDomain,
-    showcaseOrderOptions,
-    seasonPriceBands: valuationRuntime?.bands.seasonPriceBands ?? [],
-    valuationSampleSummary:
-      valuationRuntime?.bands.valuationSampleSummary ??
-      emptyValuationSampleSummary,
-  };
+    seasonPriceBands: valuationRuntime.bands.seasonPriceBands,
+    valuationSampleSummary: valuationRuntime.bands.valuationSampleSummary,
+  } : null, [catalogDomain, valuationRuntime]);
+
+  return { catalogDomain, valuationRuntime, valuationReady, catalogLoadError,
+    valuationLoadError, loadCatalog, loadValuation };
 };
 
-type OrganizerRuntime = ReturnType<typeof useOrganizerRuntime>;
-
-export type AccountRuntime = Pick<
-  OrganizerRuntime,
-  | "catalogDomain"
-  | "catalogLoadError"
-  | "loadCatalog"
-  | "wikiItems"
-  | "bundlePresetItems"
-  | "ongoingSeasonSlugs"
-  | "seasonUltimateItems"
-  | "seasonUltimateSlugs"
-  | "seasonZh"
-  | "source"
-  | "zhItemName"
->;
-
-export type CatalogRuntime = Pick<
-  OrganizerRuntime,
-  | "wikiItems"
-  | "closetGroups"
-  | "compareCatalogItems"
-  | "allClosetTypeSet"
-  | "isLimitedItem"
-  | "isProfessionalVideoFocus"
-  | "matchesSourceFilter"
-  | "matchesSub"
-  | "searchIndex"
-  | "seasonZh"
-  | "seasons"
-  | "sourceFilters"
-  | "sourceKind"
-  | "zhItemName"
-  | "getNextClosetSub"
->;
-
-export type ValuationRuntimeCapabilities = Pick<
-  OrganizerRuntime,
-  | "wikiItems"
-  | "allClosetTypeSet"
-  | "isValuationFocus"
-  | "isLimitedItem"
-  | "isProfessionalVideoFocus"
-  | "seasonGraduationItems"
-  | "seasonZh"
-  | "seasons"
-  | "sourceCollectionName"
-  | "uniqueByGuid"
-  | "zhItemName"
-  | "saleItemName"
-  | "saleCopyPresetGuids"
-  | "valuationDomain"
-  | "showcaseOrderOptions"
-  | "valuationRuntime"
-  | "seasonPriceBands"
-  | "valuationSampleSummary"
->;
+export type AccountRuntime = Pick<ReturnType<typeof useOrganizerRuntime>,
+  "catalogDomain" | "catalogLoadError" | "loadCatalog">;
+export type CatalogRuntime = Pick<ReadyCatalog,
+  "wikiItems" | "closetGroups" | "compareCatalogItems" | "allClosetTypeSet" |
+  "isLimitedItem" | "isProfessionalVideoFocus" | "matchesSourceFilter" |
+  "matchesSub" | "searchIndex" | "seasonZh" | "seasons" | "sourceFilters" |
+  "sourceKind" | "zhItemName" | "getNextClosetSub">;
+export type ValuationRuntimeCapabilities = NonNullable<ReturnType<typeof useOrganizerRuntime>["valuationReady"]>;

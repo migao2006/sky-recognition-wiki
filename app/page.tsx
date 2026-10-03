@@ -44,7 +44,6 @@ const emptyAccount = (): AccountInfo => ({
 
 export default function AccountOrganizer() {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
-  const { owned, setOwned, toggleOwned: toggleOwnedItem } = useOwnedItems();
   const [account, setAccount] = useState<AccountInfo>(emptyAccount);
   const [bindings, setBindings] =
     useState<Record<BindingKey, BindingStatus>>(emptyBindings);
@@ -60,24 +59,16 @@ export default function AccountOrganizer() {
         : previous,
     );
   }, []);
-  const runtime = useOrganizerRuntime(
-    owned,
-    setOwned,
+  const runtime = useOrganizerRuntime();
+  const { owned, setOwned, updateOwned, toggleOwned } = useOwnedItems(
     invalidateWardrobeConfirmation,
+    runtime.catalogDomain?.validItemGuids,
   );
   const { loadCatalog, loadValuation } = runtime;
-  const toggleOwned = useCallback(
-    (guid: string) => {
-      toggleOwnedItem(guid);
-      invalidateWardrobeConfirmation();
-    },
-    [invalidateWardrobeConfirmation, toggleOwnedItem],
-  );
   const { draftAvailable, draftReady, clearStoredDraft } = useAccountDraft({
     account,
     bindings,
     owned,
-    validGuids: runtime.catalogDomain ? runtime.validItemGuids : undefined,
     setAccount,
     setBindings,
     setOwned,
@@ -203,7 +194,7 @@ export default function AccountOrganizer() {
           owned={owned}
           setOwned={setOwned}
           onToggleOwned={toggleOwned}
-          onOwnershipChanged={invalidateWardrobeConfirmation}
+          updateOwned={updateOwned}
           setNotice={setNotice}
           draftAvailable={draftAvailable}
           runtime={runtime}
@@ -212,7 +203,7 @@ export default function AccountOrganizer() {
       )}
       {activeStep === 2 && runtime.catalogDomain && (
         <CatalogStep
-          runtime={runtime}
+          runtime={runtime.catalogDomain}
           state={catalogStepState}
           owned={owned}
           onToggleOwned={toggleOwned}
@@ -226,19 +217,17 @@ export default function AccountOrganizer() {
         />
       )}
       {activeStep === 3 &&
-        runtime.catalogDomain &&
-        runtime.valuationRuntime && (
+        runtime.valuationReady && (
           <ValuationStep
-            runtime={runtime}
+            runtime={runtime.valuationReady}
             state={valuationStepState}
             account={account}
             bindings={bindings}
             owned={owned}
-            setOwned={setOwned}
+            setOwned={updateOwned}
             setNotice={setNotice}
             onBack={() => goToStep(2)}
             onClearAll={clearAllData}
-            onOwnershipChanged={invalidateWardrobeConfirmation}
           />
         )}
 

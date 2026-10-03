@@ -17,6 +17,9 @@ Fortune Dragon Bangles（`xsTxIqIX8E`）保留「幸運節龍耳飾」顯示名�
 - `app/valuation-showcase-preview.tsx`：成品圖片預覽
 - `app/valuation-model-core.js`：瀏覽器估價與留出驗證共用的數值核心
 - `app/use-account-draft.ts`：本機草稿保存與還原
+- `app/use-organizer-runtime.ts`：去重載入衣櫃與估價模組；已就緒能力才傳給第二、三步，不以空估價或假衣櫃代替載入狀態
+- `app/use-owned-items.ts`：選取、追加與清空共用變更入口，統一重設衣櫃確認；帳號備份／草稿還原獨立保留原有語意，catalog 就緒後以最新選取狀態驗證 GUID
+- `app/use-import-generation.ts`：匯入的非同步生命週期；換檔或離開帳號頁後忽略舊結果，JSON 取代與封存追加仍分開處理
 - `app/account-config.ts`：登入綁定與帳號型別設定
 - `app/bundle-presets.ts`：常用套組設定
 - `app/catalog-legacy-guids.ts`：舊版備份人工 GUID 到官方 GUID 的遷移表

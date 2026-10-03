@@ -16,6 +16,7 @@ import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 import { downloadBlob } from "./browser-download";
 import { safeFileName } from "./file-name";
 import { hasAccountDraftData } from "./use-account-draft";
+import { useImportGeneration } from "./use-import-generation";
 import type { AccountRuntime } from "./use-organizer-runtime";
 
 type Props = {
@@ -40,7 +41,7 @@ export const useAccountBackupActions = ({
   setNotice,
 }: Props) => {
   const importRef = useRef<HTMLInputElement>(null);
-  const importGenerationRef = useRef(0);
+  const importGenerationRef = useImportGeneration();
   const latestDataRef = useRef({ account, bindings, owned });
   useEffect(() => {
     latestDataRef.current = { account, bindings, owned };
@@ -81,7 +82,7 @@ export const useAccountBackupActions = ({
     try {
       catalog = await loadCatalog();
     } catch {
-      setNotice("無法載入衣櫃資料，請稍後再試");
+      if (generation === importGenerationRef.current) setNotice("無法載入衣櫃資料，請稍後再試");
       return;
     }
     try {
@@ -89,7 +90,7 @@ export const useAccountBackupActions = ({
       if (generation !== importGenerationRef.current) return;
       const imported = parseAccountBackup(
         JSON.parse(text),
-        new Set(catalog.wikiItems.map((item) => item.guid)),
+        catalog.validItemGuids,
       );
       if (generation !== importGenerationRef.current) return;
       const unknownNames = imported.unknownGuids
@@ -129,6 +130,7 @@ export const useAccountBackupActions = ({
         `已匯入 ${imported.imported} 件、遷移 ${imported.migrated} 件、略過 ${imported.ignored} 件`,
       );
     } catch (error) {
+      if (generation !== importGenerationRef.current) return;
       setNotice(
         error instanceof Error &&
           error.message === "Unsupported account backup version"

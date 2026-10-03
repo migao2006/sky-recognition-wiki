@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useRef, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useImportGeneration } from "./use-import-generation";
 import type { AccountRuntime } from "./use-organizer-runtime";
 import type { GiftArchivePreview } from "./sky-info-import";
 
@@ -8,21 +9,19 @@ type Props = {
   runtime: AccountRuntime;
   owned: ReadonlySet<string>;
   setOwned: Dispatch<SetStateAction<Set<string>>>;
-  onOwnershipChanged: () => void;
   setNotice: Dispatch<SetStateAction<string>>;
 };
 
-export function GiftArchiveImport({ runtime, owned, setOwned, onOwnershipChanged, setNotice }: Props) {
+export function GiftArchiveImport({ runtime, owned, setOwned, setNotice }: Props) {
   const input = useRef<HTMLInputElement>(null);
-  const generation = useRef(0);
+  const generationRef = useImportGeneration();
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<(GiftArchivePreview & { names: Record<string, string> }) | null>(null);
-  useEffect(() => () => { generation.current++; }, []);
   const read = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    const current = ++generation.current;
+    const current = ++generationRef.current;
     setPreview(null);
     setBusy(true);
     try {
@@ -32,14 +31,14 @@ export function GiftArchiveImport({ runtime, owned, setOwned, onOwnershipChanged
       const [buffer, catalog, parser] = await Promise.all([
         file.arrayBuffer(), runtime.loadCatalog(), import("./sky-info-import"),
       ]);
-      if (generation.current !== current) return;
-      const result = parser.parseGiftArchiveHtml(readWebarchive(new Uint8Array(buffer)), new Set(catalog.wikiItems.map(x => x.guid)));
+      if (generationRef.current !== current) return;
+      const result = parser.parseGiftArchiveHtml(readWebarchive(new Uint8Array(buffer)), catalog.validItemGuids);
       const names = Object.fromEntries(catalog.wikiItems.filter(x => result.guids.includes(x.guid)).map(x => [x.guid, catalog.zhItemName(x)]));
       setPreview({ ...result, names });
     } catch (error) {
-      if (generation.current === current) setNotice(error instanceof Error ? error.message : "封存檔讀取失敗");
+      if (generationRef.current === current) setNotice(error instanceof Error ? error.message : "封存檔讀取失敗");
     } finally {
-      if (generation.current === current) setBusy(false);
+      if (generationRef.current === current) setBusy(false);
     }
   };
   const added = preview?.guids.filter(id => !owned.has(id)) ?? [];
@@ -55,7 +54,6 @@ export function GiftArchiveImport({ runtime, owned, setOwned, onOwnershipChanged
       <div className="export-tools">
         <button type="button" disabled={!added.length} onClick={() => {
           setOwned(previous => new Set([...previous, ...preview.guids]));
-          onOwnershipChanged();
           setNotice(`已追加 ${added.length} 件禮包物品；待確認 ${preview.unknown.length} 項`);
           setPreview(null);
         }}>確認追加 {added.length} 件</button>

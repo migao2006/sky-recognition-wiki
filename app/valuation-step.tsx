@@ -10,7 +10,6 @@ import type {
 import { orderShowcaseItems } from "./showcase-order";
 import { hasAccountDraftData } from "./use-account-draft";
 import type { ValuationRuntimeCapabilities } from "./use-organizer-runtime";
-import type { ValuationAnalysis } from "./valuation-analysis";
 import {
   marketAccountStyleNames,
   marketBreakClassNames,
@@ -34,7 +33,6 @@ type Props = {
   setNotice: Dispatch<SetStateAction<string>>;
   onBack: () => void;
   onClearAll: () => void;
-  onOwnershipChanged: () => void;
 };
 
 const formatTwd = (value: number) =>
@@ -50,21 +48,6 @@ const confidenceNames: Record<SeasonConfidence, string> = {
   low: "低信心",
   inferred: "推估",
 };
-const emptyValuationAnalysis: ValuationAnalysis = {
-  valuationItems: [],
-  ultimates: [],
-  pendants: [],
-  packages: [],
-  limited: [],
-  startSeasonSlug: null,
-  conservativeAddOnCaps: true,
-  seasonCompletion: new Map(),
-  completeness: 0,
-  issueCount: 0,
-  keepCount: 0,
-  bindings: {},
-  getZhName: (item) => item.name,
-};
 
 export function ValuationStep({
   runtime,
@@ -76,7 +59,6 @@ export function ValuationStep({
   setNotice,
   onBack,
   onClearAll,
-  onOwnershipChanged,
 }: Props) {
   const { showcasePreset, setShowcasePreset } = state;
   const chosen = useMemo(
@@ -89,13 +71,13 @@ export function ValuationStep({
   );
   const valuationAnalysis = useMemo(
     () =>
-      runtime.valuationRuntime?.analysis.analyzeValuation({
+      runtime.valuationRuntime.analysis.analyzeValuation({
         chosen,
         bindings,
         bindingsConfirmed: account.bindingsConfirmed,
         bindingNote: account.bindingNote,
         domain: runtime.valuationDomain,
-      }) ?? emptyValuationAnalysis,
+      }),
     [
       account.bindingNote,
       account.bindingsConfirmed,
@@ -107,7 +89,7 @@ export function ValuationStep({
   );
   const valuationEstimate = useMemo(
     () =>
-      runtime.valuationRuntime?.analysis.estimateValuation({
+      runtime.valuationRuntime.analysis.estimateValuation({
         analysis: valuationAnalysis,
         resources: {
           candles: account.candles,
@@ -457,7 +439,6 @@ export function ValuationStep({
             disabled={!owned.size}
             onClick={() => {
               setOwned(new Set());
-              onOwnershipChanged();
             }}
           >
             清除已選物品
