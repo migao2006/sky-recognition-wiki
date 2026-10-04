@@ -31,13 +31,14 @@ const estimate = (slug, count) => {
 };
 
 
-test("all completed seasons and 0–250 packages have no inherited manual anchors", () => {
+test("all completed seasons and 0–250 packages use only the unvalidated candidate", () => {
   for (const slug of catalog.graduationSeasonSlugs) {
     for (let count = 0; count <= 250; count++) {
       const result = estimate(slug, count);
       assert.equal(result.marketProfile.canonicalPackageCount, count);
-      assert.equal(result.midpoint, null);
-      assert.equal(result.range, null);
+      assert.ok(result.midpoint === null || (typeof result.midpoint === "number" && result.midpoint > 0));
+      assert.ok(result.range === null || (result.range.low >= 0 && result.range.high >= result.range.low));
+      if (result.midpoint !== null) assert.equal(result.status, "unvalidated");
       assert.equal(result.modelFeatures.modelRevision, freshModelRevision);
     }
   }

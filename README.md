@@ -114,11 +114,11 @@ Wiki 蒐集可用 `--source=fandom-zh` 或 `--source=bwiki-zh-cn` 分站更新�
 
 唯一正式來源為 GitHub `main`。合併或推送到 `main` 後，由 Vercel 自動建置及發佈；不使用手動 Sites 或 Vercel 部署。
 
-## 新估價流程（證據不足時不報價）
+## 新估價流程（未驗證行情候選）
 
-`app/valuation-fresh-core.js` 是網站與候選建模共用的新數值核心，不匯入舊 aggregate、人工固定答案、季節 prior 或加值上限。以重新核對的同市場／伺服器／原幣／價格類型資料，擬合季節截距、共用單調分段禮包曲線與非正的斷季／綁定係數；禮包節點取自校準資料的數量分位數，不是既定價格。缺欄位的標題仍保留於覆蓋報告，但不補造數量或風險來訓練完整模型。
+`app/valuation-fresh-core.js` 是網站與候選建模共用的新數值核心，不匯入舊 aggregate、人工固定答案、季節 prior 或加值上限。現行候選使用 `evidence-blended-v2`：直接單季台灣行情權重最高，明確跨季 `season_progress` 依涵蓋季數分攤並以低權重補充；禮包沒有精確件數時可使用賣家少／中／多／百禮級距的代表值，但會在 provenance 標記為 tier proxy。這些價格帶仍是整號行情的探索性證據，不是單季裸價或成交保證。
 
-網站已移除舊季節底價、人工固定答案、固定限定／資源加價與禮包封頂。`valuation-fresh-data.json` 目前 `model: null`：622 筆新海外刊登不能當作台幣訓練資料，可用新台幣模型樣本為 0，因此全部 30 季均顯示「資料不足」。這是完成新流程切換，不是宣稱完成行情訓練。主畫面、預覽、PNG 與文案重播一致回傳空價格，保留衣櫃、備份、分享及匯出功能。
+網站已移除舊季節底價、人工固定答案、固定限定／資源加價與禮包封頂。`valuation-fresh-data.json` 目前載入 2026-09-10 核對的 446 筆台灣資料，其中 113 筆含可用季節進度；模型與季節帶一律標示 `unvalidated`，海外刊登仍只作外部參考，不直接換算台幣。資料不足的季節仍顯示「資料不足」，不以鄰近季節補值。
 
 `estimateValuation` 回傳 `status: unavailable/unvalidated`、nullable `midpoint/range`；空選取仍回傳 null。`modelFeatures` 改為原始起季／唯一禮包數／未完成比例／綁定限制數及 revision，不包含舊底價與乘數。備份樣本工具輸出 predictor schema v6；帳號備份仍為 v4。舊 validator 必須拒絕 v6，不得聲稱相容或已通過驗證。未完成獨立資料與驗證前，不得用 candidate 的訓練殘差冒充可信市場區間。
 
@@ -134,6 +134,10 @@ node --test tests/valuation-fresh.test.mjs
 輸出限私人 `work/`、拒絕覆寫已有檔案，ask/sold 分開擬合。至少 5 個不同帳號才擬合該季；缺資料、未知輸入或超出觀測禮包／風險範圍回傳 `midpoint: null`、`range: null`，不回退舊價格。候選區間只是訓練殘差 10–90 分位區間，**不是已校準預測區間**；狀態永遠 `unvalidated`，不降低下述正式發布門檻。測試中的合成價格只驗證數學與防污染規則，不是行情或準確度成績。
 
 ## 歷史模型隔離
+
+### 2026-10-04 未驗證行情候選
+
+`valuation-fresh-data.json` 現在包含 2026-09-10 核對的台灣行情候選：113 筆有可用季節進度，其中跨季資料按明確進度分攤並降低權重。禮包沒有精確件數時，候選可使用少／中／多／百禮的代表值；這只用於漸進式行情參考，會在 provenance 標示 tier proxy，不代表實際件數。模型與季節價格帶都維持 `unvalidated`，區間是加權經驗四分位數，不是成交保證或正式 prediction interval。海外資料仍不直接換算台幣。
 
 舊人工參考、加值上限與價格校準模組已刪除。`valuation-market-aggregate.json`、`valuation-model-core.js` 與 `valuation-season-band-core.js` 只供離線歷史稽核／舊版回歸驗證，不再由網站匯入。`tests/valuation-production-boundary.test.mjs` 從首頁遞迴檢查模組依賴，禁止這些歷史價格重新進入前端。新季節表列出 catalog 全季節，不拿舊 aggregate 補價格。
 

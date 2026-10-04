@@ -1,12 +1,309 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "revision": "fresh-candidate-v1",
   "asOf": "2026-10-04",
   "validation": "unvalidated",
-  "model": null,
-  "sourceRows": 622,
-  "foreignRows": 622,
-  "eligibleRows": 0,
+  "model": {
+    "revision": "fresh-candidate-v1",
+    "mode": "evidence-blended-v2",
+    "validation": "unvalidated",
+    "converged": true,
+    "sourceEvidenceCount": 1385,
+    "packageCenter": 37,
+    "packageSlope": 23.75921608208293,
+    "breakMultipliers": {
+      "none": 1,
+      "slight": 1,
+      "medium": 1,
+      "large": 1,
+      "unknown": 1
+    },
+    "seasons": {
+      "gratitude": {
+        "status": "unavailable",
+        "median": null,
+        "low": null,
+        "high": null,
+        "sampleCount": 0,
+        "directCount": 0,
+        "blendedCount": 0
+      },
+      "lightseekers": {
+        "status": "blended",
+        "median": 6851.851851851852,
+        "low": 6851.851851851852,
+        "high": 6851.851851851852,
+        "sampleCount": 2,
+        "directCount": 0,
+        "blendedCount": 2
+      },
+      "belonging": {
+        "status": "blended",
+        "median": 3846.153846153846,
+        "low": 3846.153846153846,
+        "high": 6851.851851851852,
+        "sampleCount": 5,
+        "directCount": 0,
+        "blendedCount": 5
+      },
+      "rhythm": {
+        "status": "blended",
+        "median": 3826.086956521739,
+        "low": 1904.7619047619048,
+        "high": 3846.153846153846,
+        "sampleCount": 23,
+        "directCount": 2,
+        "blendedCount": 21
+      },
+      "enchantment": {
+        "status": "blended",
+        "median": 1812.5,
+        "low": 1420,
+        "high": 3541.6666666666665,
+        "sampleCount": 32,
+        "directCount": 0,
+        "blendedCount": 32
+      },
+      "sanctuary": {
+        "status": "blended",
+        "median": 1666.6666666666667,
+        "low": 1350,
+        "high": 3700,
+        "sampleCount": 28,
+        "directCount": 0,
+        "blendedCount": 28
+      },
+      "prophecy": {
+        "status": "blended",
+        "median": 1800,
+        "low": 1000,
+        "high": 3529.4117647058824,
+        "sampleCount": 40,
+        "directCount": 1,
+        "blendedCount": 39
+      },
+      "dreams": {
+        "status": "blended",
+        "median": 1466.6666666666667,
+        "low": 988.3333333333334,
+        "high": 2826.086956521739,
+        "sampleCount": 35,
+        "directCount": 0,
+        "blendedCount": 35
+      },
+      "assembly": {
+        "status": "blended",
+        "median": 1242.75,
+        "low": 618.75,
+        "high": 1888.888888888889,
+        "sampleCount": 45,
+        "directCount": 0,
+        "blendedCount": 45
+      },
+      "the-little-prince": {
+        "status": "blended",
+        "median": 964.2857142857143,
+        "low": 583.3333333333334,
+        "high": 1800,
+        "sampleCount": 52,
+        "directCount": 0,
+        "blendedCount": 52
+      },
+      "flight": {
+        "status": "blended",
+        "median": 783.3333333333334,
+        "low": 482.3529411764706,
+        "high": 1454.5454545454545,
+        "sampleCount": 55,
+        "directCount": 0,
+        "blendedCount": 55
+      },
+      "abyss": {
+        "status": "blended",
+        "median": 642.8571428571429,
+        "low": 482.3529411764706,
+        "high": 1615.3846153846155,
+        "sampleCount": 51,
+        "directCount": 0,
+        "blendedCount": 51
+      },
+      "performance": {
+        "status": "blended",
+        "median": 783.3333333333334,
+        "low": 475,
+        "high": 1500,
+        "sampleCount": 75,
+        "directCount": 0,
+        "blendedCount": 75
+      },
+      "shattering": {
+        "status": "blended",
+        "median": 635.7142857142857,
+        "low": 472.72727272727275,
+        "high": 1500,
+        "sampleCount": 74,
+        "directCount": 0,
+        "blendedCount": 74
+      },
+      "aurora": {
+        "status": "blended",
+        "median": 652.1739130434783,
+        "low": 472.72727272727275,
+        "high": 1454.5454545454545,
+        "sampleCount": 77,
+        "directCount": 0,
+        "blendedCount": 77
+      },
+      "remembrance": {
+        "status": "blended",
+        "median": 618.75,
+        "low": 453.84615384615387,
+        "high": 1500,
+        "sampleCount": 63,
+        "directCount": 0,
+        "blendedCount": 63
+      },
+      "passage": {
+        "status": "blended",
+        "median": 618.75,
+        "low": 453.84615384615387,
+        "high": 1800,
+        "sampleCount": 53,
+        "directCount": 0,
+        "blendedCount": 53
+      },
+      "moments": {
+        "status": "blended",
+        "median": 590,
+        "low": 445.45454545454544,
+        "high": 1500,
+        "sampleCount": 51,
+        "directCount": 0,
+        "blendedCount": 51
+      },
+      "revival": {
+        "status": "blended",
+        "median": 586.9565217391304,
+        "low": 453.84615384615387,
+        "high": 1500,
+        "sampleCount": 49,
+        "directCount": 0,
+        "blendedCount": 49
+      },
+      "nine-colored-deer": {
+        "status": "blended",
+        "median": 652.1739130434783,
+        "low": 471.42857142857144,
+        "high": 1812.5,
+        "sampleCount": 49,
+        "directCount": 0,
+        "blendedCount": 49
+      },
+      "nesting": {
+        "status": "blended",
+        "median": 652.1739130434783,
+        "low": 445.45454545454544,
+        "high": 1666.6666666666667,
+        "sampleCount": 46,
+        "directCount": 0,
+        "blendedCount": 46
+      },
+      "duets": {
+        "status": "blended",
+        "median": 637.5,
+        "low": 441.1764705882353,
+        "high": 1666.6666666666667,
+        "sampleCount": 51,
+        "directCount": 0,
+        "blendedCount": 51
+      },
+      "moomin": {
+        "status": "blended",
+        "median": 618.75,
+        "low": 444.44444444444446,
+        "high": 1500,
+        "sampleCount": 61,
+        "directCount": 0,
+        "blendedCount": 61
+      },
+      "radiance": {
+        "status": "blended",
+        "median": 652.1739130434783,
+        "low": 444.44444444444446,
+        "high": 1800,
+        "sampleCount": 57,
+        "directCount": 0,
+        "blendedCount": 57
+      },
+      "blue-bird": {
+        "status": "blended",
+        "median": 500,
+        "low": 431.8181818181818,
+        "high": 1500,
+        "sampleCount": 62,
+        "directCount": 0,
+        "blendedCount": 62
+      },
+      "two-embers-part-1": {
+        "status": "blended",
+        "median": 525,
+        "low": 437.5,
+        "high": 1500,
+        "sampleCount": 59,
+        "directCount": 0,
+        "blendedCount": 59
+      },
+      "migration": {
+        "status": "blended",
+        "median": 586.9565217391304,
+        "low": 437.5,
+        "high": 1500,
+        "sampleCount": 61,
+        "directCount": 1,
+        "blendedCount": 60
+      },
+      "lightmending": {
+        "status": "blended",
+        "median": 727.2727272727273,
+        "low": 437.5,
+        "high": 1666.6666666666667,
+        "sampleCount": 62,
+        "directCount": 0,
+        "blendedCount": 62
+      },
+      "carnival": {
+        "status": "blended",
+        "median": 845,
+        "low": 450,
+        "high": 1454.5454545454545,
+        "sampleCount": 67,
+        "directCount": 2,
+        "blendedCount": 65
+      },
+      "dear-van-gogh": {
+        "status": "unavailable",
+        "median": null,
+        "low": null,
+        "high": null,
+        "sampleCount": 0,
+        "directCount": 0,
+        "blendedCount": 0
+      }
+    },
+    "intervalKind": "weighted_empirical_quartiles_not_prediction_interval"
+  },
+  "sourceRows": 446,
+  "foreignRows": 0,
+  "eligibleRows": 113,
   "collectionComplete": false,
-  "reason": "No freshly reviewed Taiwan cohort qualifies for numerical fitting. Foreign listing prices are not converted into Taiwan valuations."
+  "provenance": {
+    "source": "work/market-research-2026-09-10/tw-reviewed-calibration.jsonl",
+    "method": "reviewed Taiwan TWD listings; cross-season rows split by explicit season_progress and weighted 0.25",
+    "directRows": 6,
+    "crossSeasonRows": 107,
+    "packageCountRows": 36,
+    "packageTierProxyRows": 1,
+    "interval": "weighted empirical quartiles; not a prediction interval"
+  },
+  "reason": "Candidate only. It is not independently holdout-validated and must remain labelled unvalidated."
 }

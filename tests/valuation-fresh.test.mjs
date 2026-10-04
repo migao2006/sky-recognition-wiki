@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { fitFreshModel, predictFreshModel } from "../app/valuation-fresh-core.js";
+import { fitFreshModel, fitEvidenceBlendedModel, predictFreshModel } from "../app/valuation-fresh-core.js";
 import { reviewFreshEvidence } from "../scripts/lib/fresh-valuation-evidence.mjs";
 
 // Synthetic fixtures test mechanics, not market accuracy or known user answers.
@@ -96,4 +96,22 @@ test("learned package curve is continuous and monotonic for every supplied seaso
 test("candidate has no runtime dependency on old prices or manual fixed answers", async () => {
   const source = await readFile(new URL("../app/valuation-fresh-core.js", import.meta.url), "utf8");
   assert.doesNotMatch(source, /\bimport\s|valuation-reference|valuation-market-aggregate|seasonBandSeeds/);
+});
+
+test("evidence-blended candidate splits cross-season evidence and keeps tier proxy metadata", () => {
+  const model = fitEvidenceBlendedModel([
+    { price: 12000, packageCount: 75, seasonEvidence: [
+      { season: "gratitude", priceShare: 12000, weight: 1, breakClass: "none" },
+    ] },
+    { price: 20000, packageCount: 120, seasonEvidence: [
+      { season: "gratitude", priceShare: 10000, weight: .25, breakClass: "large" },
+      { season: "rhythm", priceShare: 10000, weight: .25, breakClass: "large" },
+    ] },
+  ], { seasons });
+  assert.equal(model.mode, "evidence-blended-v2");
+  assert.equal(model.seasons.gratitude.status, "blended");
+  assert.equal(model.seasons.rhythm.status, "blended");
+  const estimate = predictFreshModel(model, { season: "gratitude", packageCount: 75, breakFraction: 0, bindingRiskCount: 0 });
+  assert.equal(estimate.status, "unvalidated");
+  assert.ok(estimate.midpoint > 0);
 });
