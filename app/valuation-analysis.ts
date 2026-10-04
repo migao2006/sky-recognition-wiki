@@ -35,6 +35,7 @@ type ValuationSeasonRow = SeasonPriceBand & {
   completion: number;
 };
 export type ValuationEstimate = {
+  packageAdjustment?: ModelResponse["packageAdjustment"];
   status: "unavailable" | "unvalidated";
   range: { low: number; high: number; currency: "TWD" } | null;
   midpoint: number | null;
@@ -187,6 +188,7 @@ export const estimateValuation = ({ analysis, response }: {
   warnings.push("物品、資源及綁定以模型已學習的特徵綜合推估，不另加固定金額；未填資料保持未知。");
   return {
     status: response ? "unvalidated" : "unavailable",
+    packageAdjustment: response?.packageAdjustment,
     range: null,
     midpoint: response?.midpoint ?? null,
     confidence: "inferred",

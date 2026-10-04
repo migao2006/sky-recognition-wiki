@@ -17,7 +17,9 @@ test("preliminary estimate stays visible and confirmation sends wardrobe feature
   const requests: Record<string, unknown>[] = [];
   await page.route("**/api/valuation", route => {
     requests.push(route.request().postDataJSON().features);
-    return route.fulfill({ json: { ...modelFixture, midpoint: requests.at(-1)?.season ? 23456 : 12345 } });
+    const count = requests.at(-1)?.packageCount;
+    return route.fulfill({ json: { ...modelFixture, midpoint: requests.at(-1)?.season ? 23456 : 12345,
+      packageAdjustment: {count, multiplier: count === null ? 1 : 1.25, basis: count === null ? "unknown" : "count"} } });
   });
   await page.goto("/");
   await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible({ timeout: 15000 });
@@ -30,6 +32,7 @@ test("preliminary estimate stays visible and confirmation sends wardrobe feature
   await expect(page.locator(".valuation-verdict > span")).toHaveText("初步推估");
   expect(requests.at(-1)?.season).toBeNull();
   expect(requests.at(-1)?.packageTier).toBeNull();
+  expect(requests.at(-1)?.packageCount).toBeNull();
   await page.getByRole("button", { name: "返回確認衣櫃" }).click();
   await expect(page.getByLabel("已逐項確認完整衣櫃")).not.toBeChecked();
   await page.getByLabel("已逐項確認完整衣櫃").check();
@@ -38,6 +41,9 @@ test("preliminary estimate stays visible and confirmation sends wardrobe feature
   await expect(page.locator(".showcase-price span")).toHaveText("參考估價");
   expect(requests.at(-1)?.season).toBeTruthy();
   expect(requests.at(-1)?.packageTier).not.toBeNull();
+  expect(requests.at(-1)?.packageCount).toBe(0);
+  await page.getByText("估價依據", { exact: true }).click();
+  await expect(page.locator(".valuation-method")).toContainText("可計價禮包 0 禮；平滑推算：基準的 125.0%");
 });
 
 test("late preliminary response cannot replace a confirmed estimate", async ({ page }) => {

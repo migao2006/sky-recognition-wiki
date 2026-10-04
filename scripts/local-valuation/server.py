@@ -78,6 +78,10 @@ class Service:
         for key, value in features.items():
             if value is None:
                 continue
+            if key == "packageCount":
+                if type(value) not in (int, float) or not 0 <= value <= 99999 or int(value) != value:
+                    return False
+                continue
             if key.startswith("item:"):
                 if value not in ["present", "absent"]:
                     return False

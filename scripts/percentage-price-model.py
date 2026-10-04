@@ -2,6 +2,7 @@
 from collections import Counter
 import numpy as np
 from scipy.optimize import minimize, LinearConstraint
+from scipy.interpolate import PchipInterpolator
 
 # User-selected community opinions, not listing observations or sold prices.
 # User-selected centers; bounded mode allows gratitude 270k–330k too.
@@ -14,7 +15,8 @@ RESOURCES = ('candles', 'hearts', 'ascended', 'passes')
 
 class PercentagePriceModel:
     def fit(self, rows, seasons, anchors=None, *, adjust_baselines=False,
-            bounded_baselines=False, effect_regularization=10., season_smoothing=.5):
+            bounded_baselines=False, effect_regularization=10., season_smoothing=.5,
+            progressive_packages=False):
         if adjust_baselines and bounded_baselines:
             raise ValueError('Free adjustment cannot override bounded baselines')
         if any(isinstance(v, bool) or not isinstance(v, (int, float)) or
@@ -28,6 +30,7 @@ class PercentagePriceModel:
                r.get('currency') != 'TWD' or r.get('market') != 'taiwan' for r in rows):
             raise ValueError('Require eligible Taiwan listing prices')
         self.seasons = list(seasons)
+        self.progressive_packages = progressive_packages
         self.baseline_mode = 'bounded' if bounded_baselines else 'adjustable' if adjust_baselines else 'fixed'
         self.fit_params = dict(bounded_baselines=bounded_baselines,
                                effect_regularization=effect_regularization, season_smoothing=season_smoothing)
@@ -101,6 +104,27 @@ class PercentagePriceModel:
         return self
 
     @staticmethod
+    def package_count(row):
+        value = row.get('features', {}).get('packageCount')
+        if value is None:
+            return None
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not np.isfinite(value) or value < 0 or value > 99999 or int(value) != value:
+            raise ValueError('Invalid exact package count')
+        return int(value)
+
+    def package_log_multiplier(self, count):
+        # Curve control coordinates are policy, NOT fabricated training counts.
+        steps = self.weights[self.nbase+3:self.nbase+6]
+        values = np.array([-steps[0]-.5*steps[1], -.5*steps[1], .5*steps[1], .5*steps[1]+steps[2]])
+        curve = PchipInterpolator([30., 75., 95., 150.], values, extrapolate=False)
+        if count < 30:
+            return float(values[0] + max(0., float(curve.derivative()(30))) * (count-30))
+        if count > 150:
+            slope = max(0., float(curve.derivative()(150)))
+            return float(values[-1] + slope * 55 * np.log1p((count-150)/55))
+        return float(curve(count))
+
+    @staticmethod
     def _number(row, key):
         v = row.get('features', {}).get(key)
         return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and np.isfinite(v) and v >= 0 else None
@@ -127,8 +151,10 @@ class PercentagePriceModel:
         end = b + 6 + len(self.bindings)
         result = []
         for r, t in zip(rows, terms):
+            count = self.package_count(r) if getattr(self, 'progressive_packages', False) else None
+            package_log = self.package_log_multiplier(count) if count is not None else t[b+3:b+6].sum()
             factors = dict(breaks=float(np.exp(t[b:b+3].sum())),
-                           packages=float(np.exp(t[b+3:b+6].sum())),
+                           packages=float(np.exp(package_log)),
                            bindings=float(np.exp(t[b+6:end].sum())),
                            resources=float(np.exp(t[end:].sum())))
             base = float(np.exp(t[:b].sum()))
@@ -138,7 +164,8 @@ class PercentagePriceModel:
             result.append(dict(basePrice=base, factors=factors, price=price,
                                seasonKnown=r.get('season') in self.seasons,
                                breakKnown=r.get('breakClass') in BREAKS,
-                               packageKnown=r.get('packageTier') in PACKAGES))
+                               packageKnown=count is not None or r.get('packageTier') in PACKAGES,
+                               packageCount=count, packageBasis='count' if count is not None else 'tier' if r.get('packageTier') in PACKAGES else 'unknown'))
         return result
 
     def predict(self, rows):

@@ -5,15 +5,15 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REVISION = 'bounded-percentage-2026-10-05'
+REVISION = 'progressive-packages-2026-10-05'
 SOURCE_SHA = 'cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9'
-STATE_SHA = 'f23da023abefacc23c5cde8b7fe56d4f3505b3ba8d5462d4ac531bea962c9242'
-ARTIFACT = ROOT / 'work/bounded-percentage-2026-10-05'
+STATE_SHA = '17dd22deae45ee8894d3a127f0006e133eeca2f486ce8e6b141820653f41b5fe'
+ARTIFACT = ROOT / 'work/progressive-packages-2026-10-05'
 FIT_PARAMS = dict(bounded_baselines=True, effect_regularization=3., season_smoothing=.5)
 
 
 def load_data():
-    raw = (ARTIFACT / 'frozen.private.json').read_bytes()
+    raw = (ROOT / 'work/bounded-percentage-2026-10-05/frozen.private.json').read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
     if digest != SOURCE_SHA:
         raise ValueError('Frozen source changed')
@@ -36,7 +36,7 @@ def artifact():
     # Only our fixed, locally generated artifact is accepted, never uploads.
     model = recipe().PercentagePriceModel()
     model.__dict__.update(joblib.load(ARTIFACT / 'candidate.joblib'))
-    if model.baseline_mode != 'bounded' or model.fit_params != FIT_PARAMS:
+    if model.baseline_mode != 'bounded' or model.fit_params != FIT_PARAMS or not model.progressive_packages:
         raise ValueError('Bounded recipe mismatch')
     return model, STATE_SHA
 
@@ -46,7 +46,7 @@ def manifest():
     model, state_digest = artifact()
     categorical = ['season', 'breakClass', 'packageTier', *sorted({k for k, _ in model.bindings})]
     return dict(schemaVersion=1, modelRevision=REVISION, method='bounded-percentage', sourceDigest=digest,
-                stateSha256=state_digest, columns=[*categorical, *model.resources],
+                stateSha256=state_digest, columns=[*categorical, *model.resources, 'packageCount'],
                 categorical=categorical, seasons=seasons,
                 sampleCount=len(rows), seasonCounts={s:sum(r.get('season') == s for r in rows) for s in seasons},
                 asOf='2026-10-05', status='unvalidated')
@@ -72,7 +72,12 @@ class Predictor:
         return [max(1, round(float(p))) for p in self.model.predict(rows)]
 
     def predict(self, features):
+        common = ('season', 'breakClass', 'packageTier')
+        row = {**{k:v for k,v in features.items() if k in common},
+               'features':{k:v for k,v in features.items() if k not in common}}
+        explanation = self.model.explain([row])[0]
         return dict(schemaVersion=1, modelRevision=REVISION, status='unvalidated',
+                    packageAdjustment=dict(count=explanation['packageCount'], multiplier=explanation['factors']['packages'], basis=explanation['packageBasis']),
                     midpoint=self.predict_many([features])[0], currency='TWD', range=None, seasonBands=self.bands)
 
 

@@ -5,7 +5,7 @@ import json
 import time
 import urllib.error
 import urllib.request
-from model import ROOT, load_data, recipe, manifest, FIT_PARAMS
+from model import ROOT, load_data, recipe, manifest, FIT_PARAMS, Predictor
 
 
 def main():
@@ -35,12 +35,17 @@ def main():
     b = call(body)
     assert a[0] == b[0] == 200 and a[1] == b[1]
     assert a[2] < 45 and len(a[1]["seasonBands"]) == 30 and a[1]["range"] is None
-    raw = recipe().PercentagePriceModel().fit(rows, meta["seasons"], **FIT_PARAMS).predict([row])
+    raw = recipe().PercentagePriceModel().fit(rows, meta["seasons"], **FIT_PARAMS, progressive_packages=True).predict([row])
     assert a[1]["midpoint"] == max(1, round(raw[0])), "Serving/benchmark prediction drift"
+    predictor = Predictor()
+    for count in (0, 100, 150, 191, 200):
+        probe = {"season": "enchantment", "breakClass": "none", "packageCount": count}
+        result = call({"schemaVersion": 1, "features": probe}, client="curve-parity")
+        assert result[0] == 200 and result[1] == predictor.predict(probe), "Count curve API drift"
     for _ in range(6):
         assert call(body, client="rate-check")[0] == 200
     assert call(body, client="rate-check")[0] == 429
-    print(json.dumps({"realModel": True, "parity": True, "predictionSeconds": a[2], "cachedSeconds": b[2], "authentication": True, "rateLimit": True}))
+    print(json.dumps({"realModel": True, "parity": True, "curveParityCases": 5, "predictionSeconds": a[2], "cachedSeconds": b[2], "authentication": True, "rateLimit": True}))
 
 
 if __name__ == "__main__":

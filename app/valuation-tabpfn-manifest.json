@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "modelRevision": "bounded-percentage-2026-10-05",
+  "modelRevision": "progressive-packages-2026-10-05",
   "method": "bounded-percentage",
   "sourceDigest": "cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9",
-  "stateSha256": "f23da023abefacc23c5cde8b7fe56d4f3505b3ba8d5462d4ac531bea962c9242",
+  "stateSha256": "17dd22deae45ee8894d3a127f0006e133eeca2f486ce8e6b141820653f41b5fe",
   "columns": [
     "season",
     "breakClass",
@@ -13,7 +13,8 @@
     "binding:GG",
     "binding:NS",
     "candles",
-    "hearts"
+    "hearts",
+    "packageCount"
   ],
   "categorical": [
     "season",

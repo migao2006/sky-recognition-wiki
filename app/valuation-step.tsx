@@ -2,6 +2,7 @@
 
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { buildModelRequest } from "./valuation-tabpfn-features";
+import { packageCoverage } from "./package-coverage";
 import { useTabpfnEstimate } from "./use-tabpfn-estimate";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 import { DeferredDetails } from "./deferred-details";
@@ -62,6 +63,9 @@ export function ValuationStep({
   onClearAll,
 }: Props) {
   const { showcasePreset, setShowcasePreset } = state;
+  const packageCollection = useMemo(() => packageCoverage(
+    runtime.wikiItems.filter(item => runtime.allClosetTypeSet.has(item.type)), owned, bindings, account.wardrobeConfirmed,
+  ), [runtime.wikiItems, runtime.allClosetTypeSet, owned, bindings, account.wardrobeConfirmed]);
   const chosen = useMemo(
     () =>
       runtime.wikiItems.filter(
@@ -400,6 +404,13 @@ export function ValuationStep({
             各季參考為無斷、中禮至多禮基準、其餘未知的整號推估，不是單季價格或成交保證。
           </p>
           {valuationEstimate?.warnings.map(warning => <p key={warning}>{warning}</p>)}
+          {valuationEstimate?.packageAdjustment && <p>
+            {valuationEstimate.packageAdjustment.basis === "count"
+              ? `可計價禮包 ${valuationEstimate.packageAdjustment.count} 禮${packageCollection.full ? "（目錄全禮）" : ""}；平滑推算`
+              : valuationEstimate.packageAdjustment.basis === "tier" ? "禮包級距推算" : "禮包數量未知，採中性倍率"}
+            {`：基準的 ${(valuationEstimate.packageAdjustment.multiplier * 100).toFixed(1)}%。`}
+            此比例不是禮包原價或已驗證的逐件行情。
+          </p>}
         </DeferredDetails>
       </section>
       <div className="account-actions">

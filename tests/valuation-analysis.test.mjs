@@ -227,7 +227,7 @@ test("no old price is returned even for all items, resources and known bindings"
   assert.equal(result.range, null);
   assert.equal(result.midpoint, null);
   assert.deepEqual(result.contributions, []);
-  assert.equal(result.modelFeatures.modelRevision, "bounded-percentage-2026-10-05");
+  assert.equal(result.modelFeatures.modelRevision, "progressive-packages-2026-10-05");
   assert.equal(result.confidence, "inferred");
   assert.ok(result.warnings.some(text => text.includes("未通過獨立成交驗證")));
 });

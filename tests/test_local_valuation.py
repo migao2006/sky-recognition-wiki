@@ -20,6 +20,10 @@ class LocalServiceTest(unittest.TestCase):
         self.assertTrue(self.service.valid({"schemaVersion": 1, "features": {"season": None}}))
         for f in [{"price": 3500}, {"season": "fake"}, {"packageCount": float("nan")}, {"packageCount": True}]:
             self.assertFalse(self.service.valid({"schemaVersion": 1, "features": f}))
+        for n in (0,99,100,200):
+            self.assertTrue(self.service.valid({'schemaVersion':1,'features':{'packageCount':n}}))
+        for n in (-1,1.5,'100',100000,float('inf')):
+            self.assertFalse(self.service.valid({'schemaVersion':1,'features':{'packageCount':n}}))
 
     def test_global_rate_limit(self):
         self.assertTrue(all(self.service.rate_allowed("client") for _ in range(6)))
