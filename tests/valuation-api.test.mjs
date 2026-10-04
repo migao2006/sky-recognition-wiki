@@ -17,7 +17,7 @@ test("model protocol rejects private fields, unknown keys and invalid numbers", 
 
 test("wardrobe bridge preserves unknowns and never sends personal data", () => {
   const itemKeys = meta.columns.filter(k => k.startsWith("item:"));
-  assert.ok(itemKeys.length > 0);
+  assert.equal(itemKeys.length, 0, "percentage model does not separately add individual item prices");
   const analysis = { startSeasonSlug: "moments", seasonCompletion: new Map(), bindings: { google: "none" } };
   const estimate = { marketProfile: { canonicalPackageCount: 105, salePackageTier: "many", breakClass: "none" } };
   const account = { name: "private", identityId: "private", notes: "private", candles: "", hearts: "0", ascended: "", passes: "", wardrobeConfirmed: false, bindingsConfirmed: false };
@@ -25,10 +25,10 @@ test("wardrobe bridge preserves unknowns and never sends personal data", () => {
   assert.equal(result.features.season, null);
   assert.equal(result.features.packageTier, null);
   assert.equal(result.features["binding:GG"], null);
-  assert.equal(result.features.accountStyle, null);
+  assert.equal(result.features.accountStyle, undefined);
   for (const key of itemKeys) assert.equal(result.features[key], null);
-  const present = buildModelRequest(analysis, estimate, account, new Set([itemKeys[0].slice(5)]));
-  assert.equal(present.features[itemKeys[0]], "present");
+  const present = buildModelRequest(analysis, estimate, account, new Set(["unlisted-item"]));
+  assert.deepEqual(present.features, result.features);
   assert.ok(isModelRequest(result));
   assert.ok(!JSON.stringify(result).includes("private"));
   const confirmed = buildModelRequest(analysis, estimate, { ...account, wardrobeConfirmed: true, bindingsConfirmed: true }, new Set());

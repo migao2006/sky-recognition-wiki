@@ -4,7 +4,7 @@ import numpy as np
 from scipy.optimize import minimize, LinearConstraint
 
 # User-selected community opinions, not listing observations or sold prices.
-# Midpoints for quoted ranges; gratitude is the selected 300k lower anchor.
+# User-selected centers; bounded mode allows gratitude 270k–330k too.
 ANCHORS = {'gratitude': 300000, 'lightseekers': 150000, 'rhythm': 85000,
            'enchantment': 35000, 'sanctuary': 15000, 'prophecy': 10000}
 BREAKS = {'none': 0, 'slight': 1, 'medium': 2, 'large': 3}
@@ -13,15 +13,24 @@ RESOURCES = ('candles', 'hearts', 'ascended', 'passes')
 
 
 class PercentagePriceModel:
-    def fit(self, rows, seasons, anchors=None, *, adjust_baselines=False):
-        if not rows or len(set(seasons)) != len(seasons):
+    def fit(self, rows, seasons, anchors=None, *, adjust_baselines=False,
+            bounded_baselines=False, effect_regularization=10., season_smoothing=.5):
+        if adjust_baselines and bounded_baselines:
+            raise ValueError('Free adjustment cannot override bounded baselines')
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or
+               not np.isfinite(v) or v <= 0 for v in (effect_regularization, season_smoothing)):
+            raise ValueError('Regularization must be positive and finite')
+        if not rows or not seasons or len(set(seasons)) != len(seasons):
             raise ValueError('Require training rows and unique seasons')
         if any(r.get('priceKind') not in ('ask', 'sold_proxy') or
                not np.isfinite(r['price']) or r['price'] <= 0 or
-               r.get('knownAnswer') or r.get('excludeFromModel') or
+               r.get('knownAnswer') or r.get('excludeFromModel') or r.get('exclude_from_model') or
                r.get('currency') != 'TWD' or r.get('market') != 'taiwan' for r in rows):
             raise ValueError('Require eligible Taiwan listing prices')
         self.seasons = list(seasons)
+        self.baseline_mode = 'bounded' if bounded_baselines else 'adjustable' if adjust_baselines else 'fixed'
+        self.fit_params = dict(bounded_baselines=bounded_baselines,
+                               effect_regularization=effect_regularization, season_smoothing=season_smoothing)
         self.anchors = {k: v for k, v in (ANCHORS if anchors is None else anchors).items()
                         if k in seasons}
         if any(not np.isfinite(v) or v <= 0 for v in self.anchors.values()):
@@ -40,7 +49,7 @@ class PercentagePriceModel:
         initial[:self.nbase] = np.median(y)
         for k, v in self.anchors.items():
             i = seasons.index(k)
-            bounds[i] = (np.log(v), np.log(v))
+            bounds[i] = (np.log(v * .9), np.log(v * 1.1)) if bounded_baselines else (np.log(v), np.log(v))
             initial[i] = np.log(v)
         self.baseline_support = {}
         reference = None
@@ -66,7 +75,7 @@ class PercentagePriceModel:
             order[i, i], order[i, i + 1] = 1, -1
         # Weak baseline smoothing fills missing seasons, strong effect shrinkage
         # reduces sparse binding/resource confounding. Neither is a price sample.
-        penalty = np.diag([0.] * self.nbase + [10.] * (n - self.nbase)) + .5 * order.T @ order
+        penalty = np.diag([0.] * self.nbase + [effect_regularization] * (n - self.nbase)) + season_smoothing * order.T @ order
         prior = np.zeros(n)
         if reference is not None:
             for i, season in enumerate(seasons):
@@ -75,7 +84,7 @@ class PercentagePriceModel:
                     prior[i] = 2 * reference.weights[i]
         def objective(w):
             residual = x @ w - y
-            scale = len(rows) if adjust_baselines else 1
+            scale = len(rows) if adjust_baselines or bounded_baselines else 1
             return (.5 * (residual @ residual + w @ penalty @ w) - prior @ w) / scale, (x.T @ residual + penalty @ w - prior) / scale
         result = minimize(objective, initial, jac=True, bounds=bounds,
                           constraints=[LinearConstraint(order, 0, np.inf)] if len(order) else [], method='SLSQP',
@@ -83,6 +92,12 @@ class PercentagePriceModel:
         if not result.success:
             raise ValueError('Percentage fit failed: ' + result.message)
         self.weights = result.x
+        if not np.all(np.isfinite(self.weights)) or np.any(order @ self.weights < -1e-7):
+            raise ValueError('Invalid fitted season direction')
+        if any((lo is not None and self.weights[i] < lo - 1e-7) or
+               (hi is not None and self.weights[i] > hi + 1e-7)
+               for i, (lo, hi) in enumerate(bounds)):
+            raise ValueError('Fitted model violates bounds')
         return self
 
     @staticmethod

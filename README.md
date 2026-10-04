@@ -41,14 +41,14 @@ npm test
 
 2026-10-05 使用者指定目前目標為帳號「刊登價」，不是確認成交價。刊登中及已售貼文的原標價可以共同建模，但保留 `ask`／`sold_proxy` 標籤並分開報告誤差；不得改稱成交驗證。既有成交價工具只作獨立研究，不作本次刊登價發布門檻。
 
-網站估價程式只呼叫本機單調模型（`monotone-listing-2026-10-05`），不回退舊公式。部署必須先完成以下後端設定與驗證；本段描述程式設計，不代表目前公開站已完成發布。只顯示點估價與 `unvalidated`，不提供未校準價格區間。
+網站估價程式只呼叫本機基準受限百分比模型（`bounded-percentage-2026-10-05`），不回退舊公式。部署必須先完成以下後端設定與驗證；本段描述程式設計，不代表目前公開站已完成發布。只顯示點估價與 `unvalidated`，不提供未校準價格區間。
 
 ### 本機後端公開試運行
 
 - 路徑：瀏覽器 → 同站 `POST /api/valuation` → Cloudflare Quick Tunnel → Windows loopback Python 服務。臨時隧道僅適合試運行，無 SLA，重啟可能換網址；網站主機仍有自身用量限制。
-- 使用私人 `work/percentage-review-round3-2026-10-05/frozen.private.json` 中 477 筆刊登行情，來源分組及硬排除已在凍結前執行。載入 `work/historical-model-review-verified-2026-10-05/previous-monotone.joblib`，來源與狀態 SHA-256 固定於程式，並核對公開 manifest；不再啟動 TabPFN 或百分比模型。`smoke.py` 重新擬合相同配方核對推論。使用對數價格、平方損失、學習率 .05、150 次迭代、7 葉、每葉至少 10 筆、L2=10；保留季序、斷季與禮包方向限制，未知輸入交由缺值路徑處理，不補造原始欄位。
+- 使用私人 `work/bounded-percentage-2026-10-05/frozen.private.json` 中 477 筆刊登行情、440 個來源分組，與上一版凍結來源逐位元一致；硬排除及原始未知欄位保留。載入同目錄 `candidate.joblib`，來源與狀態 SHA-256 固定於程式並核對公開 manifest。`smoke.py` 以相同配方重新擬合核對推論。公式為季節基準 × 斷季 × 禮包 × 綁定 × 資源；對數空間共同擬合，效果正則化 3、季序平滑 .5。未知起季另估，未知條件係數為 1，不補造資料。上一版私人權重仍保留，回復必須同步程式、manifest 與後端。
 - 衣櫃未確認完整時，起季、斷季、禮包總量及季節比例維持未知；已選物品可表示持有，未選不代表沒有。已确认衣櫃才可表示不持有。未填資源、未確認綁定、UI 無法區分的遺失／異常與文字式帳號類型維持未知。
-- 公開 manifest 僅含特徵白名單與摘要。私人資料、權重、憑證與日誌都不提交 Git；回應只含點價格、版本與各季整號參考。各季統一比較無斷、禮包及其餘條件未知，不是單季售價；不再套用百分比模型的中禮至多禮幾何中點。
+- 公開 manifest 僅含特徵白名單與摘要。私人資料、權重、憑證與日誌都不提交 Git；回應只含點價格、版本與各季整號參考。各季參考採無斷、中禮與多禮幾何中點、綁定／資源未知，不是單季售價。白名單僅包含模型實際採用的起季、斷季、禮包級距、四種平台綁定及白蠟／愛心；未有足夠觀測的資源不另加值，也不再按單件付費物品重複加價。
 - 沒有選物品不請求；改選會取消舊請求，過期回應不能覆蓋新資料。預覽、分享與匯出共用當次結果。離線時不使用舊價格，衣櫃／備份／不含價格的圖片仍可使用。
 
 安裝（Python 3.13，固定短路徑，勿使用暫存 venv）：
@@ -75,7 +75,15 @@ Vercel 伺服器端環境變數（禁止 `NEXT_PUBLIC_`）：
 
 驗證：`python -m unittest discover -s tests -p test_local_valuation.py`、相關 Node 測試與 `npm run test:e2e`。模型資料不在 CI，CI 使用明示合成 API fixture 測 UI，不能當準確度驗證；本機另測真實 API、速度、離線與模型一致性。參考點價不是成交保證。
 
-### 離線基準比較（不供網站推論）
+### 六季基準受限版本
+
+2026-10-05 使用者核准「基準優先」：感恩 300,000、追光 150,000、音韻 85,000、魔法 35,000、聖島 15,000、預言 10,000 元，各中心允許 ±10%，包含感恩 270,000–330,000。這是無斷、中禮／多禮幾何中點的基準範圍，不限制乘上帳號條件後的最終價格；社群意見不計入 477 筆樣本。其餘季節依資料及單調／平滑約束推估。
+
+`fit(..., bounded_baselines=True)` 與固定／自由可調起價模式分離，禁止與 `adjust_baselines=True` 同用。`python scripts/tune-bounded-percentage-model.py work/current-information-round3.private.json work/new-bounded-directory` 只產生私人資料，不自動發布。固定相同外層五折，訓練內三折 GroupKFold 搜尋效果正則化 3／10／30 × 平滑 .1／.5／1 共九組，以內折中位百分比誤差、P90 排序；特徵選取也只看訓練折。每折及最終模型檢查六季範圍、幾何中點、季序／斷季／禮包／資源方向、未知欄位與有限正價格；保存後重載須一致。數值失敗不放寬範圍、不發布。
+
+同組 477 筆比較，原單調／受限百分比模型整體中位誤差 36.47%／50.07%，已知起季 24.13%／31.25%，未知起季 61.03%／81.38%；±10% 命中率 18.45%／10.90%，P90 誤差 207.52%／331.75%。本次使用者明確核准即使誤差退步仍優先遵守基準，並非精度提升或達到 10% 誤差。全部仍為分組開發測試，不是獨立盲測；原分層門檻照常記錄，只有本次發布准許精度例外，方向與安全門檻不可例外。測試：`python -m unittest discover -s tests -p 'test_*.py'`。
+
+### 歷史離線整號基準
 
 `valuation-fresh-core.js` 與 `valuation-fresh-data.json` 保留供既有研究／稽核重播。以下 schema 3、`whole-account-v3.1` 規則與 build 指令只適用於離線基準，不會更新 TabPFN 服務：
 
@@ -163,9 +171,13 @@ node --import tsx scripts/compare-graded-market.mjs work/graded-market-sources-2
 
 歷史模型重比使用 `python scripts/compare-historical-price-models.py work/source.private.json work/new-historical-review`：相同來源聯結五折比較百分比模型、原單調梯度提升及訓練折內三折選取平方／絕對損失的實驗版。損失選取不讀外層測試結果；最終全資料重訓仍使用相同內折選取流程。私人輸出含逐筆預測、分層門檻、來源與權重摘要，以及 30 季 × 4 斷季 × 4 禮包級距順序檢查。實驗模型即使指定 monotonic constraints 也必須實測；違反時標記不可用，不以較低誤差掩蓋問題。測試為 `test_listing_price_model.py`、`test_historical_price_comparison.py`；工具不修改正式服務。
 
-2026-10-05 歷史重比使用同一批 477 筆、440 分組：百分比／原單調／實驗版的整體中位誤差為 50.4%／36.5%／34.2%，已知起季為 30.2%／24.1%／21.6%。實驗版最終重訓出現 3 組斷季順序違反，禁止採用；原單調通過全部 480 組順序檢查，但夢想季 17 筆中位誤差從 12.2% 升至 22.3%。使用者知悉後核准本次分層例外，現行服務改為原單調版本，仍標記 unvalidated；不代表取消未來候選的分層門檻。以上仍為開發比較，不宣稱盲測或全域最低誤差。
+2026-10-05 歷史重比使用同一批 477 筆、440 分組：百分比／原單調／實驗版的整體中位誤差為 50.4%／36.5%／34.2%，已知起季為 30.2%／24.1%／21.6%。實驗版最終重訓出現 3 組斷季順序違反，禁止採用；原單調通過全部 480 組順序檢查，但夢想季 17 筆中位誤差從 12.2% 升至 22.3%。使用者知悉後曾核准分層例外，當時服務改為原單調版本，仍標記 unvalidated；現行版本以上方六季受限規格為準。以上仍為開發比較，不宣稱盲測或全域最低誤差。
 
 後續調參參考 [scikit-learn 1.9 HistGradientBoostingRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html) 與 [nested CV](https://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html)：优先小範圍比較葉數、每葉最少樣本、L2、學習率及迭代數，保留原設定為基準；參數選擇只在分組訓練內折完成，外折評分不得用來直接挑參數。小資料不盲目增加樹深；若啟用 early stopping，驗證集仍須隔離同來源分組，不能直接使用會混入同帳號的隨機切分。這些是下一輪實驗方向，尚未套用至正式權重。
+
+`python scripts/tune-listing-price-model.py work/source.private.json work/new-tuning-directory` 執行小範圍離線搜尋。固定十組：原設定、葉數 3／15、每葉樣本 5／20／30、L2 1／30，以及學習率 .03 配 250 次、.08 配 100 次；未列出的設定沿用原值。外層五折、訓練內層三折皆按來源分組；內折以中位百分比誤差選參，P90 作同分排序，不看外折答案。全部使用平方損失，不開隨機 early stopping；參數白名單不能覆蓋方向限制與亂數種子。每次擬合檢查中性與最多三個訓練特徵情境下的季序／斷季／禮包方向，內折違反者不參選，外折或最終重訓違反者禁止採用。這是有限探針檢查，不宣稱所有輸入的形式化證明。產物含逐折試驗、原始預測、最終內折選參、重載一致性與 SHA-256，全部只存私人 work/；不改服務或公開 manifest。測試：`python -m unittest discover -s tests -p 'test_listing*.py'`。
+
+2026-10-05 第一輪十組調參沿用 477 筆、440 分組：基準／調參程序整體中位誤差 36.47%／36.41%，已知起季 24.13%／23.96%；±10% 命中率反而由 18.45% 降至 16.56%，P90 由 207.52% 升至 211.69%。最終內折選 L2=1，1,920 組探針未違反方向，但整體改善未達門檻、多禮分層退步且尾端變差，因此不採用、不發布。此為巢狀分組開發比較，不是獨立盲測；不得挑出表現好的外折或改用訓練內分數宣稱新精度。
 
 原文人工補核可用 `python scripts/apply-market-feature-review.py work/source.private.json work/review.private.json work/new-source.private.json`，預設唯讀檢查，加 `--write` 才建立新的私人檔案。核對表須含原始檔 SHA-256 `sourceDigest` 及 `patches`；每項必須提供唯一 `postKey`、`field`、`value`、逐字原文 `quote` 與判斷 `reason`。僅可填未知且未經覆核的 `season`／`breakClass`／`packageTier`，或新增 `exclude_from_model: true`；不能改售價、覆蓋已知值或解除排除。引句存在只證明可追溯，語意仍需人工核對，不把中少禮硬分級，也不把復刻數當禮包數。來源與核對表保留私人，輸出附逐欄差異；測試為 `python -m unittest discover -s tests -p test_market_feature_review.py`。
 

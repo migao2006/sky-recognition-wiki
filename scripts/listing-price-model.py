@@ -14,7 +14,21 @@ spec.loader.exec_module(benchmark)
 class ListingPriceModel:
     """Same remaining inputs: earlier season >= later, fewer breaks >= more, more packages >= fewer."""
 
-    def fit(self, rows, seasons, *, loss='squared_error'):
+    def fit(self, rows, seasons, *, loss='squared_error', params=None):
+        settings = dict(learning_rate=.05, max_iter=150, max_leaf_nodes=7,
+                        min_samples_leaf=10, l2_regularization=10)
+        if params is not None:
+            if not isinstance(params, dict) or set(params) - set(settings):
+                raise ValueError('Unsupported tuning parameter')
+            settings.update(params)
+        for key, value in settings.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not np.isfinite(value):
+                raise ValueError('Invalid tuning value')
+            if key in ('max_iter', 'max_leaf_nodes', 'min_samples_leaf'):
+                if not isinstance(value, int) or value < (2 if key == 'max_leaf_nodes' else 1):
+                    raise ValueError('Invalid integer tuning value')
+            elif value < 0 or (key == 'learning_rate' and value == 0):
+                raise ValueError('Invalid tuning value')
         if not rows or any(r.get('priceKind') not in ('ask', 'sold_proxy') or
                            not np.isfinite(r['price']) or r['price'] <= 0 for r in rows):
             raise ValueError('Expected positive listing prices, not transaction targets')
@@ -32,8 +46,7 @@ class ListingPriceModel:
             raise ValueError('Unsupported comparison loss')
         # absolute_error is experimental: callers must probe fitted constraints,
         # since requesting monotonic_cst alone does not establish model validity.
-        self.model = HistGradientBoostingRegressor(loss=loss, learning_rate=.05,
-            max_iter=150, max_leaf_nodes=7, min_samples_leaf=10, l2_regularization=10,
+        self.model = HistGradientBoostingRegressor(loss=loss, **settings,
             early_stopping=False, random_state=42,
             monotonic_cst=[-1, -1, 1] + [0] * (a.shape[1] - 3))
         self.model.fit(a, np.log([r['price'] for r in rows]))

@@ -46,9 +46,38 @@ class PercentageTests(unittest.TestCase):
         self.assertEqual(a, b)
 
     def test_reject_excluded(self):
-        for patch in ({'knownAnswer': True}, {'currency': 'CNY'}, {'priceKind': 'sold'}, {'excludeFromModel': True}):
+        for patch in ({'knownAnswer': True}, {'currency': 'CNY'}, {'priceKind': 'sold'}, {'excludeFromModel': True}, {'exclude_from_model': True}):
             with self.assertRaises(ValueError):
                 m.PercentagePriceModel().fit([{**self.rows[0], **patch}], self.seasons)
+
+    def test_bounded_anchor_and_geometric_reference(self):
+        for multiplier, boundary in ((.01, .9), (100, 1.1)):
+            rows = [{**r, 'price':r['price']*multiplier} for r in self.rows]
+            model = m.PercentagePriceModel().fit(rows, self.seasons, {'early':10000,'late':5000}, bounded_baselines=True)
+            for season, anchor in model.anchors.items():
+                values = model.predict([dict(season=season,breakClass='none',packageTier=p) for p in ('medium','many')])
+                base = np.sqrt(values.prod())
+                self.assertAlmostEqual(base, anchor*boundary, delta=.01)
+            self.assertEqual(model.baseline_mode,'bounded')
+            self.assertFalse(model.explain([{}])[0]['seasonKnown'])
+
+    def test_bounded_mode_cannot_be_overridden(self):
+        with self.assertRaises(ValueError):
+            m.PercentagePriceModel().fit(self.rows,self.seasons,bounded_baselines=True,adjust_baselines=True)
+        for value in (-1,0,float('nan'),True):
+            with self.assertRaises(ValueError):
+                m.PercentagePriceModel().fit(self.rows,self.seasons,effect_regularization=value)
+
+    def test_six_approved_centers_and_resource_direction(self):
+        seasons = list(m.ANCHORS)
+        rows = [dict(season=s, price=v, currency='TWD',market='taiwan',priceKind='ask',
+                     features={'candles':i*100}) for s,v in m.ANCHORS.items() for i in range(6)]
+        model = m.PercentagePriceModel().fit(rows,seasons,bounded_baselines=True)
+        for s,v in m.ANCHORS.items():
+            base = model.predict([dict(season=s)])[0]
+            self.assertGreaterEqual(base,v*.9-1e-6)
+            self.assertLessEqual(base,v*1.1+1e-6)
+        self.assertTrue((np.diff(model.predict([dict(features={'candles':v}) for v in (0,100,10000)]))>=-1e-6).all())
 
 
 if __name__ == '__main__':

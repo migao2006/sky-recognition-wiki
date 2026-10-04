@@ -1,18 +1,19 @@
-"""Frozen local monotone listing model; private inputs never leave this host."""
+"""Frozen bounded percentage model; private inputs never leave this host."""
 import hashlib
 import importlib.util
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REVISION = 'monotone-listing-2026-10-05'
+REVISION = 'bounded-percentage-2026-10-05'
 SOURCE_SHA = 'cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9'
-STATE_SHA = '96cbc0a37f0a0ab432da70048b039f25cf1cec5237cde47700f442378b87f588'
-ARTIFACT = ROOT / 'work/historical-model-review-verified-2026-10-05'
+STATE_SHA = 'f23da023abefacc23c5cde8b7fe56d4f3505b3ba8d5462d4ac531bea962c9242'
+ARTIFACT = ROOT / 'work/bounded-percentage-2026-10-05'
+FIT_PARAMS = dict(bounded_baselines=True, effect_regularization=3., season_smoothing=.5)
 
 
 def load_data():
-    raw = (ROOT / 'work/percentage-review-round3-2026-10-05/frozen.private.json').read_bytes()
+    raw = (ARTIFACT / 'frozen.private.json').read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
     if digest != SOURCE_SHA:
         raise ValueError('Frozen source changed')
@@ -21,7 +22,7 @@ def load_data():
 
 
 def recipe():
-    spec = importlib.util.spec_from_file_location('listing', ROOT / 'scripts/listing-price-model.py')
+    spec = importlib.util.spec_from_file_location('percentage', ROOT / 'scripts/percentage-price-model.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -29,21 +30,24 @@ def recipe():
 
 def artifact():
     import joblib
-    raw = (ARTIFACT / 'previous-monotone.joblib').read_bytes()
+    raw = (ARTIFACT / 'candidate.joblib').read_bytes()
     if hashlib.sha256(raw).hexdigest() != STATE_SHA:
         raise ValueError('Private artifact digest mismatch')
     # Only our fixed, locally generated artifact is accepted, never uploads.
-    model = recipe().ListingPriceModel()
-    model.__dict__.update(joblib.load(ARTIFACT / 'previous-monotone.joblib'))
+    model = recipe().PercentagePriceModel()
+    model.__dict__.update(joblib.load(ARTIFACT / 'candidate.joblib'))
+    if model.baseline_mode != 'bounded' or model.fit_params != FIT_PARAMS:
+        raise ValueError('Bounded recipe mismatch')
     return model, STATE_SHA
 
 
 def manifest():
     rows, seasons, digest = load_data()
     model, state_digest = artifact()
-    return dict(schemaVersion=1, modelRevision=REVISION, method='monotone', sourceDigest=digest,
-                stateSha256=state_digest, columns=['season', 'breakClass', 'packageTier', *model.extra],
-                categorical=['season', 'breakClass', 'packageTier', *model.cats], seasons=seasons,
+    categorical = ['season', 'breakClass', 'packageTier', *sorted({k for k, _ in model.bindings})]
+    return dict(schemaVersion=1, modelRevision=REVISION, method='bounded-percentage', sourceDigest=digest,
+                stateSha256=state_digest, columns=[*categorical, *model.resources],
+                categorical=categorical, seasons=seasons,
                 sampleCount=len(rows), seasonCounts={s:sum(r.get('season') == s for r in rows) for s in seasons},
                 asOf='2026-10-05', status='unvalidated')
 
@@ -55,9 +59,10 @@ class Predictor:
         if self.meta != published:
             raise ValueError('Private model / public manifest mismatch')
         self.model, _ = artifact()
+        # Package effects are centered at the medium/many geometric midpoint.
         prices = self.predict_many([dict(season=s, breakClass='none') for s in self.meta['seasons']])
         self.bands = [dict(slug=s, median=p, low=None, high=None, status='unvalidated',
-                           method='monotone', confidence='inferred', sampleCount=self.meta['seasonCounts'][s],
+                           method='bounded-percentage', confidence='inferred', sampleCount=self.meta['seasonCounts'][s],
                            asOf=self.meta['asOf']) for s, p in zip(self.meta['seasons'], prices)]
 
     def predict_many(self, inputs):

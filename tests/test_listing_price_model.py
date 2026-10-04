@@ -32,6 +32,13 @@ class ListingModelTests(unittest.TestCase):
         self.assertTrue(m.np.isnan(model._matrix([{'season': None}])[0, 0]))
         self.assertTrue(m.np.isfinite(model.predict([{'features': {'accountStyle': 'resource'}}])).all())
 
+    def test_tuning_api_keeps_production_defaults(self):
+        previous = m.ListingPriceModel().fit(self.rows, self.seasons)
+        explicit = m.ListingPriceModel().fit(self.rows, self.seasons, params={
+            'learning_rate': .05, 'max_iter': 150, 'max_leaf_nodes': 7,
+            'min_samples_leaf': 10, 'l2_regularization': 10})
+        m.np.testing.assert_array_equal(previous.predict(self.rows), explicit.predict(self.rows))
+
     def test_robust_loss_preserves_constraints(self):
         model = m.ListingPriceModel().fit(self.rows, self.seasons, loss='absolute_error')
         grid = [{k:r[k] for k in ['season', 'breakClass', 'packageTier']} for r in self.rows]

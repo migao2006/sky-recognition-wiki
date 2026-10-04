@@ -27,7 +27,7 @@ class LocalServiceTest(unittest.TestCase):
         self.assertTrue(self.service.rate_allowed("another"))
 
     def test_manifest_has_no_training_rows(self):
-        self.assertEqual(self.meta["sampleCount"], 480)
+        self.assertEqual(self.meta["sampleCount"], 477)
         self.assertNotIn("rows", self.meta)
         self.assertNotIn("prices", self.meta)
 

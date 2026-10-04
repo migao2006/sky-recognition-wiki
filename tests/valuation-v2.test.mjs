@@ -13,7 +13,7 @@ test("all canonical seasons wait for the local model without a fabricated local 
     assert.equal(band.median, null);
     assert.equal(band.low, null);
     assert.equal(band.high, null);
-    assert.equal(band.method, "monotone");
+    assert.equal(band.method, "bounded-percentage");
     assert.equal(band.sampleCount, data.seasonCounts[band.slug]);
   }
 });

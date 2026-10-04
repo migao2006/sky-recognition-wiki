@@ -5,7 +5,7 @@ import json
 import time
 import urllib.error
 import urllib.request
-from model import ROOT, load_data, recipe, manifest
+from model import ROOT, load_data, recipe, manifest, FIT_PARAMS
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
     b = call(body)
     assert a[0] == b[0] == 200 and a[1] == b[1]
     assert a[2] < 45 and len(a[1]["seasonBands"]) == 30 and a[1]["range"] is None
-    raw = recipe().ListingPriceModel().fit(rows, meta["seasons"]).predict([row])
+    raw = recipe().PercentagePriceModel().fit(rows, meta["seasons"], **FIT_PARAMS).predict([row])
     assert a[1]["midpoint"] == max(1, round(raw[0])), "Serving/benchmark prediction drift"
     for _ in range(6):
         assert call(body, client="rate-check")[0] == 200
