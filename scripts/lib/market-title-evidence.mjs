@@ -47,6 +47,9 @@ const hasNegated = (text, expression) =>
 
 const unique = (values) => [...new Set(values)];
 
+// Reuse the same full season names in explicit progress lists and headings.
+export const marketSeasonNamesFor = slug => seasonAliases.find(([key]) => key === slug)?.[1] ?? [];
+
 // Both calibration and the report read the same actual heading, not a blank
 // metadata field or the document viewer's page marker.
 export const marketHeadlineFor = (row) => {

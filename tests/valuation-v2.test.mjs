@@ -13,13 +13,13 @@ test("all canonical seasons wait for TabPFN without a fabricated local price", (
     assert.equal(band.median, null);
     assert.equal(band.low, null);
     assert.equal(band.high, null);
-    assert.equal(band.method, "tabpfn");
+    assert.equal(band.method, "percentage");
     assert.equal(band.sampleCount, data.seasonCounts[band.slug]);
   }
 });
 test("latest collected records reconcile with exclusions, never inflated by owned seasons", () => {
   assert.equal(data.schemaVersion, 1);
-  assert.equal(valuationSampleSummary.sourceRows, 218);
+  assert.equal(valuationSampleSummary.sourceRows, 480);
   assert.equal(valuationSampleSummary.eligibleRows, data.sampleCount);
   assert.equal(valuationSampleSummary.collectionComplete, false);
   assert.equal(data.status, "unvalidated");

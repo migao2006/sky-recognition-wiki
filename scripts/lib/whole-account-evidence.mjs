@@ -2,6 +2,12 @@ import { createHash } from "node:crypto";
 
 const digest = text => createHash("sha256").update(text).digest("hex");
 const canonicalText = text => String(text ?? "").normalize("NFKC").replace(/\s+/g, "");
+export const isDataOnlyListing = value => {
+  const text = canonicalText(value);
+  const absent = /(?:無|无|沒有|没有)(?:帳號|账号)?本[體体]/.exec(text);
+  return Boolean(absent && /數據|数据/.test(text) &&
+    !/(?:不是|並非|并非|非)$/.test(text.slice(0, absent.index)));
+};
 const breakLabel = raw => {
   const text = canonicalText(raw);
   if (/^(?:偽|僞)無斷$|^(?:微斷|小斷|少斷)$/.test(text)) return "slight";
@@ -50,6 +56,7 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
     const row = { ...raw, ...change };
     const text = [raw.summary, raw.priceRaw].join(" ");
     let reason = change.exclude ?? decisions[rootKey(raw.postKey)]?.exclude ?? null;
+    if (!reason && isDataOnlyListing(text)) reason = "data_without_account";
     if (!reason && (row.excludeFromModel || row.exclude_from_model || row.intent !== "sell" || !allowedPriceKinds.includes(row.priceKind)))
       reason = "not_account_ask";
     if (!reason && ((row.currency != null && row.currency !== "TWD") ||

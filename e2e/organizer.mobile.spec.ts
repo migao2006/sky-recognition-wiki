@@ -6,7 +6,7 @@ const modelFixture = {
   schemaVersion: 1, modelRevision: manifest.modelRevision, status: "unvalidated", currency: "TWD", range: null,
   midpoint: 12345,
   seasonBands: manifest.seasons.map(slug => ({ slug, median: 12345, low: null, high: null,
-    status: "unvalidated", method: "tabpfn", confidence: "inferred", asOf: manifest.asOf,
+    status: "unvalidated", method: manifest.method, confidence: "inferred", asOf: manifest.asOf,
     sampleCount: manifest.seasonCounts[slug as keyof typeof manifest.seasonCounts] })),
 };
 test.beforeEach(async ({ page }) => {

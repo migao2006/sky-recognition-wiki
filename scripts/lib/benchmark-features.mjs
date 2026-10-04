@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { extractMarketTitleEvidence, marketTitleBreakMatchesStart } from "./market-title-evidence.mjs";
+import { extractMarketTitleEvidence, marketTitleBreakMatchesStart, marketSeasonNamesFor } from "./market-title-evidence.mjs";
 
 const normalize = value => String(value ?? "").normalize("NFKC").trim();
 const unique = values => [...new Set(values)];
@@ -9,8 +9,13 @@ const numeric = text => Number(text.replaceAll(",", ""));
 // Every non-null extension carries a literal source quote for private review.
 export function extractBenchmarkFeatures(row, { seasons, seasonNames, resolveItem }) {
   const text = normalize(row.summary);
-  const heading = text.split(/\r?\n/).find(line => line.includes("▍")) ?? text.split(/\r?\n/)[0];
-  const title = extractMarketTitleEvidence(heading);
+  // Skip posting labels, not arbitrary content: scanning inventory for a season
+  // name would turn purchased capes into false account-start claims.
+  const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const heading = (lines.find(line => line.includes("▍")) ?? lines.find(line =>
+    !/^(?:#?(?:售|出售|售號|售号|賣號|卖号|緩售|缓售|代售|代掛|代挂|已售|已售出|急售|收|求購|求购)[\s,，、]*)+$/.test(line)) ?? "").split(/[；;]/)[0];
+  const progressLine = /^(?:✦\s*)?(?:畢業季節|毕业季节|畢業|毕业|季節進度|季节进度)\s*[:：]/;
+  const title = extractMarketTitleEvidence(progressLine.test(heading) ? "" : heading);
   const evidence = {}, corrections = [], features = {};
   const add = (key, value, quote) => { features[key] = value; evidence[key] = quote; };
   const basic = { season: row.season, breakClass: row.breakClass, packageTier: row.packageTier };
@@ -31,15 +36,19 @@ export function extractBenchmarkFeatures(row, { seasons, seasonNames, resolveIte
     corrections.push({ field: "packageTier", before: null, after: basic.packageTier, quote: heading });
   }
   if (Number.isSafeInteger(title.paidPackageCount)) add("packageCount", title.paidPackageCount, heading);
-  if (/^(?:純|裸)?資源簡號/.test(heading)) add("accountStyle", "resource", heading);
+  const resourceClaim = /(?:純|裸)?(?:資源|资源|蠟燭|蜡烛|白蠟|白蜡)(?:簡|简)(?:號|号)/.exec(heading);
+  if (resourceClaim && !/(?:不是|並非|并非|不算|非)\s*$/.test(heading.slice(0, resourceClaim.index))) add("accountStyle", "resource", resourceClaim[0]);
   else if (title.accountStyle) add("accountStyle", title.accountStyle, heading);
   if (/(?:^|[\s；;，,。｜|])(?:無|没有|沒有)禮包(?=[\s；;，,。｜|]|$)/.test(text))
     add("packageCount", 0, text.match(/(?:無|没有|沒有)禮包/)[0]);
-  const progress = text.split("♤")[1]?.split("♡")[0];
+  const explicitProgress = lines.filter(line => progressLine.test(line))
+    .map(line => line.replace(/^[^:：]*[:：]/, "")).join("｜");
+  const progress = [text.split("♤")[1]?.split("♡")[0], explicitProgress].filter(Boolean).join("｜");
+  let completeProgressParse = Boolean(progress);
   if (progress) {
-    for (const token of progress.split(/[┊|｜\r\n]/).map(t => t.replace(/^[\s›]+/, "").trim())) {
+    for (const token of progress.split(/[┊|｜、,，\r\n]/).map(t => t.replace(/^[\s›]+/, "").trim()).filter(Boolean)) {
       const claims = [];
-      for (const season of seasons) for (const name of seasonNames[season] ?? []) {
+      for (const season of seasons) for (const name of unique([...(seasonNames[season] ?? []), ...marketSeasonNamesFor(season)])) {
         if (!token.startsWith(name)) continue;
         const tail = token.slice(name.length).replace(/^季/, "").trim();
         if (/^(?:畢|畢業|全畢)?$/.test(tail)) claims.push([season, 1]);
@@ -49,11 +58,19 @@ export function extractBenchmarkFeatures(row, { seasons, seasonNames, resolveIte
           if (fraction && +fraction[1] <= +fraction[2]) claims.push([season, +fraction[1] / +fraction[2]]);
         }
       }
-      if (claims.length === 1) {
-        const [season, value] = claims[0], key = `progress:${season}`;
+      const distinctClaims = [...new Map(claims.map(c => [JSON.stringify(c), c])).values()];
+      if (distinctClaims.length === 1) {
+        const [season, value] = distinctClaims[0], key = `progress:${season}`;
         if (key in features && features[key] !== value) { features[key] = null; evidence[key] += ` | CONFLICT: ${token}`; }
         else if (!(key in features)) add(key, value, token);
-      }
+      } else completeProgressParse = false;
+    }
+  }
+  if (canFill("season") && completeProgressParse && !Object.entries(features).some(([key,value]) => key.startsWith("progress:") && value === null)) {
+    const first = seasons.find(season => features[`progress:${season}`] > 0);
+    if (first) {
+      basic.season = first;
+      corrections.push({ field: "season", before: null, after: first, quote: evidence[`progress:${first}`] });
     }
   }
   for (const [key, name] of [["candles", "白蠟|白蜡"], ["hearts", "愛心|爱心"], ["ascended", "昇華蠟|升華蠟|升华蜡"], ["passes", "副卡"]]) {

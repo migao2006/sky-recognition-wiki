@@ -16,20 +16,20 @@ test("model protocol rejects private fields, unknown keys and invalid numbers", 
 });
 
 test("wardrobe bridge preserves unknowns and never sends personal data", () => {
-  const itemKey = meta.columns.find(k => k.startsWith("item:"));
+  assert.equal(meta.columns.some(k => k.startsWith("item:")), false);
   const analysis = { startSeasonSlug: "moments", seasonCompletion: new Map(), bindings: { google: "none" } };
   const estimate = { marketProfile: { canonicalPackageCount: 105, salePackageTier: "many", breakClass: "none" } };
   const account = { name: "private", identityId: "private", notes: "private", candles: "", hearts: "0", ascended: "", passes: "", wardrobeConfirmed: false, bindingsConfirmed: false };
-  const result = buildModelRequest(analysis, estimate, account, new Set([itemKey.slice(5)]));
+  const result = buildModelRequest(analysis, estimate, account, new Set(["private-item"]));
   assert.equal(result.features.season, null);
   assert.equal(result.features.packageTier, null);
-  assert.equal(result.features[itemKey], "present");
-  assert.equal(result.features.accountStyle, null);
+  assert.equal(result.features["binding:GG"], null);
+  assert.equal(result.features.accountStyle, undefined);
   assert.ok(isModelRequest(result));
   assert.ok(!JSON.stringify(result).includes("private"));
   const confirmed = buildModelRequest(analysis, estimate, { ...account, wardrobeConfirmed: true, bindingsConfirmed: true }, new Set());
   assert.equal(confirmed.features.packageTier, "hundred");
-  assert.equal(confirmed.features[itemKey], "absent");
+  assert.equal(confirmed.features["binding:GG"], "unbound");
   analysis.seasonCompletion.set("moments", { selected: 1, expected: 2 });
   estimate.marketProfile.breakClass = "big";
   assert.equal(buildModelRequest(analysis, estimate, { ...account, wardrobeConfirmed: true }, new Set()).features.breakClass, "large");

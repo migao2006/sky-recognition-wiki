@@ -31,7 +31,7 @@ export function isModelResponse(value: unknown): value is ModelResponse {
     && r.currency === "TWD" && r.range === null && Number.isFinite(r.midpoint) && r.midpoint > 0
     && Array.isArray(r.seasonBands) && r.seasonBands.length === manifest.seasons.length
     && r.seasonBands.every((b, i) => b.slug === manifest.seasons[i] && b.status === "unvalidated"
-      && b.method === "tabpfn" && b.confidence === "inferred" && b.low === null && b.high === null
+      && b.method === manifest.method && b.confidence === "inferred" && b.low === null && b.high === null
       && typeof b.median === "number" && Number.isFinite(b.median) && b.median > 0
       && b.sampleCount === manifest.seasonCounts[b.slug as keyof typeof manifest.seasonCounts] && b.asOf === manifest.asOf);
 }

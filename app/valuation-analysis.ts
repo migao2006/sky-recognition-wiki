@@ -181,7 +181,7 @@ export const estimateValuation = ({ analysis, response }: {
     bindingRiskCount: analysis.bindingsConfirmed ? analysis.issueCount + analysis.keepCount : null,
   };
   const sampleCount = manifest.seasonCounts[analysis.startSeasonSlug as keyof typeof manifest.seasonCounts] ?? 0;
-  warnings.push("TabPFN v2 延伸版依整號刊登行情推估，尚未通過獨立成交驗證；目前不提供價格區間。");
+  warnings.push("百分比模型依起季基準與整號刊登行情推估，尚未通過獨立成交驗證；目前不提供價格區間。");
   if (!analysis.bindingsConfirmed) warnings.push("綁定尚未確認，不推測為無綁。");
   if (!analysis.startSeasonSlug) warnings.push("未判定起季，使用未指定起季的整號行情推算；季卡項鍊不代表畢業。");
   warnings.push("物品、資源及綁定以模型已學習的特徵綜合推估，不另加固定金額；未填資料保持未知。");
@@ -193,7 +193,7 @@ export const estimateValuation = ({ analysis, response }: {
     contributions: [],
     warnings: [...new Set(warnings)],
     seasonRows,
-    evidence: { method: "tabpfn", directSampleCount: sampleCount, modelRevision: manifest.modelRevision },
+    evidence: { method: manifest.method, directSampleCount: sampleCount, modelRevision: manifest.modelRevision },
     modelFeatures: { modelRevision: manifest.modelRevision, ...input },
     marketProfile: {
       breakClass: breaks.key, packageTier: tier.key, salePackageTier: tier.key,

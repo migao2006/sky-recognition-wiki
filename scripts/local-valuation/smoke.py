@@ -35,9 +35,7 @@ def main():
     b = call(body)
     assert a[0] == b[0] == 200 and a[1] == b[1]
     assert a[2] < 45 and len(a[1]["seasonBands"]) == 30 and a[1]["range"] is None
-    import os
-    os.environ["TABPFN_MODEL_CACHE_DIR"] = str(ROOT / "work/tabpfn-cache")
-    raw, _ = recipe().tab_predict(rows, [row], True)
+    raw = recipe().PercentagePriceModel().fit(rows, meta["seasons"]).predict([row])
     assert a[1]["midpoint"] == max(1, round(raw[0])), "Serving/benchmark prediction drift"
     for _ in range(6):
         assert call(body, client="rate-check")[0] == 200

@@ -391,8 +391,8 @@ export function ValuationStep({
             新模型採可追溯的台幣整號刊登行情，不沿用舊季節底價、禮包上限或固定資源加價。
             <br />
             本版採用 {runtime.valuationSampleSummary.eligibleRows} 筆刊登行情
-            （{runtime.valuationSampleSummary.asOf}），由本機 TabPFN v2 延伸版運算。
-            各季參考為無斷、少禮、其餘未知的整號推估，不是單季價格或成交保證。
+            （{runtime.valuationSampleSummary.asOf}），由本機百分比模型運算。
+            各季參考為無斷、中禮至多禮基準、其餘未知的整號推估，不是單季價格或成交保證。
           </p>
           {valuationEstimate?.warnings.map(warning => <p key={warning}>{warning}</p>)}
         </DeferredDetails>
@@ -435,7 +435,7 @@ function SeasonRows({
 }) {
   return (
     <div className="valuation-season-table-wrap">
-      <p>以無斷、少禮、綁定未知的整號為比較條件；不是單季物品售價。</p>
+      <p>以無斷、中禮至多禮基準、綁定未知的整號為比較條件；不是單季物品售價。</p>
       <table className="valuation-season-table">
         <thead>
           <tr>

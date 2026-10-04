@@ -2,10 +2,61 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { extractBenchmarkFeatures, fixedFolds } from "../scripts/lib/benchmark-features.mjs";
 import { prepareGradedEvidence } from "../scripts/lib/graded-market-evidence.mjs";
+import { isDataOnlyListing, prepareWholeAccountEvidence } from "../scripts/lib/whole-account-evidence.mjs";
 
 const options = { seasons: ["rhythm", "enchantment"], seasonNames: { rhythm: ["音韻"], enchantment: ["魔法"] },
   resolveItem: term => term === "王子圍巾" ? { method: "exact", candidates: [{ guid: "official-1" }] } : null };
 const row = summary => ({ summary, season: null, breakClass: null, packageTier: null });
+
+test("data-only offers do not become whole-account price samples", () => {
+  for(const text of ["僅國際服數據，無本體", "只有数据没有账号本体"]) assert.equal(isDataOnlyListing(text),true);
+  for(const text of ["完整帳號，數據見影片", "不是無本體數據"]) assert.equal(isDataOnlyListing(text),false);
+  const result=prepareWholeAccountEvidence([{postKey:"data",summary:"僅國際服數據，無本體，250台",intent:"sell",priceKind:"ask",priceTwd:250,sourceUrl:"https://www.facebook.com/groups/1/posts/2"}],{seasons:[]});
+  assert.equal(result.accepted.length,0);
+  assert.equal(result.rejected[0].reason,"data_without_account");
+});
+
+test("decorated candle-account labels are resource evidence independent of price", () => {
+  for (const price of [200,20000]) {
+    const r = extractBenchmarkFeatures(row(`#代掛 #售號\n﴾ 73 ﴿ 蠟燭簡號\n售價${price}台幣`),options);
+    assert.equal(r.features.accountStyle,"resource");
+    assert.equal(r.features.candles,undefined);
+    assert.equal(r.season,null);
+  }
+  assert.notEqual(extractBenchmarkFeatures(row("不是蠟燭簡號"),options).features.accountStyle,"resource");
+  assert.notEqual(extractBenchmarkFeatures(row("普通號\n其他人售蠟燭簡號"),options).features.accountStyle,"resource");
+});
+
+test("explicit graduation aliases agree with the market title vocabulary", () => {
+  const r=extractBenchmarkFeatures(row("#售\n畢業：梵高2/3"),{seasons:["dear-van-gogh"],seasonNames:{"dear-van-gogh":["致梵谷"]}});
+  assert.equal(r.season,"dear-van-gogh");
+  assert.equal(r.features["progress:dear-van-gogh"],2/3);
+});
+
+test("posting labels do not hide the account headline", () => {
+  const r = extractBenchmarkFeatures(row("#售 #代掛\n\n音韻無斷百禮號\n禮包：王子圍巾"), options);
+  assert.equal(r.season, "rhythm");
+  assert.equal(r.breakClass, "none");
+  assert.equal(r.packageTier, "hundred");
+  assert.equal(extractBenchmarkFeatures(row("#售\n便宜帳號\n音韻多禮號"), options).season, null);
+  assert.equal(extractBenchmarkFeatures(row("多禮帳；含小王子三件套與斗篷"), options).season, null);
+});
+
+test("explicit graduation lines supply partial progress without inventing missing seasons", () => {
+  const r = extractBenchmarkFeatures(row("#售\n畢業：音韻0｜魔法2/3"), options);
+  assert.equal(r.season, "enchantment");
+  assert.equal(r.features["progress:rhythm"], 0);
+  assert.equal(r.features["progress:enchantment"], 2/3);
+  assert.equal(r.breakClass, null);
+  for (const text of ["季節：音韻、魔法", "季卡：音韻", "畢業：音韻斗篷", "畢業：音韻未畢", "畢業：音韻2/3｜音韻1/3"]) {
+    assert.equal(extractBenchmarkFeatures(row(text), options).season, null);
+  }
+  const reviewed = extractBenchmarkFeatures({...row("畢業：音韻"),reviewedFields:["season"]},options);
+  assert.equal(extractBenchmarkFeatures(row("畢業：音⅔｜魔法畢"),options).season,null);
+  assert.equal(extractBenchmarkFeatures(row("畢業：音韻2/3｜音韻1/3｜魔法畢"),options).season,null);
+  assert.equal(reviewed.season,null);
+  assert.equal(extractBenchmarkFeatures(row("畢業：音韻"),{...options,seasonNames:{...options.seasonNames,rhythm:["音韻","音韻"]}}).season,"rhythm");
+});
 
 test("explicit account claims fill missing features without overriding reviewed values", () => {
   const r = extractBenchmarkFeatures(row("音韻無斷百禮號 10萬台幣"), options);

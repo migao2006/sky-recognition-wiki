@@ -20,7 +20,7 @@ export const valuationSampleSummary = {
   asOf: manifest.asOf,
   collectionComplete: false,
 };
-// Comparable whole-account reference: no breaks, few packages, binding unknown.
+// Comparable whole-account reference: no breaks, medium/many midpoint, binding unknown.
 // Same predictor as the actual account; this is NOT a season/item unit price.
 export const seasonPriceBands: readonly SeasonPriceBand[] = seasons.map(([slug]) => {
   return {
@@ -29,7 +29,7 @@ export const seasonPriceBands: readonly SeasonPriceBand[] = seasons.map(([slug])
     median: null,
     high: null,
     status: "unavailable",
-    method: "tabpfn",
+    method: manifest.method,
     sampleCount: manifest.seasonCounts[slug as keyof typeof manifest.seasonCounts] ?? 0,
     confidence: "inferred",
     asOf: manifest.asOf,

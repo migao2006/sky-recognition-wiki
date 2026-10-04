@@ -1,108 +1,77 @@
-"""Local-only serving of the exact v2 extended benchmark recipe."""
+"""Frozen local percentage listing model; private inputs never leave this host."""
 import hashlib
 import importlib.util
-import importlib.metadata
 import json
-import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REVISION = "tabpfn-v2-extended-2026-10-04"
-CHECKPOINT_SHA = "2ab5a07d5c41dfe6db9aa7ae106fc6de898326c2765be66505a07e2868c10736"
+REVISION = 'percentage-listing-2026-10-05'
+SOURCE_SHA = 'b274d6e02763b029ab0fff0c4f724f4a9761e0d277ca7bafc2d75b8962d0bb79'
+ARTIFACT = ROOT / 'work/percentage-candidate-2026-10-05'
 
 
 def load_data():
-    path = ROOT / "work/market-benchmark-v4.private.json"
-    raw = path.read_bytes()
+    raw = (ROOT / 'work/current-information-2026-10-05.private.json').read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    if digest != SOURCE_SHA:
+        raise ValueError('Frozen source changed')
     data = json.loads(raw)
-    rows = [r for r in data["rows"] if r["priceKind"] == "ask"]
-    if len(rows) != 218:
-        raise ValueError("Frozen asking-price cohort changed; rebuild and review manifest")
-    return rows, data["seasons"], hashlib.sha256(raw).hexdigest()
+    return data['rows'], data['seasons'], digest
 
 
 def recipe():
-    spec = importlib.util.spec_from_file_location("benchmark", ROOT / "scripts/benchmark-market-models.py")
+    spec = importlib.util.spec_from_file_location('percentage', ROOT / 'scripts/percentage-price-model.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
+def artifact():
+    import joblib
+    report = json.loads((ARTIFACT / 'report.private.json').read_text(encoding='utf-8'))
+    raw = (ARTIFACT / 'state.joblib').read_bytes()
+    if report['sourceDigest'] != SOURCE_SHA or hashlib.sha256(raw).hexdigest() != report['stateDigest']:
+        raise ValueError('Private artifact digest mismatch')
+    # Only our fixed, locally generated artifact is accepted, never uploads.
+    model = recipe().PercentagePriceModel()
+    model.__dict__.update(joblib.load(ARTIFACT / 'state.joblib'))
+    return model, report['stateDigest']
+
+
 def manifest():
     rows, seasons, digest = load_data()
-    x, _, categorical = recipe().feature_table(rows, rows[:1], True)
-    return {"schemaVersion": 1, "modelRevision": REVISION, "sourceDigest": digest,
-            "checkpointSha256": CHECKPOINT_SHA, "columns": list(x.columns),
-            "categorical": categorical, "seasons": seasons, "sampleCount": len(rows),
-            "seasonCounts": {s: sum(r.get("season") == s for r in rows) for s in seasons},
-            "asOf": "2026-10-04", "status": "unvalidated"}
+    model, state_digest = artifact()
+    bindings = sorted({k for k, _ in model.bindings})
+    return dict(schemaVersion=1, modelRevision=REVISION, method='percentage', sourceDigest=digest,
+                stateSha256=state_digest, columns=['season', 'breakClass', 'packageTier', *bindings, *model.resources],
+                categorical=['season', 'breakClass', 'packageTier', *bindings], seasons=seasons,
+                sampleCount=len(rows), seasonCounts={s:sum(r.get('season') == s for r in rows) for s in seasons},
+                asOf='2026-10-05', status='unvalidated')
 
 
 class Predictor:
     def __init__(self):
-        for line in Path(__file__).with_name("requirements.txt").read_text().splitlines():
-            if "==" in line:
-                package, expected = line.split("==")
-                if importlib.metadata.version(package) != expected:
-                    raise ValueError("Pinned runtime dependency mismatch")
-        os.environ["TABPFN_DISABLE_TELEMETRY"] = "1"
-        os.environ["DO_NOT_TRACK"] = "1"
-        os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
-        os.environ["HF_HUB_OFFLINE"] = "1"
-        cache = ROOT / "work/tabpfn-cache"
-        os.environ["TABPFN_MODEL_CACHE_DIR"] = str(cache)
-        if hashlib.sha256((cache / "tabpfn-v2-regressor.ckpt").read_bytes()).hexdigest() != CHECKPOINT_SHA:
-            raise ValueError("Unexpected v2 checkpoint")
-        import numpy as np
-        import torch
-        from sklearn.preprocessing import OrdinalEncoder
-        from tabpfn import TabPFNRegressor
-        from tabpfn.constants import ModelVersion
-        torch.set_num_threads(4)
         self.meta = manifest()
-        published = json.loads((ROOT / "app/valuation-tabpfn-manifest.json").read_text(encoding="utf-8"))
+        published = json.loads((ROOT / 'app/valuation-tabpfn-manifest.json').read_text(encoding='utf-8'))
         if self.meta != published:
-            raise ValueError("Private dataset / public manifest mismatch")
-        self.rows, _, _ = load_data()
-        self.bench = recipe()
-        x, _, self.cats = self.bench.feature_table(self.rows, self.rows[:1], True)
-        self.encoder = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
-        x[self.cats] = self.encoder.fit_transform(x[self.cats])
-        self.model = TabPFNRegressor.create_default_for_version(ModelVersion.V2, device="cpu",
-            n_estimators=4, random_state=42, categorical_features_indices=[x.columns.get_loc(k) for k in self.cats])
-        self.model.fit(x.to_numpy(dtype=float), np.log([r["price"] for r in self.rows]))
-        prices = self.predict_many([{"season": s, "breakClass": "none", "packageTier": "few"}
-                                    for s in self.meta["seasons"]])
-        self.bands = [{"slug": s, "median": p, "low": None, "high": None,
-                       "status": "unvalidated", "method": "tabpfn", "confidence": "inferred",
-                       "sampleCount": self.meta["seasonCounts"][s], "asOf": self.meta["asOf"]}
-                      for s, p in zip(self.meta["seasons"], prices)]
+            raise ValueError('Private model / public manifest mismatch')
+        self.model, _ = artifact()
+        prices = self.predict_many([dict(season=s, breakClass='none') for s in self.meta['seasons']])
+        self.bands = [dict(slug=s, median=p, low=None, high=None, status='unvalidated',
+                           method='percentage', confidence='inferred', sampleCount=self.meta['seasonCounts'][s],
+                           asOf=self.meta['asOf']) for s, p in zip(self.meta['seasons'], prices)]
 
     def predict_many(self, inputs):
-        import numpy as np
-        rows = [{**{k: v for k, v in f.items() if k in self.bench.COMMON},
-                 "features": {k: v for k, v in f.items() if k not in self.bench.COMMON}} for f in inputs]
-        _, x, _ = self.bench.feature_table(self.rows, rows, True)
-        x[self.cats] = self.encoder.transform(x[self.cats])
-        values = np.exp(self.model.predict(x.to_numpy(dtype=float)))
-        if not np.isfinite(values).all() or (values <= 0).any():
-            raise ValueError("Non-finite model prediction")
-        return [max(1, round(float(v))) for v in values]
+        common = ('season', 'breakClass', 'packageTier')
+        rows = [{**{k:v for k,v in f.items() if k in common},
+                 'features': {k:v for k,v in f.items() if k not in common}} for f in inputs]
+        return [max(1, round(float(p))) for p in self.model.predict(rows)]
 
     def predict(self, features):
-        return {"schemaVersion": 1, "modelRevision": REVISION, "status": "unvalidated",
-                "midpoint": self.predict_many([features])[0], "currency": "TWD",
-                "range": None, "seasonBands": self.bands}
+        return dict(schemaVersion=1, modelRevision=REVISION, status='unvalidated',
+                    midpoint=self.predict_many([features])[0], currency='TWD', range=None, seasonBands=self.bands)
 
 
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--write-manifest", action="store_true")
-    args = parser.parse_args()
-    value = manifest()
-    path = ROOT / "app/valuation-tabpfn-manifest.json"
-    changed = not path.exists() or json.loads(path.read_text(encoding="utf-8")) != value
-    print(json.dumps({"changed": changed, "sampleCount": value["sampleCount"], "columns": len(value["columns"])}))
-    if args.write_manifest:
-        path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+if __name__ == '__main__':
+    # Read-only check; publish reviewed manifest via normal file editing.
+    print(json.dumps(manifest(), ensure_ascii=False, indent=2))
