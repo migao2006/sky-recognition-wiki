@@ -45,6 +45,9 @@ export async function POST(request: Request) {
     // Only the explicitly validated public fields leave this proxy.
     return reply({ schemaVersion: data.schemaVersion, modelRevision: data.modelRevision, status: data.status,
       midpoint: data.midpoint, currency: data.currency, range: null,
+      ...(data.packageAdjustment ? { packageAdjustment: {
+        count: data.packageAdjustment.count, multiplier: data.packageAdjustment.multiplier, basis: data.packageAdjustment.basis,
+      } } : {}),
       seasonBands: data.seasonBands.map(b => ({ slug: b.slug, median: b.median, low: null, high: null,
         status: b.status, method: b.method, confidence: b.confidence, sampleCount: b.sampleCount, asOf: b.asOf })) });
   } catch {

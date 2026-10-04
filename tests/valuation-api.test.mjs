@@ -62,6 +62,30 @@ test("proxy never falls back when backend configuration is missing", async () =>
   } finally { if (previous !== undefined) process.env.VALUATION_BACKEND_URL = previous; }
 });
 
+test("proxy forwards only public package adjustment fields", async () => {
+  const keys = ["VALUATION_BACKEND_URL", "VALUATION_BACKEND_TOKEN", "VERCEL"];
+  const previous = keys.map(key => process.env[key]);
+  const fetchBefore = globalThis.fetch;
+  process.env.VALUATION_BACKEND_URL = "https://fixture.trycloudflare.com";
+  process.env.VALUATION_BACKEND_TOKEN = "synthetic-test-token".repeat(3);
+  delete process.env.VERCEL;
+  const adjustment = { count: 150, multiplier: 1.8, basis: "count" };
+  globalThis.fetch = async () => Response.json({ schemaVersion:1, modelRevision:meta.modelRevision, status:"unvalidated", currency:"TWD", range:null, midpoint:1000,
+    packageAdjustment: {...adjustment, privateSource:"must-not-leak"},
+    seasonBands:meta.seasons.map(slug => ({slug,status:"unvalidated",method:meta.method,confidence:"inferred",low:null,high:null,median:1000,sampleCount:meta.seasonCounts[slug],asOf:meta.asOf})) });
+  try {
+    const response = await POST(new Request("https://example.test/api/valuation", {method:"POST",body:JSON.stringify({schemaVersion:1,features:{packageCount:150}})}));
+    assert.equal(response.status,200);
+    const result = await response.json();
+    assert.deepEqual(result.packageAdjustment,adjustment);
+    assert.ok(isModelResponse(result));
+    assert.ok(!JSON.stringify(result).includes("must-not-leak"));
+  } finally {
+    globalThis.fetch = fetchBefore;
+    keys.forEach((key,index) => { if(previous[index] === undefined) delete process.env[key]; else process.env[key] = previous[index]; });
+  }
+});
+
 test("runtime has no imports of the offline price baseline", () => {
   for (const file of ["valuation-analysis.ts", "valuation-season-bands.ts"]) {
     assert.doesNotMatch(fs.readFileSync(new URL(`../app/${file}`, import.meta.url), "utf8"), /from ["']\.\/valuation-fresh/);
