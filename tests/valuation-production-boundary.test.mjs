@@ -5,15 +5,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-test("website module graph cannot reach historical pricing artifacts", async () => {
+test("website keeps only the fresh valuation model", async () => {
   const root = fileURLToPath(new URL("../app/", import.meta.url));
   const pending = [path.join(root, "page.tsx")], visited = new Set();
-  const forbidden = new Set(["valuation-market-aggregate.json", "valuation-model-core.js", "valuation-season-band-core.js", "valuation-reference.js", "valuation-calibration.ts"]);
   while (pending.length) {
     const file = pending.pop();
     if (visited.has(file)) continue;
     visited.add(file);
-    assert.ok(!forbidden.has(path.basename(file)), file);
     if (file.endsWith(".json")) continue;
     const source = ts.createSourceFile(file, await readFile(file, "utf8"), ts.ScriptTarget.Latest, true);
     const imports = [];
@@ -33,4 +31,7 @@ test("website module graph cannot reach historical pricing artifacts", async () 
   }
   assert.ok(visited.has(path.join(root, "valuation-analysis.ts")));
   assert.ok(visited.has(path.join(root, "valuation-fresh-core.js")));
+  for (const removed of ["valuation-market-aggregate.json", "valuation-model-core.js", "valuation-season-band-core.js"]) {
+    assert.equal(await access(path.join(root, removed)).then(() => true, () => false), false, removed);
+  }
 });

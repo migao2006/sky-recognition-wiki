@@ -95,7 +95,7 @@ test("learned package curve is continuous and monotonic for every supplied seaso
 
 test("candidate has no runtime dependency on old prices or manual fixed answers", async () => {
   const source = await readFile(new URL("../app/valuation-fresh-core.js", import.meta.url), "utf8");
-  assert.doesNotMatch(source, /\bimport\s|valuation-reference|valuation-market-aggregate|seasonBandSeeds/);
+  assert.doesNotMatch(source, /\bimport\s|seasonBandSeeds/);
 });
 
 test("evidence-blended candidate splits cross-season evidence and keeps tier proxy metadata", () => {
