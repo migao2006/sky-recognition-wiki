@@ -22,9 +22,10 @@ def check_curve(model):
     assert np.all(np.diff(values,axis=0)<=1e-6)
     assert np.all(np.diff(values,axis=1)<=1e-6)
     assert np.all(np.diff(values,axis=2)>=-1e-6)
-    for n in (30,75,95,150):
-        assert abs(model.package_log_multiplier(n-1e-6)-model.package_log_multiplier(n+1e-6))<1e-6
-    assert abs(model.package_log_multiplier(75)+model.package_log_multiplier(95))<1e-10
+    for season in model.seasons:
+        for n in (30,75,95,150):
+            assert abs(model.package_log_multiplier(n-1e-6, season)-model.package_log_multiplier(n+1e-6, season))<1e-6
+        assert abs(model.package_log_multiplier(75, season)+model.package_log_multiplier(95, season))<1e-10
     return dict(passed=True,gridCount=len(grid),continuous=True)
 
 
@@ -38,14 +39,14 @@ def run(source, previous_report, output):
     if hashlib.sha256(raw).hexdigest()!=old['frozenDigest']:
         raise ValueError('Comparison source mismatch')
     rows,seasons=data['rows'],data['seasons']
-    pairs={'tier':[],'progressive':[]}
+    pairs={'tier':[],'seasonalProgressive':[]}
     for fold in old['folds']:
         train=[r for r in rows if r['fold']!=fold['fold']]
         test=[r for r in rows if r['fold']==fold['fold']]
         assert not {r['splitGroup'] for r in train}&{r['splitGroup'] for r in test}
         model=b.fit(train,seasons,fold['selected'])
         for name in pairs:
-            model.progressive_packages=name=='progressive'
+            model.progressive_packages=name=='seasonalProgressive'
             check_curve(model) if model.progressive_packages else b.check(model)
             pairs[name].extend({**{k:r.get(k) for k in ('season','breakClass','packageTier','priceKind')},
                                 'actual':r['price'],'predicted':float(p),'exactCount':model.package_count(r) is not None}
@@ -55,6 +56,9 @@ def run(source, previous_report, output):
     safety=check_curve(model)
     output.mkdir(parents=True)
     state=output/'candidate.joblib'
+    # Caches are an execution detail, not published model state.
+    model.__dict__.pop('_package_curve_cache', None)
+    model.__dict__.pop('_package_scales_cache', None)
     joblib.dump(vars(model),state)
     restored=copy.copy(model)
     restored.__dict__.update(joblib.load(state))
@@ -65,9 +69,9 @@ def run(source, previous_report, output):
                 safety=safety,replayVerified=True,pairs=pairs,
                 metrics={k:b.c.strata(v,seasons) for k,v in pairs.items()},
                 exactCountMetrics={k:b.c.benchmark.metrics([p for p in v if p['exactCount']]) for k,v in pairs.items()},
-                curve={n:float(np.exp(model.package_log_multiplier(n))) for n in (0,30,60,75,90,95,99,100,150,200,250,300)})
+                curves={season:{n:float(np.exp(model.package_log_multiplier(n, season))) for n in (0,30,60,75,90,95,99,100,150,191,200,250,300)} for season in seasons})
     (output/'report.private.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
-    print(json.dumps({k:report[k] for k in ('safety','stateSha256','exactCountMetrics','curve')}))
+    print(json.dumps({k:report[k] for k in ('safety','stateSha256','exactCountMetrics','curves')}))
     print(json.dumps({k:v['overall'] for k,v in report['metrics'].items()}))
 
 

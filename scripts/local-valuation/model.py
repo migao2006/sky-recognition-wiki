@@ -5,10 +5,10 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REVISION = 'progressive-packages-2026-10-05'
+REVISION = 'season-scaled-packages-2026-10-05'
 SOURCE_SHA = 'cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9'
-STATE_SHA = '17dd22deae45ee8894d3a127f0006e133eeca2f486ce8e6b141820653f41b5fe'
-ARTIFACT = ROOT / 'work/progressive-packages-2026-10-05'
+STATE_SHA = 'ea292c1aac56b90af2286bb8829f40b0ce1f5e9f021d802f074eb3ecae99ae94'
+ARTIFACT = ROOT / 'work/season-scaled-packages-2026-10-05-r2'
 FIT_PARAMS = dict(bounded_baselines=True, effect_regularization=3., season_smoothing=.5)
 
 
@@ -36,7 +36,8 @@ def artifact():
     # Only our fixed, locally generated artifact is accepted, never uploads.
     model = recipe().PercentagePriceModel()
     model.__dict__.update(joblib.load(ARTIFACT / 'candidate.joblib'))
-    if model.baseline_mode != 'bounded' or model.fit_params != FIT_PARAMS or not model.progressive_packages:
+    if (model.baseline_mode != 'bounded' or model.fit_params != FIT_PARAMS
+            or not model.progressive_packages or not model.package_season_scaling):
         raise ValueError('Bounded recipe mismatch')
     return model, STATE_SHA
 

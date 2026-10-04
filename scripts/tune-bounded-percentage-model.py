@@ -18,7 +18,9 @@ OPTIONS = [dict(effect_regularization=e, season_smoothing=s)
 
 
 def fit(rows, seasons, params):
-    return c.model_module.PercentagePriceModel().fit(rows, seasons, bounded_baselines=True, **params)
+    return c.model_module.PercentagePriceModel().fit(
+        rows, seasons, bounded_baselines=True, progressive_packages=True, package_season_scaling=True, **params,
+    )
 
 
 def check(model):

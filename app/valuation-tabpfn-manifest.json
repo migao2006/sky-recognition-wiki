@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "modelRevision": "progressive-packages-2026-10-05",
+  "modelRevision": "season-scaled-packages-2026-10-05",
   "method": "bounded-percentage",
   "sourceDigest": "cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9",
-  "stateSha256": "17dd22deae45ee8894d3a127f0006e133eeca2f486ce8e6b141820653f41b5fe",
+  "stateSha256": "ea292c1aac56b90af2286bb8829f40b0ce1f5e9f021d802f074eb3ecae99ae94",
   "columns": [
     "season",
     "breakClass",

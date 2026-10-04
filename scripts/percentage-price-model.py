@@ -16,7 +16,7 @@ RESOURCES = ('candles', 'hearts', 'ascended', 'passes')
 class PercentagePriceModel:
     def fit(self, rows, seasons, anchors=None, *, adjust_baselines=False,
             bounded_baselines=False, effect_regularization=10., season_smoothing=.5,
-            progressive_packages=False):
+            progressive_packages=False, package_season_scaling=False):
         if adjust_baselines and bounded_baselines:
             raise ValueError('Free adjustment cannot override bounded baselines')
         if any(isinstance(v, bool) or not isinstance(v, (int, float)) or
@@ -31,6 +31,7 @@ class PercentagePriceModel:
             raise ValueError('Require eligible Taiwan listing prices')
         self.seasons = list(seasons)
         self.progressive_packages = progressive_packages
+        self.package_season_scaling = package_season_scaling
         self.baseline_mode = 'bounded' if bounded_baselines else 'adjustable' if adjust_baselines else 'fixed'
         self.fit_params = dict(bounded_baselines=bounded_baselines,
                                effect_regularization=effect_regularization, season_smoothing=season_smoothing)
@@ -112,17 +113,75 @@ class PercentagePriceModel:
             raise ValueError('Invalid exact package count')
         return int(value)
 
-    def package_log_multiplier(self, count):
+    def package_control_logs(self):
         # Curve control coordinates are policy, NOT fabricated training counts.
         steps = self.weights[self.nbase+3:self.nbase+6]
-        values = np.array([-steps[0]-.5*steps[1], -.5*steps[1], .5*steps[1], .5*steps[1]+steps[2]])
-        curve = PchipInterpolator([30., 75., 95., 150.], values, extrapolate=False)
+        return np.array([-steps[0]-.5*steps[1], -.5*steps[1], .5*steps[1], .5*steps[1]+steps[2]])
+
+    def _package_cache_key(self):
+        return (getattr(self, 'progressive_packages', False), getattr(self, 'package_season_scaling', False),
+                self.weights[self.nbase:self.nbase + 6].tobytes())
+
+    def _package_curve(self):
+        key = self._package_cache_key()
+        cached = getattr(self, '_package_curve_cache', None)
+        if cached and cached[0] == key:
+            return cached[1]
+        curve = PchipInterpolator([30., 75., 95., 150.], self.package_control_logs(), extrapolate=False)
+        self._package_curve_cache = (key, curve)
+        return curve
+
+    def _raw_package_log_multiplier(self, count):
+        values = self.package_control_logs()
+        curve = self._package_curve()
         if count < 30:
             return float(values[0] + max(0., float(curve.derivative()(30))) * (count-30))
         if count > 150:
             slope = max(0., float(curve.derivative()(150)))
             return float(values[-1] + slope * 55 * np.log1p((count-150)/55))
         return float(curve(count))
+
+    def package_season_scales(self):
+        # Older, high-baseline accounts already carry much of their scarcity in
+        # the start-season baseline. Reduce only their *percentage* elasticity;
+        # this is not a currency cap. The chronological constraint below keeps
+        # any two otherwise-identical start seasons in the approved order.
+        key = self._package_cache_key()
+        cached = getattr(self, '_package_scales_cache', None)
+        if cached and cached[0] == key:
+            return cached[1]
+        if not (getattr(self, 'progressive_packages', False) and getattr(self, 'package_season_scaling', False)):
+            return {season: 1. for season in self.seasons}
+        maximum_log = max(1e-12, self._raw_package_log_multiplier(350))
+        minimum_log = min(-1e-12, self._raw_package_log_multiplier(0))
+        scales = {}
+        previous_scale = None
+        for index, season in enumerate(self.seasons):
+            baseline_log = self.weights[index]
+            price_position = float(np.clip((baseline_log - np.log(10_000.)) / np.log(30.), 0., 1.))
+            target = .985 - .225 * price_position + .015 * index / max(1, len(self.seasons) - 1)
+            if previous_scale is not None:
+                # Preserve monotonicity for both positive high-package logs
+                # and negative low-package logs. Tied seasonal baselines must
+                # share a scale: no distinct percentage can preserve both.
+                gap = self.weights[index - 1] - baseline_log
+                lower = previous_scale - gap / -minimum_log
+                upper = previous_scale + gap / maximum_log
+                target = float(np.clip(target, lower, upper))
+            scales[season] = float(np.clip(target, 0., 1.))
+            previous_scale = scales[season]
+        self._package_scales_cache = (key, scales)
+        return scales
+
+    def package_season_scale(self, season):
+        return self.package_season_scales().get(season, 1.)
+
+    def package_log_multiplier(self, count, season=None):
+        return self._raw_package_log_multiplier(count) * self.package_season_scale(season)
+
+    def package_tier_log_multiplier(self, tier, season=None):
+        tier_index = PACKAGES.get(tier)
+        return 0. if tier_index is None else float(self.package_control_logs()[tier_index]) * self.package_season_scale(season)
 
     @staticmethod
     def _number(row, key):
@@ -152,7 +211,12 @@ class PercentagePriceModel:
         result = []
         for r, t in zip(rows, terms):
             count = self.package_count(r) if getattr(self, 'progressive_packages', False) else None
-            package_log = self.package_log_multiplier(count) if count is not None else t[b+3:b+6].sum()
+            if count is not None:
+                package_log = self.package_log_multiplier(count, r.get('season'))
+            elif getattr(self, 'progressive_packages', False):
+                package_log = self.package_tier_log_multiplier(r.get('packageTier'), r.get('season'))
+            else:
+                package_log = t[b+3:b+6].sum()
             factors = dict(breaks=float(np.exp(t[b:b+3].sum())),
                            packages=float(np.exp(package_log)),
                            bindings=float(np.exp(t[b+6:end].sum())),
@@ -165,7 +229,8 @@ class PercentagePriceModel:
                                seasonKnown=r.get('season') in self.seasons,
                                breakKnown=r.get('breakClass') in BREAKS,
                                packageKnown=count is not None or r.get('packageTier') in PACKAGES,
-                               packageCount=count, packageBasis='count' if count is not None else 'tier' if r.get('packageTier') in PACKAGES else 'unknown'))
+                               packageCount=count, packageBasis='count' if count is not None else 'tier' if r.get('packageTier') in PACKAGES else 'unknown',
+                               packageSeasonScale=self.package_season_scale(r.get('season'))))
         return result
 
     def predict(self, rows):

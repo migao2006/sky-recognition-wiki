@@ -35,7 +35,9 @@ def main():
     b = call(body)
     assert a[0] == b[0] == 200 and a[1] == b[1]
     assert a[2] < 45 and len(a[1]["seasonBands"]) == 30 and a[1]["range"] is None
-    raw = recipe().PercentagePriceModel().fit(rows, meta["seasons"], **FIT_PARAMS, progressive_packages=True).predict([row])
+    raw = recipe().PercentagePriceModel().fit(
+        rows, meta["seasons"], **FIT_PARAMS, progressive_packages=True, package_season_scaling=True,
+    ).predict([row])
     assert a[1]["midpoint"] == max(1, round(raw[0])), "Serving/benchmark prediction drift"
     predictor = Predictor()
     for count in (0, 100, 150, 191, 200):

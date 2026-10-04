@@ -41,9 +41,24 @@ class ProgressiveTests(unittest.TestCase):
 
     def test_count_absent_keeps_legacy_tier(self):
         rows=[dict(packageTier=p) for p in m.PACKAGES]
-        progressive=self.model.predict(rows)
         self.model.progressive_packages=False
+        legacy=self.model.predict(rows)
+        self.model.progressive_packages=True
+        progressive=self.model.predict(rows)
+        np.testing.assert_array_equal(legacy,self.model.predict(rows))
         np.testing.assert_array_equal(progressive,self.model.predict(rows))
+
+    def test_high_baseline_season_has_lower_package_elasticity(self):
+        rows=[dict(season=s,price=p,priceKind='ask',currency='TWD',market='taiwan')
+              for s,p in [('gratitude',300000),('lightseekers',150000),('enchantment',35000),('prophecy',10000)]]
+        model=m.PercentagePriceModel().fit(rows,[r['season'] for r in rows],progressive_packages=True,package_season_scaling=True)
+        model.weights[model.nbase+3:model.nbase+6]=[.2,.1,.4]
+        scales=[model.package_season_scale(s) for s in model.seasons]
+        self.assertTrue(all(a < b for a,b in zip(scales,scales[1:])))
+        self.assertLess(model.package_log_multiplier(191,'gratitude'),model.package_log_multiplier(191,'prophecy'))
+        # The high-base season cannot reuse the new-account multiplier.
+        self.assertLess(np.exp(model.package_log_multiplier(191,'gratitude')),
+                        np.exp(model.package_log_multiplier(191,'prophecy')))
 
 
 if __name__=='__main__':
