@@ -1,5 +1,6 @@
 import { seasons } from "./catalog-sources";
 import freshData from "./valuation-fresh-data.json";
+import { predictFreshModel } from "./valuation-fresh-core.js";
 
 export type SeasonConfidence = "high" | "medium" | "low" | "inferred";
 export type SeasonPriceBand = {
@@ -7,7 +8,8 @@ export type SeasonPriceBand = {
   low: number | null;
   median: number | null;
   high: number | null;
-  status: "unavailable" | "blended";
+  status: "unavailable" | "unvalidated";
+  method: string | null;
   sampleCount: number;
   confidence: SeasonConfidence;
   asOf: string;
@@ -19,21 +21,18 @@ export const valuationSampleSummary = {
   asOf: freshData.asOf,
   collectionComplete: freshData.collectionComplete,
 };
-// These are exploratory evidence bands, not bare-account prices or a validated
-// transaction model. The valuation page keeps the unvalidated warning and
-// applies the full candidate model separately.
+// Comparable whole-account reference: no breaks, few packages, binding unknown.
+// Same predictor as the actual account; this is NOT a season/item unit price.
 export const seasonPriceBands: readonly SeasonPriceBand[] = seasons.map(([slug]) => {
-  const source = (freshData.model?.seasons as Record<string, {
-    status?: string; median?: number | null; low?: number | null; high?: number | null; sampleCount?: number;
-  }> | undefined)?.[slug];
-  const available = source?.status === "blended" && typeof source.median === "number";
+  const result = predictFreshModel(freshData.model, { season: slug, packageTier: "few", breakClass: "none" });
   return {
     slug,
-    low: available ? source.low ?? null : null,
-    median: available ? source.median ?? null : null,
-    high: available ? source.high ?? null : null,
-    status: available ? "blended" : "unavailable",
-    sampleCount: available ? source.sampleCount ?? 0 : 0,
+    low: result.range?.low ?? null,
+    median: result.midpoint,
+    high: result.range?.high ?? null,
+    status: result.status === "unavailable" ? "unavailable" : "unvalidated",
+    method: result.method,
+    sampleCount: result.sampleCount,
     confidence: "inferred",
     asOf: freshData.asOf,
   };

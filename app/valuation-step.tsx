@@ -22,6 +22,7 @@ import {
   showcasePresetNames,
 } from "./valuation-showcase-preview";
 import { useValuationExportActions } from "./use-valuation-export-actions";
+import { formatTwd, referencePriceText, referenceRangeText, estimationMethodName } from "./valuation-display";
 
 type Props = {
   runtime: ValuationRuntimeCapabilities;
@@ -35,11 +36,9 @@ type Props = {
   onClearAll: () => void;
 };
 
-const formatTwd = (value: number) =>
-  `NT$ ${Math.abs(value).toLocaleString("zh-TW")}`;
 const formatContribution = (low: number, high: number) => {
   const signed = (value: number) =>
-    `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatTwd(value)}`;
+    `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatTwd(Math.abs(value))}`;
   return low === high ? signed(low) : `${signed(low)}～${signed(high)}`;
 };
 const confidenceNames: Record<SeasonConfidence, string> = {
@@ -237,27 +236,17 @@ export function ValuationStep({
           <article className="valuation-verdict">
             <span>
               {marketValidation.label}
-              {valuationEstimate?.status === "unvalidated"
-                ? ` · ${confidenceNames[valuationEstimate.confidence]}`
-                : ""}
             </span>
             <h3 className="model-price">
-              {valuationEstimate?.midpoint != null
-                ? formatTwd(valuationEstimate.midpoint)
-                : "資料不足"}
+              {referencePriceText(valuationEstimate?.midpoint, chosen.length)}
             </h3>
             {valuationEstimate?.range && (
               <div className="valuation-range">
-                價格區間 {formatTwd(valuationEstimate.range.low)}～
-                {formatTwd(valuationEstimate.range.high)}
+                {referenceRangeText(valuationEstimate.range)}
               </div>
             )}
-            {!valuationAnalysis.valuationItems.length && (
-              <p>
-                {chosen.length
-                  ? "目前選取的物品不在估價範圍內。"
-                  : "選取物品後顯示價格。"}
-              </p>
+            {valuationEstimate?.status === "unavailable" && (
+              <button type="button" onClick={() => window.location.reload()}>重新載入</button>
             )}
           </article>
           <div className="valuation-metrics">
@@ -283,7 +272,7 @@ export function ValuationStep({
         </div>
         {valuationEstimate && (
           <div className="valuation-details">
-            <DeferredDetails
+            {valuationEstimate.contributions.length > 0 && <DeferredDetails
               summary={
                 <>
                   <b>加減分明細</b>
@@ -321,7 +310,7 @@ export function ValuationStep({
                   </div>
                 ))}
               </div>
-            </DeferredDetails>
+            </DeferredDetails>}
             {valuationEstimate.seasonRows.length > 0 && (
               <DeferredDetails
                 summary={
@@ -342,7 +331,7 @@ export function ValuationStep({
             <DeferredDetails
               summary={
                 <>
-                  <b>各季新行情狀態</b>
+                  <b>各季參考估價</b>
                   <span>{runtime.seasonPriceBands.length} 季</span>
                 </>
               }
@@ -353,13 +342,6 @@ export function ValuationStep({
                 confidenceNames={confidenceNames}
               />
             </DeferredDetails>
-            {valuationEstimate.warnings.length > 0 && (
-              <div className="valuation-warnings" role="status">
-                {valuationEstimate.warnings.map((warning) => (
-                  <p key={warning}>• {warning}</p>
-                ))}
-              </div>
-            )}
           </div>
         )}
         <DeferredDetails
@@ -375,18 +357,18 @@ export function ValuationStep({
                 {valuationAnalysis.startSeasonSlug
                   ? `起始畢業 ${runtime.seasonZh[valuationAnalysis.startSeasonSlug] || valuationAnalysis.startSeasonSlug} · `
                   : "未辨識起始畢業季 · "}
-                {
-                  marketBreakClassNames[
+                {valuationAnalysis.seasonCompletion.size ? marketBreakClassNames[
                     valuationEstimate.marketProfile.breakClass
-                  ]
-                }{" "}
+                  ] : ""}{" "}
                 · {marketPackageTierNames[valuationEstimate.marketProfile.salePackageTier]} ·{" "}
                 {
                   marketAccountStyleNames[
                     valuationEstimate.marketProfile.accountStyle
                   ]
                 }
-                ；同起始畢業季樣本 {valuationEstimate.marketProfile.effectiveSample} 筆。
+                ；{estimationMethodName(valuationEstimate.evidence.method)}，
+                直接起季行情 {valuationEstimate.evidence.directSampleCount} 筆。
+                模型版本 {valuationEstimate.evidence.modelRevision}。
                 {valuationEstimate.marketProfile.partialSeasons > 0
                   ? `另有 ${valuationEstimate.marketProfile.partialSeasons} 季部分畢業，不視為斷季。`
                   : ""}
@@ -395,12 +377,11 @@ export function ValuationStep({
             )}
             新模型只採重新核對的台幣整號行情，不沿用舊季節底價、禮包上限或固定資源加價。
             <br />
-            新取得 {runtime.valuationSampleSummary.sourceRows} 筆海外刊登，僅供分市場研究；
-            可納入新台幣模型 {runtime.valuationSampleSummary.eligibleRows} 筆
-            （{runtime.valuationSampleSummary.asOf}）。資料不足時不顯示數字估價。
-            <br />
-            衣櫃、備份與圖片匯出仍可正常使用。
+            本輪檢查 {runtime.valuationSampleSummary.sourceRows} 筆貼文紀錄，
+            去重及排除後採用 {runtime.valuationSampleSummary.eligibleRows} 筆整號行情
+            （{runtime.valuationSampleSummary.asOf}）。缺少直接行情時依季節趨勢推算。
           </p>
+          {valuationEstimate?.warnings.map(warning => <p key={warning}>{warning}</p>)}
         </DeferredDetails>
       </section>
       <div className="account-actions">
@@ -441,6 +422,7 @@ function SeasonRows({
 }) {
   return (
     <div className="valuation-season-table-wrap">
+      <p>以無斷、少禮、綁定未知的整號為比較條件；不是單季物品售價。</p>
       <table className="valuation-season-table">
         <thead>
           <tr>
@@ -457,8 +439,9 @@ function SeasonRows({
               {includeCompletion && (
                 <td>{Math.round((row.completion ?? 0) * 100)}%</td>
               )}
-              <td>資料不足</td>
-              <td>新台幣樣本 {row.sampleCount}</td>
+              <td>{referencePriceText(row.median, 1)}<br />{referenceRangeText(
+                row.low != null && row.high != null ? { low: row.low, high: row.high } : null)}</td>
+              <td>{estimationMethodName(row.method)} · {row.sampleCount} 筆</td>
             </tr>
           ))}
         </tbody>

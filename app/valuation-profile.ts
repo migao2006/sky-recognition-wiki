@@ -21,7 +21,7 @@ export const marketPackageTierNames: Record<PackageTierKey, string> = {
   hundred: "百禮",
 };
 
-export const marketValidation = { status: "unvalidated", isValidated: false, label: "新行情模型" } as const;
+export const marketValidation = { status: "unvalidated", isValidated: false, label: "參考估價" } as const;
 
 export const classifyBreakClass = (
   completion: ReadonlyMap<string, { selected: number; expected: number }>,

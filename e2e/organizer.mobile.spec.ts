@@ -80,14 +80,17 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   await expect(page.getByText("更多匯出方式")).toHaveCount(0);
   await expect(page.locator(".valuation-contributions")).toHaveCount(0);
   await expect(page.locator(".valuation-season-table")).toHaveCount(0);
-  await expect(page.locator(".model-price")).toHaveText("資料不足");
-  await expect(page.locator(".showcase-price strong")).toHaveText("資料不足");
-  await page.getByText("各季新行情狀態").click();
+  await expect(page.locator(".model-price")).toHaveText(/^NT\$ [\d,]+$/);
+  const price = await page.locator(".model-price").innerText();
+  await expect(page.locator(".showcase-price strong")).toHaveText(price);
+  await page.getByText("各季參考估價").click();
   await expect(page.locator(".valuation-season-table")).toBeVisible();
   await expect(page.locator(".valuation-season-table tbody tr")).toHaveCount(30);
-  await expect(page.locator(".valuation-season-table")).not.toContainText("NT$");
+  for (const row of await page.locator(".valuation-season-table tbody tr").all())
+    await expect(row).toContainText("NT$");
   await page.getByText("估價依據").click();
-  await expect(page.locator(".valuation-method p")).toBeVisible();
+  await expect(page.locator(".valuation-method p").first()).toBeVisible();
+  await expect(page.locator(".valuation-method")).toContainText("whole-account-v3");
   await page.evaluate(() => {
     Object.defineProperty(navigator, "share", {
       configurable: true,
@@ -103,7 +106,39 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
         window.sessionStorage.getItem("shared-account-summary"),
       ),
     )
-    .toContain("✦");
+    .toContain(price);
+  // Capture actual Canvas text; the downloaded image must use the same value.
+  await page.evaluate(() => {
+    const fillText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      const values = JSON.parse(sessionStorage.getItem("canvas-text") ?? "[]");
+      values.push(text);
+      sessionStorage.setItem("canvas-text", JSON.stringify(values));
+      if (maxWidth === undefined) fillText.call(this, text, x, y);
+      else fillText.call(this, text, x, y, maxWidth);
+    };
+  });
+  const imageDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "下載圖片", exact: true }).click();
+  await imageDownload;
+  expect(await page.evaluate(() => sessionStorage.getItem("canvas-text"))).toContain(price);
+});
+
+test("unknown binding and ordinary items estimate; empty selection does not fabricate a price", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
+  const first = page.locator(".grid button").first();
+  await expect(first).toBeVisible({ timeout: 30_000 });
+  await first.click();
+  await page.getByRole("button", { name: "前往估價" }).click();
+  await expect(page.locator(".model-price")).toHaveText(/^NT\$ [\d,]+$/);
+  await page.getByText("估價依據", { exact: true }).click();
+  await expect(page.locator(".valuation-method")).toContainText("未指定起季");
+  await expect(page.locator(".valuation-method")).toContainText("綁定尚未確認");
+  await expect(page.locator("main")).not.toContainText("資料不足");
+  await page.getByRole("button", { name: "清除已選物品", exact: true }).click();
+  await expect(page.locator(".model-price")).toHaveText("請先選擇物品");
 });
 
 test("imports and exports account backups from the first step", async ({ page }) => {

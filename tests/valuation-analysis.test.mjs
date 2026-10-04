@@ -223,12 +223,13 @@ test("no old price is returned even for all items, resources and known bindings"
   const analysis = analyzeValuation({ chosen: catalog.wikiItems, bindings: bindings(),
     bindingsConfirmed: true, bindingNote: "", domain: { ...catalog, getZhName: catalog.zhItemName } });
   const result = estimateValuation({ analysis, resources: { candles: 999999, hearts: 999999, passes: 999 } });
-  assert.equal(result.status, "unavailable");
-  assert.equal(result.range, null);
-  assert.equal(result.midpoint, null);
+  assert.equal(result.status, "unvalidated");
+  assert.ok(result.range.low > 0);
+  assert.ok(result.midpoint > 0);
   assert.deepEqual(result.contributions, []);
-  assert.equal(result.modelFeatures.modelRevision, "fresh-candidate-v1");
-  assert.ok(result.warnings.some(text => text.includes("未沿用舊價格")));
+  assert.equal(result.modelFeatures.modelRevision, "whole-account-v3");
+  assert.equal(result.confidence, "inferred");
+  assert.ok(result.warnings.some(text => text.includes("未通過獨立驗證")));
 });
 
 test("pendants cannot create a graduation start, and unknown binding remains null", () => {
@@ -236,13 +237,27 @@ test("pendants cannot create a graduation start, and unknown binding remains nul
   assert.equal(analysis.startSeasonSlug, null);
   const result = estimateValuation({ analysis });
   assert.equal(result.modelFeatures.bindingRiskCount, null);
-  assert.equal(result.midpoint, null);
+  assert.ok(result.midpoint > 0);
+  assert.equal(result.modelFeatures.breakClass, null);
+  assert.equal(result.evidence.method, "pooled");
 });
 
-test("empty selection has no estimate; China-only selection is unavailable, not zero", () => {
+test("empty selection has no estimate; non-priced items use pooled whole-account inference", () => {
   assert.equal(estimateValuation({ analysis: analyze([]) }), null);
   const result = estimateValuation({ analysis: analyze([item({ name: "China Pack", wiki: "https://example.test/China_Pack" })]) });
   assert.equal(result.marketProfile.canonicalPackageCount, 0);
-  assert.equal(result.range, null);
-  assert.equal(result.midpoint, null);
+  assert.ok(result.range.low > 0);
+  assert.ok(result.midpoint > 0);
+  const ordinary = estimateValuation({ analysis: analyze([item({ name: "ordinary" })]) });
+  assert.equal(ordinary.evidence.method, "pooled");
+  assert.ok(ordinary.midpoint > 0);
+});
+
+test("an ongoing season gift can establish origin without inventing later breaks", () => {
+  const analysis = analyzeValuation({ chosen: [item({ name: "Current gift", group: "Ultimate", section: "seasons", collection: "dear-van-gogh" })],
+    bindings: bindings(), bindingNote: "", domain: { ...domain, ongoingSeasonSlugs: new Set(["dear-van-gogh"]) } });
+  assert.equal(analysis.startSeasonSlug, "dear-van-gogh");
+  const result = estimateValuation({ analysis });
+  assert.equal(result.modelFeatures.breakClass, null);
+  assert.ok(result.midpoint > 0);
 });

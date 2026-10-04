@@ -1,4 +1,5 @@
 import type { WikiItem } from "./wiki-data";
+import { referencePriceText, referenceRangeText } from "./valuation-display";
 import {
   buildShowcaseGroups,
   type ShowcaseOrderOptions,
@@ -460,21 +461,17 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.fillText("估價摘要", pad + 28, pad + 38);
     ctx.fillStyle = "#b7c8dd";
     ctx.font = "700 15px system-ui";
-    ctx.fillText("參考中位價", pad + 28, pad + 62);
+    ctx.fillText("參考估價", pad + 28, pad + 62);
     ctx.fillStyle = "#f3f8f7";
     ctx.font = "900 48px system-ui";
     ctx.fillText(
-      valuation.midpoint === null
-        ? "資料不足"
-        : `NT$ ${valuation.midpoint.toLocaleString("zh-TW")}`,
+      referencePriceText(valuation.midpoint, valuation.itemCount),
       pad + 28,
       pad + 106,
     );
     ctx.fillStyle = "#b7c8dd";
     ctx.font = "700 18px system-ui";
-    const range = valuation.range
-      ? `價格區間 NT$ ${valuation.range.low.toLocaleString("zh-TW")}～NT$ ${valuation.range.high.toLocaleString("zh-TW")}`
-      : "尚無足夠的新台幣行情";
+    const range = referenceRangeText(valuation.range);
     ctx.fillText(range, pad + 28, pad + 142);
     ctx.fillText(
       `估價完整度 ${valuation.completeness}% · ${valuation.confidence} · 已納入 ${valuation.itemCount} 件`,

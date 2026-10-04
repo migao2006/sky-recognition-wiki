@@ -5,6 +5,7 @@ import {
   type BindingStatus,
 } from "./account-config";
 import { marketCollectibleProfile } from "./market-collectibles";
+import { referencePriceText, referenceRangeText } from "./valuation-display";
 
 type SaleSeasonProgress = {
   name: string;
@@ -26,6 +27,7 @@ type SaleCopyItem = {
 };
 
 type SaleCopyInput = {
+  valuation?: { midpoint: number | null; range: { low: number; high: number } | null };
   seasons: SaleSeasonProgress[];
   bindingsConfirmed: boolean;
   bindings: Partial<Record<BindingKey, BindingStatus>>;
@@ -438,6 +440,9 @@ export const buildSaleCopy = (data: SaleCopyInput) => {
   const groups = groupCollectibles(data.items);
   const binding = formatBindings(data.bindingsConfirmed, data.bindings);
   const content = joinSections([
+    section("參考估價", data.valuation?.midpoint != null
+      ? [referencePriceText(data.valuation.midpoint, data.items.length),
+        referenceRangeText(data.valuation.range), "刊登行情推估，非成交保證。"].filter(Boolean) : []),
     section("季節進度", wrapSeasonProgress(data.seasons)),
     section("綁定狀態", binding ? [binding] : []),
     section("資源數量", formatResources(data.resources)),

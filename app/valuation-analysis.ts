@@ -42,8 +42,9 @@ export type ValuationEstimate = {
   contributions: ValuationContribution[];
   warnings: string[];
   seasonRows: ValuationSeasonRow[];
-  /** Exact numeric inputs used by the browser calculation for model replay. */
-  modelFeatures?: { modelRevision: string; season: string | null; packageCount: number; breakFraction: number; bindingRiskCount: number | null };
+  /** Browser inputs for replay; unknown fields remain null, not fabricated. */
+  modelFeatures?: { modelRevision: string; season: string | null; packageCount: number; breakClass: MarketBreakClass | null; bindingRiskCount: number | null };
+  evidence: { method: string | null; directSampleCount: number; modelRevision: string };
   marketProfile: {
     breakClass: MarketBreakClass;
     packageTier: PackageTierKey;
@@ -61,6 +62,7 @@ export type ValuationEstimate = {
   };
 };
 export type ValuationAnalysis = {
+  selectedCount: number;
   valuationItems: WikiItem[];
   ultimates: WikiItem[];
   pendants: WikiItem[];
@@ -96,9 +98,7 @@ export const analyzeValuation = ({
   const limited = chosen.filter(domain.isLimitedItem);
   const ultimateSeasonSlugs = domain.sortSeasonSlugs([
     ...new Set(
-      ultimates
-        .filter((item) => !domain.ongoingSeasonSlugs.has(item.collection))
-        .map((item) => item.collection),
+      ultimates.map((item) => item.collection),
     ),
   ]);
   const startSeasonSlug = ultimateSeasonSlugs[0] || null;
@@ -124,6 +124,7 @@ export const analyzeValuation = ({
     statuses.some((status) => status !== "none") ||
     Boolean(bindingNote.trim());
   return {
+    selectedCount: chosen.length,
     valuationItems,
     ultimates,
     pendants,
@@ -154,12 +155,12 @@ export const estimateValuation = ({ analysis }: {
   analysis: ValuationAnalysis;
   resources?: ValuationResources;
 }): ValuationEstimate | null => {
-  if (!analysis.valuationItems.length) return null;
+  if (!analysis.selectedCount) return null;
   const warnings: string[] = [];
   const paid = analysis.packages.filter(item => {
     if (isChinaOnlyItem(item)) return false;
     const platform = platformBindingForItem(item);
-    if (platform && !["none", "transfer"].includes(analysis.bindings[platform])) {
+    if (platform && ["keep", "issue"].includes(analysis.bindings[platform])) {
       warnings.push(`${platform} 綁定未能轉移，該平台禮包不計入可出禮包數。`);
       return false;
     }
@@ -175,17 +176,17 @@ export const estimateValuation = ({ analysis }: {
   const input = {
     season: analysis.startSeasonSlug,
     packageCount: canonicalPackageCount,
-    breakFraction: 1 - breaks.completionRatio,
+    breakClass: analysis.seasonCompletion.size ? breaks.key : null,
     bindingRiskCount: analysis.bindingsConfirmed ? analysis.issueCount + analysis.keepCount : null,
   };
   const result = predictFreshModel(freshData.model, input);
   if (result.status === "unavailable") {
-    warnings.push("此帳號缺少可用的新台幣行情，暫不提供數字估價；未沿用舊價格。");
+    warnings.push("估價載入失敗，請重新載入頁面再試。");
   } else {
-    warnings.push("新行情模型尚未通過獨立驗證；區間為校準樣本殘差範圍，不代表成交保證。");
+    warnings.push("依整號刊登行情推估，尚未通過獨立驗證；參考區間不是成交保證。");
   }
   if (!analysis.bindingsConfirmed) warnings.push("綁定尚未確認，不推測為無綁。");
-  if (!analysis.startSeasonSlug) warnings.push("未辨識到畢業進度起始季；季卡項鍊不代表畢業。");
+  if (!analysis.startSeasonSlug) warnings.push("未判定起季，使用未指定起季的整號行情推算；季卡項鍊不代表畢業。");
   warnings.push("限定收藏與資源尚無獨立加價證據，不另加固定金額；海外標價不直接換算台幣。");
   return {
     status: result.status === "unavailable" ? "unavailable" : "unvalidated",
@@ -195,13 +196,14 @@ export const estimateValuation = ({ analysis }: {
     contributions: [],
     warnings: [...new Set(warnings)],
     seasonRows,
+    evidence: { method: result.method, directSampleCount: analysis.startSeasonSlug ? result.sampleCount : 0, modelRevision: result.revision },
     modelFeatures: { modelRevision: freshModelRevision, ...input },
     marketProfile: {
       breakClass: breaks.key, packageTier: tier.key, salePackageTier: tier.key,
       accountStyle: classifyAccountStyle({ paidItemCount: canonicalPackageCount,
         graduationCount: analysis.ultimates.length, seasonCount: analysis.seasonCompletion.size }),
       missingSeasons: breaks.missingSeasons, partialSeasons: breaks.partialSeasons,
-      completionRatio: breaks.completionRatio, effectiveSample: 0,
+      completionRatio: breaks.completionRatio, effectiveSample: analysis.startSeasonSlug ? result.sampleCount : 0,
       paidItemCount: paid.length, canonicalPackageCount,
       evidenceQuality: "limited", priceStage: "低資訊參考", sourceConcentration: 0,
     },

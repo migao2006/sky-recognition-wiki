@@ -1,61 +1,51 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { seasons } from "../app/catalog-sources.ts";
-import { fitEvidenceBlendedModel } from "../app/valuation-fresh-core.js";
+import { fitWholeAccountModel, predictFreshModel, packageTiers, breakClasses } from "../app/valuation-fresh-core.js";
+import { prepareWholeAccountEvidence } from "./lib/whole-account-evidence.mjs";
 
-const [input, output, asOf = "2026-10-04"] = process.argv.slice(2);
-if (!input || !output) throw new Error("Usage: node --import tsx scripts/build-evidence-blended-model.mjs input.jsonl app/valuation-fresh-data.json [asOf]");
-const rows = (await readFile(input, "utf8")).split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line));
+const [input, output, asOf, reviewPath, ...flags] = process.argv.slice(2);
+if (!input || !output || !/^\d{4}-\d{2}-\d{2}$/.test(asOf ?? "") || !reviewPath ||
+    flags.some(flag => flag !== "--write")) throw new Error(
+  "Usage: node --import tsx scripts/build-evidence-blended-model.mjs input.jsonl output.json YYYY-MM-DD review.json [--write]");
+const raw = await readFile(input, "utf8");
+const sourceDigest = createHash("sha256").update(raw).digest("hex");
+const reviewText = await readFile(reviewPath, "utf8");
+const review = JSON.parse(reviewText);
+if (!review.sourceDigest) throw new Error("Review must identify the original source digest");
+const rows = raw.split(/\r?\n/).filter(line => line.trim()).map(line => JSON.parse(line));
 const slugs = seasons.map(([slug]) => slug);
-const known = new Set(slugs);
-const eligible = [];
-const tierProxy = { few: 30, medium: 75, many: 120, hundred: 170 };
-for (const row of rows) {
-  if (row.currency !== "TWD" || row.region !== "international" || row.price_kind !== "ask") continue;
-  const low = Number(row.price_twd_low), high = Number(row.price_twd_high);
-  if (!Number.isFinite(low) || low <= 0 || !Number.isFinite(high) || high < low) continue;
-  const progress = Object.entries(row.season_progress ?? {})
-    .filter(([season, value]) => known.has(season) && (value === "complete" || value === "畢" ||
-      (typeof value === "string" && /^\d+\/\d+$/.test(value) && Number(value.split("/")[0]) > 0)))
-    .map(([season]) => season);
-  if (!progress.length) continue;
-  const price = (low + high) / 2;
-  const weight = progress.length === 1 ? 1 : 0.25;
-  const priceShare = price / progress.length;
-  const exactPackageCount = Number.isSafeInteger(row.paid_package_count) ? row.paid_package_count : null;
-  const packageTier = row.computed_package_tier ?? row.seller_package_label;
-  const packageCount = exactPackageCount ?? tierProxy[packageTier] ?? null;
-  eligible.push({
-    id: row.post_hash,
-    price,
-    packageCount,
-    packageInputKind: exactPackageCount === null && packageCount !== null ? "tier_proxy" : "exact",
-    seasonEvidence: progress.map(season => ({ season, weight, priceShare,
-      breakClass: row.computed_break_class ?? "unknown" })),
-  });
+const report = prepareWholeAccountEvidence(rows, { seasons: slugs, sourceDigest, review });
+const model = fitWholeAccountModel(report.accepted, { seasons: slugs });
+// This is a technical publication check, never a validation/accuracy claim.
+for (const season of [...slugs, null]) for (const packageTier of [...packageTiers, null]) for (const breakClass of [...breakClasses, null]) {
+  const result = predictFreshModel(model, { season, packageTier, breakClass });
+  if (!result.range || !(result.range.low > 0 && result.range.low <= result.midpoint && result.midpoint <= result.range.high))
+    throw new Error("Invalid production prediction");
 }
-const model = fitEvidenceBlendedModel(eligible, { seasons: slugs });
-const outputData = {
-  schemaVersion: 2,
-  revision: model.revision,
-  asOf,
-  validation: "unvalidated",
-  model,
-  sourceRows: rows.length,
-  foreignRows: 0,
-  eligibleRows: eligible.length,
-  collectionComplete: false,
+const data = {
+  schemaVersion: 3, revision: model.revision, asOf, validation: "unvalidated", model,
+  sourceRows: rows.length, eligibleRows: report.accepted.length,
+  foreignRows: report.rejectionCounts.foreign_or_converted ?? 0, collectionComplete: false,
   provenance: {
-    source: input,
-    method: "reviewed Taiwan TWD listings; cross-season rows split by explicit season_progress and weighted 0.25",
-    directRows: eligible.filter(row => row.seasonEvidence.length === 1).length,
-    crossSeasonRows: eligible.filter(row => row.seasonEvidence.length > 1).length,
-    packageCountRows: eligible.filter(row => Number.isSafeInteger(row.packageCount)).length,
-    packageTierProxyRows: eligible.filter(row => row.packageInputKind === "tier_proxy").length,
-    interval: "weighted empirical quartiles; not a prediction interval",
+    sourceDigest, reviewDigest: createHash("sha256").update(reviewText).digest("hex"),
+    datasetDigest: report.datasetDigest, rejectionCounts: report.rejectionCounts,
+    unknownSeasonRows: report.accepted.filter(row => row.season === null).length,
+    unknownPackageRows: report.accepted.filter(row => row.packageTier === null).length,
+    unknownBreakRows: report.accepted.filter(row => row.breakClass === null).length,
+    unknownDateRows: report.accepted.filter(row => row.publishedAt === null).length,
+    identityQuality: "post_ids_and_reviewed_surrogates_not_verified_account_ids",
+    method: "whole-account log-price joint season/tier/break fit; no price splitting or exact-count proxies",
+    interval: model.intervalKind,
   },
-  reason: "Candidate only. It is not independently holdout-validated and must remain labelled unvalidated.",
 };
-await writeFile(output, JSON.stringify(outputData, null, 2) + "\n", { flag: "w" });
-console.log(JSON.stringify({ eligible: eligible.length, directRows: outputData.provenance.directRows,
-  crossSeasonRows: outputData.provenance.crossSeasonRows, packageCountRows: outputData.provenance.packageCountRows,
-  output }, null, 2));
+const serialized = JSON.stringify(data, null, 2) + "\n";
+const previous = await readFile(output, "utf8").catch(error => {
+  if (error.code === "ENOENT") return null;
+  throw error;
+});
+console.log(JSON.stringify({ sourceRows: rows.length, eligibleRows: data.eligibleRows,
+  rejected: report.rejectionCounts, changed: previous !== serialized, write: flags.includes("--write"),
+  seasons: Object.fromEntries(slugs.map(season => [season,
+    predictFreshModel(model, { season, packageTier: "few", breakClass: "none" })])) }, null, 2));
+if (flags.includes("--write")) await writeFile(output, serialized);

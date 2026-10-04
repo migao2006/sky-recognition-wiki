@@ -86,6 +86,7 @@ export const useValuationExportActions = ({
       total: runtime.seasonGraduationItems.get(slug)?.length ?? 0,
     }));
     return {
+      valuation: valuationEstimate?.midpoint != null ? valuationEstimate : undefined,
       seasons,
       bindingsConfirmed: account.bindingsConfirmed,
       bindings,
@@ -95,7 +96,7 @@ export const useValuationExportActions = ({
               ? runtime.seasonZh[valuationAnalysis.startSeasonSlug] ||
                 valuationAnalysis.startSeasonSlug
               : "畢業未明",
-            breakLabel: valuationAnalysis.startSeasonSlug
+            breakLabel: valuationAnalysis.seasonCompletion.size
               ? marketBreakClassNames[
                   valuationEstimate.marketProfile.breakClass
                 ]
@@ -176,9 +177,9 @@ export const useValuationExportActions = ({
           range: valuationEstimate?.range ?? null,
           confidence: valuationEstimate?.midpoint != null
             ? confidenceNames[valuationEstimate.confidence]
-            : "資料不足",
+            : "估價載入失敗",
           completeness: valuationAnalysis.completeness,
-          itemCount: valuationAnalysis.valuationItems.length,
+          itemCount: chosen.length,
           highlights: valuationEstimate
             ? valuationEstimate.contributions
                 .slice(0, 5)

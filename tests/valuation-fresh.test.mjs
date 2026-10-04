@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { fitFreshModel, fitEvidenceBlendedModel, predictFreshModel } from "../app/valuation-fresh-core.js";
+import { fitWholeAccountModel, predictFreshModel, packageTiers, breakClasses, freshModelRevision } from "../app/valuation-fresh-core.js";
 import { reviewFreshEvidence } from "../scripts/lib/fresh-valuation-evidence.mjs";
 
 // Synthetic fixtures test mechanics, not market accuracy or known user answers.
@@ -51,67 +51,79 @@ test("linked crossposts deduplicate transitively before coverage", () => {
   assert.equal(report.rejected.length, 2);
 });
 
-test("fresh fit contains no old seed fallback and does not coerce null to zero", () => {
-  const model = fitFreshModel(Array.from({ length: 8 }, (_, i) => row(i, { packageCount: null })), { seasons });
-  assert.deepEqual(model.intercepts, {});
-  assert.equal(predictFreshModel(model, row(0)).midpoint, null);
-  const empty = fitFreshModel([], { seasons });
-  assert.equal(Object.keys(empty.seasons).length, seasons.length);
-  assert.equal(empty.validation, "unvalidated");
-  assert.throws(() => fitFreshModel([row(1), row(2, { accountKey: "a1" })], { seasons }), /Unique/);
-  assert.throws(() => fitFreshModel([row(1), row(2, { priceKind: "sold" })], { seasons }), /mix/);
-  assert.throws(() => fitFreshModel([row(1, { currency: "CNY" })], { seasons }), /unconverted/);
+
+test("whole-account price is not divided by owned seasons; unknown inputs stay usable", () => {
+  const data = [row(1, { price: 12000, packageCount: null, breakClass: null, seasonEvidence: seasons })];
+  const model = fitWholeAccountModel(data, { seasons });
+  assert.equal(model.sourceEvidenceCount, 1);
+  assert.equal(model.seasons.gratitude.sampleCount, 1);
+  for (const season of [...seasons, null]) {
+    const result = predictFreshModel(model, { season, bindingRiskCount: null });
+    assert.equal(result.status, "unvalidated");
+    assert.equal(result.midpoint, 12000);
+  }
 });
 
-test("learned package curve is continuous and monotonic for every supplied season at 0–250", () => {
-  const data = seasons.flatMap((season, s) => Array.from({ length: 11 }, (_, i) =>
-    [0, .5, 1].flatMap(breakFraction => [0, 2, 7].map(bindingRiskCount =>
-      row(`${s}-${i}-${breakFraction}-${bindingRiskCount}`, { season, packageCount: i * 25,
-        breakFraction, bindingRiskCount, price: 2200 + 300 * s + i * 130 - breakFraction * 400 - bindingRiskCount * 100 })))).flat());
-  const model = fitFreshModel(data, { seasons });
-  assert.equal(model.converged, true);
-  assert.deepEqual(model.knots, [0, 50, 125, 200, 250]);
-  for (const season of seasons) {
-    let previous = -Infinity;
-    for (let packageCount = 0; packageCount <= 250; packageCount++) {
-      const input = { season, packageCount, breakFraction: 0, bindingRiskCount: 0 };
-      const current = predictFreshModel(model, input);
-      assert.equal(current.status, "unvalidated");
-      assert.ok(current.midpoint >= previous);
-      previous = current.midpoint;
-      const broken = predictFreshModel(model, { ...input, breakFraction: .5 });
-      const risky = predictFreshModel(model, { ...input, bindingRiskCount: 2 });
-      assert.equal(broken.status, "unvalidated");
-      assert.equal(risky.status, "unvalidated");
-      assert.ok(broken.midpoint < current.midpoint);
-      assert.ok(risky.midpoint < current.midpoint);
+test("whole-account fit rejects duplicates, foreign quotes and empty training; no legacy branch", () => {
+  assert.throws(() => fitWholeAccountModel([], { seasons }), /No eligible/);
+  assert.throws(() => fitWholeAccountModel([row(1), row(2, { accountKey: "a1" })], { seasons }), /Unique/);
+  for (const extra of [{ currency: "CNY" }, { priceKind: "sold" }, { converted: true }, { price: 0 }])
+    assert.throws(() => fitWholeAccountModel([row(1, extra)], { seasons }), /unconverted/);
+  assert.equal(predictFreshModel({ revision: "fresh-candidate-v1" }, row(0)).midpoint, null);
+});
+
+test("all 30 seasons interpolate/extrapolate; packages nondecreasing and breaks nonincreasing", () => {
+  const canonical = Array.from({ length: 30 }, (_, i) => "season-" + i);
+  const data = [2, 9, 17, 27].flatMap(s => packageTiers.flatMap((packageTier, p) =>
+    breakClasses.map((breakClass, b) => row(s + "-" + p + "-" + b, {
+      season: canonical[s], packageTier, packageCount: null, breakClass,
+      price: Math.exp(10 - s * .1 + p * .2 - b * .3),
+    }))));
+  const model = fitWholeAccountModel(data, { seasons: canonical });
+  assert.equal(model.seasons[canonical[0]].method, "extrapolated");
+  assert.equal(model.seasons[canonical[29]].method, "extrapolated");
+  assert.equal(model.seasons[canonical[5]].method, "interpolated");
+  for (const season of [...canonical, null]) {
+    for (const breakClass of [...breakClasses, null]) {
+      let previous = 0;
+      for (const packageTier of packageTiers) {
+        const result = predictFreshModel(model, { season, packageTier, breakClass, bindingRiskCount: null });
+        assert.equal(result.status, "unvalidated");
+        assert.ok(result.midpoint >= previous);
+        assert.ok(result.range.low > 0 && result.range.low <= result.midpoint && result.midpoint <= result.range.high);
+        previous = result.midpoint;
+      }
+    }
+    for (const packageTier of [...packageTiers, null]) {
+      let previous = Infinity;
+      for (const breakClass of breakClasses) {
+        const result = predictFreshModel(model, { season, packageTier, breakClass });
+        assert.ok(result.midpoint <= previous);
+        previous = result.midpoint;
+      }
+    }
+    let previous = 0;
+    for (let packageCount = 0; packageCount <= 300; packageCount++) {
+      const result = predictFreshModel(model, { season, packageCount, breakClass: null });
+      assert.ok(result.midpoint >= previous);
+      previous = result.midpoint;
     }
   }
-  assert.equal(predictFreshModel(model, { ...row(1), packageCount: 251 }).reason, "package_count_outside_evidence");
-  assert.equal(predictFreshModel(model, { ...row(1), season: "unknown" }).midpoint, null);
-  assert.equal(predictFreshModel(model, { ...row(1), breakFraction: null }).reason, "unknown_predictors");
-  assert.equal(model.intervalKind, "in_sample_residual_not_prediction_interval");
+  assert.equal(model.validation, "unvalidated");
+  assert.equal(model.revision, freshModelRevision);
+  for (const modelUpdate of [{ coefficients: [NaN] }, { centers: [] }, { converged: false }])
+    assert.equal(predictFreshModel({ ...model, ...modelUpdate }, { season: canonical[0] }).midpoint, null);
+  assert.equal(predictFreshModel({ ...model, pooled: { logBase: Infinity } }, { season: null }).midpoint, null);
+});
+
+test("unknown binding does not mean unbound or block estimation; no binding/resource constant", () => {
+  const model = fitWholeAccountModel(Array.from({ length: 6 }, (_, i) => row(i)), { seasons });
+  const unknown = predictFreshModel(model, { season: null, packageTier: "few" });
+  assert.deepEqual(unknown, predictFreshModel(model, { season: null, packageTier: "few", bindingRiskCount: 0 }));
+  assert.deepEqual(unknown, predictFreshModel(model, { season: null, packageTier: "few", bindingRiskCount: 7 }));
 });
 
 test("candidate has no runtime dependency on old prices or manual fixed answers", async () => {
   const source = await readFile(new URL("../app/valuation-fresh-core.js", import.meta.url), "utf8");
-  assert.doesNotMatch(source, /\bimport\s|seasonBandSeeds/);
-});
-
-test("evidence-blended candidate splits cross-season evidence and keeps tier proxy metadata", () => {
-  const model = fitEvidenceBlendedModel([
-    { price: 12000, packageCount: 75, seasonEvidence: [
-      { season: "gratitude", priceShare: 12000, weight: 1, breakClass: "none" },
-    ] },
-    { price: 20000, packageCount: 120, seasonEvidence: [
-      { season: "gratitude", priceShare: 10000, weight: .25, breakClass: "large" },
-      { season: "rhythm", priceShare: 10000, weight: .25, breakClass: "large" },
-    ] },
-  ], { seasons });
-  assert.equal(model.mode, "evidence-blended-v2");
-  assert.equal(model.seasons.gratitude.status, "blended");
-  assert.equal(model.seasons.rhythm.status, "blended");
-  const estimate = predictFreshModel(model, { season: "gratitude", packageCount: 75, breakFraction: 0, bindingRiskCount: 0 });
-  assert.equal(estimate.status, "unvalidated");
-  assert.ok(estimate.midpoint > 0);
+  assert.doesNotMatch(source, /\bimport\s|seasonBandSeeds|priceShare|tierProxy|fitFreshModel|fitEvidenceBlendedModel/);
 });

@@ -1,309 +1,253 @@
 {
-  "schemaVersion": 2,
-  "revision": "fresh-candidate-v1",
+  "schemaVersion": 3,
+  "revision": "whole-account-v3",
   "asOf": "2026-10-04",
   "validation": "unvalidated",
   "model": {
-    "revision": "fresh-candidate-v1",
-    "mode": "evidence-blended-v2",
+    "revision": "whole-account-v3",
+    "mode": "whole-account",
     "validation": "unvalidated",
     "converged": true,
-    "sourceEvidenceCount": 1385,
-    "packageCenter": 37,
-    "packageSlope": 23.75921608208293,
-    "breakMultipliers": {
-      "none": 1,
-      "slight": 1,
-      "medium": 1,
-      "large": 1,
-      "unknown": 1
+    "iterations": 65,
+    "ridge": 1,
+    "centers": [
+      0.55,
+      0.375,
+      0.075,
+      0.5675675675675675,
+      0.32432432432432434,
+      0.32432432432432434
+    ],
+    "coefficients": [
+      0.3260600179137105,
+      0.047252364306794664,
+      0.1972350722380747,
+      -0.2722872418918992,
+      -0.2619257208275972,
+      -0.2619256642649827
+    ],
+    "trend": {
+      "intercept": 10.535361326700924,
+      "slope": -0.1591639328237481
     },
     "seasons": {
       "gratitude": {
-        "status": "unavailable",
-        "median": null,
-        "low": null,
-        "high": null,
-        "sampleCount": 0,
-        "directCount": 0,
-        "blendedCount": 0
+        "logBase": 11.445594553490757,
+        "method": "direct",
+        "sampleCount": 3,
+        "logSpread": 0.723873494523839
       },
       "lightseekers": {
-        "status": "blended",
-        "median": 6851.851851851852,
-        "low": 6851.851851851852,
-        "high": 6851.851851851852,
-        "sampleCount": 2,
-        "directCount": 0,
-        "blendedCount": 2
+        "logBase": 11.646694301320617,
+        "method": "direct",
+        "sampleCount": 6,
+        "logSpread": 0.5471969277661011
       },
       "belonging": {
-        "status": "blended",
-        "median": 3846.153846153846,
-        "low": 3846.153846153846,
-        "high": 6851.851851851852,
-        "sampleCount": 5,
-        "directCount": 0,
-        "blendedCount": 5
+        "logBase": 9.928765776864072,
+        "method": "direct",
+        "sampleCount": 1,
+        "logSpread": 1.0237117133980194
       },
       "rhythm": {
-        "status": "blended",
-        "median": 3826.086956521739,
-        "low": 1904.7619047619048,
-        "high": 3846.153846153846,
-        "sampleCount": 23,
-        "directCount": 2,
-        "blendedCount": 21
+        "logBase": 10.778854060308426,
+        "method": "direct",
+        "sampleCount": 8,
+        "logSpread": 0.4886489303213981
       },
       "enchantment": {
-        "status": "blended",
-        "median": 1812.5,
-        "low": 1420,
-        "high": 3541.6666666666665,
-        "sampleCount": 32,
-        "directCount": 0,
-        "blendedCount": 32
+        "logBase": 10.035840053324188,
+        "method": "direct",
+        "sampleCount": 13,
+        "logSpread": 0.4886489303213981
       },
       "sanctuary": {
-        "status": "blended",
-        "median": 1666.6666666666667,
-        "low": 1350,
-        "high": 3700,
-        "sampleCount": 28,
-        "directCount": 0,
-        "blendedCount": 28
+        "logBase": 9.090561101413893,
+        "method": "direct",
+        "sampleCount": 7,
+        "logSpread": 0.5118558566990097
       },
       "prophecy": {
-        "status": "blended",
-        "median": 1800,
-        "low": 1000,
-        "high": 3529.4117647058824,
-        "sampleCount": 40,
-        "directCount": 1,
-        "blendedCount": 39
+        "logBase": 9.196530827030678,
+        "method": "direct",
+        "sampleCount": 3,
+        "logSpread": 0.723873494523839
       },
       "dreams": {
-        "status": "blended",
-        "median": 1466.6666666666667,
-        "low": 988.3333333333334,
-        "high": 2826.086956521739,
-        "sampleCount": 35,
-        "directCount": 0,
-        "blendedCount": 35
+        "logBase": 8.752372250229353,
+        "method": "direct",
+        "sampleCount": 6,
+        "logSpread": 0.5471969277661011
       },
       "assembly": {
-        "status": "blended",
-        "median": 1242.75,
-        "low": 618.75,
-        "high": 1888.888888888889,
-        "sampleCount": 45,
-        "directCount": 0,
-        "blendedCount": 45
+        "logBase": 8.537095561268366,
+        "method": "direct",
+        "sampleCount": 8,
+        "logSpread": 0.4886489303213981
       },
       "the-little-prince": {
-        "status": "blended",
-        "median": 964.2857142857143,
-        "low": 583.3333333333334,
-        "high": 1800,
-        "sampleCount": 52,
-        "directCount": 0,
-        "blendedCount": 52
+        "logBase": 8.630331048539404,
+        "method": "direct",
+        "sampleCount": 5,
+        "logSpread": 0.5910402333029195
       },
       "flight": {
-        "status": "blended",
-        "median": 783.3333333333334,
-        "low": 482.3529411764706,
-        "high": 1454.5454545454545,
-        "sampleCount": 55,
-        "directCount": 0,
-        "blendedCount": 55
+        "logBase": 8.341800010659403,
+        "method": "direct",
+        "sampleCount": 6,
+        "logSpread": 0.5471969277661011
       },
       "abyss": {
-        "status": "blended",
-        "median": 642.8571428571429,
-        "low": 482.3529411764706,
-        "high": 1615.3846153846155,
-        "sampleCount": 51,
-        "directCount": 0,
-        "blendedCount": 51
+        "logBase": 8.453362615406638,
+        "method": "direct",
+        "sampleCount": 2,
+        "logSpread": 0.835857113845147
       },
       "performance": {
-        "status": "blended",
-        "median": 783.3333333333334,
-        "low": 475,
-        "high": 1500,
-        "sampleCount": 75,
-        "directCount": 0,
-        "blendedCount": 75
+        "logBase": 8.17958952047729,
+        "method": "direct",
+        "sampleCount": 4,
+        "logSpread": 0.6474521363462502
       },
       "shattering": {
-        "status": "blended",
-        "median": 635.7142857142857,
-        "low": 472.72727272727275,
-        "high": 1500,
-        "sampleCount": 74,
-        "directCount": 0,
-        "blendedCount": 74
+        "logBase": 8.206690888900134,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "aurora": {
-        "status": "blended",
-        "median": 652.1739130434783,
-        "low": 472.72727272727275,
-        "high": 1454.5454545454545,
-        "sampleCount": 77,
-        "directCount": 0,
-        "blendedCount": 77
+        "logBase": 8.233792257322978,
+        "method": "direct",
+        "sampleCount": 1,
+        "logSpread": 1.0237117133980194
       },
       "remembrance": {
-        "status": "blended",
-        "median": 618.75,
-        "low": 453.84615384615387,
-        "high": 1500,
-        "sampleCount": 63,
-        "directCount": 0,
-        "blendedCount": 63
+        "logBase": 8.129995684458033,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "passage": {
-        "status": "blended",
-        "median": 618.75,
-        "low": 453.84615384615387,
-        "high": 1800,
-        "sampleCount": 53,
-        "directCount": 0,
-        "blendedCount": 53
+        "logBase": 8.026199111593089,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "moments": {
-        "status": "blended",
-        "median": 590,
-        "low": 445.45454545454544,
-        "high": 1500,
-        "sampleCount": 51,
-        "directCount": 0,
-        "blendedCount": 51
+        "logBase": 7.922402538728143,
+        "method": "direct",
+        "sampleCount": 2,
+        "logSpread": 0.835857113845147
       },
       "revival": {
-        "status": "blended",
-        "median": 586.9565217391304,
-        "low": 453.84615384615387,
-        "high": 1500,
-        "sampleCount": 49,
-        "directCount": 0,
-        "blendedCount": 49
+        "logBase": 7.411750768043864,
+        "method": "direct",
+        "sampleCount": 2,
+        "logSpread": 0.835857113845147
       },
       "nine-colored-deer": {
-        "status": "blended",
-        "median": 652.1739130434783,
-        "low": 471.42857142857144,
-        "high": 1812.5,
-        "sampleCount": 49,
-        "directCount": 0,
-        "blendedCount": 49
+        "logBase": 7.432309383380957,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "nesting": {
-        "status": "blended",
-        "median": 652.1739130434783,
-        "low": 445.45454545454544,
-        "high": 1666.6666666666667,
-        "sampleCount": 46,
-        "directCount": 0,
-        "blendedCount": 46
+        "logBase": 7.45286799871805,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.5475916089820005
       },
       "duets": {
-        "status": "blended",
-        "median": 637.5,
-        "low": 441.1764705882353,
-        "high": 1666.6666666666667,
-        "sampleCount": 51,
-        "directCount": 0,
-        "blendedCount": 51
+        "logBase": 7.473426614055143,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "moomin": {
-        "status": "blended",
-        "median": 618.75,
-        "low": 444.44444444444446,
-        "high": 1500,
-        "sampleCount": 61,
-        "directCount": 0,
-        "blendedCount": 61
+        "logBase": 7.493985229392236,
+        "method": "direct",
+        "sampleCount": 1,
+        "logSpread": 1.0237117133980194
       },
       "radiance": {
-        "status": "blended",
-        "median": 652.1739130434783,
-        "low": 444.44444444444446,
-        "high": 1800,
-        "sampleCount": 57,
-        "directCount": 0,
-        "blendedCount": 57
+        "logBase": 7.59426119948138,
+        "method": "direct",
+        "sampleCount": 4,
+        "logSpread": 0.6474521363462502
       },
       "blue-bird": {
-        "status": "blended",
-        "median": 500,
-        "low": 431.8181818181818,
-        "high": 1500,
-        "sampleCount": 62,
-        "directCount": 0,
-        "blendedCount": 62
+        "logBase": 7.09095828054154,
+        "method": "direct",
+        "sampleCount": 2,
+        "logSpread": 0.835857113845147
       },
       "two-embers-part-1": {
-        "status": "blended",
-        "median": 525,
-        "low": 437.5,
-        "high": 1500,
-        "sampleCount": 59,
-        "directCount": 0,
-        "blendedCount": 59
+        "logBase": 7.02980665339912,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "migration": {
-        "status": "blended",
-        "median": 586.9565217391304,
-        "low": 437.5,
-        "high": 1500,
-        "sampleCount": 61,
-        "directCount": 1,
-        "blendedCount": 60
+        "logBase": 6.9686550262567,
+        "method": "interpolated",
+        "sampleCount": 0,
+        "logSpread": 1.4976692990148395
       },
       "lightmending": {
-        "status": "blended",
-        "median": 727.2727272727273,
-        "low": 437.5,
-        "high": 1666.6666666666667,
-        "sampleCount": 62,
-        "directCount": 0,
-        "blendedCount": 62
+        "logBase": 6.9075033991142805,
+        "method": "direct",
+        "sampleCount": 3,
+        "logSpread": 0.723873494523839
       },
       "carnival": {
-        "status": "blended",
-        "median": 845,
-        "low": 450,
-        "high": 1454.5454545454545,
-        "sampleCount": 67,
-        "directCount": 2,
-        "blendedCount": 65
+        "logBase": 6.695995797363139,
+        "method": "direct",
+        "sampleCount": 1,
+        "logSpread": 1.0237117133980194
       },
       "dear-van-gogh": {
-        "status": "unavailable",
-        "median": null,
-        "low": null,
-        "high": null,
+        "logBase": 6.536831864539391,
+        "method": "extrapolated",
         "sampleCount": 0,
-        "directCount": 0,
-        "blendedCount": 0
+        "logSpread": 1.4976692990148395
       }
     },
-    "intervalKind": "weighted_empirical_quartiles_not_prediction_interval"
+    "pooled": {
+      "logBase": 9.789484807067693,
+      "method": "pooled",
+      "sampleCount": 26,
+      "logSpread": 2.8573344460008396
+    },
+    "sourceEvidenceCount": 114,
+    "knownSeasonCount": 88,
+    "intervalKind": "exploratory_log_spread_not_prediction_interval"
   },
-  "sourceRows": 446,
-  "foreignRows": 0,
-  "eligibleRows": 113,
+  "sourceRows": 220,
+  "eligibleRows": 114,
+  "foreignRows": 7,
   "collectionComplete": false,
   "provenance": {
-    "source": "work/market-research-2026-09-10/tw-reviewed-calibration.jsonl",
-    "method": "reviewed Taiwan TWD listings; cross-season rows split by explicit season_progress and weighted 0.25",
-    "directRows": 6,
-    "crossSeasonRows": 107,
-    "packageCountRows": 36,
-    "packageTierProxyRows": 1,
-    "interval": "weighted empirical quartiles; not a prediction interval"
-  },
-  "reason": "Candidate only. It is not independently holdout-validated and must remain labelled unvalidated."
+    "sourceDigest": "add66c32ebc2532924bf68244a2f90246cfb26e6846ba724f52e2fe6e964db6f",
+    "reviewDigest": "1208af8ba83c40cd7b960d09e7f5c884e4e6b8b14958f4efb8ba622681fd8f50",
+    "datasetDigest": "3e2c8dbf8370e2a06b82eb5dec431e2f536ac8a21c3f3d66c8a6e2654710c085",
+    "rejectionCounts": {
+      "ambiguous_currency_or_scale": 3,
+      "auction_opening": 1,
+      "currency_unconfirmed": 21,
+      "duplicate_account_or_post": 28,
+      "floor_not_ask": 3,
+      "foreign_or_converted": 7,
+      "mixed_goods": 11,
+      "not_single_account_point_ask": 3,
+      "price_bound_only": 2,
+      "special_or_modified_account": 27
+    },
+    "unknownSeasonRows": 26,
+    "unknownPackageRows": 69,
+    "unknownBreakRows": 74,
+    "unknownDateRows": 114,
+    "identityQuality": "post_ids_and_reviewed_surrogates_not_verified_account_ids",
+    "method": "whole-account log-price joint season/tier/break fit; no price splitting or exact-count proxies",
+    "interval": "exploratory_log_spread_not_prediction_interval"
+  }
 }

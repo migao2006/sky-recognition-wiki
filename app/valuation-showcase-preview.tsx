@@ -3,15 +3,13 @@
 import type { ShowcasePreset } from "./organizer-step-state";
 import type { ValuationEstimate } from "./valuation-analysis";
 import type { WikiItem } from "./wiki-data";
+import { referencePriceText, referenceRangeText } from "./valuation-display";
 
 export const showcasePresetNames: Record<ShowcasePreset, string> = {
-  valuation: "刊登樣本估算",
+  valuation: "參考估價",
   video: "快速核對",
   collection: "完整衣櫃",
 };
-
-const formatTwd = (value: number) =>
-  `NT$ ${Math.abs(value).toLocaleString("zh-TW")}`;
 
 type Props = {
   preset: ShowcasePreset;
@@ -36,12 +34,10 @@ export function ShowcasePreview({
       </header>
       {preset === "valuation" && (
         <div className="showcase-price">
-          <span>新行情模型</span>
-          <strong>{estimate?.midpoint != null ? formatTwd(estimate.midpoint) : "資料不足"}</strong>
+          <span>參考估價</span>
+          <strong>{referencePriceText(estimate?.midpoint, items.length)}</strong>
           <small>
-            {estimate?.range
-              ? `價格區間 ${formatTwd(estimate.range.low)}～${formatTwd(estimate.range.high)}`
-              : "尚無足夠的新台幣行情"}
+            {referenceRangeText(estimate?.range)}
           </small>
         </div>
       )}
