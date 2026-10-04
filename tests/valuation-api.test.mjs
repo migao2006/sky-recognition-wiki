@@ -16,7 +16,8 @@ test("model protocol rejects private fields, unknown keys and invalid numbers", 
 });
 
 test("wardrobe bridge preserves unknowns and never sends personal data", () => {
-  assert.equal(meta.columns.some(k => k.startsWith("item:")), false);
+  const itemKeys = meta.columns.filter(k => k.startsWith("item:"));
+  assert.ok(itemKeys.length > 0);
   const analysis = { startSeasonSlug: "moments", seasonCompletion: new Map(), bindings: { google: "none" } };
   const estimate = { marketProfile: { canonicalPackageCount: 105, salePackageTier: "many", breakClass: "none" } };
   const account = { name: "private", identityId: "private", notes: "private", candles: "", hearts: "0", ascended: "", passes: "", wardrobeConfirmed: false, bindingsConfirmed: false };
@@ -24,12 +25,16 @@ test("wardrobe bridge preserves unknowns and never sends personal data", () => {
   assert.equal(result.features.season, null);
   assert.equal(result.features.packageTier, null);
   assert.equal(result.features["binding:GG"], null);
-  assert.equal(result.features.accountStyle, undefined);
+  assert.equal(result.features.accountStyle, null);
+  for (const key of itemKeys) assert.equal(result.features[key], null);
+  const present = buildModelRequest(analysis, estimate, account, new Set([itemKeys[0].slice(5)]));
+  assert.equal(present.features[itemKeys[0]], "present");
   assert.ok(isModelRequest(result));
   assert.ok(!JSON.stringify(result).includes("private"));
   const confirmed = buildModelRequest(analysis, estimate, { ...account, wardrobeConfirmed: true, bindingsConfirmed: true }, new Set());
   assert.equal(confirmed.features.packageTier, "hundred");
   assert.equal(confirmed.features["binding:GG"], "unbound");
+  for (const key of itemKeys) assert.equal(confirmed.features[key], "absent");
   analysis.seasonCompletion.set("moments", { selected: 1, expected: 2 });
   estimate.marketProfile.breakClass = "big";
   assert.equal(buildModelRequest(analysis, estimate, { ...account, wardrobeConfirmed: true }, new Set()).features.breakClass, "large");

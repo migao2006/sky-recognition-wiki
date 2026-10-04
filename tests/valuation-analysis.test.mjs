@@ -227,7 +227,7 @@ test("no old price is returned even for all items, resources and known bindings"
   assert.equal(result.range, null);
   assert.equal(result.midpoint, null);
   assert.deepEqual(result.contributions, []);
-  assert.equal(result.modelFeatures.modelRevision, "percentage-listing-2026-10-05");
+  assert.equal(result.modelFeatures.modelRevision, "monotone-listing-2026-10-05");
   assert.equal(result.confidence, "inferred");
   assert.ok(result.warnings.some(text => text.includes("未通過獨立成交驗證")));
 });
@@ -239,7 +239,7 @@ test("pendants cannot create a graduation start, and unknown binding remains nul
   assert.equal(result.modelFeatures.bindingRiskCount, null);
   assert.equal(result.midpoint, null);
   assert.equal(result.modelFeatures.breakClass, null);
-  assert.equal(result.evidence.method, "percentage");
+  assert.equal(result.evidence.method, "monotone");
 });
 
 test("empty selection has no estimate; all prices require the local model response", () => {
@@ -249,7 +249,7 @@ test("empty selection has no estimate; all prices require the local model respon
   assert.equal(result.range, null);
   assert.equal(result.midpoint, null);
   const ordinary = estimateValuation({ analysis: analyze([item({ name: "ordinary" })]) });
-  assert.equal(ordinary.evidence.method, "percentage");
+  assert.equal(ordinary.evidence.method, "monotone");
   assert.equal(ordinary.midpoint, null);
 });
 

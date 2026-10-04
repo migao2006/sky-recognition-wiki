@@ -1,17 +1,18 @@
-"""Frozen local percentage listing model; private inputs never leave this host."""
+"""Frozen local monotone listing model; private inputs never leave this host."""
 import hashlib
 import importlib.util
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REVISION = 'percentage-listing-2026-10-05'
-SOURCE_SHA = 'b274d6e02763b029ab0fff0c4f724f4a9761e0d277ca7bafc2d75b8962d0bb79'
-ARTIFACT = ROOT / 'work/percentage-candidate-2026-10-05'
+REVISION = 'monotone-listing-2026-10-05'
+SOURCE_SHA = 'cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9'
+STATE_SHA = '96cbc0a37f0a0ab432da70048b039f25cf1cec5237cde47700f442378b87f588'
+ARTIFACT = ROOT / 'work/historical-model-review-verified-2026-10-05'
 
 
 def load_data():
-    raw = (ROOT / 'work/current-information-2026-10-05.private.json').read_bytes()
+    raw = (ROOT / 'work/percentage-review-round3-2026-10-05/frozen.private.json').read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
     if digest != SOURCE_SHA:
         raise ValueError('Frozen source changed')
@@ -20,7 +21,7 @@ def load_data():
 
 
 def recipe():
-    spec = importlib.util.spec_from_file_location('percentage', ROOT / 'scripts/percentage-price-model.py')
+    spec = importlib.util.spec_from_file_location('listing', ROOT / 'scripts/listing-price-model.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -28,23 +29,21 @@ def recipe():
 
 def artifact():
     import joblib
-    report = json.loads((ARTIFACT / 'report.private.json').read_text(encoding='utf-8'))
-    raw = (ARTIFACT / 'state.joblib').read_bytes()
-    if report['sourceDigest'] != SOURCE_SHA or hashlib.sha256(raw).hexdigest() != report['stateDigest']:
+    raw = (ARTIFACT / 'previous-monotone.joblib').read_bytes()
+    if hashlib.sha256(raw).hexdigest() != STATE_SHA:
         raise ValueError('Private artifact digest mismatch')
     # Only our fixed, locally generated artifact is accepted, never uploads.
-    model = recipe().PercentagePriceModel()
-    model.__dict__.update(joblib.load(ARTIFACT / 'state.joblib'))
-    return model, report['stateDigest']
+    model = recipe().ListingPriceModel()
+    model.__dict__.update(joblib.load(ARTIFACT / 'previous-monotone.joblib'))
+    return model, STATE_SHA
 
 
 def manifest():
     rows, seasons, digest = load_data()
     model, state_digest = artifact()
-    bindings = sorted({k for k, _ in model.bindings})
-    return dict(schemaVersion=1, modelRevision=REVISION, method='percentage', sourceDigest=digest,
-                stateSha256=state_digest, columns=['season', 'breakClass', 'packageTier', *bindings, *model.resources],
-                categorical=['season', 'breakClass', 'packageTier', *bindings], seasons=seasons,
+    return dict(schemaVersion=1, modelRevision=REVISION, method='monotone', sourceDigest=digest,
+                stateSha256=state_digest, columns=['season', 'breakClass', 'packageTier', *model.extra],
+                categorical=['season', 'breakClass', 'packageTier', *model.cats], seasons=seasons,
                 sampleCount=len(rows), seasonCounts={s:sum(r.get('season') == s for r in rows) for s in seasons},
                 asOf='2026-10-05', status='unvalidated')
 
@@ -58,7 +57,7 @@ class Predictor:
         self.model, _ = artifact()
         prices = self.predict_many([dict(season=s, breakClass='none') for s in self.meta['seasons']])
         self.bands = [dict(slug=s, median=p, low=None, high=None, status='unvalidated',
-                           method='percentage', confidence='inferred', sampleCount=self.meta['seasonCounts'][s],
+                           method='monotone', confidence='inferred', sampleCount=self.meta['seasonCounts'][s],
                            asOf=self.meta['asOf']) for s, p in zip(self.meta['seasons'], prices)]
 
     def predict_many(self, inputs):

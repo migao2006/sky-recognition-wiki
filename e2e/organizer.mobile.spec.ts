@@ -13,6 +13,59 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/api/valuation", route => route.fulfill({ json: modelFixture }));
 });
 
+test("preliminary estimate stays visible and confirmation sends wardrobe features", async ({ page }) => {
+  const requests: Record<string, unknown>[] = [];
+  await page.route("**/api/valuation", route => {
+    requests.push(route.request().postDataJSON().features);
+    return route.fulfill({ json: { ...modelFixture, midpoint: requests.at(-1)?.season ? 23456 : 12345 } });
+  });
+  await page.goto("/");
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible({ timeout: 15000 });
+  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
+  await page.getByRole("button", { name: "季節畢業", exact: true }).click();
+  await page.locator(".grid button").first().click();
+  await page.getByRole("button", { name: "前往估價" }).click();
+  await expect(page.locator(".model-price")).toHaveText("NT$ 12,345");
+  await expect(page.locator(".showcase-price span")).toHaveText("初步推估");
+  await expect(page.locator(".valuation-verdict > span")).toHaveText("初步推估");
+  expect(requests.at(-1)?.season).toBeNull();
+  expect(requests.at(-1)?.packageTier).toBeNull();
+  await page.getByRole("button", { name: "返回確認衣櫃" }).click();
+  await expect(page.getByLabel("已逐項確認完整衣櫃")).not.toBeChecked();
+  await page.getByLabel("已逐項確認完整衣櫃").check();
+  await page.getByRole("button", { name: "前往估價" }).click();
+  await expect(page.locator(".model-price")).toHaveText("NT$ 23,456");
+  await expect(page.locator(".showcase-price span")).toHaveText("參考估價");
+  expect(requests.at(-1)?.season).toBeTruthy();
+  expect(requests.at(-1)?.packageTier).not.toBeNull();
+});
+
+test("late preliminary response cannot replace a confirmed estimate", async ({ page }) => {
+  let releaseOld: (() => Promise<void>) | undefined;
+  await page.route("**/api/valuation", async route => {
+    if (route.request().postDataJSON().features.packageTier === null) {
+      releaseOld = async () => {
+        await route.fulfill({ json: { ...modelFixture, midpoint: 1111 } }).catch(() => {});
+      };
+      return;
+    }
+    await route.fulfill({ json: { ...modelFixture, midpoint: 23456 } });
+  });
+  await page.goto("/");
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible({ timeout: 15000 });
+  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
+  await page.locator(".grid button").first().click();
+  await page.getByRole("button", { name: "前往估價" }).click();
+  await expect.poll(() => Boolean(releaseOld)).toBe(true);
+  await page.getByRole("button", { name: "返回確認衣櫃" }).click();
+  await page.getByLabel("已逐項確認完整衣櫃").check();
+  await page.getByRole("button", { name: "前往估價" }).click();
+  await expect(page.locator(".model-price")).toHaveText("NT$ 23,456");
+  await releaseOld!();
+  await expect(page.locator(".model-price")).toHaveText("NT$ 23,456");
+  await expect(page.locator(".showcase-price strong")).toHaveText("NT$ 23,456");
+});
+
 test("offline valuation never falls back and manual retry restores one shared result", async ({ page }) => {
   let online = false;
   let calls = 0;

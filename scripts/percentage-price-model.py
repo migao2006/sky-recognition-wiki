@@ -13,7 +13,7 @@ RESOURCES = ('candles', 'hearts', 'ascended', 'passes')
 
 
 class PercentagePriceModel:
-    def fit(self, rows, seasons, anchors=None):
+    def fit(self, rows, seasons, anchors=None, *, adjust_baselines=False):
         if not rows or len(set(seasons)) != len(seasons):
             raise ValueError('Require training rows and unique seasons')
         if any(r.get('priceKind') not in ('ask', 'sold_proxy') or
@@ -42,6 +42,24 @@ class PercentagePriceModel:
             i = seasons.index(k)
             bounds[i] = (np.log(v), np.log(v))
             initial[i] = np.log(v)
+        self.baseline_support = {}
+        reference = None
+        if adjust_baselines:
+            # Reference is fitted on this training fold, never the full dataset.
+            reference = PercentagePriceModel().fit(rows, seasons, anchors)
+            initial = reference.weights.copy()
+            # Remove floating-point inversions at tied monotone baselines before
+            # fixing sparse seasons as equality bounds in the second fit.
+            initial[:len(seasons)] = np.minimum.accumulate(np.round(initial[:len(seasons)], 10))
+            for i, season in enumerate(seasons):
+                members = [r for r in rows if r.get('season') == season]
+                groups = {r.get('splitGroup') or r.get('accountKey') for r in members}
+                groups.discard(None)
+                conditions = {(r['breakClass'], r['packageTier']) for r in members
+                              if r.get('breakClass') in BREAKS and r.get('packageTier') in PACKAGES}
+                eligible = len(groups) >= 5 and len(conditions) >= 2
+                self.baseline_support[season] = dict(groups=len(groups), conditions=len(conditions), adjustable=eligible)
+                bounds[i] = (None, None) if eligible else (initial[i], initial[i])
         # Earlier season cannot be cheaper under identical remaining conditions.
         order = np.zeros((max(0, len(seasons) - 1), n))
         for i in range(len(order)):
@@ -49,11 +67,18 @@ class PercentagePriceModel:
         # Weak baseline smoothing fills missing seasons, strong effect shrinkage
         # reduces sparse binding/resource confounding. Neither is a price sample.
         penalty = np.diag([0.] * self.nbase + [10.] * (n - self.nbase)) + .5 * order.T @ order
+        prior = np.zeros(n)
+        if reference is not None:
+            for i, season in enumerate(seasons):
+                if self.baseline_support[season]['adjustable']:
+                    penalty[i, i] += 2
+                    prior[i] = 2 * reference.weights[i]
         def objective(w):
             residual = x @ w - y
-            return .5 * (residual @ residual + w @ penalty @ w), x.T @ residual + penalty @ w
+            scale = len(rows) if adjust_baselines else 1
+            return (.5 * (residual @ residual + w @ penalty @ w) - prior @ w) / scale, (x.T @ residual + penalty @ w - prior) / scale
         result = minimize(objective, initial, jac=True, bounds=bounds,
-                          constraints=[LinearConstraint(order, 0, np.inf)], method='SLSQP',
+                          constraints=[LinearConstraint(order, 0, np.inf)] if len(order) else [], method='SLSQP',
                           options={'maxiter': 1000, 'ftol': 1e-9})
         if not result.success:
             raise ValueError('Percentage fit failed: ' + result.message)

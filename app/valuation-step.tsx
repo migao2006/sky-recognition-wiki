@@ -117,6 +117,7 @@ export function ValuationStep({
   }), [runtime.valuationRuntime, valuationAnalysis, remote.response]);
   const displayedBands = remote.response?.seasonBands ?? runtime.seasonPriceBands;
   const priceText = remote.loading ? "估價中…" : remote.error ? "估價暫時無法使用" : referencePriceText(valuationEstimate?.midpoint, chosen.length);
+  const preliminary = !account.wardrobeConfirmed && chosen.length > 0;
   const completeness = Math.max(
     0,
     Math.min(100, Math.round(valuationAnalysis.completeness)),
@@ -218,6 +219,7 @@ export function ValuationStep({
           limit={previewLimit}
           estimate={valuationEstimate}
           priceText={priceText}
+          preliminary={preliminary}
           getZhName={runtime.zhItemName}
         />
         {imageExport && (
@@ -247,7 +249,7 @@ export function ValuationStep({
         <div className="valuation-summary">
           <article className="valuation-verdict">
             <span>
-              {marketValidation.label}
+              {preliminary ? "初步推估" : marketValidation.label}
             </span>
             <h3 className="model-price">
               {priceText}
@@ -260,7 +262,10 @@ export function ValuationStep({
             {remote.error && (
               <><p role="status">{remote.error}</p><button type="button" onClick={remote.retry}>重試估價</button></>
             )}
-            {!account.wardrobeConfirmed && chosen.length > 0 && <p>衣櫃尚未確認完整，起季、斷季與禮包總量以未知處理。</p>}
+            {preliminary && <>
+              <p>尚未採用起季、斷季與禮包。確認完整衣櫃後會重新估價。</p>
+              <button type="button" className="secondary" onClick={onBack}>返回確認衣櫃</button>
+            </>}
           </article>
           <div className="valuation-metrics">
             <dl>

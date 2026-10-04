@@ -14,7 +14,7 @@ spec.loader.exec_module(benchmark)
 class ListingPriceModel:
     """Same remaining inputs: earlier season >= later, fewer breaks >= more, more packages >= fewer."""
 
-    def fit(self, rows, seasons):
+    def fit(self, rows, seasons, *, loss='squared_error'):
         if not rows or any(r.get('priceKind') not in ('ask', 'sold_proxy') or
                            not np.isfinite(r['price']) or r['price'] <= 0 for r in rows):
             raise ValueError('Expected positive listing prices, not transaction targets')
@@ -28,7 +28,11 @@ class ListingPriceModel:
         if self.cats:
             self.encoder.fit(x[self.cats])
         a = self._matrix(rows)
-        self.model = HistGradientBoostingRegressor(loss='squared_error', learning_rate=.05,
+        if loss not in ('squared_error', 'absolute_error'):
+            raise ValueError('Unsupported comparison loss')
+        # absolute_error is experimental: callers must probe fitted constraints,
+        # since requesting monotonic_cst alone does not establish model validity.
+        self.model = HistGradientBoostingRegressor(loss=loss, learning_rate=.05,
             max_iter=150, max_leaf_nodes=7, min_samples_leaf=10, l2_regularization=10,
             early_stopping=False, random_state=42,
             monotonic_cst=[-1, -1, 1] + [0] * (a.shape[1] - 3))

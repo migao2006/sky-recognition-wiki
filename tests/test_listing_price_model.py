@@ -32,6 +32,16 @@ class ListingModelTests(unittest.TestCase):
         self.assertTrue(m.np.isnan(model._matrix([{'season': None}])[0, 0]))
         self.assertTrue(m.np.isfinite(model.predict([{'features': {'accountStyle': 'resource'}}])).all())
 
+    def test_robust_loss_preserves_constraints(self):
+        model = m.ListingPriceModel().fit(self.rows, self.seasons, loss='absolute_error')
+        grid = [{k:r[k] for k in ['season', 'breakClass', 'packageTier']} for r in self.rows]
+        prices = model.predict(grid).reshape(3, 4, 4)
+        self.assertTrue((m.np.diff(prices, axis=0) <= 1e-8).all())
+        self.assertTrue((m.np.diff(prices, axis=1) <= 1e-8).all())
+        self.assertTrue((m.np.diff(prices, axis=2) >= -1e-8).all())
+        with self.assertRaises(ValueError):
+            m.ListingPriceModel().fit(self.rows, self.seasons, loss='invented')
+
     def test_input_price_never_changes_prediction(self):
         model = m.ListingPriceModel().fit(self.rows, self.seasons)
         p = model.predict([{'season': 'early', 'price': 1}, {'season': 'early', 'price': 999999}])
