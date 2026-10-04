@@ -123,6 +123,48 @@ test("unknown binding does not mean unbound or block estimation; no binding/reso
   assert.deepEqual(unknown, predictFreshModel(model, { season: null, packageTier: "few", bindingRiskCount: 7 }));
 });
 
+test("reference widths exclude raw price differences between eras, including missing seasons", () => {
+  const canonical = ["early", "gap", "late"];
+  const data = [0, 2].flatMap(s => Array.from({ length: 12 }, (_, i) => row(`${s}-${i}`, {
+    season: canonical[s], price: s ? 1000 : 100000, packageCount: null, breakClass: null,
+  })));
+  const model = fitWholeAccountModel(data, { seasons: canonical });
+  assert.equal(model.intervalKind, "central_residual_reference_not_prediction_interval");
+  for (const [season, midpoint] of [["early", 100000], ["gap", 10000], ["late", 1000]]) {
+    const result = predictFreshModel(model, { season });
+    assert.equal(result.midpoint, midpoint);
+    assert.deepEqual(result.range, { low: midpoint, high: midpoint });
+  }
+});
+
+test("central reference widths use residual quartiles, not tails or a fixed percentage cap", () => {
+  const prices = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 20000];
+  const model = fitWholeAccountModel(prices.map((price, i) => row(i, {
+    price, packageCount: null, breakClass: null,
+  })), { seasons });
+  const logBase = prices.reduce((sum, price) => sum + Math.log(price), 0) / prices.length;
+  const residuals = prices.map(price => Math.log(price) - logBase);
+  const q25 = residuals[1] * .25 + residuals[2] * .75;
+  const q75 = residuals[5] * .75 + residuals[6] * .25;
+  const expected = Math.max(Math.abs(q25), Math.abs(q75));
+  assert.ok(Math.abs(model.seasons.gratitude.logBase - logBase) < 1e-10);
+  assert.ok(Math.abs(model.seasons.gratitude.logSpread - expected) < 1e-10);
+  assert.ok(model.seasons.gratitude.logSpread > Math.log(1.3), "no arbitrary 30% cap");
+  assert.equal(model.sourceEvidenceCount, prices.length, "tail observations remain in the fit");
+});
+
+test("unknown-origin spread remains distinct instead of forcing a narrow known-season band", () => {
+  const data = [row("known", { price: 1000, packageCount: null }),
+    ...[100, 1000, 10000, 100000].map((price, i) => row(`unknown-${i}`, {
+      season: null, price, packageCount: null,
+    }))];
+  const model = fitWholeAccountModel(data, { seasons });
+  assert.ok(model.pooled.logSpread > model.seasons.gratitude.logSpread);
+  const result = predictFreshModel(model, { season: null });
+  assert.ok(result.range.high / result.range.low > 10);
+  assert.equal(result.status, "unvalidated");
+});
+
 test("candidate has no runtime dependency on old prices or manual fixed answers", async () => {
   const source = await readFile(new URL("../app/valuation-fresh-core.js", import.meta.url), "utf8");
   assert.doesNotMatch(source, /\bimport\s|seasonBandSeeds|priceShare|tierProxy|fitFreshModel|fitEvidenceBlendedModel/);

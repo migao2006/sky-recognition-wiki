@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, type Dispatch, type SetStateAction } from "react";
+import { buildModelRequest } from "./valuation-tabpfn-features";
+import { useTabpfnEstimate } from "./use-tabpfn-estimate";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
 import { DeferredDetails } from "./deferred-details";
 import type {
@@ -86,7 +88,7 @@ export function ValuationStep({
       runtime.valuationRuntime,
     ],
   );
-  const valuationEstimate = useMemo(
+  const localSummary = useMemo(
     () =>
       runtime.valuationRuntime.analysis.estimateValuation({
         analysis: valuationAnalysis,
@@ -106,6 +108,15 @@ export function ValuationStep({
       valuationAnalysis,
     ],
   );
+  const modelRequest = useMemo(() => localSummary
+    ? buildModelRequest(valuationAnalysis, localSummary, account, owned) : null,
+  [localSummary, valuationAnalysis, account, owned]);
+  const remote = useTabpfnEstimate(modelRequest);
+  const valuationEstimate = useMemo(() => runtime.valuationRuntime.analysis.estimateValuation({
+    analysis: valuationAnalysis, response: remote.response,
+  }), [runtime.valuationRuntime, valuationAnalysis, remote.response]);
+  const displayedBands = remote.response?.seasonBands ?? runtime.seasonPriceBands;
+  const priceText = remote.loading ? "估價中…" : remote.error ? "估價暫時無法使用" : referencePriceText(valuationEstimate?.midpoint, chosen.length);
   const completeness = Math.max(
     0,
     Math.min(100, Math.round(valuationAnalysis.completeness)),
@@ -206,6 +217,7 @@ export function ValuationStep({
           items={previewItems}
           limit={previewLimit}
           estimate={valuationEstimate}
+          priceText={priceText}
           getZhName={runtime.zhItemName}
         />
         {imageExport && (
@@ -238,16 +250,17 @@ export function ValuationStep({
               {marketValidation.label}
             </span>
             <h3 className="model-price">
-              {referencePriceText(valuationEstimate?.midpoint, chosen.length)}
+              {priceText}
             </h3>
             {valuationEstimate?.range && (
               <div className="valuation-range">
                 {referenceRangeText(valuationEstimate.range)}
               </div>
             )}
-            {valuationEstimate?.status === "unavailable" && (
-              <button type="button" onClick={() => window.location.reload()}>重新載入</button>
+            {remote.error && (
+              <><p role="status">{remote.error}</p><button type="button" onClick={remote.retry}>重試估價</button></>
             )}
+            {!account.wardrobeConfirmed && chosen.length > 0 && <p>衣櫃尚未確認完整，起季、斷季與禮包總量以未知處理。</p>}
           </article>
           <div className="valuation-metrics">
             <dl>
@@ -337,7 +350,7 @@ export function ValuationStep({
               }
             >
               <SeasonRows
-                rows={runtime.seasonPriceBands}
+                rows={displayedBands}
                 seasonZh={runtime.seasonZh}
                 confidenceNames={confidenceNames}
               />
@@ -375,11 +388,11 @@ export function ValuationStep({
                 <br />
               </>
             )}
-            新模型只採重新核對的台幣整號行情，不沿用舊季節底價、禮包上限或固定資源加價。
+            新模型採可追溯的台幣整號刊登行情，不沿用舊季節底價、禮包上限或固定資源加價。
             <br />
-            本輪檢查 {runtime.valuationSampleSummary.sourceRows} 筆貼文紀錄，
-            去重及排除後採用 {runtime.valuationSampleSummary.eligibleRows} 筆整號行情
-            （{runtime.valuationSampleSummary.asOf}）。缺少直接行情時依季節趨勢推算。
+            本版採用 {runtime.valuationSampleSummary.eligibleRows} 筆刊登行情
+            （{runtime.valuationSampleSummary.asOf}），由本機 TabPFN v2 延伸版運算。
+            各季參考為無斷、少禮、其餘未知的整號推估，不是單季價格或成交保證。
           </p>
           {valuationEstimate?.warnings.map(warning => <p key={warning}>{warning}</p>)}
         </DeferredDetails>

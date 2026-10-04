@@ -1,0 +1,11 @@
+tabpfn==9.1.0
+torch==2.14.1
+scikit-learn==1.9.1
+numpy==2.5.3
+pandas==3.0.6
+scipy==1.18.1
+skrub==0.10.1
+lightgbm==4.7.0
+safetensors==0.8.0
+fastapi==0.142.2
+uvicorn==0.54.0

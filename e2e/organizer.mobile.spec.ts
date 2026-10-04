@@ -1,4 +1,39 @@
 import { expect, test } from "@playwright/test";
+import manifest from "../app/valuation-tabpfn-manifest.json" with { type: "json" };
+
+// Synthetic transport fixture only: CI has no private model or market records.
+const modelFixture = {
+  schemaVersion: 1, modelRevision: manifest.modelRevision, status: "unvalidated", currency: "TWD", range: null,
+  midpoint: 12345,
+  seasonBands: manifest.seasons.map(slug => ({ slug, median: 12345, low: null, high: null,
+    status: "unvalidated", method: "tabpfn", confidence: "inferred", asOf: manifest.asOf,
+    sampleCount: manifest.seasonCounts[slug as keyof typeof manifest.seasonCounts] })),
+};
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/valuation", route => route.fulfill({ json: modelFixture }));
+});
+
+test("offline valuation never falls back and manual retry restores one shared result", async ({ page }) => {
+  let online = false;
+  let calls = 0;
+  await page.route("**/api/valuation", route => {
+    calls++;
+    return online ? route.fulfill({ json: modelFixture }) : route.fulfill({ status: 503, json: { error: "offline" } });
+  });
+  await page.goto("/");
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
+  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
+  await page.locator(".grid button").first().click();
+  expect(calls).toBe(0);
+  await page.getByRole("button", { name: "前往估價" }).click();
+  await expect(page.locator(".model-price")).toHaveText("估價暫時無法使用");
+  await expect(page.locator(".showcase-price strong")).toHaveText("估價暫時無法使用");
+  await expect(page.locator(".valuation-range")).toHaveCount(0);
+  online = true;
+  await page.getByRole("button", { name: "重試估價" }).click();
+  await expect(page.locator(".model-price")).toHaveText("NT$ 12,345");
+  await expect(page.locator(".showcase-price strong")).toHaveText("NT$ 12,345");
+});
 
 test("supports the essential mobile organizer flow", async ({ page }) => {
   await page.goto("/");
@@ -90,7 +125,7 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
     await expect(row).toContainText("NT$");
   await page.getByText("估價依據").click();
   await expect(page.locator(".valuation-method p").first()).toBeVisible();
-  await expect(page.locator(".valuation-method")).toContainText("whole-account-v3");
+  await expect(page.locator(".valuation-method")).toContainText(manifest.modelRevision);
   await page.evaluate(() => {
     Object.defineProperty(navigator, "share", {
       configurable: true,

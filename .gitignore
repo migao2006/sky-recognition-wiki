@@ -43,3 +43,7 @@ next-env.d.ts
 /.sites-runtime/
 /outputs/
 /work/
+
+# Local model experiment bytecode (Python dependencies live outside the app).
+__pycache__/
+*.pyc

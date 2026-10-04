@@ -1,10 +1,10 @@
 {
   "schemaVersion": 3,
-  "revision": "whole-account-v3",
+  "revision": "whole-account-v3.1",
   "asOf": "2026-10-04",
   "validation": "unvalidated",
   "model": {
-    "revision": "whole-account-v3",
+    "revision": "whole-account-v3.1",
     "mode": "whole-account",
     "validation": "unvalidated",
     "converged": true,
@@ -35,192 +35,192 @@
         "logBase": 11.445594553490757,
         "method": "direct",
         "sampleCount": 3,
-        "logSpread": 0.723873494523839
+        "logSpread": 0.37613690121258103
       },
       "lightseekers": {
         "logBase": 11.646694301320617,
         "method": "direct",
         "sampleCount": 6,
-        "logSpread": 0.5471969277661011
+        "logSpread": 0.3362841302913353
       },
       "belonging": {
         "logBase": 9.928765776864072,
         "method": "direct",
         "sampleCount": 1,
-        "logSpread": 1.0237117133980194
+        "logSpread": 0.24774085969537038
       },
       "rhythm": {
         "logBase": 10.778854060308426,
         "method": "direct",
         "sampleCount": 8,
-        "logSpread": 0.4886489303213981
+        "logSpread": 0.24201990341592194
       },
       "enchantment": {
         "logBase": 10.035840053324188,
         "method": "direct",
         "sampleCount": 13,
-        "logSpread": 0.4886489303213981
+        "logSpread": 0.15274159827485778
       },
       "sanctuary": {
         "logBase": 9.090561101413893,
         "method": "direct",
         "sampleCount": 7,
-        "logSpread": 0.5118558566990097
+        "logSpread": 0.23438454554544794
       },
       "prophecy": {
         "logBase": 9.196530827030678,
         "method": "direct",
         "sampleCount": 3,
-        "logSpread": 0.723873494523839
+        "logSpread": 0.25539314983205874
       },
       "dreams": {
         "logBase": 8.752372250229353,
         "method": "direct",
         "sampleCount": 6,
-        "logSpread": 0.5471969277661011
+        "logSpread": 0.2534168023047956
       },
       "assembly": {
         "logBase": 8.537095561268366,
         "method": "direct",
         "sampleCount": 8,
-        "logSpread": 0.4886489303213981
+        "logSpread": 0.22670720532906044
       },
       "the-little-prince": {
         "logBase": 8.630331048539404,
         "method": "direct",
         "sampleCount": 5,
-        "logSpread": 0.5910402333029195
+        "logSpread": 0.13671028846183814
       },
       "flight": {
         "logBase": 8.341800010659403,
         "method": "direct",
         "sampleCount": 6,
-        "logSpread": 0.5471969277661011
+        "logSpread": 0.2908204128721889
       },
       "abyss": {
         "logBase": 8.453362615406638,
         "method": "direct",
         "sampleCount": 2,
-        "logSpread": 0.835857113845147
+        "logSpread": 0.24244948451538115
       },
       "performance": {
         "logBase": 8.17958952047729,
         "method": "direct",
         "sampleCount": 4,
-        "logSpread": 0.6474521363462502
+        "logSpread": 0.30144780546063593
       },
       "shattering": {
         "logBase": 8.206690888900134,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "aurora": {
         "logBase": 8.233792257322978,
         "method": "direct",
         "sampleCount": 1,
-        "logSpread": 1.0237117133980194
+        "logSpread": 0.24774085969537038
       },
       "remembrance": {
         "logBase": 8.129995684458033,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "passage": {
         "logBase": 8.026199111593089,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "moments": {
         "logBase": 7.922402538728143,
         "method": "direct",
         "sampleCount": 2,
-        "logSpread": 0.835857113845147
+        "logSpread": 0.2275659602893719
       },
       "revival": {
         "logBase": 7.411750768043864,
         "method": "direct",
         "sampleCount": 2,
-        "logSpread": 0.835857113845147
+        "logSpread": 0.2538170702918559
       },
       "nine-colored-deer": {
         "logBase": 7.432309383380957,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "nesting": {
         "logBase": 7.45286799871805,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.5475916089820005
+        "logSpread": 0.24774085969537038
       },
       "duets": {
         "logBase": 7.473426614055143,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "moomin": {
         "logBase": 7.493985229392236,
         "method": "direct",
         "sampleCount": 1,
-        "logSpread": 1.0237117133980194
+        "logSpread": 0.24774085969537038
       },
       "radiance": {
         "logBase": 7.59426119948138,
         "method": "direct",
         "sampleCount": 4,
-        "logSpread": 0.6474521363462502
+        "logSpread": 0.3366646862834231
       },
       "blue-bird": {
         "logBase": 7.09095828054154,
         "method": "direct",
         "sampleCount": 2,
-        "logSpread": 0.835857113845147
+        "logSpread": 0.2836006160645875
       },
       "two-embers-part-1": {
         "logBase": 7.02980665339912,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "migration": {
         "logBase": 6.9686550262567,
         "method": "interpolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       },
       "lightmending": {
         "logBase": 6.9075033991142805,
         "method": "direct",
         "sampleCount": 3,
-        "logSpread": 0.723873494523839
+        "logSpread": 0.28033485831008476
       },
       "carnival": {
         "logBase": 6.695995797363139,
         "method": "direct",
         "sampleCount": 1,
-        "logSpread": 1.0237117133980194
+        "logSpread": 0.24774085969537038
       },
       "dear-van-gogh": {
         "logBase": 6.536831864539391,
         "method": "extrapolated",
         "sampleCount": 0,
-        "logSpread": 1.4976692990148395
+        "logSpread": 0.24774085969537038
       }
     },
     "pooled": {
       "logBase": 9.789484807067693,
       "method": "pooled",
       "sampleCount": 26,
-      "logSpread": 2.8573344460008396
+      "logSpread": 1.0818781138887092
     },
     "sourceEvidenceCount": 114,
     "knownSeasonCount": 88,
-    "intervalKind": "exploratory_log_spread_not_prediction_interval"
+    "intervalKind": "central_residual_reference_not_prediction_interval"
   },
   "sourceRows": 220,
   "eligibleRows": 114,
@@ -248,6 +248,6 @@
     "unknownDateRows": 114,
     "identityQuality": "post_ids_and_reviewed_surrogates_not_verified_account_ids",
     "method": "whole-account log-price joint season/tier/break fit; no price splitting or exact-count proxies",
-    "interval": "exploratory_log_spread_not_prediction_interval"
+    "interval": "central_residual_reference_not_prediction_interval"
   }
 }

@@ -3,8 +3,8 @@ import { classifyAccountStyle, classifyBreakClass, classifySalePackageTier,
   type SalePackageTierKey, type MarketAccountStyle, type MarketBreakClass, type PackageTierKey } from "./valuation-profile";
 import { canonicalPackageKey, isChinaOnlyItem, isGraduationGift, isPaidItem, isSeasonPendant, platformBindingForItem } from "./valuation-items";
 import { seasonBandBySlug, type SeasonConfidence, type SeasonPriceBand } from "./valuation-season-bands";
-import { predictFreshModel, freshModelRevision } from "./valuation-fresh-core.js";
-import freshData from "./valuation-fresh-data.json";
+import manifest from "./valuation-tabpfn-manifest.json";
+import type { ModelResponse } from "./valuation-api-contract";
 import type { WikiItem } from "./wiki-data";
 
 export type ValuationDomain = {
@@ -42,7 +42,7 @@ export type ValuationEstimate = {
   contributions: ValuationContribution[];
   warnings: string[];
   seasonRows: ValuationSeasonRow[];
-  /** Browser inputs for replay; unknown fields remain null, not fabricated. */
+  /** UI classification snapshot; the actual TabPFN payload is built in valuation-tabpfn-features.ts. */
   modelFeatures?: { modelRevision: string; season: string | null; packageCount: number; breakClass: MarketBreakClass | null; bindingRiskCount: number | null };
   evidence: { method: string | null; directSampleCount: number; modelRevision: string };
   marketProfile: {
@@ -151,9 +151,10 @@ export const analyzeValuation = ({
 };
 
 // Whole-account model only: no per-item premiums, fixed resource prices or caps.
-export const estimateValuation = ({ analysis }: {
+export const estimateValuation = ({ analysis, response }: {
   analysis: ValuationAnalysis;
   resources?: ValuationResources;
+  response?: ModelResponse;
 }): ValuationEstimate | null => {
   if (!analysis.selectedCount) return null;
   const warnings: string[] = [];
@@ -170,7 +171,7 @@ export const estimateValuation = ({ analysis }: {
   const breaks = classifyBreakClass(analysis.seasonCompletion);
   const tier = classifySalePackageTier(canonicalPackageCount);
   const seasonRows = [...analysis.seasonCompletion].flatMap(([slug, state]) => {
-    const band = seasonBandBySlug.get(slug);
+    const band = response?.seasonBands.find(b => b.slug === slug) ?? seasonBandBySlug.get(slug);
     return band ? [{ ...band, ...state, completion: state.expected ? state.selected / state.expected : 0 }] : [];
   });
   const input = {
@@ -179,31 +180,27 @@ export const estimateValuation = ({ analysis }: {
     breakClass: analysis.seasonCompletion.size ? breaks.key : null,
     bindingRiskCount: analysis.bindingsConfirmed ? analysis.issueCount + analysis.keepCount : null,
   };
-  const result = predictFreshModel(freshData.model, input);
-  if (result.status === "unavailable") {
-    warnings.push("估價載入失敗，請重新載入頁面再試。");
-  } else {
-    warnings.push("依整號刊登行情推估，尚未通過獨立驗證；參考區間不是成交保證。");
-  }
+  const sampleCount = manifest.seasonCounts[analysis.startSeasonSlug as keyof typeof manifest.seasonCounts] ?? 0;
+  warnings.push("TabPFN v2 延伸版依整號刊登行情推估，尚未通過獨立成交驗證；目前不提供價格區間。");
   if (!analysis.bindingsConfirmed) warnings.push("綁定尚未確認，不推測為無綁。");
   if (!analysis.startSeasonSlug) warnings.push("未判定起季，使用未指定起季的整號行情推算；季卡項鍊不代表畢業。");
-  warnings.push("限定收藏與資源尚無獨立加價證據，不另加固定金額；海外標價不直接換算台幣。");
+  warnings.push("物品、資源及綁定以模型已學習的特徵綜合推估，不另加固定金額；未填資料保持未知。");
   return {
-    status: result.status === "unavailable" ? "unavailable" : "unvalidated",
-    range: result.range ? { ...result.range, currency: "TWD" } : null,
-    midpoint: result.midpoint,
+    status: response ? "unvalidated" : "unavailable",
+    range: null,
+    midpoint: response?.midpoint ?? null,
     confidence: "inferred",
     contributions: [],
     warnings: [...new Set(warnings)],
     seasonRows,
-    evidence: { method: result.method, directSampleCount: analysis.startSeasonSlug ? result.sampleCount : 0, modelRevision: result.revision },
-    modelFeatures: { modelRevision: freshModelRevision, ...input },
+    evidence: { method: "tabpfn", directSampleCount: sampleCount, modelRevision: manifest.modelRevision },
+    modelFeatures: { modelRevision: manifest.modelRevision, ...input },
     marketProfile: {
       breakClass: breaks.key, packageTier: tier.key, salePackageTier: tier.key,
       accountStyle: classifyAccountStyle({ paidItemCount: canonicalPackageCount,
         graduationCount: analysis.ultimates.length, seasonCount: analysis.seasonCompletion.size }),
       missingSeasons: breaks.missingSeasons, partialSeasons: breaks.partialSeasons,
-      completionRatio: breaks.completionRatio, effectiveSample: analysis.startSeasonSlug ? result.sampleCount : 0,
+      completionRatio: breaks.completionRatio, effectiveSample: sampleCount,
       paidItemCount: paid.length, canonicalPackageCount,
       evidenceQuality: "limited", priceStage: "低資訊參考", sourceConcentration: 0,
     },

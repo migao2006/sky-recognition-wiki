@@ -25,7 +25,8 @@ const packageLabel = raw => {
  * Review decisions can correct extraction errors or link duplicates, but their
  * source digest must match and each decision needs an auditable explanation.
  */
-export function prepareWholeAccountEvidence(rows, { seasons, review = {}, sourceDigest } = {}) {
+export function prepareWholeAccountEvidence(rows, { seasons, review = {}, sourceDigest,
+  allowedPriceKinds = ["ask"], allowPrivateReference = false, deduplicate = true } = {}) {
   if (review.sourceDigest && review.sourceDigest !== sourceDigest) throw new Error("Review/source digest mismatch");
   const known = new Set(seasons);
   const decisions = review.decisions ?? {};
@@ -49,7 +50,7 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
     const row = { ...raw, ...change };
     const text = [raw.summary, raw.priceRaw].join(" ");
     let reason = change.exclude ?? decisions[rootKey(raw.postKey)]?.exclude ?? null;
-    if (!reason && (row.excludeFromModel || row.exclude_from_model || row.intent !== "sell" || row.priceKind !== "ask"))
+    if (!reason && (row.excludeFromModel || row.exclude_from_model || row.intent !== "sell" || !allowedPriceKinds.includes(row.priceKind)))
       reason = "not_account_ask";
     if (!reason && ((row.currency != null && row.currency !== "TWD") ||
         (row.server != null && row.server !== "international") ||
@@ -67,7 +68,8 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
       reason = "currency_unconfirmed";
     if (!reason && (typeof row.priceTwd !== "number" || !Number.isFinite(row.priceTwd) || row.priceTwd <= 0))
       reason = "invalid_price";
-    if (!reason && (!raw.postKey || !/^https:\/\/www\.facebook\.com\//.test(raw.sourceUrl ?? "")))
+    if (!reason && (!raw.postKey || (!/^https:\/\/www\.facebook\.com\//.test(raw.sourceUrl ?? "") &&
+      !(allowPrivateReference && sourceDigest && raw.sourceRecordRef === `${sourceDigest}:${raw.postKey}`))))
       reason = "missing_provenance";
     if (reason) { rejected.push({ key: raw.postKey, reason }); continue; }
     const season = Object.hasOwn(change, "season") ? change.season : known.has(raw.seasonSlug) ? raw.seasonSlug : null;
@@ -75,11 +77,11 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
     // A source's old numeric fields are not proof of exact counts or breaks.
     candidates.push({
       accountKey: raw.accountKey ?? rootKey(raw.postKey), postKey: raw.postKey,
-      stablePost: raw.sourceUrl.match(/\/(?:posts|permalink)\/(\d+)/)?.[1] ?? null,
+      stablePost: raw.sourceUrl?.match(/\/(?:posts|permalink)\/(\d+)/)?.[1] ?? null,
       textKey: digest(canonicalText(raw.summary)), season,
       packageTier: Object.hasOwn(change, "packageTier") ? change.packageTier : packageLabel(raw.packageRaw),
       breakClass: Object.hasOwn(change, "breakClass") ? change.breakClass : breakLabel(raw.breakRaw),
-      price: row.priceTwd, market: "taiwan", server: "international", currency: "TWD", priceKind: "ask",
+      price: row.priceTwd, market: "taiwan", server: "international", currency: "TWD", priceKind: row.priceKind,
       publishedAt: raw.publishedAt ?? null, collectedDate: raw.collectedDate,
       preferred: !change.duplicateOf, completeness: raw.completeness,
     });
@@ -99,6 +101,7 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
     }
   });
   const accepted = candidates.filter((row, i) => {
+    if (!deduplicate) return true;
     if (find(i) === i) return true;
     rejected.push({ key: row.postKey, reason: "duplicate_account_or_post" });
     return false;

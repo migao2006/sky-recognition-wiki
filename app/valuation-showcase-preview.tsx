@@ -17,6 +17,7 @@ type Props = {
   limit: number;
   estimate: ValuationEstimate | null | undefined;
   getZhName: (item: WikiItem) => string;
+  priceText?: string;
 };
 
 export function ShowcasePreview({
@@ -25,6 +26,7 @@ export function ShowcasePreview({
   limit,
   estimate,
   getZhName,
+  priceText,
 }: Props) {
   return (
     <div className={`showcase-preview preset-${preset}`}>
@@ -35,7 +37,7 @@ export function ShowcasePreview({
       {preset === "valuation" && (
         <div className="showcase-price">
           <span>參考估價</span>
-          <strong>{referencePriceText(estimate?.midpoint, items.length)}</strong>
+          <strong>{priceText ?? referencePriceText(estimate?.midpoint, items.length)}</strong>
           <small>
             {referenceRangeText(estimate?.range)}
           </small>

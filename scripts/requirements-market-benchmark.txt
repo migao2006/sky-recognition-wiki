@@ -1,0 +1,4 @@
+# Local experimentation only; never a Next.js production dependency.
+catboost==1.2.10
+tabpfn==9.1.0
+scikit-learn==1.9.1

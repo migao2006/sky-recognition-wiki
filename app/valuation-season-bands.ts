@@ -1,6 +1,5 @@
 import { seasons } from "./catalog-sources";
-import freshData from "./valuation-fresh-data.json";
-import { predictFreshModel } from "./valuation-fresh-core.js";
+import manifest from "./valuation-tabpfn-manifest.json";
 
 export type SeasonConfidence = "high" | "medium" | "low" | "inferred";
 export type SeasonPriceBand = {
@@ -15,26 +14,25 @@ export type SeasonPriceBand = {
   asOf: string;
 };
 export const valuationSampleSummary = {
-  sourceRows: freshData.sourceRows,
-  eligibleRows: freshData.eligibleRows,
-  foreignRows: freshData.foreignRows,
-  asOf: freshData.asOf,
-  collectionComplete: freshData.collectionComplete,
+  sourceRows: manifest.sampleCount,
+  eligibleRows: manifest.sampleCount,
+  foreignRows: 0,
+  asOf: manifest.asOf,
+  collectionComplete: false,
 };
 // Comparable whole-account reference: no breaks, few packages, binding unknown.
 // Same predictor as the actual account; this is NOT a season/item unit price.
 export const seasonPriceBands: readonly SeasonPriceBand[] = seasons.map(([slug]) => {
-  const result = predictFreshModel(freshData.model, { season: slug, packageTier: "few", breakClass: "none" });
   return {
     slug,
-    low: result.range?.low ?? null,
-    median: result.midpoint,
-    high: result.range?.high ?? null,
-    status: result.status === "unavailable" ? "unavailable" : "unvalidated",
-    method: result.method,
-    sampleCount: result.sampleCount,
+    low: null,
+    median: null,
+    high: null,
+    status: "unavailable",
+    method: "tabpfn",
+    sampleCount: manifest.seasonCounts[slug as keyof typeof manifest.seasonCounts] ?? 0,
     confidence: "inferred",
-    asOf: freshData.asOf,
+    asOf: manifest.asOf,
   };
 });
 export const seasonBandBySlug = new Map(seasonPriceBands.map(band => [band.slug, band]));

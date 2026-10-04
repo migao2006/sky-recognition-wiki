@@ -1,5 +1,6 @@
-// Whole-account asking prices only. No historical prices, item premiums or caps.
-export const freshModelRevision = "whole-account-v3";
+// Whole-account prices of one explicit kind; production defaults to asks.
+// No historical prices, item premiums or caps.
+export const freshModelRevision = "whole-account-v3.1";
 export const packageTiers = ["few", "medium", "many", "hundred"];
 export const breakClasses = ["none", "slight", "medium", "large"];
 export const packageTierForCount = count => Number.isSafeInteger(count) && count >= 0
@@ -13,6 +14,9 @@ const quantile = (values, fraction) => {
   const index = (sorted.length - 1) * fraction, lower = Math.floor(index);
   return sorted[lower] + (sorted[Math.ceil(index)] - sorted[lower]) * (index - lower);
 };
+// Typical in-sample deviation, not a prediction/confidence interval. Account
+// price levels across seasons must not be treated as residual uncertainty.
+const centralSpread = values => Math.max(Math.abs(quantile(values, .25)), Math.abs(quantile(values, .75)));
 const categories = row => [
   packageTiers.indexOf(row.packageTier ?? packageTierForCount(row.packageCount)),
   breakClasses.indexOf(row.breakClass === "big" ? "large" : row.breakClass),
@@ -38,7 +42,8 @@ const trend = points => {
  * nonpositive. Ridge=1 is regularization, never a monetary anchor. A source
  * account remains one observation regardless of how many seasons it owns.
  */
-export function fitWholeAccountModel(rows, { seasons, ridge = 1 } = {}) {
+export function fitWholeAccountModel(rows, { seasons, ridge = 1, priceKind = "ask" } = {}) {
+  if (!["ask", "sold", "sold_proxy"].includes(priceKind)) throw new Error("Unsupported training price kind");
   if (!Array.isArray(seasons) || !seasons.length || new Set(seasons).size !== seasons.length)
     throw new Error("Canonical seasons required");
   if (!finite(ridge) || ridge <= 0) throw new Error("Invalid ridge");
@@ -47,9 +52,9 @@ export function fitWholeAccountModel(rows, { seasons, ridge = 1 } = {}) {
     throw new Error("Unique account identities required");
   if (rows.some(row => row.market !== "taiwan" || row.server !== "international" || row.currency !== "TWD" ||
       row.converted === true || row.excludeFromModel === true || row.accountOnly === false ||
-      row.priceKind !== "ask" || !finite(row.price) || row.price <= 0 ||
+      row.priceKind !== priceKind || !finite(row.price) || row.price <= 0 ||
       (row.season !== null && !seasons.includes(row.season))))
-    throw new Error("Only unconverted Taiwan international-server whole-account asks may fit");
+    throw new Error("Only unconverted Taiwan international-server whole-account prices of the selected kind may fit");
   const training = rows.filter(row => row.season !== null);
   if (!training.length) throw new Error("At least one identified season required");
   const groups = seasons.map(season => training.flatMap((row, i) => row.season === season ? [i] : []));
@@ -84,14 +89,12 @@ export function fitWholeAccountModel(rows, { seasons, ridge = 1 } = {}) {
   }
   if (!converged) throw new Error("Whole-account fit did not converge");
   const residuals = training.map((row, i) => y[i] - bases[seasons.indexOf(row.season)] - dot(x[i], coefficients));
-  const spread = Math.max(Math.abs(quantile(residuals, .1)), Math.abs(quantile(residuals, .9)));
-  const globalSpread = Math.sqrt(mean(y.map(value => (value - mean(y)) ** 2)));
+  const spread = centralSpread(residuals);
   const observed = groups.flatMap((indices, i) => indices.length ? [i] : []);
   const seasonModels = Object.fromEntries(seasons.map((slug, i) => {
     const before = observed.filter(s => s < i).at(-1), after = observed.find(s => s > i);
-    let logBase = bases[i], method = "direct", distance = 0;
+    let logBase = bases[i], method = "direct";
     if (!groups[i].length) {
-      distance = Math.min(...observed.map(s => Math.abs(s - i)));
       if (before !== undefined && after !== undefined) {
         method = "interpolated";
         logBase = bases[before] + (bases[after] - bases[before]) * (i - before) / (after - before);
@@ -101,20 +104,24 @@ export function fitWholeAccountModel(rows, { seasons, ridge = 1 } = {}) {
         logBase = bases[nearest] + line.slope * (i - nearest);
       }
     }
+    // Five pooled residuals regularize sparse groups; a singleton cannot
+    // establish dispersion. This smooths widths without a fixed monetary cap.
+    const indices = groups[i];
+    const localSpread = indices.length > 1 ? centralSpread(indices.map(j => residuals[j])) : spread;
     return [slug, { logBase, method, sampleCount: groups[i].length,
-      logSpread: Math.max(spread, globalSpread / Math.sqrt(groups[i].length + 1)) *
-        (1 + distance / Math.max(1, seasons.length - 1)) }];
+      logSpread: (indices.length * localSpread + 5 * spread) / (indices.length + 5) }];
   }));
   const unknown = rows.filter(row => row.season === null);
   const pooledRows = unknown.length ? unknown : rows;
   const adjusted = pooledRows.map(row => Math.log(row.price) - dot(features(row, centers), coefficients));
   const pooledBase = mean(adjusted);
   const pooled = { logBase: pooledBase, method: "pooled", sampleCount: pooledRows.length,
-    logSpread: Math.max(spread, ...[.1, .9].map(q => Math.abs(quantile(adjusted, q) - pooledBase))) };
+    logSpread: Math.max(spread, centralSpread(adjusted.map(value => value - pooledBase))) };
   return { revision: freshModelRevision, mode: "whole-account", validation: "unvalidated", converged,
+    ...(priceKind !== "ask" ? { targetPriceKind: priceKind } : {}),
     iterations, ridge, centers, coefficients, trend: line, seasons: seasonModels, pooled,
     sourceEvidenceCount: rows.length, knownSeasonCount: training.length,
-    intervalKind: "exploratory_log_spread_not_prediction_interval" };
+    intervalKind: "central_residual_reference_not_prediction_interval" };
 }
 
 export function predictFreshModel(model, input) {

@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-test("website keeps only the fresh valuation model", async () => {
+test("website uses only the remote TabPFN model and excludes offline baselines", async () => {
   const root = fileURLToPath(new URL("../app/", import.meta.url));
   const pending = [path.join(root, "page.tsx")], visited = new Set();
   while (pending.length) {
@@ -30,7 +30,9 @@ test("website keeps only the fresh valuation model", async () => {
     }
   }
   assert.ok(visited.has(path.join(root, "valuation-analysis.ts")));
-  assert.ok(visited.has(path.join(root, "valuation-fresh-core.js")));
+  assert.ok(visited.has(path.join(root, "use-tabpfn-estimate.ts")));
+  assert.equal(visited.has(path.join(root, "valuation-fresh-core.js")), false);
+  assert.equal(visited.has(path.join(root, "valuation-fresh-data.json")), false);
   for (const removed of ["valuation-market-aggregate.json", "valuation-model-core.js", "valuation-season-band-core.js"]) {
     assert.equal(await access(path.join(root, removed)).then(() => true, () => false), false, removed);
   }
