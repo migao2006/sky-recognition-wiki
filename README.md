@@ -212,10 +212,24 @@ python -m venv "$env:TEMP/sky-model-env"
 & "$env:TEMP/sky-model-env/Scripts/python.exe" -m unittest discover -s tests -p test_market_benchmark.py
 ```
 
+Facebook CSV 完整匯出使用正式 RFC 4180 parser，不以換行或正規表示式拆 CSV。先執行唯讀檢查，再以全新 `work/` 目錄寫入私人資料；同一貼文的明確編號帳號可拆列，但無法確認邊界的多帳號貼文不硬拆。匯入器排除求購、交換、估價、服務、國服／外幣、特殊修改號、合售與競標；保留直出及秒價，建模優先秒價。台灣社團未寫幣別的獨立價格可標記推定 TWD，`3.8萬／3.8w／6.8台` 依台灣交易語境解析，遮蔽或多個無標籤價格保持不確定。派生資料不保存作者姓名、頭像或個人網址。
+
+```powershell
+npm run import:facebook-market:check -- work/source.private.csv work/facebook-import-r1
+node scripts/import-facebook-market-csv.mjs work/source.private.csv work/facebook-import-r1 --write
+npm run merge:facebook-market:check -- work/benchmark.private.json work/facebook-import-r1/market-rows.private.json work/benchmark-facebook-r1
+node scripts/merge-facebook-market-benchmark.mjs work/benchmark.private.json work/facebook-import-r1/market-rows.private.json work/benchmark-facebook-r1 --write
+npm run check:market-release-gate -- work/old-report/report.json work/new-report/report.json
+```
+
+合併時只用穩定貼文 ID 去重，不因同價同帳型刪除不同原文；既有 benchmark 的 fold 完全凍結，新賣家分組才以不可逆雜湊配置 fold。發布門檻同時要求：混合模型中位相對誤差至少改善 1 個百分點、Hit@20 不降低、P90 不惡化、原凍結 cohort 中位誤差退步不超過 3 個百分點，且不得有預測失敗。檢查指令以非零狀態表示保留目前模型，不能忽略後仍發布。
+
+2026-10-05 的 5,000 列「光遇交易」CSV 核對中，17 個整號通過私人匯入，16 筆為刊登價；按既有貼文 ID 去重後新增 14 筆，嚴格標題 cohort 由 44 增至 58。相同舊 fold 的混合模型比較：中位相對誤差由 18.86% 升至 23.34%、Hit@20 由 54.55% 降至 41.38%，P90 由 64.95% 改善至 55.91%；原 44 筆凍結 cohort 中位誤差升至 23.57%。因此只保留新的私人資料與匯入工具，正式 `strict-title-binding-hybrid-2026-10-05` 模型、manifest 與線上 API 均未替換。這仍是分組開發比較，不是獨立盲測。
+
 - 輸出檔／目錄必須全新且位於 `work/`；內含原文、逐欄證據、校正、未辨識詞、逐筆預測、五折切分承諾、來源摘要、套件版本及本機權重雜湊。原始檔不覆寫。首個中止的 run 不應當作完整比較。
 - Facebook 匯入器可保留多個社團的完整匯出，逐筆記錄來源社團並一律先當私有待核對資料。只有已明確核准的台灣社團可對未標幣別報價標記「推定 TWD」；其他來源仍為幣別未知，不能因為同批資料或語言相近而套用。與目前 serving manifest 的來源雜湊不一致只會記錄狀態，不能因此阻擋蒐集或暗示已進入模型。
 - `work/` 同時由 Git 與 ESLint 排除，避免私人實驗套件被當網站程式檢查；Python bytecode 亦不提交。
-- 分組鍵不含來源檔雜湊／價格；同帳號及可識別的同貼文內多個帳號不可跨折。固定輸入的五折可重現；新增帳號可能改變折分，應凍結整份 benchmark JSON 比較，不將舊新分數直接相減。替代身分仍不是已核實獨立帳號。
+- 分組鍵不含來源檔雜湊／價格；同帳號及可識別的同貼文內多個帳號不可跨折。一般重新匯出 benchmark 仍可能改變折分，不得直接相減；`merge-facebook-market-benchmark.mjs` 的發布比較例外地凍結既有 fold，只替新賣家分組配置 fold，使舊 cohort 可作同保留組前後比較。替代身分仍不是已核實獨立帳號。
 - 只補原文明確且未被人工核對覆寫的季節／級距；中少禮、中多禮、半無斷及含糊說法保持未知。季節進度只解析明示清單，不把未列的季節補零。禮包數量不從多禮或百禮反推；限定只作唯一精確別名對應的 GUID 特徵，未提到和明示不持有分開。
 - 特徵解析會略過純「#售／#多社／#代掛」等刊登標籤行，以分號前的實際標題判讀帳型，並讀取明示「畢業：」「畢業季節：」「季節進度：」的單行清單。完整名稱與實際比例才能填入進度；未列季節不補零，普通「季節：」與季卡／物品名稱不當畢業證據。起季未知時，只有清單全部可辨識且無比例衝突才由最早正進度補值，避免略過未知的早季縮寫而錯認晚季；不覆蓋人工審核，也不從此推算斷季程度。
 - 明示「資源簡號／蠟燭簡號」可辨識帳型，但不補造資源數量；季節進度別名共用既有季節詞表。明示只售數據且無帳號本體者標記 `data_without_account`，保留來源但不納入整號價格訓練；普通提到「數據」不排除。
