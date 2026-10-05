@@ -2,3 +2,4 @@
 catboost==1.2.10
 tabpfn==9.1.0
 scikit-learn==1.9.1
+scipy==1.18.1

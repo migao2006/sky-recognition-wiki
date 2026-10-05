@@ -15,12 +15,22 @@ os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
 ROOT = Path(__file__).resolve().parents[1]
 SEED = 42
 COMMON = ["season", "breakClass", "packageTier"]
+PACKAGE_TIERS = ["few", "medium", "many", "hundred"]
+BREAK_CLASSES = ["none", "slight", "medium", "large"]
 # This grid belongs to the private benchmark only.  The actual site estimator
 # is deliberately not tuned from a benchmark's outer validation folds.
 BASELINE_RIDGE_GRID = [.03, .1, .3, .5, 1, 2]
 EMPIRICAL_RESIDUAL_ALPHA = 3
 BINDING_RESIDUAL_ALPHA = 1
 TITLE_BINDING_BLEND_WEIGHT = .5
+HIERARCHICAL_LOOKUP_GRID = [
+    {"seasonAlpha": 1., "poolAlpha": 3., "neighborAlpha": .3},
+    {"seasonAlpha": 3., "poolAlpha": 3., "neighborAlpha": 1.},
+    {"seasonAlpha": 3., "poolAlpha": 10., "neighborAlpha": 1.},
+    {"seasonAlpha": 10., "poolAlpha": 10., "neighborAlpha": 3.},
+    {"seasonAlpha": 10., "poolAlpha": 30., "neighborAlpha": 3.},
+    {"seasonAlpha": 30., "poolAlpha": 30., "neighborAlpha": 10.},
+]
 
 
 def installed_version(package):
@@ -323,6 +333,123 @@ def geometric_blend(first, second, weight):
             for a, b in zip(first, second)]
 
 
+def hierarchical_lookup_predict(train, test, seasons, params):
+    """Fit a monotone, partially pooled season × break × package lookup.
+
+    The model works in log-price space.  Each season has its own ordered
+    package increments and break penalties, but augmented ridge rows shrink
+    them toward shared market increments and adjacent seasons.  Non-negative
+    bounds guarantee earlier seasons cannot be cheaper, larger breaks cannot
+    increase price and larger package tiers cannot decrease it.
+    """
+    import numpy as np
+    from scipy.optimize import lsq_linear
+
+    season_count = len(seasons)
+    season_index = {season: index for index, season in enumerate(seasons)}
+    if season_count < 2 or any(key not in params for key in ("seasonAlpha", "poolAlpha", "neighborAlpha")):
+        raise ValueError("Invalid hierarchical lookup configuration")
+
+    cursor = 1
+    season_delta = slice(cursor, cursor + season_count - 1)
+    cursor = season_delta.stop
+    package_global = slice(cursor, cursor + 3)
+    cursor = package_global.stop
+    break_global = slice(cursor, cursor + 3)
+    cursor = break_global.stop
+    package_season = slice(cursor, cursor + season_count * 3)
+    cursor = package_season.stop
+    break_season = slice(cursor, cursor + season_count * 3)
+    cursor = break_season.stop
+    binding_penalty = cursor
+    feature_count = cursor + 1
+
+    def vector(row):
+        values = np.zeros(feature_count, dtype=float)
+        values[0] = 1.
+        index = season_index.get(row.get("season"))
+        if index is not None and index < season_count - 1:
+            values[season_delta.start + index:season_delta.stop] = 1.
+        tier = row.get("packageTier")
+        tier_level = PACKAGE_TIERS.index(tier) if tier in PACKAGE_TIERS else 0
+        break_class = row.get("breakClass")
+        break_level = BREAK_CLASSES.index(break_class) if break_class in BREAK_CLASSES else 0
+        for threshold in range(tier_level):
+            target = package_global.start + threshold if index is None else package_season.start + index * 3 + threshold
+            values[target] = 1.
+        for threshold in range(break_level):
+            target = break_global.start + threshold if index is None else break_season.start + index * 3 + threshold
+            values[target] = -1.
+        values[binding_penalty] = -binding_lock_count(row)
+        return values
+
+    design = [vector(row) for row in train]
+    targets = [math.log(row["price"]) for row in train]
+
+    def penalty(weight, entries):
+        if weight <= 0:
+            return
+        row = np.zeros(feature_count, dtype=float)
+        for index, coefficient in entries:
+            row[index] = coefficient * math.sqrt(weight)
+        design.append(row)
+        targets.append(0.)
+
+    for index in range(season_delta.start, season_delta.stop):
+        penalty(params["seasonAlpha"], [(index, 1.)])
+    for threshold in range(3):
+        global_package = package_global.start + threshold
+        global_break = break_global.start + threshold
+        penalty(1., [(global_package, 1.)])
+        penalty(1., [(global_break, 1.)])
+        for season in range(season_count):
+            package_value = package_season.start + season * 3 + threshold
+            break_value = break_season.start + season * 3 + threshold
+            penalty(params["poolAlpha"], [(package_value, 1.), (global_package, -1.)])
+            penalty(params["poolAlpha"], [(break_value, 1.), (global_break, -1.)])
+            if season + 1 < season_count:
+                next_package = package_season.start + (season + 1) * 3 + threshold
+                next_break = break_season.start + (season + 1) * 3 + threshold
+                penalty(params["neighborAlpha"], [(package_value, 1.), (next_package, -1.)])
+                penalty(params["neighborAlpha"], [(break_value, 1.), (next_break, -1.)])
+    penalty(10., [(binding_penalty, 1.)])
+
+    lower = np.zeros(feature_count, dtype=float)
+    lower[0] = -np.inf
+    upper = np.full(feature_count, np.inf, dtype=float)
+    fitted = lsq_linear(np.vstack(design), np.asarray(targets), bounds=(lower, upper),
+                        method="trf", lsmr_tol="auto", max_iter=2000)
+    if not fitted.success or not np.all(np.isfinite(fitted.x)):
+        raise ValueError(f"Hierarchical lookup fit failed: {fitted.message}")
+    predictions = np.exp(np.vstack([vector(row) for row in test]) @ fitted.x)
+    if not np.all(np.isfinite(predictions)) or np.any(predictions <= 0):
+        raise ValueError("Invalid hierarchical lookup prediction")
+    return predictions.tolist(), ["season", "breakClass", "packageTier", "bindingLockCount"]
+
+
+def tune_hierarchical_lookup(train, seasons):
+    """Choose shrinkage using only the current outer training groups."""
+    import numpy as np
+    from sklearn.model_selection import GroupKFold
+    groups = [row.get("splitGroup", row["accountKey"]) for row in train]
+    unique_groups = len(set(groups))
+    if unique_groups < 3:
+        return HIERARCHICAL_LOOKUP_GRID[-1]
+    splits = list(GroupKFold(n_splits=min(3, unique_groups)).split(train, groups=groups))
+    scores = []
+    for params in HIERARCHICAL_LOOKUP_GRID:
+        errors = []
+        for train_indices, validation_indices in splits:
+            fit_rows = [train[index] for index in train_indices]
+            validation_rows = [train[index] for index in validation_indices]
+            predictions, _ = hierarchical_lookup_predict(fit_rows, validation_rows, seasons, params)
+            errors.extend(abs(prediction - row["price"]) / row["price"]
+                          for prediction, row in zip(predictions, validation_rows))
+        ordered = sorted(errors)
+        scores.append((float(np.median(ordered)), float(np.quantile(ordered, .9))))
+    return HIERARCHICAL_LOOKUP_GRID[min(range(len(scores)), key=lambda index: scores[index])]
+
+
 def evaluate(train, test, model, seasons):
     params, columns = {}, []
     started = time.monotonic()
@@ -355,6 +482,9 @@ def evaluate(train, test, model, seasons):
             if model == "baseline_enriched_tuned_ridge":
                 params = {"ridge": tune_baseline_ridge(train, seasons, original)}
             predictions, columns = baseline_predict(train, test, seasons, original, params.get("ridge", 1))
+        elif model == "hierarchical_lookup":
+            params = tune_hierarchical_lookup(train, seasons)
+            predictions, columns = hierarchical_lookup_predict(train, test, seasons, params)
         elif model.startswith("catboost"):
             loss = "MAE" if model.startswith("catboost_mae") else "RMSE"
             params = tune_cat(train, model.endswith("extended"), loss)
@@ -406,6 +536,8 @@ def main():
     parser.add_argument("input")
     parser.add_argument("output")
     parser.add_argument("--skip-tabpfn", action="store_true", help="Explicitly report not attempted, never substitute a model")
+    parser.add_argument("--models", help="Comma-separated private candidates; baseline_enriched is always included")
+    parser.add_argument("--cohorts", help="Comma-separated cohort keys; omitted means every available cohort")
     args = parser.parse_args()
     target = Path(args.output).resolve()
     if not target.is_relative_to((ROOT / "work").resolve()) or target.exists():
@@ -416,7 +548,7 @@ def main():
     os.environ["TABPFN_MODEL_CACHE_DIR"] = str(ROOT / "work" / "tabpfn-cache")
     models = ["baseline_original", "baseline_enriched", "baseline_enriched_tuned_ridge",
               "baseline_enriched_empirical_residual", "baseline_enriched_title_binding_residual",
-              "baseline_enriched_title_binding_blend"]
+              "baseline_enriched_title_binding_blend", "hierarchical_lookup"]
     unavailable = []
     if installed_version("catboost") is None:
         unavailable.extend(["catboost_common", "catboost_extended", "catboost_mae_common", "catboost_mae_extended"])
@@ -430,11 +562,18 @@ def main():
         models += ["lightgbm_common", "lightgbm_extended"]
     if not args.skip_tabpfn:
         models += ["tabpfn_v2_common", "tabpfn_v2_extended", "tabpfn_v2_extended_8"]
+    if args.models:
+        requested = list(dict.fromkeys(filter(None, args.models.split(","))))
+        unknown = sorted(set(requested) - set(models))
+        if unknown:
+            raise ValueError(f"Unknown or unavailable models: {', '.join(unknown)}")
+        models = list(dict.fromkeys(["baseline_enriched", *requested]))
     report = {"validation": "development_only", "productionChanged": False, "target": "asking_price_not_transaction",
               "sourceDigest": hashlib.sha256(source).hexdigest(), "foldCommitment": data["foldCommitment"],
               "seed": SEED, "tabpfnVersion": "V2", "tabpfnEstimators": [4, 8], "tabpfnSkipped": args.skip_tabpfn,
               "baselineRidgeGrid": BASELINE_RIDGE_GRID, "empiricalResidualAlpha": EMPIRICAL_RESIDUAL_ALPHA,
               "bindingResidualAlpha": BINDING_RESIDUAL_ALPHA,
+              "hierarchicalLookupGrid": HIERARCHICAL_LOOKUP_GRID,
               "catboostFixed": {"iterations": 300, "learning_rate": .04, "one_hot_max_size": 64, "thread_count": 4,
                                 "logTargetLosses": ["RMSE", "MAE"]},
               "extraTreesFixed": {"estimators": 400, "min_samples_leaf": 2, "max_features": 1.0, "thread_count": 4},
@@ -443,6 +582,7 @@ def main():
               "lightgbmFixed": {"estimators": 300, "learning_rate": .03, "num_leaves": 15,
                                 "min_child_samples": 10, "l2_regularization": 10.0, "thread_count": 4},
               "packages": {p: installed_version(p) for p in ["catboost", "lightgbm", "tabpfn", "scikit-learn", "numpy", "torch"]},
+              "selectedModels": models,
               "unavailableModels": unavailable,
               "cohorts": {}}
     cohort_filters = [
@@ -450,11 +590,20 @@ def main():
         ("_season_evidenced", eligible_for_season_evidenced, "season_explicit"),
         ("_title_evidenced", eligible_for_title_evidenced, "season_break_package_explicit"),
     ]
+    all_cohorts = {f"{kind}{suffix}" for kind in ["ask", "sold_proxy", "sold"]
+                   for suffix, _, _ in cohort_filters}
+    selected_cohorts = set(filter(None, args.cohorts.split(","))) if args.cohorts else all_cohorts
+    unknown_cohorts = sorted(selected_cohorts - all_cohorts)
+    if unknown_cohorts:
+        raise ValueError(f"Unknown cohorts: {', '.join(unknown_cohorts)}")
+    report["selectedCohorts"] = sorted(selected_cohorts)
     for kind in ["ask", "sold_proxy", "sold"]:
         source_rows = [r for r in data["rows"] if r["priceKind"] == kind]
         for suffix, predicate, evidence_requirement in cohort_filters:
             rows = [r for r in source_rows if predicate(r)]
             cohort_key = f"{kind}{suffix}"
+            if cohort_key not in selected_cohorts:
+                continue
             cohort = {"count": len(rows), "sourceCount": len(source_rows),
                       "evidenceRequirement": evidence_requirement,
                       "excludedByCohortContract": len(source_rows) - len(rows), "models": {}}

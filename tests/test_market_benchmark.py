@@ -78,6 +78,39 @@ class BenchmarkTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             bench.geometric_blend([100], [400], 1.1)
 
+    def test_hierarchical_lookup_respects_all_market_directions(self):
+        seasons = ["old", "middle", "new"]
+        train = []
+        for index, season in enumerate(seasons):
+            for tier_index, tier in enumerate(bench.PACKAGE_TIERS):
+                for break_index, break_class in enumerate(bench.BREAK_CLASSES):
+                    train.append({
+                        "accountKey": f"{season}-{tier}-{break_class}",
+                        "season": season,
+                        "packageTier": tier,
+                        "breakClass": break_class,
+                        "price": 10000 + (2 - index) * 3000 + tier_index * 900 - break_index * 700,
+                        "features": {},
+                    })
+        params = {"seasonAlpha": 3., "poolAlpha": 10., "neighborAlpha": 1.}
+        probes = [{"season": season, "packageTier": tier, "breakClass": break_class, "features": {}}
+                  for season in seasons for tier in bench.PACKAGE_TIERS for break_class in bench.BREAK_CLASSES]
+        predictions, columns = bench.hierarchical_lookup_predict(train, probes, seasons, params)
+        self.assertEqual(columns, ["season", "breakClass", "packageTier", "bindingLockCount"])
+        values = {(row["season"], row["packageTier"], row["breakClass"]): prediction
+                  for row, prediction in zip(probes, predictions)}
+        for tier in bench.PACKAGE_TIERS:
+            for break_class in bench.BREAK_CLASSES:
+                self.assertGreaterEqual(values[("old", tier, break_class)], values[("middle", tier, break_class)])
+                self.assertGreaterEqual(values[("middle", tier, break_class)], values[("new", tier, break_class)])
+        for season in seasons:
+            for break_class in bench.BREAK_CLASSES:
+                tier_values = [values[(season, tier, break_class)] for tier in bench.PACKAGE_TIERS]
+                self.assertEqual(tier_values, sorted(tier_values))
+            for tier in bench.PACKAGE_TIERS:
+                break_values = [values[(season, tier, break_class)] for break_class in bench.BREAK_CLASSES]
+                self.assertEqual(break_values, sorted(break_values, reverse=True))
+
 
 if __name__ == "__main__":
     unittest.main()
