@@ -16,6 +16,15 @@ test("data-only offers do not become whole-account price samples", () => {
   assert.equal(result.rejected[0].reason,"data_without_account");
 });
 
+test("traditional 臺幣 is accepted as explicit Taiwan currency evidence", () => {
+  const result = prepareWholeAccountEvidence([{
+    postKey: "traditional-twd", summary: "深淵無斷少禮，4000 臺幣", priceRaw: "4000 臺幣",
+    intent: "sell", priceKind: "ask", priceTwd: 4000,
+    sourceUrl: "https://www.facebook.com/groups/1/posts/2", seasonSlug: "enchantment",
+  }], { seasons: ["enchantment"] });
+  assert.equal(result.accepted.length, 1);
+});
+
 test("decorated candle-account labels are resource evidence independent of price", () => {
   for (const price of [200,20000]) {
     const r = extractBenchmarkFeatures(row(`#代掛 #售號\n﴾ 73 ﴿ 蠟燭簡號\n售價${price}台幣`),options);
@@ -40,6 +49,21 @@ test("posting labels do not hide the account headline", () => {
   assert.equal(r.packageTier, "hundred");
   assert.equal(extractBenchmarkFeatures(row("#售\n便宜帳號\n音韻多禮號"), options).season, null);
   assert.equal(extractBenchmarkFeatures(row("多禮帳；含小王子三件套與斗篷"), options).season, null);
+  const multiCommunity = extractBenchmarkFeatures(row("#售 #多社\n魔法無斷中禮\n售 43200"), options);
+  assert.equal(multiCommunity.season, "enchantment");
+  assert.equal(multiCommunity.breakClass, "none");
+  assert.equal(multiCommunity.packageTier, "medium");
+});
+
+test("a unique self-contained title line can follow a decorative prefix", () => {
+  const r = extractBenchmarkFeatures(row("#代掛 #售\n髒號\n魔法無斷中禮\n價格 2.4直 2.2秒"), options);
+  assert.equal(r.season, "enchantment");
+  assert.equal(r.breakClass, "none");
+  assert.equal(r.packageTier, "medium");
+  const multi = extractBenchmarkFeatures(row("#售\n魔法無斷中禮\n音韻無斷多禮\n價格另談"), options);
+  assert.equal(multi.season, null);
+  assert.equal(multi.breakClass, null);
+  assert.equal(multi.packageTier, null);
 });
 
 test("explicit graduation lines supply partial progress without inventing missing seasons", () => {
@@ -80,6 +104,18 @@ test("extended evidence preserves partial progress, absent versus unmentioned an
   assert.ok(Object.values(r.evidence).every(Boolean));
   const conflict = extractBenchmarkFeatures(row("◇ 王子圍巾｜不含王子圍巾｜王子圍巾"), options);
   assert.equal(conflict.features["item:official-1"], null);
+});
+
+test("a shared platform status applies only to the explicitly listed platforms", () => {
+  const r = extractBenchmarkFeatures(row("拾光無斷少禮；GG、GC 不出，Apple／FB 全出"), options);
+  assert.equal(r.features["binding:GG"], "不出");
+  assert.equal(r.features["binding:GC"], "不出");
+  assert.equal(r.features["binding:APPLE"], "transferable");
+  assert.equal(r.features["binding:FB"], "transferable");
+  assert.equal(r.features["binding:NS"], undefined);
+  const unbound = extractBenchmarkFeatures(row("音韻無斷少禮；Apple／FB 解綁"), options);
+  assert.equal(unbound.features["binding:APPLE"], "unbound");
+  assert.equal(unbound.features["binding:FB"], "unbound");
 });
 
 test("no resource/count fabrication from ranges or item/price mentions", () => {
@@ -134,4 +170,18 @@ test("within-batch duplicate proxy is retained over ask and review exclusions pr
   assert.equal(prepare([{ format: "facebook", rows: [a, b] }]).accepted[0].priceKind, "sold_proxy");
   assert.equal(prepare([{ format: "facebook", rows: [a], review: { decisions: { a: { exclude: "mixed_goods", reason: "reviewed" } } } },
     { format: "facebook", rows: [b] }]).accepted.length, 0);
+});
+
+test("reviewed separate accounts in one broker post are not collapsed as one identity", () => {
+  const shared = {
+    intent: "sell", priceKind: "ask", sourceUrl: "https://www.facebook.com/groups/1/posts/123",
+    seasonSlug: "rhythm", packageRaw: "少禮", breakRaw: "無斷", separateAccountInPost: true,
+  };
+  const result = prepareGradedEvidence([{ format: "facebook", sourceDigest: "digest", rows: [
+    { ...shared, postKey: "one", accountKey: "broker:123:one", summary: "音韻無斷少禮 1000台幣", priceTwd: 1000 },
+    { ...shared, postKey: "two", accountKey: "broker:123:two", summary: "音韻無斷少禮 2000台幣", priceTwd: 2000 },
+  ] }], { seasons: ["rhythm"], asOf: "2026-10-05" });
+  assert.equal(result.accepted.length, 2);
+  assert.equal(result.accepted[0].stablePost, "123");
+  assert.equal(result.accepted[1].stablePost, "123");
 });

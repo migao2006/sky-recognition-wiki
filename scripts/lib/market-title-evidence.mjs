@@ -169,6 +169,10 @@ export const extractMarketPackageRange = (value) => {
 };
 
 const salePackageTierFor = (text) => {
+  // Seller shorthand such as「中少禮／中多禮」does not map to one of our
+  // stable tiers. Treating it as the trailing 少禮／多禮 silently turns a
+  // deliberately ambiguous claim into a false model feature.
+  if (/(?:中少|中多|少中|多中)(?:禮|礼)/u.test(text)) return null;
   const labels = [
     ["few", "少(?:禮|礼)"],
     ["medium", "(?:中|適中|适中)(?:禮|礼)"],

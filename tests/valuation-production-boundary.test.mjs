@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-test("website uses only the remote TabPFN model and excludes offline baselines", async () => {
+test("website uses only the authenticated model API and excludes offline baselines", async () => {
   const root = fileURLToPath(new URL("../app/", import.meta.url));
   const pending = [path.join(root, "page.tsx")], visited = new Set();
   while (pending.length) {

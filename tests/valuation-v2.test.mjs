@@ -13,13 +13,13 @@ test("all canonical seasons wait for the local model without a fabricated local 
     assert.equal(band.median, null);
     assert.equal(band.low, null);
     assert.equal(band.high, null);
-    assert.equal(band.method, "bounded-percentage");
+    assert.equal(band.method, "strict-title-binding-hybrid");
     assert.equal(band.sampleCount, data.seasonCounts[band.slug]);
   }
 });
 test("latest collected records reconcile with exclusions, never inflated by owned seasons", () => {
   assert.equal(data.schemaVersion, 1);
-  assert.equal(valuationSampleSummary.sourceRows, 477);
+  assert.equal(valuationSampleSummary.sourceRows, 44);
   assert.equal(valuationSampleSummary.eligibleRows, data.sampleCount);
   assert.equal(valuationSampleSummary.collectionComplete, false);
   assert.equal(data.status, "unvalidated");

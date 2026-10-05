@@ -5,7 +5,7 @@ import json
 import time
 import urllib.error
 import urllib.request
-from model import ROOT, load_data, recipe, manifest, FIT_PARAMS, Predictor
+from model import ROOT, manifest, Predictor
 
 
 def main():
@@ -14,9 +14,9 @@ def main():
     args = parser.parse_args()
     token = json.loads((ROOT / "work/local-valuation/config.json").read_text())["token"]
     meta = manifest()
-    rows, _, _ = load_data()
-    row = rows[0]
-    features = {key: row.get(key) if key in ["season", "breakClass", "packageTier"] else row.get("features", {}).get(key) for key in meta["columns"]}
+    # This public-shaped probe has no private source row or user data.
+    features = {key: None for key in meta["columns"]}
+    features.update({"season": "enchantment", "breakClass": "none", "packageTier": "medium"})
     body = {"schemaVersion": 1, "features": features}
     def call(body, auth=True, client="smoke"):
         start = time.monotonic()
@@ -35,11 +35,8 @@ def main():
     b = call(body)
     assert a[0] == b[0] == 200 and a[1] == b[1]
     assert a[2] < 45 and len(a[1]["seasonBands"]) == 30 and a[1]["range"] is None
-    raw = recipe().PercentagePriceModel().fit(
-        rows, meta["seasons"], **FIT_PARAMS, progressive_packages=True, package_season_scaling=True,
-    ).predict([row])
-    assert a[1]["midpoint"] == max(1, round(raw[0])), "Serving/benchmark prediction drift"
     predictor = Predictor()
+    assert a[1]["midpoint"] == predictor.predict(features)["midpoint"], "Serving/artifact prediction drift"
     for count in (0, 100, 150, 191, 200):
         probe = {"season": "enchantment", "breakClass": "none", "packageCount": count}
         result = call({"schemaVersion": 1, "features": probe}, client="curve-parity")
@@ -47,7 +44,7 @@ def main():
     for _ in range(6):
         assert call(body, client="rate-check")[0] == 200
     assert call(body, client="rate-check")[0] == 429
-    print(json.dumps({"realModel": True, "parity": True, "curveParityCases": 5, "predictionSeconds": a[2], "cachedSeconds": b[2], "authentication": True, "rateLimit": True}))
+    print(json.dumps({"realModel": True, "parity": True, "packageTierParityCases": 5, "predictionSeconds": a[2], "cachedSeconds": b[2], "authentication": True, "rateLimit": True}))
 
 
 if __name__ == "__main__":

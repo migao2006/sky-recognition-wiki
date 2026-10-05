@@ -4,6 +4,7 @@ import { extractMarketTitleEvidence, marketTitleBreakMatchesStart, marketSeasonN
 const normalize = value => String(value ?? "").normalize("NFKC").trim();
 const unique = values => [...new Set(values)];
 const numeric = text => Number(text.replaceAll(",", ""));
+const postingOnlyLine = /^(?:(?:[#＃]\s*)?(?:售|出售|售號|售号|賣號|卖号|緩售|缓售|代售|代掛|代挂|已售|已售出|急售|收|求購|求购|多社)[\s,，、]*)+$/u;
 
 // No price, identity, source, file title or unrestricted text enters X.
 // Every non-null extension carries a literal source quote for private review.
@@ -12,8 +13,23 @@ export function extractBenchmarkFeatures(row, { seasons, seasonNames, resolveIte
   // Skip posting labels, not arbitrary content: scanning inventory for a season
   // name would turn purchased capes into false account-start claims.
   const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-  const heading = (lines.find(line => line.includes("▍")) ?? lines.find(line =>
-    !/^(?:#?(?:售|出售|售號|售号|賣號|卖号|緩售|缓售|代售|代掛|代挂|已售|已售出|急售|收|求購|求购)[\s,，、]*)+$/.test(line)) ?? "").split(/[；;]/)[0];
+  const primaryHeading = (lines.find(line => line.includes("▍")) ?? lines.find(line =>
+    !postingOnlyLine.test(line)) ?? "").split(/[；;]/)[0];
+  const primaryTitle = extractMarketTitleEvidence(primaryHeading);
+  // Decorative prefixes (for example 「髒號」) regularly precede the actual
+  // one-line account title. Inspect a short title area only, and only replace
+  // the primary line with exactly one self-contained claim. We never combine
+  // season, break, and package labels from separate lines or multi-listings.
+  const explicitTitleLines = lines.slice(0, 12).map(line => line.split(/[；;]/)[0])
+    .filter(line => !postingOnlyLine.test(line))
+    .filter(line => {
+      const title = extractMarketTitleEvidence(line);
+      return title.startSeasonSlug && title.breakClass && title.salePackageTier;
+    });
+  const distinctExplicitTitleLines = [...new Set(explicitTitleLines)];
+  const heading = distinctExplicitTitleLines.length > 1 ? "" :
+    !(primaryTitle.startSeasonSlug && primaryTitle.breakClass && primaryTitle.salePackageTier) &&
+    distinctExplicitTitleLines.length === 1 ? distinctExplicitTitleLines[0] : primaryHeading;
   const progressLine = /^(?:✦\s*)?(?:畢業季節|毕业季节|畢業|毕业|季節進度|季节进度)\s*[:：]/;
   const title = extractMarketTitleEvidence(progressLine.test(heading) ? "" : heading);
   const evidence = {}, corrections = [], features = {};
@@ -78,9 +94,20 @@ export function extractBenchmarkFeatures(row, { seasons, seasonNames, resolveIte
     const values = unique(matches.map(m => numeric(m[1])));
     if (values.length === 1) add(key, values[0], matches[0][0]);
   }
-  for (const platform of ["GG", "GC", "NS", "PSN", "STEAM", "FB", "APPLE"]) {
-    const matches = [...text.matchAll(new RegExp(`\\b${platform}[ ：:]*((?:未綁|無綁|不出|可出|出|遺失|異常))(?![\\p{L}])`, "giu"))];
-    const values = unique(matches.map(m => /未綁|無綁/.test(m[1]) ? "unbound" : /可出|^出$/.test(m[1]) ? "transferable" : m[1]));
+  // Sellers often place one status after a list, e.g. "GG、GC 不出".
+  // Read that only when every listed platform shares an explicit status; this
+  // preserves the one-platform parser below for ordinary prose.
+  const platformNames = ["GG", "GC", "NS", "PSN", "STEAM", "FB", "APPLE"];
+  const platformGroup = new RegExp(`\\b(${platformNames.join("|")})(?:\\s*[、,，/／]\\s*(${platformNames.join("|")})){1,6}\\s*(?:前號|前任)?\\s*(?:綁定)?\\s*[:：]?\\s*(未綁|無綁|解綁|可換綁|不出|可出|全出|出|遺失|異常)(?![\\p{L}])`, "giu");
+  for (const match of text.matchAll(platformGroup)) {
+    const statusText = match.at(-1);
+    const status = /未綁|無綁|解綁|可換綁/.test(statusText) ? "unbound" : /可出|全出|^出$/.test(statusText) ? "transferable" : statusText;
+    const names = [...match[0].matchAll(new RegExp(`\\b(${platformNames.join("|")})\\b`, "giu"))].map(item => item[1].toUpperCase());
+    for (const platform of unique(names)) add(`binding:${platform}`, status, match[0]);
+  }
+  for (const platform of platformNames) {
+    const matches = [...text.matchAll(new RegExp(`\\b${platform}[ ：:]*((?:未綁|無綁|解綁|可換綁|不出|可出|全出|出|遺失|異常))(?![\\p{L}])`, "giu"))];
+    const values = unique(matches.map(m => /未綁|無綁|解綁|可換綁/.test(m[1]) ? "unbound" : /可出|全出|^出$/.test(m[1]) ? "transferable" : m[1]));
     if (values.length === 1) add(`binding:${platform}`, values[0], matches[0][0]);
   }
   const unresolved = [];

@@ -333,6 +333,8 @@ test("keeps seller package tiers separate from exact package counts", () => {
   assert.equal(extractMarketTitleEvidence("魔法季起無斷 5200 元").salePackageTier, null);
   assert.equal(extractMarketTitleEvidence("魔法季起無斷 80禮 90禮").paidPackageCount, null);
   assert.equal(extractMarketTitleEvidence("魔法季起無斷少禮多禮號").salePackageTier, null);
+  assert.equal(extractMarketTitleEvidence("預言偽無斷中少禮號").salePackageTier, null);
+  assert.equal(extractMarketTitleEvidence("拾光無斷中多禮號").salePackageTier, null);
 });
 
 test("rejects ambiguous and negated title claims", () => {

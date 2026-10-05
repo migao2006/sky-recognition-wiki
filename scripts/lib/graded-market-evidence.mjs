@@ -67,7 +67,10 @@ export function prepareGradedEvidence(batches, { seasons, asOf, seasonNames = {}
     const rows = batch.format === "legacy" ? batch.rows.map(row => adaptLegacyListing(row, batch.sourceDigest)) :
       batch.format === "drive" ? batch.rows.map(row => adaptDriveListing(row, batch.sourceDigest, { seasons, seasonNames })) : batch.rows;
     const start = records.length;
-    records.push(...rows.map(row => ({ row, digest: batch.sourceDigest, review: batch.review?.decisions?.[row.postKey] })));
+    records.push(...rows.map(row => {
+      const review = batch.review?.decisions?.[row.postKey];
+      return { row, effective: { ...row, ...review }, digest: batch.sourceDigest, review };
+    }));
     if (batch.format === "transaction") {
       const report = reviewTransactions(rows, { seasons, asOf });
       rejected.push(...report.rejected.map(r => ({ ...r, sourceDigest: batch.sourceDigest })));
@@ -92,11 +95,14 @@ export function prepareGradedEvidence(batches, { seasons, asOf, seasonNames = {}
   }
   const parent = records.map((_, i) => i), keys = new Map();
   const root = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
-  records.forEach(({ row, review }, i) => {
-    const text = normalized(row.summary);
-    const identifiers = [row.accountKey && `account:${row.accountKey}`, row.postKey && `post:${row.postKey}`,
+  records.forEach(({ effective, review }, i) => {
+    const text = normalized(effective.summary);
+    const identifiers = [effective.accountKey && `account:${effective.accountKey}`, effective.postKey && `post:${effective.postKey}`,
       review?.duplicateOf && `post:${review.duplicateOf}`, text && `text:${hash(text)}`,
-      row.sourceUrl?.match(/\/(?:posts|permalink)\/(\d+)/)?.[1] && `post:${row.sourceUrl.match(/\/(?:posts|permalink)\/(\d+)/)[1]}`];
+      // A broker post may deliberately list several separate accounts. Its
+      // account lines retain a common stablePost for CV grouping, while this
+      // identity pass must not collapse them into one contradictory account.
+      effective.separateAccountInPost !== true && effective.sourceUrl?.match(/\/(?:posts|permalink)\/(\d+)/)?.[1] && `post:${effective.sourceUrl.match(/\/(?:posts|permalink)\/(\d+)/)[1]}`];
     for (const key of identifiers.filter(Boolean)) {
       if (keys.has(key)) parent[root(i)] = root(keys.get(key));
       keys.set(key, i);

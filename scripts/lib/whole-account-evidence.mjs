@@ -71,7 +71,7 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
       reason = "not_single_account_point_ask";
     if (!reason && /徽章|勳章|實體|周邊|\d+徽/.test(text) && !change.accountOnlyConfirmed)
       reason = "mixed_goods";
-    if (!reason && !/(?:台幣|台|NTD|TWD|NT\$)/i.test(text) && !change.currencyConfirmed)
+    if (!reason && !/(?:台幣|臺幣|台|NTD|TWD|NT\$)/i.test(text) && !change.currencyConfirmed)
       reason = "currency_unconfirmed";
     if (!reason && (typeof row.priceTwd !== "number" || !Number.isFinite(row.priceTwd) || row.priceTwd <= 0))
       reason = "invalid_price";
@@ -83,13 +83,17 @@ export function prepareWholeAccountEvidence(rows, { seasons, review = {}, source
     if (season !== null && !known.has(season)) throw new Error("Unknown reviewed season");
     // A source's old numeric fields are not proof of exact counts or breaks.
     candidates.push({
-      accountKey: raw.accountKey ?? rootKey(raw.postKey), postKey: raw.postKey,
+      accountKey: row.accountKey ?? rootKey(raw.postKey), postKey: raw.postKey,
       stablePost: raw.sourceUrl?.match(/\/(?:posts|permalink)\/(\d+)/)?.[1] ?? null,
       textKey: digest(canonicalText(raw.summary)), season,
       packageTier: Object.hasOwn(change, "packageTier") ? change.packageTier : packageLabel(raw.packageRaw),
       breakClass: Object.hasOwn(change, "breakClass") ? change.breakClass : breakLabel(raw.breakRaw),
       price: row.priceTwd, market: "taiwan", server: "international", currency: "TWD", priceKind: row.priceKind,
       publishedAt: raw.publishedAt ?? null, collectedDate: raw.collectedDate,
+      // A manually reviewed broker list can contain several independent
+      // account lines. Keep its shared source post for fold grouping, but do
+      // not equate all listed accounts as one identity downstream.
+      separateAccountInPost: row.separateAccountInPost === true,
       preferred: !change.duplicateOf, completeness: raw.completeness,
     });
   }

@@ -1,87 +1,127 @@
-"""Frozen bounded percentage model; private inputs never leave this host."""
+"""Frozen strict-title hybrid model; private inputs never leave this host."""
 import hashlib
-import importlib.util
 import json
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REVISION = 'season-scaled-packages-2026-10-05'
-SOURCE_SHA = 'cc8836460add0297ce56629a7425527c330200d2758e0e6fce8e5e6f0d0b56d9'
-STATE_SHA = 'ea292c1aac56b90af2286bb8829f40b0ce1f5e9f021d802f074eb3ecae99ae94'
-ARTIFACT = ROOT / 'work/season-scaled-packages-2026-10-05-r2'
-FIT_PARAMS = dict(bounded_baselines=True, effect_regularization=3., season_smoothing=.5)
-
-
-def load_data():
-    raw = (ROOT / 'work/bounded-percentage-2026-10-05/frozen.private.json').read_bytes()
-    digest = hashlib.sha256(raw).hexdigest()
-    if digest != SOURCE_SHA:
-        raise ValueError('Frozen source changed')
-    data = json.loads(raw)
-    return data['rows'], data['seasons'], digest
-
-
-def recipe():
-    spec = importlib.util.spec_from_file_location('percentage', ROOT / 'scripts/percentage-price-model.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REVISION = "strict-title-binding-hybrid-2026-10-05"
+SOURCE_SHA = "1e7f2204ff6f3299bcf4d2b1720506d15911aad46d7465b1b96f8a4252bd7400"
+STATE_SHA = "2f35f73ad35d08de9ae5d7e957e9128ed70983dc33c8662aa5d93ba7af709fb1"
+ARTIFACT = ROOT / "work/strict-title-binding-hybrid-2026-10-05-r5/model.private.json"
+COMMON = ("season", "breakClass", "packageTier")
+PACKAGE_TIERS = ("few", "medium", "many", "hundred")
+BREAK_CLASSES = ("none", "slight", "medium", "large")
 
 
 def artifact():
-    import joblib
-    raw = (ARTIFACT / 'candidate.joblib').read_bytes()
+    raw = ARTIFACT.read_bytes()
     if hashlib.sha256(raw).hexdigest() != STATE_SHA:
-        raise ValueError('Private artifact digest mismatch')
-    # Only our fixed, locally generated artifact is accepted, never uploads.
-    model = recipe().PercentagePriceModel()
-    model.__dict__.update(joblib.load(ARTIFACT / 'candidate.joblib'))
-    if (model.baseline_mode != 'bounded' or model.fit_params != FIT_PARAMS
-            or not model.progressive_packages or not model.package_season_scaling):
-        raise ValueError('Bounded recipe mismatch')
-    return model, STATE_SHA
+        raise ValueError("Private artifact digest mismatch")
+    model = json.loads(raw)
+    required = {"schemaVersion", "revision", "method", "target", "sourceDigest", "strictRows",
+                "strictGroups", "seasons", "seasonCounts", "titleAlpha", "bindingAlpha", "blendWeight",
+                "correctedRidge", "plain",
+                "corrected", "titleResiduals", "bindingResiduals", "bindingFallback"}
+    if (set(model) != required or model["schemaVersion"] != 1 or model["revision"] != REVISION
+            or model["method"] != "strict-title-binding-hybrid" or model["target"] != "asking_price_not_transaction"
+            or model["sourceDigest"] != SOURCE_SHA or model["strictRows"] < 15 or model["strictGroups"] < 10
+            or model["correctedRidge"] != .3 or not 0 <= model["blendWeight"] <= 1):
+        raise ValueError("Strict hybrid recipe mismatch")
+    for name in ("plain", "corrected"):
+        fitted = model[name]
+        if (not isinstance(fitted, dict) or len(fitted.get("centers", [])) != 6
+                or len(fitted.get("coefficients", [])) != 6 or not isinstance(fitted.get("seasons"), dict)
+                or not isinstance(fitted.get("pooled"), dict)):
+            raise ValueError("Invalid strict hybrid state")
+    return model
 
 
 def manifest():
-    rows, seasons, digest = load_data()
-    model, state_digest = artifact()
-    categorical = ['season', 'breakClass', 'packageTier', *sorted({k for k, _ in model.bindings})]
-    return dict(schemaVersion=1, modelRevision=REVISION, method='bounded-percentage', sourceDigest=digest,
-                stateSha256=state_digest, columns=[*categorical, *model.resources, 'packageCount'],
-                categorical=categorical, seasons=seasons,
-                sampleCount=len(rows), seasonCounts={s:sum(r.get('season') == s for r in rows) for s in seasons},
-                asOf='2026-10-05', status='unvalidated')
+    model = artifact()
+    categorical = ["season", "breakClass", "packageTier", "binding:FB", "binding:GC", "binding:GG", "binding:NS"]
+    return dict(schemaVersion=1, modelRevision=REVISION, method="strict-title-binding-hybrid",
+                sourceDigest=SOURCE_SHA, stateSha256=STATE_SHA, columns=[*categorical, "candles", "hearts", "packageCount"],
+                categorical=categorical, seasons=model["seasons"], sampleCount=model["strictRows"],
+                seasonCounts=model["seasonCounts"], asOf="2026-10-05", status="unvalidated")
+
+
+def tier_for_count(value):
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        return None
+    return "hundred" if value >= 100 else "many" if value >= 90 else "medium" if value >= 60 else "few"
+
+
+def vector(features, centers):
+    tier = features.get("packageTier") or tier_for_count(features.get("packageCount"))
+    break_class = "large" if features.get("breakClass") == "big" else features.get("breakClass")
+    levels = (PACKAGE_TIERS.index(tier) if tier in PACKAGE_TIERS else -1,
+              BREAK_CLASSES.index(break_class) if break_class in BREAK_CLASSES else -1)
+    values = []
+    for group, level in enumerate(levels):
+        for threshold in (1, 2, 3):
+            values.append((float(level >= threshold) - centers[group * 3 + threshold - 1]) if level >= 0 else 0.)
+    return values
+
+
+def raw_prediction(fitted, features):
+    season = fitted["pooled"] if features.get("season") is None else fitted["seasons"].get(features.get("season"))
+    if not season:
+        raise ValueError("Unknown model season")
+    log_price = season["logBase"] + sum(value * coefficient for value, coefficient in zip(vector(features, fitted["centers"]), fitted["coefficients"]))
+    value = math.exp(log_price)
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError("Invalid strict hybrid prediction")
+    return value
+
+
+def title_key(features):
+    return "|".join(str(features.get(key) or "unknown") for key in COMMON)
+
+
+def lock_count(features):
+    return sum(1 for key, value in features.items() if key.startswith("binding:") and value not in (None, "transferable", "unbound"))
+
+
+def round_price(value):
+    unit = 100 if value >= 1000 else 10 if value >= 100 else 1
+    return max(1, round(value / unit) * unit)
 
 
 class Predictor:
     def __init__(self):
+        self.model = artifact()
+        published = json.loads((ROOT / "app/valuation-tabpfn-manifest.json").read_text(encoding="utf-8"))
         self.meta = manifest()
-        published = json.loads((ROOT / 'app/valuation-tabpfn-manifest.json').read_text(encoding='utf-8'))
         if self.meta != published:
-            raise ValueError('Private model / public manifest mismatch')
-        self.model, _ = artifact()
-        # Package effects are centered at the medium/many geometric midpoint.
-        prices = self.predict_many([dict(season=s, breakClass='none') for s in self.meta['seasons']])
-        self.bands = [dict(slug=s, median=p, low=None, high=None, status='unvalidated',
-                           method='bounded-percentage', confidence='inferred', sampleCount=self.meta['seasonCounts'][s],
-                           asOf=self.meta['asOf']) for s, p in zip(self.meta['seasons'], prices)]
+            raise ValueError("Private model / public manifest mismatch")
+        self.bands = [dict(slug=season, median=self.predict_many([dict(season=season, breakClass="none", packageTier="medium")])[0],
+                           low=None, high=None, status="unvalidated", method=self.meta["method"], confidence="inferred",
+                           sampleCount=self.meta["seasonCounts"][season], asOf=self.meta["asOf"])
+                      for season in self.meta["seasons"]]
+
+    def price(self, features):
+        plain = raw_prediction(self.model["plain"], features)
+        corrected = raw_prediction(self.model["corrected"], features)
+        title = self.model["titleResiduals"].get(title_key(features), 0.)
+        binding = self.model["bindingResiduals"].get(str(lock_count(features)), self.model["bindingFallback"])
+        corrected *= math.exp(title + binding)
+        weight = self.model["blendWeight"]
+        return math.exp((1 - weight) * math.log(plain) + weight * math.log(corrected))
 
     def predict_many(self, inputs):
-        common = ('season', 'breakClass', 'packageTier')
-        rows = [{**{k:v for k,v in f.items() if k in common},
-                 'features': {k:v for k,v in f.items() if k not in common}} for f in inputs]
-        return [max(1, round(float(p))) for p in self.model.predict(rows)]
+        return [round_price(self.price(features)) for features in inputs]
 
     def predict(self, features):
-        common = ('season', 'breakClass', 'packageTier')
-        row = {**{k:v for k,v in features.items() if k in common},
-               'features':{k:v for k,v in features.items() if k not in common}}
-        explanation = self.model.explain([row])[0]
-        return dict(schemaVersion=1, modelRevision=REVISION, status='unvalidated',
-                    packageAdjustment=dict(count=explanation['packageCount'], multiplier=explanation['factors']['packages'], basis=explanation['packageBasis']),
-                    midpoint=self.predict_many([features])[0], currency='TWD', range=None, seasonBands=self.bands)
+        count = features.get("packageCount") if isinstance(features.get("packageCount"), int) else None
+        tier = features.get("packageTier") or tier_for_count(count)
+        neutral = {**features, "packageTier": None, "packageCount": None}
+        multiplier = self.price(features) / self.price(neutral)
+        basis = "count" if count is not None else "tier" if tier in PACKAGE_TIERS else "unknown"
+        return dict(schemaVersion=1, modelRevision=REVISION, status="unvalidated",
+                    packageAdjustment=dict(count=count if basis == "count" else None, multiplier=multiplier, basis=basis),
+                    midpoint=self.predict_many([features])[0], currency="TWD", range=None, seasonBands=self.bands)
 
 
-if __name__ == '__main__':
-    # Read-only check; publish reviewed manifest via normal file editing.
+if __name__ == "__main__":
     print(json.dumps(manifest(), ensure_ascii=False, indent=2))
