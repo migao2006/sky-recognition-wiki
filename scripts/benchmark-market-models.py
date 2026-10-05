@@ -31,6 +31,7 @@ HIERARCHICAL_LOOKUP_GRID = [
     {"seasonAlpha": 10., "poolAlpha": 30., "neighborAlpha": 3.},
     {"seasonAlpha": 30., "poolAlpha": 30., "neighborAlpha": 10.},
 ]
+HIERARCHICAL_ROBUST_NU_GRID = [2., 4., 8.]
 
 
 def installed_version(package):
@@ -383,8 +384,10 @@ def hierarchical_lookup_predict(train, test, seasons, params):
         values[binding_penalty] = -binding_lock_count(row)
         return values
 
-    design = [vector(row) for row in train]
-    targets = [math.log(row["price"]) for row in train]
+    data_design = np.vstack([vector(row) for row in train])
+    data_targets = np.asarray([math.log(row["price"]) for row in train])
+    penalty_design = []
+    penalty_targets = []
 
     def penalty(weight, entries):
         if weight <= 0:
@@ -392,8 +395,8 @@ def hierarchical_lookup_predict(train, test, seasons, params):
         row = np.zeros(feature_count, dtype=float)
         for index, coefficient in entries:
             row[index] = coefficient * math.sqrt(weight)
-        design.append(row)
-        targets.append(0.)
+        penalty_design.append(row)
+        penalty_targets.append(0.)
 
     for index in range(season_delta.start, season_delta.stop):
         penalty(params["seasonAlpha"], [(index, 1.)])
@@ -417,11 +420,39 @@ def hierarchical_lookup_predict(train, test, seasons, params):
     lower = np.zeros(feature_count, dtype=float)
     lower[0] = -np.inf
     upper = np.full(feature_count, np.inf, dtype=float)
-    fitted = lsq_linear(np.vstack(design), np.asarray(targets), bounds=(lower, upper),
-                        method="trf", lsmr_tol="auto", max_iter=2000)
-    if not fitted.success or not np.all(np.isfinite(fitted.x)):
-        raise ValueError(f"Hierarchical lookup fit failed: {fitted.message}")
-    predictions = np.exp(np.vstack([vector(row) for row in test]) @ fitted.x)
+    penalty_matrix = np.vstack(penalty_design)
+    penalty_values = np.asarray(penalty_targets)
+
+    def solve(weights):
+        roots = np.sqrt(weights)
+        design = np.vstack([data_design * roots[:, None], penalty_matrix])
+        targets = np.concatenate([data_targets * roots, penalty_values])
+        result = lsq_linear(design, targets, bounds=(lower, upper), method="trf",
+                            lsmr_tol="auto", max_iter=2000)
+        if not result.success or not np.all(np.isfinite(result.x)):
+            raise ValueError(f"Hierarchical lookup fit failed: {result.message}")
+        return result.x
+
+    coefficients = solve(np.ones(len(train), dtype=float))
+    robust_nu = params.get("robustNu")
+    if robust_nu is not None:
+        if not isinstance(robust_nu, (int, float)) or not np.isfinite(robust_nu) or robust_nu <= 0:
+            raise ValueError("Invalid Student-t degrees of freedom")
+        for _ in range(8):
+            residuals = data_targets - data_design @ coefficients
+            center = float(np.median(residuals))
+            scale = 1.4826 * float(np.median(np.abs(residuals - center)))
+            if not np.isfinite(scale) or scale < .05:
+                scale = max(float(np.sqrt(np.mean(residuals ** 2))), .05)
+            standardized = residuals / scale
+            updated = (robust_nu + 1.) / (robust_nu + standardized ** 2)
+            updated = np.clip(updated / np.mean(updated), .05, 4.)
+            next_coefficients = solve(updated)
+            if np.max(np.abs(next_coefficients - coefficients)) < 1e-7:
+                coefficients = next_coefficients
+                break
+            coefficients = next_coefficients
+    predictions = np.exp(np.vstack([vector(row) for row in test]) @ coefficients)
     if not np.all(np.isfinite(predictions)) or np.any(predictions <= 0):
         raise ValueError("Invalid hierarchical lookup prediction")
     return predictions.tolist(), ["season", "breakClass", "packageTier", "bindingLockCount"]
@@ -448,6 +479,31 @@ def tune_hierarchical_lookup(train, seasons):
         ordered = sorted(errors)
         scores.append((float(np.median(ordered)), float(np.quantile(ordered, .9))))
     return HIERARCHICAL_LOOKUP_GRID[min(range(len(scores)), key=lambda index: scores[index])]
+
+
+def tune_robust_hierarchical_lookup(train, seasons):
+    """Tune shrinkage and Student-t tail weight inside grouped training folds."""
+    import numpy as np
+    from sklearn.model_selection import GroupKFold
+    groups = [row.get("splitGroup", row["accountKey"]) for row in train]
+    unique_groups = len(set(groups))
+    grid = [{**params, "robustNu": nu}
+            for params in HIERARCHICAL_LOOKUP_GRID for nu in HIERARCHICAL_ROBUST_NU_GRID]
+    if unique_groups < 3:
+        return grid[-1]
+    splits = list(GroupKFold(n_splits=min(3, unique_groups)).split(train, groups=groups))
+    scores = []
+    for params in grid:
+        errors = []
+        for train_indices, validation_indices in splits:
+            fit_rows = [train[index] for index in train_indices]
+            validation_rows = [train[index] for index in validation_indices]
+            predictions, _ = hierarchical_lookup_predict(fit_rows, validation_rows, seasons, params)
+            errors.extend(abs(prediction - row["price"]) / row["price"]
+                          for prediction, row in zip(predictions, validation_rows))
+        ordered = sorted(errors)
+        scores.append((float(np.median(ordered)), float(np.quantile(ordered, .9))))
+    return grid[min(range(len(scores)), key=lambda index: scores[index])]
 
 
 def evaluate(train, test, model, seasons):
@@ -484,6 +540,9 @@ def evaluate(train, test, model, seasons):
             predictions, columns = baseline_predict(train, test, seasons, original, params.get("ridge", 1))
         elif model == "hierarchical_lookup":
             params = tune_hierarchical_lookup(train, seasons)
+            predictions, columns = hierarchical_lookup_predict(train, test, seasons, params)
+        elif model == "hierarchical_lookup_student_t":
+            params = tune_robust_hierarchical_lookup(train, seasons)
             predictions, columns = hierarchical_lookup_predict(train, test, seasons, params)
         elif model.startswith("catboost"):
             loss = "MAE" if model.startswith("catboost_mae") else "RMSE"
@@ -548,7 +607,8 @@ def main():
     os.environ["TABPFN_MODEL_CACHE_DIR"] = str(ROOT / "work" / "tabpfn-cache")
     models = ["baseline_original", "baseline_enriched", "baseline_enriched_tuned_ridge",
               "baseline_enriched_empirical_residual", "baseline_enriched_title_binding_residual",
-              "baseline_enriched_title_binding_blend", "hierarchical_lookup"]
+              "baseline_enriched_title_binding_blend", "hierarchical_lookup",
+              "hierarchical_lookup_student_t"]
     unavailable = []
     if installed_version("catboost") is None:
         unavailable.extend(["catboost_common", "catboost_extended", "catboost_mae_common", "catboost_mae_extended"])
@@ -574,6 +634,7 @@ def main():
               "baselineRidgeGrid": BASELINE_RIDGE_GRID, "empiricalResidualAlpha": EMPIRICAL_RESIDUAL_ALPHA,
               "bindingResidualAlpha": BINDING_RESIDUAL_ALPHA,
               "hierarchicalLookupGrid": HIERARCHICAL_LOOKUP_GRID,
+              "hierarchicalRobustNuGrid": HIERARCHICAL_ROBUST_NU_GRID,
               "catboostFixed": {"iterations": 300, "learning_rate": .04, "one_hot_max_size": 64, "thread_count": 4,
                                 "logTargetLosses": ["RMSE", "MAE"]},
               "extraTreesFixed": {"estimators": 400, "min_samples_leaf": 2, "max_features": 1.0, "thread_count": 4},

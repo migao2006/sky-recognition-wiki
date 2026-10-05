@@ -202,13 +202,13 @@ Excel 中的舊模型預測與條件格中位數不能再當獨立行情訓練�
 
 本機比較工具以刊登價為主要目標，已售標價另列，未取得确认成交價時不報成交準確度。工具不自動發布；TabPFN v2 與 CatBoost 仍只供離線比較，沒有在嚴格 cohort 證明優於目前服務混合模型前不得替換正式路徑。
 
-`benchmark-market-models.py` 另包含 `hierarchical_lookup`：在對數價格空間建立 30 季 × 斷季 × 禮包級距的部分池化對照表。各季保留自己的禮包增幅與斷季折減，但以 ridge penalty 向全市場及相鄰季節收縮；非負參數直接保證舊季不低於新季、更多禮包不降價、更多斷季不加價。外層仍按來源分組，收縮強度只在各外折的訓練資料內三折選取。`--models` 可限制私人候選，`--cohorts` 可只執行指定 cohort；`baseline_enriched` 會固定加入作共同基準。
+`benchmark-market-models.py` 另包含 `hierarchical_lookup`：在對數價格空間建立 30 季 × 斷季 × 禮包級距的部分池化對照表。各季保留自己的禮包增幅與斷季折減，但以 ridge penalty 向全市場及相鄰季節收縮；非負參數直接保證舊季不低於新季、更多禮包不降價、更多斷季不加價。`hierarchical_lookup_student_t` 以 Student-t IRLS 對資料列降權，正則化列不降權；自由度 2／4／8 與收縮強度都只在各外折的分組訓練內三折選取。這是依 [PyMC robust regression](https://www.pymc.io/projects/examples/en/latest/statistical_rethinking_lectures/07-Fitting_Over_%26_Under.html) 的厚尾 likelihood 與 [scikit-learn robust regression](https://scikit-learn.org/stable/modules/linear_model.html#huber-regression) 的小樣本離群降權原則實作的私人候選，不引入 PyMC runtime。`--models` 可限制私人候選，`--cohorts` 可只執行指定 cohort；`baseline_enriched` 會固定加入作共同基準。
 
 ```powershell
 & "$env:USERPROFILE/.sky-valuation/venv/Scripts/python.exe" scripts/benchmark-market-models.py `
   work/market-benchmark-facebook-2026-10-05-r2/benchmark.private.json `
   work/new-hierarchical-benchmark.private `
-  --models baseline_enriched_title_binding_blend,hierarchical_lookup,catboost_common,catboost_mae_common,tabpfn_v2_common `
+  --models baseline_enriched_title_binding_blend,hierarchical_lookup,hierarchical_lookup_student_t,catboost_common,catboost_mae_common,tabpfn_v2_common `
   --cohorts ask_title_evidenced
 
 node scripts/check-market-release-gate.mjs `
@@ -217,6 +217,8 @@ node scripts/check-market-release-gate.mjs `
 ```
 
 2026-10-05 使用新增 Facebook 資料後的 58 筆嚴格標題 cohort 重跑相同 folds：正式公式重訓版／階層查表／CatBoost RMSE／CatBoost MAE／TabPFN v2 的中位百分比誤差分別為 23.34%／22.18%／36.81%／35.27%／21.95%；Hit@20 為 41.38%／43.10%／31.03%／36.21%／44.83%；P90 為 55.91%／52.02%／96.38%／146.71%／125.83%。TabPFN 的中位數較低但尾端明顯惡化；階層查表三項均優於同批重訓公式，但相較網站目前凍結 44 筆版本的 18.86% 中位誤差與 54.55% Hit@20 仍退步，且凍結舊案例中位誤差為 22.18%。兩者均未通過發布門檻，正式 artifact、manifest、API 與網站估價不變。這仍是分組開發比較，不是獨立盲測。
+
+2026-10-06 在相同 58 筆、相同 folds 測試 robust 候選：Student-t 版中位誤差 22.74%、Hit@20 46.55%、P90 50.40%，相較普通階層查表的 22.18%／43.10%／52.02% 只改善命中率與尾端；凍結舊 44 筆為 22.38%／47.73%／49.28%，未通過中位數及 Hit@20 發布門檻。另測的 L1 中位數版為 25.55%／37.93%／50.14%，普通／Student-t 幾何混合為 24.36%／43.10%／50.41%，均被淘汰且未保留程式碼。正式模型不變；下一輪應補 30 季 × 4 斷季 × 4 禮包級距的真實缺格，不能再以損失函數微調取代市場證據。
 
 ```powershell
 # 先依上面的 compare-graded-market 指令產生包含原文的新版私人 report。

@@ -111,6 +111,34 @@ class BenchmarkTest(unittest.TestCase):
                 break_values = [values[(season, tier, break_class)] for break_class in bench.BREAK_CLASSES]
                 self.assertEqual(break_values, sorted(break_values, reverse=True))
 
+    def test_robust_hierarchical_lookup_downweights_extreme_listing(self):
+        seasons = ["old", "new"]
+        train = []
+        for index in range(12):
+            train.append({
+                "accountKey": f"regular-{index}", "season": "old",
+                "packageTier": "few", "breakClass": "none",
+                "price": 10000 + index * 50, "features": {},
+            })
+        train.append({
+            "accountKey": "extreme", "season": "old", "packageTier": "few",
+            "breakClass": "none", "price": 1000000, "features": {},
+        })
+        probe = [{"season": "old", "packageTier": "few", "breakClass": "none", "features": {}}]
+        plain_params = {"seasonAlpha": 3., "poolAlpha": 10., "neighborAlpha": 1.}
+        plain, _ = bench.hierarchical_lookup_predict(train, probe, seasons, plain_params)
+        robust, columns = bench.hierarchical_lookup_predict(
+            train, probe, seasons, {**plain_params, "robustNu": 4.})
+        self.assertEqual(columns, ["season", "breakClass", "packageTier", "bindingLockCount"])
+        self.assertLess(robust[0], plain[0])
+        self.assertLess(abs(robust[0] - 10275), abs(plain[0] - 10275))
+
+    def test_robust_hierarchical_lookup_rejects_invalid_nu(self):
+        row = {"accountKey": "one", "season": "old", "packageTier": "few",
+               "breakClass": "none", "price": 10000, "features": {}}
+        params = {"seasonAlpha": 3., "poolAlpha": 10., "neighborAlpha": 1., "robustNu": 0.}
+        with self.assertRaisesRegex(ValueError, "degrees of freedom"):
+            bench.hierarchical_lookup_predict([row], [row], ["old", "new"], params)
 
 if __name__ == "__main__":
     unittest.main()
