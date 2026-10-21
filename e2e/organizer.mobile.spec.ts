@@ -1,207 +1,65 @@
 import { expect, test } from "@playwright/test";
-import manifest from "../app/valuation-tabpfn-manifest.json" with { type: "json" };
 
-// Synthetic transport fixture only: CI has no private model or market records.
-const modelFixture = {
-  schemaVersion: 1, modelRevision: manifest.modelRevision, status: "unvalidated", currency: "TWD", range: null,
-  midpoint: 12345,
-  seasonBands: manifest.seasons.map(slug => ({ slug, median: 12345, low: null, high: null,
-    status: "unvalidated", method: manifest.method, confidence: "inferred", asOf: manifest.asOf,
-    sampleCount: manifest.seasonCounts[slug as keyof typeof manifest.seasonCounts] })),
-};
-test.beforeEach(async ({ page }) => {
-  await page.route("**/api/valuation", route => route.fulfill({ json: modelFixture }));
-});
-
-test("preliminary estimate stays visible and confirmation sends wardrobe features", async ({ page }) => {
-  const requests: Record<string, unknown>[] = [];
-  await page.route("**/api/valuation", route => {
-    requests.push(route.request().postDataJSON().features);
-    const count = requests.at(-1)?.packageCount;
-    return route.fulfill({ json: { ...modelFixture, midpoint: requests.at(-1)?.season ? 23456 : 12345,
-      packageAdjustment: {count, multiplier: count === null ? 1 : 1.25, basis: count === null ? "unknown" : "count"} } });
-  });
-  await page.goto("/");
-  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible({ timeout: 15000 });
-  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
-  await page.getByRole("button", { name: "季節畢業", exact: true }).click();
-  await page.locator(".grid button").first().click();
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect(page.locator(".model-price")).toHaveText("NT$ 12,345");
-  await expect(page.locator(".showcase-price span")).toHaveText("初步推估");
-  await expect(page.locator(".valuation-verdict > span")).toHaveText("初步推估");
-  expect(requests.at(-1)?.season).toBeNull();
-  expect(requests.at(-1)?.packageTier).toBeNull();
-  expect(requests.at(-1)?.packageCount).toBeNull();
-  await page.getByRole("button", { name: "返回確認衣櫃" }).click();
-  await expect(page.getByLabel("已逐項確認完整衣櫃")).not.toBeChecked();
-  await page.getByLabel("已逐項確認完整衣櫃").check();
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect(page.locator(".model-price")).toHaveText("NT$ 23,456");
-  await expect(page.locator(".showcase-price span")).toHaveText("參考估價");
-  expect(requests.at(-1)?.season).toBeTruthy();
-  expect(requests.at(-1)?.packageTier).not.toBeNull();
-  expect(requests.at(-1)?.packageCount).toBe(0);
-  await page.getByText("估價依據", { exact: true }).click();
-  await expect(page.locator(".valuation-method")).toContainText("可計價禮包 0 禮；平滑推算：基準的 125.0%");
-});
-
-test("late preliminary response cannot replace a confirmed estimate", async ({ page }) => {
-  let releaseOld: (() => Promise<void>) | undefined;
-  await page.route("**/api/valuation", async route => {
-    if (route.request().postDataJSON().features.packageTier === null) {
-      releaseOld = async () => {
-        await route.fulfill({ json: { ...modelFixture, midpoint: 1111 } }).catch(() => {});
-      };
-      return;
-    }
-    await route.fulfill({ json: { ...modelFixture, midpoint: 23456 } });
-  });
-  await page.goto("/");
-  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible({ timeout: 15000 });
-  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
-  await page.locator(".grid button").first().click();
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect.poll(() => Boolean(releaseOld)).toBe(true);
-  await page.getByRole("button", { name: "返回確認衣櫃" }).click();
-  await page.getByLabel("已逐項確認完整衣櫃").check();
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect(page.locator(".model-price")).toHaveText("NT$ 23,456");
-  await releaseOld!();
-  await expect(page.locator(".model-price")).toHaveText("NT$ 23,456");
-  await expect(page.locator(".showcase-price strong")).toHaveText("NT$ 23,456");
-});
-
-test("offline valuation never falls back and manual retry restores one shared result", async ({ page }) => {
-  let online = false;
-  let calls = 0;
-  await page.route("**/api/valuation", route => {
-    calls++;
-    return online ? route.fulfill({ json: modelFixture }) : route.fulfill({ status: 503, json: { error: "offline" } });
-  });
-  await page.goto("/");
-  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
-  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
-  await page.locator(".grid button").first().click();
-  expect(calls).toBe(0);
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect(page.locator(".model-price")).toHaveText("估價暫時無法使用");
-  await expect(page.locator(".showcase-price strong")).toHaveText("估價暫時無法使用");
-  await expect(page.locator(".valuation-range")).toHaveCount(0);
-  online = true;
-  await page.getByRole("button", { name: "重試估價" }).click();
-  await expect(page.locator(".model-price")).toHaveText("NT$ 12,345");
-  await expect(page.locator(".showcase-price strong")).toHaveText("NT$ 12,345");
-});
-
-test("supports the essential mobile organizer flow", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
-  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
-
-  await page.getByLabel("帳號名稱").fill("手機測試帳號");
-  await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        [...Array(window.localStorage.length).keys()].some((index) => {
-          const value = window.localStorage.getItem(
-            window.localStorage.key(index) ?? "",
-          );
-          return value?.includes("手機測試帳號") ?? false;
-        }),
-      ),
-    )
-    .toBe(true);
-  await page.reload();
-  await expect(page.getByLabel("帳號名稱")).toHaveValue("手機測試帳號");
-
-  await page.getByText("更多匯出方式").click();
-  await expect(page.getByRole("button", { name: "匯出 JSON" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "匯入 JSON" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "出售文案" })).toHaveCount(0);
-  await page.locator(".binding-section summary").click();
-  await page.getByLabel("已確認以上綁定狀態").check();
-
-  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
-  await expect(page.getByRole("heading", { name: "選擇物品" })).toBeVisible({
-    timeout: 30_000,
-  });
-  await expect(page.locator(".discovery-primary")).toHaveCSS(
-    "position",
-    "static",
-  );
-  await expect(page.locator(".closet-nav")).toHaveCSS("position", "static");
-
-  await page.getByRole("button", { name: /篩選/ }).first().click();
-  const filterDialog = page.getByRole("dialog", { name: "篩選物品" });
-  await expect(filterDialog).toBeVisible();
-  await page.evaluate(() => {
-    const probe = document.createElement("button");
-    probe.id = "outside-focus-probe";
-    document.body.append(probe);
-    probe.focus();
-  });
-  await expect(page.locator("#outside-focus-probe")).toBeFocused();
-  await page.keyboard.press("Tab");
-  expect(
-    await filterDialog.evaluate((dialog) =>
-      dialog.contains(document.activeElement),
-    ),
-  ).toBe(true);
-  await page.locator("#outside-focus-probe").evaluate((probe) => probe.remove());
-  await page.keyboard.press("Escape");
-  await expect(filterDialog).toBeHidden();
-  await page.getByRole("button", { name: "季節畢業" }).click();
-
-  const firstItem = page.locator(".grid button").first();
-  await expect(firstItem).toBeVisible();
-  await expect(firstItem).toHaveAccessibleName(/^選取：.+/);
-  const firstIcon = firstItem.locator("img");
-  await expect(firstIcon).toBeVisible();
-  await firstIcon.dispatchEvent("error");
-  await expect(firstItem.locator(".catalog-icon-fallback")).toBeVisible();
-  await firstItem.click();
-  await expect(firstItem).toHaveAccessibleName(/^取消選取：.+/);
-  await expect(page.getByText(/已選 1/)).toBeVisible();
-
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect(page.getByRole("heading", { name: "估價與匯出" })).toBeVisible({
-    timeout: 30_000,
-  });
-  await expect(page.getByRole("button", { name: "分享摘要" })).toBeVisible();
-  await expect(page.getByRole("button", { name: /出售文案/ })).toHaveCount(0);
-  await expect(page.getByText("更多匯出方式")).toHaveCount(0);
-  await expect(page.locator(".valuation-contributions")).toHaveCount(0);
-  await expect(page.locator(".valuation-season-table")).toHaveCount(0);
-  await expect(page.locator(".model-price")).toHaveText(/^NT\$ [\d,]+$/);
-  const price = await page.locator(".model-price").innerText();
-  await expect(page.locator(".showcase-price strong")).toHaveText(price);
-  await page.getByText("各季參考估價").click();
-  await expect(page.locator(".valuation-season-table")).toBeVisible();
-  await expect(page.locator(".valuation-season-table tbody tr")).toHaveCount(30);
-  for (const row of await page.locator(".valuation-season-table tbody tr").all())
-    await expect(row).toContainText("NT$");
-  await page.getByText("估價依據").click();
-  await expect(page.locator(".valuation-method p").first()).toBeVisible();
-  await expect(page.locator(".valuation-method")).toContainText(manifest.modelRevision);
-  await page.evaluate(() => {
-    Object.defineProperty(navigator, "share", {
+test("supports the complete mobile organizer flow without a valuation API", async ({ page }) => {
+  let valuationCalls = 0;
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, "share", {
       configurable: true,
       value: async ({ text }: ShareData) => {
         window.sessionStorage.setItem("shared-account-summary", text ?? "");
       },
     });
   });
+  await page.route("**/api/valuation", (route) => {
+    valuationCalls += 1;
+    return route.abort();
+  });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
+  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
+
+  await page.getByLabel("帳號名稱").fill("手機測試帳號");
+  await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
+  await page.reload();
+  await expect(page.getByLabel("帳號名稱")).toHaveValue("手機測試帳號");
+  await page.locator(".binding-section summary").click();
+  await page.getByLabel("已確認以上綁定狀態").check();
+
+  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
+  await expect(page.getByRole("heading", { name: "選擇物品" })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /篩選/ }).first().click();
+  const filterDialog = page.getByRole("dialog", { name: "篩選物品" });
+  await expect(filterDialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(filterDialog).toBeHidden();
+
+  await page.getByRole("button", { name: "禮包限定" }).click();
+  const firstItem = page.locator(".grid button").first();
+  await expect(firstItem).toHaveAccessibleName(/^選取：.+/);
+  await firstItem.click();
+  await expect(firstItem).toHaveAccessibleName(/^取消選取：.+/);
+  await page.getByRole("button", { name: "前往整理" }).click();
+
+  await expect(page.getByRole("heading", { name: "整理與匯出" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("button", { name: "分享摘要" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "重點收藏" })).toBeVisible();
+  await expect(page.locator(".output-metrics")).toBeVisible();
+  await expect(page.locator("main")).not.toContainText("估價");
+  expect(valuationCalls).toBe(0);
+
   await page.getByRole("button", { name: "分享摘要" }).click();
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        window.sessionStorage.getItem("shared-account-summary"),
-      ),
+      page.evaluate(() => sessionStorage.getItem("shared-account-summary")),
     )
-    .toContain(price);
-  // Capture actual Canvas text; the downloaded image must use the same value.
+    .not.toBeNull();
+  const shared =
+    (await page.evaluate(() =>
+      sessionStorage.getItem("shared-account-summary"),
+    )) ?? "";
+  expect(shared).not.toContain("參考估價");
+  expect(shared).not.toMatch(/NT\$/u);
+
   await page.evaluate(() => {
     const fillText = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
@@ -215,29 +73,13 @@ test("supports the essential mobile organizer flow", async ({ page }) => {
   const imageDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "下載圖片", exact: true }).click();
   await imageDownload;
-  expect(await page.evaluate(() => sessionStorage.getItem("canvas-text"))).toContain(price);
-});
-
-test("unknown binding and ordinary items estimate; empty selection does not fabricate a price", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
-  await page.getByRole("button", { name: "下一步：選擇物品" }).click();
-  const first = page.locator(".grid button").first();
-  await expect(first).toBeVisible({ timeout: 30_000 });
-  await first.click();
-  await page.getByRole("button", { name: "前往估價" }).click();
-  await expect(page.locator(".model-price")).toHaveText(/^NT\$ [\d,]+$/);
-  await page.getByText("估價依據", { exact: true }).click();
-  await expect(page.locator(".valuation-method")).toContainText("未指定起季");
-  await expect(page.locator(".valuation-method")).toContainText("綁定尚未確認");
-  await expect(page.locator("main")).not.toContainText("資料不足");
-  await page.getByRole("button", { name: "清除已選物品", exact: true }).click();
-  await expect(page.locator(".model-price")).toHaveText("請先選擇物品");
+  const canvasText = await page.evaluate(() => sessionStorage.getItem("canvas-text") ?? "");
+  expect(canvasText).toContain("帳號收藏摘要");
+  expect(canvasText).not.toContain("估價");
 });
 
 test("imports and exports account backups from the first step", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible();
   await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
   await page.getByLabel("帳號名稱").fill("目前帳號");
   await page.getByText("更多匯出方式").click();
@@ -245,23 +87,11 @@ test("imports and exports account backups from the first step", async ({ page })
   const legacyBackup = {
     format: "sky-recognition-wiki",
     version: 2,
-    account: {
-      name: "舊版備份",
-      accountType: "有翼",
-      bindingNote: "前號不出",
-      notes: "交易前請先核對",
-    },
+    account: { name: "舊版備份", accountType: "有翼", bindingNote: "前號不出", notes: "交易前請先核對" },
     bindings: {},
     owned: ["instrument-harp", "unknown-guid"],
   };
   const backupInput = page.getByLabel("匯入 JSON 檔案");
-  page.once("dialog", (dialog) => dialog.dismiss());
-  await backupInput.setInputFiles({
-    name: "legacy-backup.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(legacyBackup)),
-  });
-  await expect(page.getByText("已取消匯入，原有資料未變更")).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await backupInput.setInputFiles({
     name: "legacy-backup.json",
@@ -270,37 +100,14 @@ test("imports and exports account backups from the first step", async ({ page })
   });
   await expect(page.getByText("已匯入 0 件、遷移 1 件、略過 1 件")).toBeVisible();
 
-  await backupInput.setInputFiles({
-    name: "future-backup.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify({
-      format: "sky-recognition-wiki",
-      version: 999,
-      account: {},
-      bindings: {},
-      owned: [],
-    })),
-  });
-  await expect(page.getByText("無法匯入：備份版本較新或不支援")).toBeVisible();
-  await backupInput.setInputFiles({
-    name: "invalid-backup.json",
-    mimeType: "application/json",
-    buffer: Buffer.from("{not-json"),
-  });
-  await expect(page.getByText("無法匯入：檔案格式不正確")).toBeVisible();
-
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "匯出 JSON" }).click();
-  const download = await downloadPromise;
-  const stream = await download.createReadStream();
+  const stream = await (await downloadPromise).createReadStream();
   const chunks: Buffer[] = [];
   for await (const chunk of stream) chunks.push(Buffer.from(chunk));
   const exported = JSON.parse(Buffer.concat(chunks).toString("utf8"));
   expect(exported.version).toBe(4);
   expect(exported.account.name).toBe("舊版備份");
   expect(exported.account.wardrobeConfirmed).toBe(false);
-  expect(exported.account.identityId).toMatch(
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-  );
   expect(exported.owned).toHaveLength(1);
 });

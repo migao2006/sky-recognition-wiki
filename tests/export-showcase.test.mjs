@@ -144,41 +144,37 @@ test("keeps store items with different displayed sources in separate clusters", 
   );
 });
 
-test("adds a compact valuation summary without changing collection layout", () => {
+test("adds a compact account summary without changing collection layout", () => {
   const entries = [item({ guid: "cape", type: "Cape" })];
   const collection = measureShowcaseCanvas({
     ...options(entries),
     preset: "collection",
   });
-  const valuation = measureShowcaseCanvas({
+  const highlights = measureShowcaseCanvas({
     ...options(entries),
-    preset: "valuation",
-    valuation: {
-      midpoint: 35000,
-      range: { low: 32000, high: 38000 },
-      confidence: "高信心",
-      completeness: 100,
+    preset: "highlights",
+    summary: {
       itemCount: 1,
-      highlights: ["追光季"],
+      ultimateCount: 1,
+      paidCount: 0,
+      limitedCount: 0,
     },
   });
   assert.equal(collection.width, 1600);
-  assert.equal(valuation.width, collection.width);
-  assert.equal(valuation.height, collection.height + 236);
+  assert.equal(highlights.width, collection.width);
+  assert.equal(highlights.height, collection.height + 144);
 });
 
-test("includes the valuation summary in pagination without clipping items", () => {
-  const entries = [item({ guid: "valuation-cape", type: "Cape" })];
+test("includes the account summary in pagination without clipping items", () => {
+  const entries = [item({ guid: "highlight-cape", type: "Cape" })];
   const settings = {
     ...options(entries),
-    preset: "valuation",
-    valuation: {
-      midpoint: 35000,
-      range: { low: 32000, high: 38000 },
-      confidence: "高信心",
-      completeness: 100,
+    preset: "highlights",
+    summary: {
       itemCount: 1,
-      highlights: ["追光季"],
+      ultimateCount: 1,
+      paidCount: 0,
+      limitedCount: 0,
     },
   };
   const measured = measureShowcaseCanvas(settings);
@@ -190,7 +186,7 @@ test("includes the valuation summary in pagination without clipping items", () =
   );
   assert.deepEqual(
     plan.pageItems.flat().map((entry) => entry.guid),
-    ["valuation-cape"],
+    ["highlight-cape"],
   );
 });
 

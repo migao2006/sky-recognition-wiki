@@ -4,7 +4,7 @@ import type { BindingKey } from "./account-config";
 type MarketAvailability = "global" | "china" | "platform";
 type MarketPlatform = BindingKey;
 type MarketSaleSection = "collaboration" | "important" | "special";
-type MarketValuationTier = "high" | "standard";
+type MarketImportanceTier = "high" | "standard";
 type MarketImportance = "important" | "standard";
 type MarketReturning = "returning" | "limited" | "unknown";
 
@@ -19,8 +19,8 @@ type MarketCollectibleProfile = {
   availability: MarketAvailability;
   platform?: MarketPlatform;
   paid: boolean;
-  valuationMultiplier: number;
-  valuationTier: MarketValuationTier;
+  importanceWeight: number;
+  importanceTier: MarketImportanceTier;
   saleCopy: boolean;
   saleSection: MarketSaleSection;
   salePriority: number;
@@ -41,8 +41,8 @@ type ProfileDefaults = Pick<
   | "series"
   | "availability"
   | "paid"
-  | "valuationMultiplier"
-  | "valuationTier"
+  | "importanceWeight"
+  | "importanceTier"
   | "saleSection"
   | "salePriority"
 > & {
@@ -78,8 +78,8 @@ const permanentCollaboration = (
       series,
       availability: "global",
       paid: true,
-      valuationMultiplier: 1.5,
-      valuationTier: "high",
+      importanceWeight: 1.5,
+      importanceTier: "high",
       saleSection: "collaboration",
       salePriority: 20,
       ...options,
@@ -146,7 +146,7 @@ const collaborationProfiles = [
       ["Nintendo Blue Switch Cape", "Nintendo 藍斗", "nintendo-pack", ["Nintendo 藍斗篷", "林克套組"]],
       ["Vessel Flute", "陶笛", "nintendo-pack"],
     ],
-    { availability: "platform", platform: "nintendo", valuationMultiplier: 1.25 },
+    { availability: "platform", platform: "nintendo", importanceWeight: 1.25 },
   ),
   ...permanentCollaboration("風之旅人", [
     ["Journey Hair", "風之旅人髮型", "journey-pack"],
@@ -160,7 +160,7 @@ const collaborationProfiles = [
       ["Transcendent Journey Mask", "超凡風旅面具", "transcendent-journey-pack", ["超越之旅面具", "超凡旅人面具", "超凡風旅"]],
       ["Transcendent Journey Cape", "超凡風旅斗篷", "transcendent-journey-pack", ["超越之旅斗篷", "超凡旅人斗篷", "超凡風旅"]],
     ],
-    { availability: "platform", platform: "playstation", valuationMultiplier: 1.25 },
+    { availability: "platform", platform: "playstation", importanceWeight: 1.25 },
   ),
 ];
 
@@ -169,8 +169,8 @@ const importantPackageProfiles = defineProfiles(
     series: "重要禮包",
     availability: "global",
     paid: true,
-    valuationMultiplier: 0.9,
-    valuationTier: "high",
+    importanceWeight: 0.9,
+    importanceTier: "high",
     saleSection: "important",
     salePriority: 10,
   },
@@ -207,8 +207,8 @@ const importantLimitedProfiles = defineProfiles(
     series: "重要限定",
     availability: "global",
     paid: false,
-    valuationMultiplier: 0.9,
-    valuationTier: "high",
+    importanceWeight: 0.9,
+    importanceTier: "high",
     saleSection: "important",
     salePriority: 50,
   },
@@ -223,8 +223,8 @@ const standardPaidProfiles = defineProfiles(
     series: "其他付費",
     availability: "global",
     paid: true,
-    valuationMultiplier: 0.9,
-    valuationTier: "standard",
+    importanceWeight: 0.9,
+    importanceTier: "standard",
     saleSection: "special",
     salePriority: 100,
   },
@@ -273,8 +273,8 @@ const redemptionProfiles = defineProfiles(
     series: "活動收藏",
     availability: "global",
     paid: false,
-    valuationMultiplier: 0.9,
-    valuationTier: "standard",
+    importanceWeight: 0.9,
+    importanceTier: "standard",
     saleSection: "special",
     salePriority: 101,
   },
@@ -289,8 +289,8 @@ const legacyProfiles = defineProfiles(
     series: "常駐特殊",
     availability: "global",
     paid: true,
-    valuationMultiplier: 0.75,
-    valuationTier: "standard",
+    importanceWeight: 0.75,
+    importanceTier: "standard",
     saleSection: "special",
     salePriority: 200,
   },
@@ -334,9 +334,9 @@ const generatedIapProfiles: MarketCollectibleProfile[] = (
   const collaboration = collaborationSeries.has(item.series);
   return {
     ...item,
-    valuationMultiplier:
+    importanceWeight:
       item.availability === "platform" ? 1.25 : collaboration ? 1.5 : 0.9,
-    valuationTier: collaboration ? "high" : "standard",
+    importanceTier: collaboration ? "high" : "standard",
     saleCopy: true,
     saleSection: collaboration ? "collaboration" : "special",
     salePriority: 1_000 + index,

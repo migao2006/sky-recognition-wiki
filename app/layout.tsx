@@ -3,25 +3,25 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sky-recognition-wiki.vercel.app"),
-  title: "光遇帳號整理｜衣櫃與估價",
+  title: "光遇帳號整理｜衣櫃與匯出",
   description:
-    "整理 Sky 光遇的季節、衣櫃、綁定與資源，查看參考價格並匯出圖片。",
+    "整理 Sky 光遇的季節、衣櫃、綁定與資源，製作摘要並匯出圖片。",
   openGraph: {
-    title: "光遇帳號整理｜衣櫃與估價",
-    description: "整理帳號資料，查看參考中位價與價格區間。",
+    title: "光遇帳號整理｜衣櫃與匯出",
+    description: "整理帳號資料、衣櫃收藏與分享圖片。",
     images: [
       {
         url: "/og-starfield.png",
         width: 1734,
         height: 907,
-        alt: "光遇帳號整理｜衣櫃・估價・匯出",
+        alt: "光遇帳號整理｜衣櫃・整理・匯出",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "光遇帳號整理｜衣櫃與估價",
-    description: "整理帳號資料，查看參考中位價與價格區間。",
+    title: "光遇帳號整理｜衣櫃與匯出",
+    description: "整理帳號資料、衣櫃收藏與分享圖片。",
     images: ["/og-starfield.png"],
   },
   appleWebApp: {

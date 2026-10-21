@@ -20,7 +20,7 @@ import type { CatalogRuntime } from "./use-organizer-runtime";
 import {
   isSeasonPendant,
   isSeasonUltimate,
-} from "./valuation-items";
+} from "./catalog-item-traits";
 
 const VISIBLE_ITEM_BATCH = 32;
 
@@ -33,7 +33,6 @@ export function CatalogStep({
   onWardrobeConfirmedChange,
   onBack,
   onNext,
-  onPreloadValuation,
 }: {
   runtime: CatalogRuntime;
   state: CatalogStepState;
@@ -43,7 +42,6 @@ export function CatalogStep({
   onWardrobeConfirmedChange: (confirmed: boolean) => void;
   onBack: () => void;
   onNext: () => void;
-  onPreloadValuation: () => void;
 }) {
   const {
     visibleCount,
@@ -68,14 +66,8 @@ export function CatalogStep({
   const toggleOwned = useCallback(
     (guid: string) => {
       onToggleOwned(guid);
-      const connection = (
-        navigator as Navigator & { connection?: ConnectionHint }
-      ).connection;
-      if (shouldIdlePreload(connection)) {
-        window.setTimeout(onPreloadValuation, 0);
-      }
     },
-    [onPreloadValuation, onToggleOwned],
+    [onToggleOwned],
   );
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
@@ -371,12 +363,9 @@ export function CatalogStep({
         <h1>選擇物品</h1>
         <button
           type="button"
-          onPointerEnter={onPreloadValuation}
-          onPointerDown={onPreloadValuation}
-          onFocus={onPreloadValuation}
           onClick={onNext}
         >
-          前往估價
+          前往整理
         </button>
       </div>
       <div className="discovery-tools">
@@ -569,7 +558,7 @@ export function CatalogStep({
         />
         <span>
           <b>已逐項確認完整衣櫃</b>
-          <small>此確認會寫入備份，供正式估價樣本使用。</small>
+          <small>此確認會寫入備份，方便之後繼續整理。</small>
         </span>
       </label>
       <div className="step-actions catalog-next">
@@ -578,9 +567,6 @@ export function CatalogStep({
         </button>
         <button
           type="button"
-          onPointerEnter={onPreloadValuation}
-          onPointerDown={onPreloadValuation}
-          onFocus={onPreloadValuation}
           onClick={() => {
             if (!query.trim() && nextClosetSub) {
               selectClosetSub(nextClosetSub, true);
@@ -593,7 +579,7 @@ export function CatalogStep({
             ? nextClosetSub.closetKey === activeCloset.key
               ? `下一類：${nextClosetSub.subName}`
               : `下一衣櫃：${nextClosetSub.closetName} · ${nextClosetSub.subName}`
-            : "估價與匯出"}
+            : "整理與匯出"}
         </button>
       </div>
       {filterPanelOpen && (

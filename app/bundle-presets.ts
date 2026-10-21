@@ -4,7 +4,7 @@ type BundlePreset = {
 } & ({ names: readonly string[] } | { collection: string });
 
 // Keep account-step presets independent from the complete IAP metadata snapshot.
-// The detailed profiles only load with the catalog/valuation runtime.
+// Detailed profiles load only with the catalog runtime.
 const seriesNames = {
   絆愛: ["Kizuna AI Cape", "Kizuna AI Hair", "Kizuna AI Bow"],
   小王子: [

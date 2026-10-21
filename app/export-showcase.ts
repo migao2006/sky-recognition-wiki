@@ -1,24 +1,21 @@
 import type { WikiItem } from "./wiki-data";
-import { referencePriceText, referenceRangeText } from "./valuation-display";
 import {
   buildShowcaseGroups,
   type ShowcaseOrderOptions,
 } from "./showcase-order";
 
-type ExportShowcasePreset = "valuation" | "video" | "collection";
+type ExportShowcasePreset = "highlights" | "video" | "collection";
 
-type ExportValuationSummary = {
-  midpoint: number | null;
-  range: { low: number; high: number } | null;
-  confidence: string;
-  completeness: number;
+type ExportAccountSummary = {
   itemCount: number;
-  highlights: string[];
+  ultimateCount: number;
+  paidCount: number;
+  limitedCount: number;
 };
 
 type ExportShowcaseOptions = ShowcaseOrderOptions & {
   preset?: ExportShowcasePreset;
-  valuation?: ExportValuationSummary;
+  summary?: ExportAccountSummary;
   onProgress?: (progress: ExportShowcaseProgress) => void;
 };
 
@@ -231,7 +228,7 @@ type ShowcasePage = {
 };
 
 const showcaseSummaryHeight = (options: ExportShowcaseOptions) =>
-  options.preset === "valuation" && options.valuation ? 236 : 0;
+  options.preset === "highlights" && options.summary ? 144 : 0;
 
 const buildShowcasePages = (
   layout: ReturnType<typeof buildShowcaseLayout>,
@@ -370,7 +367,7 @@ export const planShowcasePageItems = (options: ExportShowcaseOptions) => {
 };
 
 export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
-  const { items, valuation, onProgress } = options;
+  const { items, summary, onProgress } = options;
   const plan = buildShowcasePlan(options);
   const {
     width,
@@ -444,7 +441,7 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.save();
     ctx.translate(0, -page.offsetY);
 
-  if (summaryHeight && valuation) {
+  if (summaryHeight && summary) {
     roundRect(
       ctx,
       pad,
@@ -458,32 +455,16 @@ export const renderShowcaseImage = async (options: ExportShowcaseOptions) => {
     ctx.textAlign = "left";
     ctx.fillStyle = "#9fc8ff";
     ctx.font = "800 20px system-ui";
-    ctx.fillText("估價摘要", pad + 28, pad + 38);
+    ctx.fillText("帳號收藏摘要", pad + 28, pad + 38);
     ctx.fillStyle = "#b7c8dd";
-    ctx.font = "700 15px system-ui";
-    ctx.fillText("參考估價", pad + 28, pad + 62);
-    ctx.fillStyle = "#f3f8f7";
-    ctx.font = "900 48px system-ui";
-    ctx.fillText(
-      referencePriceText(valuation.midpoint, valuation.itemCount),
-      pad + 28,
-      pad + 106,
-    );
+    ctx.font = "800 24px system-ui";
+    ctx.fillText(`已選 ${summary.itemCount} 件`, pad + 28, pad + 76);
     ctx.fillStyle = "#b7c8dd";
-    ctx.font = "700 18px system-ui";
-    const range = referenceRangeText(valuation.range);
-    ctx.fillText(range, pad + 28, pad + 142);
+    ctx.font = "700 17px system-ui";
     ctx.fillText(
-      `估價完整度 ${valuation.completeness}% · ${valuation.confidence} · 已納入 ${valuation.itemCount} 件`,
+      `畢業禮 ${summary.ultimateCount}　付費物品 ${summary.paidCount}　聯動／限定 ${summary.limitedCount}`,
       pad + 28,
-      pad + 174,
-    );
-    ctx.fillStyle = "#8fa6c2";
-    ctx.font = "600 15px system-ui";
-    ctx.fillText(
-      valuation.highlights.slice(0, 5).join("　") || "不沿用舊價格或固定加值",
-      pad + 28,
-      pad + 206,
+      pad + 108,
     );
   }
 

@@ -1,0 +1,238 @@
+.output-report {
+  padding: 20px;
+  border: 1px solid var(--glass-line);
+  border-radius: 20px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+.output-report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.output-report-head h2 {
+  margin: 0;
+  color: #f3f7fc;
+  font-size: 22px;
+}
+.output-report-head p,
+.showcase-builder-head p {
+  margin: 5px 0 0;
+  color: #91a0b4;
+  font-size: 11px;
+}
+.output-total {
+  flex: none;
+  padding: 7px 11px;
+  border: 1px solid #8fc7ff42;
+  border-radius: 999px;
+  background: #8fc7ff10;
+  color: #cfe4ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.output-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.output-metrics > div {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 13px;
+  background: var(--glass-soft);
+}
+.output-metrics dt {
+  color: #aeb8c6;
+  font-size: 10px;
+  font-weight: 750;
+}
+.output-metrics dd {
+  margin: 0;
+  color: #f4f7fb;
+  font-size: 20px;
+  font-weight: 800;
+}
+.output-details {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.output-details details {
+  overflow: hidden;
+  border: 1px solid #a9cfff22;
+  border-radius: 14px;
+  background: var(--glass-soft);
+}
+.output-details summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  color: #dce8f6;
+  cursor: pointer;
+  list-style: none;
+}
+.output-details summary::-webkit-details-marker {
+  display: none;
+}
+.output-details summary b {
+  font-size: 12px;
+}
+.output-details summary span {
+  color: #8295ad;
+  font-size: 10px;
+}
+.season-progress-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  padding: 1px;
+  background: #a9cfff14;
+}
+.season-progress-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 13px;
+  background: #0a101a;
+  color: #bbc8d7;
+  font-size: 11px;
+}
+.season-progress-list b {
+  color: #a9d3ff;
+}
+.account-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 12px 12px;
+}
+.account-facts span {
+  padding: 6px 9px;
+  border: 1px solid #a9cfff1f;
+  border-radius: 9px;
+  background: #08101b;
+  color: #b9c8da;
+  font-size: 10px;
+}
+.account-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  margin-top: 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+}
+.account-actions button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.account-danger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.clear-owned {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: #aab5c4;
+}
+.clear-owned:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.item-card.selectable {
+  position: relative;
+}
+.item-card.selectable.owned {
+  border: 2px solid #8fc7ff;
+  box-shadow: inset 0 0 0 1px #8fc7ff38;
+}
+.item-card.selectable.owned .image-wrap {
+  background: radial-gradient(circle at 50% 40%, #294f7b 0, #14243a 64%, #070c14 100%);
+}
+.item-card.selectable.owned .card-body {
+  border-top-color: #8fc7ff52;
+  background: #111d2e;
+}
+.item-card.selectable.owned .card-title {
+  color: #fff;
+}
+.owned-check {
+  position: absolute;
+  z-index: 5;
+  left: 10px;
+  bottom: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #a9cfff4d;
+  border-radius: 10px;
+  background: #050910b8;
+  color: #9fb5d0;
+  font-size: 15px;
+  font-weight: 900;
+  opacity: 0.58;
+  transform: scale(0.88);
+  transition: background-color .1s, border-color .1s, color .1s, opacity .1s, transform .1s;
+}
+.item-card.owned .owned-check {
+  border-color: #8fc7ff;
+  background: #8fc7ff;
+  color: #07101d;
+  opacity: 1;
+  transform: scale(1);
+}
+.item-card.selectable:active {
+  transform: scale(0.98);
+}
+footer {
+  width: min(1200px, 100%);
+  margin: auto;
+  padding: 26px 24px 38px;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  border-top: 1px solid #ffffff10;
+  color: #929fb1;
+  font-size: 12px;
+}
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;
+  z-index: 90;
+  transform: translateX(-50%);
+  padding: 11px 16px;
+  border: 1px solid #a9cfff4f;
+  border-radius: 14px;
+  background: #09101be8;
+  color: #c7dcf8;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  white-space: nowrap;
+}

@@ -1,5 +1,5 @@
 import type { WikiItem } from "./wiki-data";
-import { isPaidItem } from "./valuation-items";
+import { isPaidItem } from "./catalog-item-traits";
 import { isGraduationGift, isSeasonPendant, isSeasonUltimate } from "./season-items";
 import { wikiItems } from "./catalog-seeds";
 import {
@@ -19,7 +19,7 @@ import {
   sourceKind,
 } from "./catalog-sources";
 import { zhItemSearchNames } from "./catalog-zh";
-const valuationKey = (x: WikiItem) => {
+const showcasePriorityKey = (x: WikiItem) => {
   if (isSeasonPendant(x)) return "pendant";
   if (isGraduationGift(x)) return "discontinued";
   if (x.section === "seasons") return "season";
@@ -29,7 +29,7 @@ const valuationKey = (x: WikiItem) => {
   if (kind === "平台限定") return "platform";
   return kind === "國服限定" ? "china" : "permanent";
 };
-const valuationClass = (x: WikiItem) =>
+const showcasePriorityClass = (x: WikiItem) =>
   ({
     discontinued: "絕版核心 · 季節畢業禮",
     pendant: "季卡項鍊 · 非畢業禮",
@@ -39,7 +39,7 @@ const valuationClass = (x: WikiItem) =>
     platform: "平台專屬物品",
     china: "國服限定物品",
     permanent: "常駐／一般取得",
-  })[valuationKey(x)];
+  })[showcasePriorityKey(x)];
 export const sourceFilters = [
   { key: "all", name: "全部來源" },
   { key: "seasons", name: "季節" },
@@ -146,7 +146,7 @@ const marketHighlightNames = new Set([
   "Respectful Pianist Hair",
   "Daydream Forester Hair",
 ]);
-export const isValuationFocus = (x: WikiItem) =>
+export const isShowcaseHighlight = (x: WikiItem) =>
   isSeasonUltimate(x) ||
   isLimitedItem(x) ||
   isPaidItem(x) ||
@@ -172,7 +172,7 @@ export const searchIndex = new Map(
         labels[x.type] || x.type,
         source(x),
         sourceKind(x),
-        valuationClass(x),
+        showcasePriorityClass(x),
         String(x.id),
         seasonZh[x.collection] || "",
         ...(seasonSearchAliases[x.collection] ?? []),

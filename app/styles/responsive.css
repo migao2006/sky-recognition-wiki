@@ -16,14 +16,6 @@
   .account-form {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .valuation-summary {
-    grid-template-columns: 1fr;
-  }
-  .valuation-verdict {
-    padding-bottom: 18px;
-    border-right: 0;
-    border-bottom: 1px solid var(--glass-line);
-  }
   .account-actions {
     align-items: flex-start;
     flex-direction: column;
@@ -366,49 +358,27 @@
     min-height: 190px;
     padding: 14px;
   }
-  .showcase-price strong {
-    font-size: 24px;
-  }
   .showcase-preview-icons span,
   .showcase-preview-icons i {
     width: 39px;
     height: 39px;
   }
-  .valuation-report {
+  .output-report {
     padding: 16px 12px;
   }
-  .valuation-report-head {
+  .output-report-head {
     align-items: flex-start;
   }
-  .valuation-report-head h2 {
+  .output-report-head h2 {
     font-size: 21px;
   }
-  .valuation-verdict {
-    min-height: 0;
-    padding: 15px;
-  }
-  .valuation-verdict .model-price {
-    font-size: 25px;
-  }
-  .valuation-verdict p {
-    font-size: 11px;
-  }
-  .valuation-method {
-    font-size: 12px;
-    line-height: 1.7;
-  }
-  .valuation-contributions {
+  .output-metrics,
+  .season-progress-list {
     grid-template-columns: 1fr;
   }
-  .valuation-details summary {
+  .output-details summary {
     min-height: 46px;
     padding: 9px 11px;
-  }
-  .valuation-contributions > div {
-    padding: 10px 11px;
-  }
-  .valuation-warnings p {
-    font-size: 11px;
   }
   .account-actions {
     padding: 12px;
@@ -491,7 +461,7 @@
   .quick-select,
   .season-picker,
   .showcase-builder,
-  .valuation-report,
+  .output-report,
   .account-actions {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

@@ -17,7 +17,7 @@ export type CatalogTextResolution = {
 
 // These shared aliases deliberately describe every listed candidate as one
 // player-facing set. Other duplicate aliases remain ambiguous and are never
-// guessed during valuation reconstruction.
+// guessed while reconstructing account inventories.
 const confirmedGroupTerms = new Set([
   "蓬鬆冬裝",
   "貓貓套裝",

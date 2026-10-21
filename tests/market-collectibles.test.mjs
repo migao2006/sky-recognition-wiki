@@ -49,7 +49,7 @@ test("generated IAP metadata covers every mapped catalog item by GUID", () => {
 });
 
 test("candle redemption hair and cape remain collectibles, not paid packages", async () => {
-  const { canonicalPackageKey } = await tsImport("../app/valuation-items.ts", import.meta.url);
+  const { canonicalPackageKey } = await tsImport("../app/catalog-item-traits.ts", import.meta.url);
   for (const [guid, name] of [
     ["si_8YhNtmr", "Mischief Witch Hair"],
     ["-HtIAPjYsa", "Mischief Withered Cape"],
@@ -175,10 +175,10 @@ test("important market collectibles have complete structured metadata", () => {
     assert.ok(profile.playerName && /[^\x00-\x7f]/.test(profile.playerName));
     assert.ok(profile.series);
     assert.ok(["global", "china", "platform"].includes(profile.availability));
-    assert.ok(profile.valuationMultiplier > 0);
+    assert.ok(profile.importanceWeight > 0);
     assert.equal(profile.saleCopy, true);
     assert.equal(typeof profile.paid, "boolean");
-    assert.ok(["high", "standard"].includes(profile.valuationTier));
+    assert.ok(["high", "standard"].includes(profile.importanceTier));
     assert.ok(
       ["collaboration", "important", "special"].includes(profile.saleSection),
     );
@@ -226,7 +226,7 @@ test("keeps major collaboration series and Nintendo source coverage", () => {
   assert.equal(playstationCape?.packageKey, "transcendent-journey-pack");
 });
 
-test("separates important visibility from paid valuation", () => {
+test("separates important visibility from paid status", () => {
   const byName = new Map(
     importantMarketCollectibles.map((profile) => [profile.name, profile]),
   );

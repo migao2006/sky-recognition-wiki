@@ -19,11 +19,11 @@ test("ships only the account step in the initial organizer response", async () =
     new URL("../.next/server/app/index.html", import.meta.url),
   );
 
-  assert.match(html, /<title>光遇帳號整理｜衣櫃與估價<\/title>/i);
+  assert.match(html, /<title>光遇帳號整理｜衣櫃與匯出<\/title>/i);
   assert.match(html, /帳號資料/);
   assert.match(html, /下一步：選擇物品/);
   assert.doesNotMatch(html, /搜尋名稱、季節或 ID/);
-  assert.doesNotMatch(html, /估價分析/);
+  assert.doesNotMatch(html, /整理與匯出/);
   assert.doesNotMatch(html, /Sunlight Snorkel/);
 
   const initialChunkPaths = [
@@ -39,5 +39,5 @@ test("ships only the account step in the initial organizer response", async () =
     )
   ).join("\n");
   assert.doesNotMatch(initialCode, /Sunlight Snorkel/);
-  assert.doesNotMatch(initialCode, /showcase-preview|前往估價/);
+  assert.doesNotMatch(initialCode, /showcase-preview|前往整理/);
 });

@@ -12,7 +12,7 @@ import {
 } from "./account-config";
 import {
   useCatalogStepState,
-  useValuationStepState,
+  useExportStepState,
 } from "./organizer-step-state";
 import { useAccountDraft } from "./use-account-draft";
 import { useOwnedItems } from "./use-owned-items";
@@ -23,8 +23,8 @@ const CatalogStep = dynamic(
   () => import("./catalog-step").then((module) => module.CatalogStep),
   { ssr: false },
 );
-const ValuationStep = dynamic(
-  () => import("./valuation-step").then((module) => module.ValuationStep),
+const ExportStep = dynamic(
+  () => import("./export-step").then((module) => module.ExportStep),
   { ssr: false },
 );
 
@@ -49,7 +49,7 @@ export default function AccountOrganizer() {
     useState<Record<BindingKey, BindingStatus>>(emptyBindings);
   const [notice, setNotice] = useState("");
   const catalogStepState = useCatalogStepState();
-  const valuationStepState = useValuationStepState();
+  const exportStepState = useExportStepState();
   const announcedStep = useRef<1 | 2 | 3>(1);
   const [stepAnnouncement, setStepAnnouncement] = useState("");
   const invalidateWardrobeConfirmation = useCallback(() => {
@@ -64,7 +64,7 @@ export default function AccountOrganizer() {
     invalidateWardrobeConfirmation,
     runtime.catalogDomain?.validItemGuids,
   );
-  const { loadCatalog, loadValuation } = runtime;
+  const { loadCatalog } = runtime;
   const { draftAvailable, draftReady, clearStoredDraft } = useAccountDraft({
     account,
     bindings,
@@ -84,10 +84,6 @@ export default function AccountOrganizer() {
   const safelyLoadCatalog = useCallback(() => {
     void loadCatalog().catch(() => undefined);
   }, [loadCatalog]);
-  const safelyLoadValuation = useCallback(() => {
-    void loadValuation().catch(() => undefined);
-  }, [loadValuation]);
-
   useEffect(() => {
     if (!draftReady || runtime.catalogDomain) return;
     const connection = (
@@ -107,7 +103,6 @@ export default function AccountOrganizer() {
   const goToStep = (step: 1 | 2 | 3) => {
     if (step === activeStep) return;
     if (step !== 1) safelyLoadCatalog();
-    if (step === 3) safelyLoadValuation();
     setActiveStep(step);
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches
@@ -125,22 +120,15 @@ export default function AccountOrganizer() {
     setNotice("已清除全部資料");
   };
 
-  const runtimeMissing =
-    activeStep !== 1 &&
-    (!runtime.catalogDomain || (activeStep === 3 && !runtime.valuationRuntime));
-  const runtimeFailed =
-    runtime.catalogLoadError ||
-    (activeStep === 3 && runtime.valuationLoadError);
+  const runtimeMissing = activeStep !== 1 && !runtime.catalogDomain;
+  const runtimeFailed = runtime.catalogLoadError;
   const activeStepReady =
     activeStep === 1 ||
-    (activeStep === 2 && Boolean(runtime.catalogDomain)) ||
-    (activeStep === 3 &&
-      Boolean(runtime.catalogDomain) &&
-      Boolean(runtime.valuationRuntime));
+    Boolean(runtime.catalogDomain);
 
   useEffect(() => {
     if (!activeStepReady || announcedStep.current === activeStep) return;
-    const stepName = ["", "帳號資料", "選擇物品", "估價與匯出"][activeStep];
+    const stepName = ["", "帳號資料", "選擇物品", "整理與匯出"][activeStep];
     const focusFrame = window.requestAnimationFrame(() => {
       const heading = document.querySelector<HTMLElement>(".app-shell h1");
       if (!heading) return;
@@ -170,9 +158,6 @@ export default function AccountOrganizer() {
                   type="button"
                   onClick={() => {
                     if (!runtime.catalogDomain) safelyLoadCatalog();
-                    if (activeStep === 3 && !runtime.valuationRuntime) {
-                      safelyLoadValuation();
-                    }
                   }}
                 >
                   重新載入
@@ -213,14 +198,13 @@ export default function AccountOrganizer() {
           }
           onBack={() => goToStep(1)}
           onNext={() => goToStep(3)}
-          onPreloadValuation={safelyLoadValuation}
         />
       )}
       {activeStep === 3 &&
-        runtime.valuationReady && (
-          <ValuationStep
-            runtime={runtime.valuationReady}
-            state={valuationStepState}
+        runtime.catalogDomain && (
+          <ExportStep
+            runtime={runtime.catalogDomain}
+            state={exportStepState}
             account={account}
             bindings={bindings}
             owned={owned}

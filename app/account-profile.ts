@@ -1,6 +1,6 @@
 export type MarketBreakClass = "none" | "slight" | "medium" | "big";
 export type MarketAccountStyle = "simple" | "regular";
-export type PackageTierKey = "few" | "medium" | "many" | "hundred";
+export type SalePackageTierKey = "few" | "medium" | "many";
 
 export const marketBreakClassNames: Record<MarketBreakClass, string> = {
   none: "無斷",
@@ -14,14 +14,11 @@ export const marketAccountStyleNames: Record<MarketAccountStyle, string> = {
   regular: "一般帳號",
 };
 
-export const marketPackageTierNames: Record<PackageTierKey, string> = {
+export const marketPackageTierNames: Record<SalePackageTierKey, string> = {
   few: "少禮",
   medium: "中禮",
   many: "多禮",
-  hundred: "百禮",
 };
-
-export const marketValidation = { status: "unvalidated", isValidated: false, label: "參考估價" } as const;
 
 export const classifyBreakClass = (
   completion: ReadonlyMap<string, { selected: number; expected: number }>,
@@ -34,9 +31,7 @@ export const classifyBreakClass = (
       partialSeasons: 0,
       completionRatio: 0,
     };
-  const missingSeasons = rows.filter(
-    (row) => row.selected === 0,
-  ).length;
+  const missingSeasons = rows.filter((row) => row.selected === 0).length;
   const partialSeasons = rows.filter(
     (row) => row.selected > 0 && row.selected < row.expected,
   ).length;
@@ -69,7 +64,11 @@ export const classifyAccountStyle = ({
     ? "simple"
     : "regular";
 
-
-export type SalePackageTierKey = "few" | "medium" | "many";
-export const classifySalePackageTier = (count: number): { key: SalePackageTierKey; label: string } =>
-  count >= 90 ? { key: "many", label: "多禮" } : count >= 60 ? { key: "medium", label: "中禮" } : { key: "few", label: "少禮" };
+export const classifySalePackageTier = (
+  count: number,
+): { key: SalePackageTierKey; label: string } =>
+  count >= 90
+    ? { key: "many", label: "多禮" }
+    : count >= 60
+      ? { key: "medium", label: "中禮" }
+      : { key: "few", label: "少禮" };

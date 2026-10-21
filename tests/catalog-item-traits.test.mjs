@@ -3,9 +3,9 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { tsImport } from "tsx/esm/api";
 
-const [marketModule, valuationItems] = await Promise.all([
+const [marketModule, itemTraits] = await Promise.all([
   tsImport("../app/market-collectibles.ts", import.meta.url),
-  tsImport("../app/valuation-items.ts", import.meta.url),
+  tsImport("../app/catalog-item-traits.ts", import.meta.url),
 ]);
 const marketGuidByName = new Map(
   marketModule.importantMarketCollectibles.flatMap((profile) =>
@@ -20,7 +20,7 @@ const {
   limitedItemKind,
   isSeasonPendant,
   isSeasonUltimate,
-} = valuationItems;
+} = itemTraits;
 
 const item = (overrides = {}) => ({
   id: 1,

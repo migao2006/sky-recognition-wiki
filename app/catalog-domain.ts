@@ -1,4 +1,4 @@
-export { isPaidItem } from "./valuation-items";
+export { isPaidItem } from "./catalog-item-traits";
 export {
   buildCatalogNameResolver,
   normalizeCatalogTerm,
@@ -45,7 +45,7 @@ export {
   graduationSeasonSlugs,
   isLimitedItem,
   isProfessionalVideoFocus,
-  isValuationFocus,
+  isShowcaseHighlight,
   matchesSourceFilter,
   searchIndex,
   seasonGraduationItems,

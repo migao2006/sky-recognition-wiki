@@ -1,6 +1,6 @@
 import type { CatalogStepState } from "./organizer-step-state";
 import type { CatalogRuntime } from "./use-organizer-runtime";
-import { isPaidItem, isSeasonUltimate } from "./valuation-items";
+import { isPaidItem, isSeasonUltimate } from "./catalog-item-traits";
 
 type FilterOptions = Pick<CatalogStepState,
   "sub" | "query" | "season" | "sourceFilter" | "focusMode"

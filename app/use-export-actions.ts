@@ -1,24 +1,15 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { AccountInfo, BindingKey, BindingStatus } from "./account-config";
+import type { AccountSummary } from "./account-summary";
+import { marketBreakClassNames, marketPackageTierNames } from "./account-profile";
 import { downloadBlob } from "./browser-download";
+import { isChinaOnlyItem, isGraduationGift, isPaidItem } from "./catalog-item-traits";
 import { safeFileName } from "./file-name";
 import type { ShowcasePreset } from "./organizer-step-state";
-import { isChinaOnlyItem, isGraduationGift, isPaidItem } from "./valuation-items";
-import type { ValuationAnalysis, ValuationEstimate } from "./valuation-analysis";
-import {
-  marketBreakClassNames,
-  marketPackageTierNames,
-} from "./valuation-profile";
-import type { SeasonConfidence } from "./valuation-season-bands";
-import { showcasePresetNames } from "./valuation-showcase-preview";
-import type { ValuationRuntimeCapabilities } from "./use-organizer-runtime";
+import { showcasePresetNames } from "./showcase-preview";
+import type { OrganizerRuntimeCapabilities } from "./use-organizer-runtime";
 import type { WikiItem } from "./wiki-data";
 
 type ImageExportStatus = {
@@ -27,37 +18,27 @@ type ImageExportStatus = {
   total: number;
 };
 
-type Props = {
-  runtime: ValuationRuntimeCapabilities;
-  account: AccountInfo;
-  bindings: Record<BindingKey, BindingStatus>;
-  chosen: WikiItem[];
-  showcasePreset: ShowcasePreset;
-  showcaseItems: Record<ShowcasePreset, WikiItem[]>;
-  valuationAnalysis: ValuationAnalysis;
-  valuationEstimate: ValuationEstimate | null | undefined;
-  confidenceNames: Record<SeasonConfidence, string>;
-  localizeValuationLabel: (label: string) => string;
-  setNotice: Dispatch<SetStateAction<string>>;
-};
-
-export const useValuationExportActions = ({
+export const useExportActions = ({
   runtime,
   account,
   bindings,
   chosen,
   showcasePreset,
   showcaseItems,
-  valuationAnalysis,
-  valuationEstimate,
-  confidenceNames,
-  localizeValuationLabel,
+  accountSummary,
   setNotice,
-}: Props) => {
+}: {
+  runtime: OrganizerRuntimeCapabilities;
+  account: AccountInfo;
+  bindings: Record<BindingKey, BindingStatus>;
+  chosen: WikiItem[];
+  showcasePreset: ShowcasePreset;
+  showcaseItems: Record<ShowcasePreset, WikiItem[]>;
+  accountSummary: AccountSummary;
+  setNotice: Dispatch<SetStateAction<string>>;
+}) => {
   const exportInFlightRef = useRef(false);
-  const [imageExport, setImageExport] = useState<ImageExportStatus | null>(
-    null,
-  );
+  const [imageExport, setImageExport] = useState<ImageExportStatus | null>(null);
   const downloadText = (lines: string[], suffix: string) =>
     downloadBlob(
       new Blob(["\uFEFF" + lines.join("\n")], {
@@ -86,27 +67,19 @@ export const useValuationExportActions = ({
       total: runtime.seasonGraduationItems.get(slug)?.length ?? 0,
     }));
     return {
-      valuation: valuationEstimate?.midpoint != null ? valuationEstimate : undefined,
       seasons,
       bindingsConfirmed: account.bindingsConfirmed,
       bindings,
-      summary: valuationEstimate
-        ? {
-            seasonName: valuationAnalysis.startSeasonSlug
-              ? runtime.seasonZh[valuationAnalysis.startSeasonSlug] ||
-                valuationAnalysis.startSeasonSlug
-              : "畢業未明",
-            breakLabel: valuationAnalysis.seasonCompletion.size
-              ? marketBreakClassNames[
-                  valuationEstimate.marketProfile.breakClass
-                ]
-              : "",
-            packageLabel:
-              marketPackageTierNames[
-                valuationEstimate.marketProfile.salePackageTier
-              ],
-          }
-        : undefined,
+      summary: {
+        seasonName: accountSummary.startSeasonSlug
+          ? runtime.seasonZh[accountSummary.startSeasonSlug] ||
+            accountSummary.startSeasonSlug
+          : "畢業未明",
+        breakLabel: accountSummary.seasonCompletion.size
+          ? marketBreakClassNames[accountSummary.breakClass]
+          : "",
+        packageLabel: marketPackageTierNames[accountSummary.salePackageTier],
+      },
       resources: {
         candles: account.candles,
         hearts: account.hearts,
@@ -154,13 +127,9 @@ export const useValuationExportActions = ({
   };
   const exportShowcaseImage = async () => {
     if (exportInFlightRef.current) return;
-    if (!chosen.length) {
-      setNotice("尚未選取物品");
-      return;
-    }
     const exportItems = showcaseItems[showcasePreset];
     if (!exportItems.length) {
-      setNotice("這個版型沒有可匯出的物品");
+      setNotice(chosen.length ? "這個版型沒有可匯出的物品" : "尚未選取物品");
       return;
     }
     exportInFlightRef.current = true;
@@ -172,19 +141,11 @@ export const useValuationExportActions = ({
         ...runtime.showcaseOrderOptions(exportItems),
         preset: showcasePreset,
         onProgress: setImageExport,
-        valuation: {
-          midpoint: valuationEstimate?.midpoint ?? null,
-          range: valuationEstimate?.range ?? null,
-          confidence: valuationEstimate?.midpoint != null
-            ? confidenceNames[valuationEstimate.confidence]
-            : "估價載入失敗",
-          completeness: valuationAnalysis.completeness,
+        summary: {
           itemCount: chosen.length,
-          highlights: valuationEstimate
-            ? valuationEstimate.contributions
-                .slice(0, 5)
-                .map((row) => localizeValuationLabel(row.label))
-            : [],
+          ultimateCount: accountSummary.ultimates.length,
+          paidCount: accountSummary.packages.length,
+          limitedCount: accountSummary.limited.length,
         },
       });
       const filePrefix = `光遇帳號_${safeFileName(account.name)}_${showcasePresetNames[showcasePreset]}`;
@@ -209,9 +170,5 @@ export const useValuationExportActions = ({
     }
   };
 
-  return {
-    imageExport,
-    shareSummary,
-    exportShowcaseImage,
-  };
+  return { imageExport, shareSummary, exportShowcaseImage };
 };

@@ -34,7 +34,7 @@ export const isChinaOnlyItem = (item: WikiItem) =>
 export const limitedItemKind = (item: WikiItem) => {
   const profile = marketCollectibleProfile(item.name, item.guid);
   if (profile?.availability === "platform") return "platform" as const;
-  if (profile && profile.valuationMultiplier >= 1.5) return "permanent" as const;
+  if (profile && profile.importanceWeight >= 1.5) return "permanent" as const;
   const source = `${item.name} ${item.wiki} ${item.collection} ${item.group}`;
   if (isChinaOnlyItem(item)) return "china" as const;
   if (/nintendo|playstation|steam|twitch/i.test(source)) return "platform" as const;
@@ -43,19 +43,6 @@ export const limitedItemKind = (item: WikiItem) => {
   if (/days of|anniversary|mischief|feast|fortune|love|bloom|rainbow|summer[_ -]?camping/i.test(source))
     return "annual" as const;
   return "limited" as const;
-};
-
-export const packageValuationMultiplier = (item: WikiItem) => {
-  const verified = marketCollectibleProfile(item.name, item.guid)?.valuationMultiplier;
-  if (verified !== undefined) return verified;
-  const kind = limitedItemKind(item);
-  return kind === "permanent"
-    ? 1.5
-    : kind === "platform"
-      ? 1.25
-      : kind === "annual"
-        ? 0.9
-        : 0.75;
 };
 
 export const platformBindingForItem = (item: WikiItem) => {

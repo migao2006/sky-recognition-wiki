@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 type FocusMode = "all" | "video" | "ultimate" | "limited";
-export type ShowcasePreset = "valuation" | "video" | "collection";
+export type ShowcasePreset = "highlights" | "video" | "collection";
 export const INITIAL_VISIBLE_ITEMS = 32;
 
 export const useCatalogStepState = () => {
@@ -38,10 +38,10 @@ export const useCatalogStepState = () => {
 
 export type CatalogStepState = ReturnType<typeof useCatalogStepState>;
 
-export const useValuationStepState = () => {
+export const useExportStepState = () => {
   const [showcasePreset, setShowcasePreset] =
-    useState<ShowcasePreset>("valuation");
+    useState<ShowcasePreset>("highlights");
   return { showcasePreset, setShowcasePreset };
 };
 
-export type ValuationStepState = ReturnType<typeof useValuationStepState>;
+export type ExportStepState = ReturnType<typeof useExportStepState>;

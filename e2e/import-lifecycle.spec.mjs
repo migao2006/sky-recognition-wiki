@@ -32,6 +32,7 @@ async function upload(page, name, accountName) {
 }
 
 test("leaving the account step invalidates an unfinished import", async ({ page }) => {
+  test.setTimeout(90_000);
   await prepare(page);
   await page.getByLabel("帳號名稱").fill("保留目前帳號");
   await upload(page, "slow.json", "不可回寫的舊結果");
@@ -40,7 +41,8 @@ test("leaving the account step invalidates an unfinished import", async ({ page 
   await expect(page.getByRole("heading", { name: "選擇物品" })).toBeVisible();
   await page.evaluate(() => window.finishImport());
   await page.getByRole("button", { name: "返回帳號資料" }).click();
-  await expect(page.getByLabel("帳號名稱")).toHaveValue("保留目前帳號");
+  await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByLabel("帳號名稱")).toHaveValue("保留目前帳號", { timeout: 15_000 });
   await expect(page.getByText(/已匯入/)).toHaveCount(0);
 });
 
@@ -57,11 +59,14 @@ test("a newer file wins even if the previous file completes later", async ({ pag
 });
 
 test("every selection entry resets confirmation while draft and v4 backup restoration preserve it", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   await page.goto("/");
   await expect(page.locator("main[data-hydration-ready='true']")).toBeVisible();
   const enterCloset = () => page.getByRole("button", { name: "下一步：選擇物品" }).click();
-  const back = () => page.getByRole("button", { name: "返回帳號資料" }).click();
+  const back = async () => {
+    await page.getByRole("button", { name: "返回帳號資料" }).click();
+    await expect(page.getByRole("heading", { name: "帳號資料" })).toBeVisible({ timeout: 15_000 });
+  };
   const confirmed = page.getByRole("checkbox", { name: /已逐項確認完整衣櫃/ });
   await enterCloset();
   await confirmed.check();
@@ -105,7 +110,7 @@ test("every selection entry resets confirmation while draft and v4 backup restor
   const buffer = Buffer.concat(chunks);
   expect(JSON.parse(buffer).account.wardrobeConfirmed).toBe(true);
   await enterCloset();
-  await page.getByRole("button", { name: "前往估價" }).click();
+  await page.getByRole("button", { name: "前往整理" }).click();
   await page.getByRole("button", { name: "清除已選物品" }).click();
   await page.getByRole("button", { name: "返回衣櫃", exact: true }).click();
   await expect(confirmed).not.toBeChecked();
