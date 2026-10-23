@@ -11,6 +11,12 @@ import {
   type BindingStatus,
 } from "./account-config";
 import { analyzeAccount } from "./account-summary";
+import {
+  estimateAccountValue,
+  valuationMethodNames,
+  valuationPackageTierNames,
+} from "./account-valuation";
+import { marketBreakClassNames } from "./account-profile";
 import { DeferredDetails } from "./deferred-details";
 import type { ExportStepState, ShowcasePreset } from "./organizer-step-state";
 import { orderShowcaseItems } from "./showcase-order";
@@ -51,6 +57,11 @@ export function ExportStep({
     () => analyzeAccount({ chosen, bindings, domain: runtime.accountSummaryDomain }),
     [bindings, chosen, runtime.accountSummaryDomain],
   );
+  const valuation = useMemo(
+    () => estimateAccountValue(accountSummary, account.wardrobeConfirmed),
+    [account.wardrobeConfirmed, accountSummary],
+  );
+  const formatPrice = (value: number) => `NT$ ${value.toLocaleString("zh-TW")}`;
   const showcaseItems = useMemo(() => {
     const videoItems = chosen.filter(runtime.isProfessionalVideoFocus);
     return {
@@ -89,9 +100,52 @@ export function ExportStep({
   return (
     <section className="account-panel">
       <div className="summary-intro">
-        <h1>整理與匯出</h1>
+        <h1>估價與匯出</h1>
         <button type="button" onClick={onBack}>返回衣櫃</button>
       </div>
+      <section className="valuation-report" aria-labelledby="valuation-title">
+        <div className="valuation-report-head">
+          <div>
+            <span>台灣國際服整號刊登參考</span>
+            <h2 id="valuation-title">估價分析</h2>
+          </div>
+          <b>{valuation.preliminary ? "初步推算" : "衣櫃已確認"}</b>
+        </div>
+        {valuation.midpoint && valuation.range ? (
+          <>
+            <strong className="valuation-price">{formatPrice(valuation.midpoint)}</strong>
+            <p className="valuation-range">
+              參考區間 {formatPrice(valuation.range.low)}～{formatPrice(valuation.range.high)}
+            </p>
+            <dl className="valuation-basis">
+              <div>
+                <dt>起季</dt>
+                <dd>{valuation.season
+                  ? runtime.seasonZh[valuation.season] || valuation.season
+                  : "未辨識"}</dd>
+              </div>
+              <div>
+                <dt>斷季</dt>
+                <dd>{valuation.season
+                  ? marketBreakClassNames[valuation.breakClass]
+                  : "全市場"}</dd>
+              </div>
+              <div>
+                <dt>禮包</dt>
+                <dd>{valuationPackageTierNames[valuation.packageTier]}</dd>
+              </div>
+            </dl>
+            <p className="valuation-note">
+              {valuation.method ? valuationMethodNames[valuation.method] : "模型推算"}
+              {`・資料至 ${valuation.asOf}・模型 ${valuation.revision}`}
+              <br />
+              尚未通過獨立盲測，僅供刊登參考；綁定與資源目前不計入價格。
+            </p>
+          </>
+        ) : (
+          <p className="valuation-unavailable">目前無法產生估價，請重新載入後再試。</p>
+        )}
+      </section>
       <section className="showcase-builder" aria-labelledby="showcase-title">
         <div className="showcase-builder-head">
           <div>

@@ -128,7 +128,7 @@ export default function AccountOrganizer() {
 
   useEffect(() => {
     if (!activeStepReady || announcedStep.current === activeStep) return;
-    const stepName = ["", "帳號資料", "選擇物品", "整理與匯出"][activeStep];
+    const stepName = ["", "帳號資料", "選擇物品", "估價與匯出"][activeStep];
     const focusFrame = window.requestAnimationFrame(() => {
       const heading = document.querySelector<HTMLElement>(".app-shell h1");
       if (!heading) return;

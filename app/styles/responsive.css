@@ -325,6 +325,25 @@
   .showcase-builder {
     padding: 14px 12px;
   }
+  .valuation-report {
+    padding: 17px 14px;
+  }
+  .valuation-report-head h2 {
+    font-size: 21px;
+  }
+  .valuation-price {
+    margin-top: 18px;
+  }
+  .valuation-basis {
+    gap: 6px;
+    margin-top: 18px;
+  }
+  .valuation-basis > div {
+    padding: 9px;
+  }
+  .valuation-basis dd {
+    font-size: 12px;
+  }
   .showcase-builder-head {
     align-items: flex-start;
     flex-direction: column;
@@ -461,6 +480,7 @@
   .quick-select,
   .season-picker,
   .showcase-builder,
+  .valuation-report,
   .output-report,
   .account-actions {
     -webkit-backdrop-filter: none;

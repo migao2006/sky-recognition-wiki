@@ -365,7 +365,7 @@ export function CatalogStep({
           type="button"
           onClick={onNext}
         >
-          前往整理
+          前往估價
         </button>
       </div>
       <div className="discovery-tools">
@@ -579,7 +579,7 @@ export function CatalogStep({
             ? nextClosetSub.closetKey === activeCloset.key
               ? `下一類：${nextClosetSub.subName}`
               : `下一衣櫃：${nextClosetSub.closetName} · ${nextClosetSub.subName}`
-            : "整理與匯出"}
+            : "估價與匯出"}
         </button>
       </div>
       {filterPanelOpen && (
