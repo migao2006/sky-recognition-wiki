@@ -32,7 +32,7 @@
     "sync:wiki-player-names:write": "node scripts/sync-wiki-player-names.mjs --write"
   },
   "dependencies": {
-    "next": "16.3.8",
+    "next": "16.4.3",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
@@ -44,7 +44,7 @@
     "cheerio": "^1.1.2",
     "csv-parse": "^6.2.1",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.3",
     "opencc-js": "^1.4.2",
     "sharp": "^0.35.4",
     "tesseract.js": "^7.0.0",

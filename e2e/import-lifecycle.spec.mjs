@@ -110,7 +110,7 @@ test("every selection entry resets confirmation while draft and v4 backup restor
   const buffer = Buffer.concat(chunks);
   expect(JSON.parse(buffer).account.wardrobeConfirmed).toBe(true);
   await enterCloset();
-  await page.getByRole("button", { name: "前往整理" }).click();
+  await page.getByRole("button", { name: "前往估價" }).click();
   await page.getByRole("button", { name: "清除已選物品" }).click();
   await page.getByRole("button", { name: "返回衣櫃", exact: true }).click();
   await expect(confirmed).not.toBeChecked();

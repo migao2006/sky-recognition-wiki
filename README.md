@@ -23,6 +23,8 @@ Sky 光遇帳號整理工具，支援綁定與資源記錄、衣櫃選取、台�
 
 ## 本機開發
 
+目前鎖定 Next.js 與 `eslint-config-next` 16.4.3，包含本次安全修補；升級時須同步更新 lockfile，並執行正式依賴稽核與手機 E2E。
+
 ```powershell
 npm install
 npm run dev

@@ -38,13 +38,15 @@ test("supports the complete mobile organizer flow without a valuation API", asyn
   await expect(firstItem).toHaveAccessibleName(/^選取：.+/);
   await firstItem.click();
   await expect(firstItem).toHaveAccessibleName(/^取消選取：.+/);
-  await page.getByRole("button", { name: "前往整理" }).click();
+  await page.getByRole("button", { name: "前往估價" }).click();
 
-  await expect(page.getByRole("heading", { name: "整理與匯出" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "估價與匯出" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("button", { name: "分享摘要" })).toBeVisible();
   await expect(page.getByRole("button", { name: "重點收藏" })).toBeVisible();
   await expect(page.locator(".output-metrics")).toBeVisible();
-  await expect(page.locator("main")).not.toContainText("估價");
+  await expect(page.getByRole("heading", { name: "估價分析" })).toBeVisible();
+  await expect(page.locator(".valuation-price")).toHaveText(/NT\$ [\d,]+/);
+  await expect(page.locator(".valuation-range")).toContainText("參考區間");
   expect(valuationCalls).toBe(0);
 
   await page.getByRole("button", { name: "分享摘要" }).click();
